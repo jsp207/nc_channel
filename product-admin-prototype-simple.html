@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>Nova Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+
+
+:root{
+  --bg:#ffffff; --surface:#f7f8fb; --line:#e5e7f0; --line-strong:#d5d9e7;
+  --text:#20293b; --muted:#707c91; --accent:#4320d4; --accent-soft:#efebff;
+  --ok:#1f8a5b; --ok-soft:#e3f4eb; --bad:#c0392b; --bad-soft:#fbe6e3; --warn:#9a6b00; --warn-soft:#fff3d6;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+
+
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:14px;line-height:1.5}
+*{box-sizing:border-box}
+button,select,input{font:inherit;color:inherit}
+a{color:var(--accent)}
+
+.app{display:grid;grid-template-columns:216px 1fr;min-height:100%}
+nav{border-right:1px solid var(--line);padding:20px 0;position:sticky;top:0;height:100vh;background:var(--surface)}
+.brand{padding:0 20px 18px;font-weight:600;font-size:15px}
+.brand small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+nav button{display:block;width:100%;text-align:left;padding:10px 20px;border:0;background:none;cursor:pointer;color:var(--muted);border-left:3px solid transparent}
+nav button.on{color:var(--text);border-left-color:var(--accent);background:var(--bg);font-weight:500}
+nav .grp{padding:14px 20px 4px;font-size:11px;color:var(--muted)}
+main{padding:28px 32px 60px;max-width:1280px}
+h1{font-size:20px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 22px}
+h2{font-size:15px;font-weight:600;margin:26px 0 10px}
+.view{display:none}.view.on{display:block}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;background:var(--surface);position:sticky;top:0}
+tr.lv2 td{border-top:2px solid var(--line-strong)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+.chip{display:inline-block;padding:1px 8px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:12px;margin:1px 2px 1px 0;white-space:nowrap}
+.chip.acc{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.no{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.tag{font-weight:600}
+.tag.ok{color:var(--ok)}.tag.bad{color:var(--bad)}.tag.warn{color:var(--warn)}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+select,input[type=text]{padding:7px 10px;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg)}
+.btn{padding:8px 14px;border:1px solid var(--line-strong);background:var(--bg);border-radius:6px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:4px 10px;font-size:12px}
+
+/* builder */
+.builder{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+.step{border:1px solid var(--line);border-radius:8px;margin-bottom:14px}
+.step > header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);border-radius:8px 8px 0 0}
+.step > header .n{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:600}
+.step > header b{font-weight:600}
+.step > header .why{margin-left:auto;color:var(--muted);font-size:12px}
+.step .body{padding:14px 16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.row label{color:var(--muted);min-width:64px}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:var(--bg);padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
+.cands{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;max-height:220px;overflow:auto;padding:2px}
+.cand{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:13px}
+.cand input{margin-top:3px}
+.cand.off{opacity:.5;cursor:not-allowed}
+.cand small{display:block;color:var(--muted);font-size:11px}
+.panel{position:sticky;top:24px;border:1px solid var(--line-strong);border-radius:8px}
+.panel header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.panel header b{font-weight:600}
+.po{font-size:26px;font-weight:600;line-height:1}
+.po small{font-size:12px;color:var(--muted);font-weight:400;margin-left:4px}
+.rules{list-style:none;margin:0;padding:6px 0}
+.rules li{display:flex;gap:10px;padding:8px 16px;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start}
+.rules li:last-child{border-bottom:0}
+.rules .m{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none}
+.rules .m.ok{background:var(--ok-soft);color:var(--ok)}.rules .m.bad{background:var(--bad-soft);color:var(--bad)}.rules .m.na{background:var(--surface);color:var(--muted)}
+.rules li span.t{flex:1}.rules li span.d{display:block;color:var(--muted);font-size:12px}
+.panel footer{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.summary{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px}
+.summary div{display:flex;gap:8px;padding:3px 0}.summary div span:first-child{color:var(--muted);min-width:60px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.empty{color:var(--muted);padding:18px;text-align:center;border:1px dashed var(--line-strong);border-radius:6px}
+.note{background:var(--surface);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;color:var(--muted);font-size:13px;margin:0 0 16px}
+.status{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.status.live{background:var(--ok)}.status.wait{background:var(--warn)}.status.off{background:var(--line-strong)}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  nav{position:static;height:auto;display:flex;overflow-x:auto;padding:8px;border-right:0;border-bottom:1px solid var(--line)}
+  nav .brand,nav .grp{display:none}
+  nav button{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}
+  nav button.on{border-bottom-color:var(--accent)}
+  main{padding:20px 16px}
+  .builder{grid-template-columns:1fr}
+  .panel{position:static}
+}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+
+/* Reference style: light workspace, violet actions, compact navigation. */
+:root{color-scheme:light;--canvas:#eaecf5;--table-head:#f0f2f8}
+body{background:var(--canvas);font-size:13px;letter-spacing:-.2px}
+.app{grid-template-columns:88px minmax(0,1fr);padding:14px 18px 14px 0;gap:0;min-height:100vh}
+nav{background:transparent;border:0;padding:8px 10px;top:0;height:calc(100vh - 28px)}
+.brand{padding:0;font-size:0;text-align:center;margin:0 0 30px}
+.brand small{display:none}
+.brand::before{content:"";display:block;width:30px;height:30px;border-radius:50%;margin:0 auto;background:linear-gradient(135deg,#4320d4 15%,#7968fc 65%,#afb8ff);box-shadow:inset 0 0 0 1px #ffffff30}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:66px;padding:10px 3px;margin:0 0 10px;border:0;border-radius:12px;text-align:center;font-size:11px;font-weight:500;white-space:nowrap}
+nav button.on{background:#dfdcf6;color:var(--accent);border:0;font-weight:600}
+nav button:hover{background:#e1e3f0;color:var(--accent)}
+.nav-icon{width:21px;height:21px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+main{background:white;border:1px solid #e8eaf2;border-radius:20px;max-width:none;min-width:0;min-height:calc(100vh - 28px);padding:28px 32px 48px;box-shadow:0 2px 5px #29345903}
+.breadcrumb{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:11px;margin:0 0 10px}
+.breadcrumb strong{color:#4e5b73;font-weight:500}
+.breadcrumb span[aria-hidden]{color:#b2b9c9}
+h1{font-size:21px;letter-spacing:-.65px;font-weight:600;margin:0;line-height:1.5}
+h2{font-size:14px;font-weight:600;margin:28px 0 12px}
+.sub{font-size:12px;margin:9px 0 25px;line-height:1.8}
+.toolbar{gap:12px;margin-bottom:16px}
+.view>.toolbar:has(h1){margin-bottom:0;min-height:42px}
+.view>.toolbar:not(:has(h1)){background:var(--surface);border:1px solid #f0f1f6;border-radius:12px;padding:22px 24px;margin-bottom:24px;min-height:84px}
+select,input[type=text]{border-radius:8px;min-height:38px;padding:8px 12px;font-size:12px;border-color:var(--line-strong);max-width:100%;box-shadow:0 1px 2px #20293b03}
+select{min-width:140px;padding-right:28px}
+input::placeholder{color:#8994a8}
+input[type=checkbox],input[type=radio]{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0}
+.btn{min-height:38px;padding:8px 17px;border-radius:8px;font-size:12px;font-weight:600;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){background:var(--accent-soft);border-color:#ada0eb;color:var(--accent)}
+.btn.primary:hover:not(:disabled){background:#3517b9;border-color:#3517b9;color:white}
+.btn.sm{min-height:30px;padding:5px 10px;font-size:11px}
+.tw{border-color:var(--line);border-radius:12px;box-shadow:0 1px 2px #26324d04}
+table{font-size:12px}
+th{background:var(--table-head);color:#59667d;font-size:11px;font-weight:600;padding:13px 16px;white-space:nowrap}
+td{padding:17px 16px;vertical-align:middle;line-height:1.7}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fafaff}
+tr.lv2 td{border-top:1px solid var(--line-strong)}
+#bundleTable td:first-child b{color:var(--accent);font-weight:600}
+.chip{border-radius:4px;padding:1px 6px;font-size:10px;background:white;color:#62718a;margin:2px 4px 2px 0;line-height:1.6}
+.chip.acc{background:var(--accent-soft);border:1px solid #ded6ff;color:var(--accent)}
+.builder{grid-template-columns:minmax(0,1fr) 320px;gap:24px;padding-top:20px;border-top:1px solid var(--line)}
+.builder>div{min-width:0}
+.step{border-color:var(--line);border-radius:10px;margin-bottom:20px;overflow:hidden}
+.step>header{background:var(--surface);padding:15px 20px;border-radius:0;flex-wrap:wrap;gap:8px}
+.step>header .n{background:var(--accent-soft);color:var(--accent);width:23px;height:23px;font-size:11px}
+.step>header .why{font-size:11px;line-height:1.6}
+.step .body{padding:18px 20px}
+.row{gap:12px;margin-bottom:14px}
+.row label{font-size:12px;color:#4f5e77;font-weight:500}
+.seg{border-radius:7px}
+.seg button{font-size:12px;min-height:34px;padding:7px 16px}
+.cands{gap:8px;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));max-height:280px}
+.cand{padding:11px 12px;border-radius:7px;font-size:12px;line-height:1.6;background:white}
+.cand:not(.off):hover{border-color:#b4a8f0;background:#fbfaff}
+.cand:has(input:checked){border-color:#b7a7f7;background:#f7f4ff}
+.cand.off{background:var(--surface);opacity:.55}
+.cand small{font-size:10px;margin-top:3px}
+.panel{border-color:var(--line);border-radius:10px;background:white;top:20px;overflow:hidden}
+.panel header{background:var(--surface);min-height:58px;padding:16px 20px;font-size:13px}
+.panel footer{background:#fcfcfe;padding:16px}
+.po{font-size:24px;color:var(--accent)}
+.summary{padding:16px 20px;font-size:12px}
+.summary div{padding:5px 0;overflow-wrap:anywhere}
+.rules li{padding:12px 20px;font-size:12px}
+.rules li span.d{font-size:11px;margin-top:3px;line-height:1.6}
+.note{border:1px solid #e7e1fa;border-left:3px solid var(--accent);background:#f8f6ff;border-radius:8px;padding:14px 18px;font-size:12px;line-height:1.8}
+.toast{z-index:20;box-shadow:0 6px 24px #20293b20;font-size:13px;padding:12px 20px;border-radius:10px;max-width:calc(100vw - 32px);text-align:center}
+@media(max-width:1100px){main{padding:24px}.builder{grid-template-columns:minmax(0,1fr)}.panel{position:static}}
+@media(max-width:900px){
+ .app{grid-template-columns:minmax(0,1fr);padding:0 10px 10px}
+ nav{display:flex;gap:6px;padding:8px 0;height:auto;position:static;overflow-x:auto}
+ nav button{flex:1;flex-direction:row;gap:6px;min-height:44px;min-width:100px;margin:0;padding:8px;font-size:12px}
+ nav button.on{border:0}.nav-icon{width:18px;height:18px}
+ main{padding:22px 18px;border-radius:16px;min-height:calc(100vh - 70px)}
+}
+@media(max-width:560px){
+ main{padding:18px 14px}h1{font-size:19px}.breadcrumb{font-size:10px}
+ .view>.toolbar:not(:has(h1)){padding:16px;gap:10px}
+ .view>.toolbar:not(:has(h1)) select{flex:1}
+ .view>.toolbar:not(:has(h1)) input{width:100%}
+ .step .body{padding:14px}.step>header{padding:12px 14px}
+ .step>header .why{width:100%;margin-left:31px}
+ .row select{min-width:0;max-width:100%}
+ th,td{padding:12px}table{min-width:620px}
+}
+@media(prefers-reduced-motion:reduce){.btn{transition:none}}
+
+</style>
+</head>
+  <body>
+<div class="app">
+<nav>
+  <div class="brand">상품 운영 어드민<small>번들 하나로 운영</small></div>
+  <button data-v="base" class="on"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><span>기준</span></button>
+  <button data-v="bundles"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg><span>번들 만들기</span></button>
+  <button data-v="bundle-list"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h7M9 12h7M9 16h7M7 8h.01M7 12h.01M7 16h.01"/></svg><span>번들 목록</span></button>
+  <button data-v="display"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>전시 관리</span></button>
+</nav>
+<main>
+
+<section class="view on" id="v-base">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>기준</strong></div>
+  <h1>기준</h1>
+  <p class="sub">운영자가 만드는 것은 번들 하나다. 단품은 EPC에서 오는 재료이고, 아래 정책이 번들 화면의 자동 판정 근거다.</p>
+  <h2>판매 구성</h2>
+  <div class="tw"><table>
+    <thead><tr><th>구성</th><th>대표 슬롯</th><th>추가 슬롯</th><th>PO</th></tr></thead>
+    <tbody><tr><td><b>번들</b></td><td>단품 1개. 같은 모델의 변형(용량·색상)이 자동으로 펼쳐지고 고객이 1개 선택</td><td>0~N개. 각각 필수 또는 선택. 후보는 단품. 후보가 1개면 자동 포함</td><td>1 + 고른 수</td></tr></tbody>
+  </table></div>
+  <div class="note" style="margin-top:12px">추가 슬롯이 0개인 번들이 예전의 단품·라인업 판매다. 단독 주문 가능한 단품은 시스템이 "대표만 있는 번들"을 자동 생성하고, 운영자는 추가 슬롯을 붙이는 번들만 만든다.</div>
+  <h2>정책 4개</h2>
+  <div class="tw"><table>
+    <thead><tr><th style="width:36px">#</th><th>정책</th><th>화면에서 어떻게 나타나나</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>대표가 약정형이면 추가 슬롯 1은 요금제·필수로 자동 고정</td><td>슬롯 1의 영역·유형이 잠긴다</td></tr>
+      <tr><td>2</td><td>대표와 후보의 결합 키(회선유형·네트워크)가 맞아야 한다</td><td>안 맞는 후보는 회색</td></tr>
+      <tr><td>3</td><td>후보는 단품만. 번들은 후보가 될 수 없다</td><td>후보 목록에 단품만 나온다</td></tr>
+      <tr><td>4</td><td>대표·다른 슬롯 선택값과 같은 서비스, 포함 결합 상품은 후보에서 제외</td><td>해당 후보는 회색</td></tr>
+    </tbody>
+  </table></div>
+  <h2>마스터 정책 (단품 꼬리표의 근거)</h2>
+  <div class="tw"><table id="policyTable">
+    <thead><tr><th>영역</th><th>상품유형</th><th>회선유형</th><th>단독 주문</th><th>모델 키</th><th>예시</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <h2>단품 조회</h2>
+  <div class="toolbar">
+    <select id="fArea"><option value="">영역 전체</option></select>
+    <input type="text" id="fQ" placeholder="상품명 검색">
+    <span id="itemCount" style="color:var(--muted);margin-left:auto"></span>
+  </div>
+  <div class="tw"><table id="itemTable">
+    <thead><tr><th>상품명</th><th>영역</th><th>상품유형</th><th>결합 키</th><th>모델 키</th><th>단독 주문</th><th>자동 번들</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<section class="view" id="v-bundles">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>번들 만들기</strong></div>
+  <div class="toolbar"><h1>번들 만들기</h1><button class="btn" data-v="bundle-list" style="margin-left:auto">번들 목록 보기</button></div>
+  <p class="sub">대표 단품을 넣고 추가 슬롯을 붙인다. 오른쪽 검사가 전부 통과해야 저장된다.</p>
+  <div class="builder">
+    <div>
+      <div class="step">
+        <header><span class="n">1</span><b>대표 슬롯</b><span class="why">단품 1개. 같은 모델 변형은 자동으로 펼쳐진다</span></header>
+        <div class="body">
+          <div class="row"><label>영역</label><select id="bArea"></select><label>단품</label><select id="bHead"></select></div>
+          <div id="bHeadInfo" style="color:var(--muted);font-size:13px"></div>
+          <div id="bVariants" class="cands" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div id="slots"></div>
+      <button class="btn" id="addSlot">+ 추가 슬롯</button>
+    </div>
+    <aside class="panel">
+      <header><b>검사 결과</b><span class="po" id="poCount">1<small>PO</small></span></header>
+      <div class="summary" id="bSummary"></div>
+      <ul class="rules" id="ruleList"></ul>
+      <footer><button class="btn" id="bReset">초기화</button><button class="btn primary" id="bSave" disabled>번들 저장</button></footer>
+    </aside>
+  </div>
+</section>
+
+<section class="view" id="v-bundle-list">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>번들 목록</strong></div>
+  <div class="toolbar"><h1>번들 목록</h1><button class="btn primary" data-v="bundles" style="margin-left:auto">+ 번들 만들기</button></div>
+  <p class="sub">자동 생성된 번들과 운영자가 만든 번들의 구성 및 상태를 확인합니다.</p>
+  <div class="toolbar"><select id="bFilter"><option value="">전체</option><option value="manual">운영자 생성</option><option value="auto">자동 생성(대표만)</option></select><span id="bCount" style="color:var(--muted);margin-left:auto"></span></div>
+  <div class="tw"><table id="bundleTable">
+    <thead><tr><th>번들명</th><th>대표</th><th>추가 슬롯</th><th>PO</th><th>생성</th><th>상태</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<section class="view" id="v-display">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>전시 관리</strong></div>
+  <h1>전시 관리</h1>
+  <p class="sub">전시 객체는 번들뿐이다. 카테고리는 대표 단품의 꼬리표로 자동 배정되고, 기획전만 운영자가 고른다.</p>
+  <h2>카테고리 (자동)</h2>
+  <div class="tw"><table id="catTable"><thead><tr><th>채널</th><th>카테고리</th><th>조건 (대표 단품 기준)</th><th>매칭 번들</th></tr></thead><tbody></tbody></table></div>
+  <h2>기획전 만들기</h2>
+  <div class="builder">
+    <div>
+      <div class="step"><header><span class="n">1</span><b>무엇을</b></header><div class="body"><div class="row"><label>번들</label><select id="dObj"></select></div><div id="dObjInfo" style="color:var(--muted);font-size:13px"></div></div></div>
+      <div class="step"><header><span class="n">2</span><b>어디에, 언제</b></header><div class="body">
+        <div class="row"><label>채널</label><select id="dCh"><option>T다이렉트샵</option><option>T월드</option><option>T우주</option></select><label>위치</label><select id="dSection"><option>기획전</option><option>메인 배너</option><option>추천</option></select><label>순서</label><input type="text" id="dOrder" value="1" style="width:56px"></div>
+        <div class="row"><label>전시명</label><input type="text" id="dTitle" placeholder="비우면 번들명" style="flex:1;min-width:200px"></div>
+        <div class="row"><label>기간</label><input type="text" id="dFrom" value="2026-10-01" style="width:120px"> ~ <input type="text" id="dTo" placeholder="비우면 상시" style="width:120px"></div>
+      </div></div>
+    </div>
+    <aside class="panel">
+      <header><b>고객 화면 미리보기</b></header>
+      <div class="summary" id="dPreview"></div>
+      <ul class="rules" id="dRules"></ul>
+      <footer><button class="btn primary" id="dSave">전시 저장</button></footer>
+    </aside>
+  </div>
+  <h2>전시 목록</h2>
+  <div class="toolbar"><select id="dChannel"><option value="">채널 전체</option><option>T다이렉트샵</option><option>T월드</option><option>T우주</option></select></div>
+  <div class="tw"><table id="displayTable"><thead><tr><th>전시명</th><th>번들</th><th>채널</th><th>위치</th><th>기간</th><th>고객 동작</th><th>상태</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+    <script type="module">
+
+
+
+// ---------- 마스터 정책 ----------
+const POLICY = [
+ {area:'기기서비스',type:'약정형',line:['이동전화','태블릿','웨어러블','IoT','데이터전용'],solo:false,key:'기기모델(소재·사이즈 제외)',max:1,ex:'Galaxy S26, iPhone 18'},
+ {area:'기기서비스',type:'액세서리형',line:['무관'],solo:true,key:'브랜드+시리즈',max:'N',ex:'보호필름, 케이스, 충전기'},
+ {area:'이동전화',type:'요금제형',line:['이동전화','태블릿','웨어러블','IoT','데이터전용'],solo:true,key:'상품계열',max:1,ex:'5G 프리미엄, LTE 베이직'},
+ {area:'부가서비스',type:'월정액형',line:['이동전화','태블릿','웨어러블'],solo:true,key:'상품계열',max:1,ex:'V 컬러링, FLO 앤 데이터'},
+ {area:'부가서비스',type:'무료형',line:['이동전화','태블릿','웨어러블'],solo:true,key:'상품계열',max:1,ex:'콜키퍼, 발신번호표시'},
+ {area:'부가서비스',type:'종량/충전형',line:['이동전화','태블릿','웨어러블'],solo:true,key:'상품계열',max:'N',ex:'데이터 리필'},
+ {area:'부가서비스',type:'제휴 보험형',line:['이동전화','태블릿','웨어러블'],solo:true,key:'상품계열',max:1,ex:'T 올케어+6'},
+ {area:'부가서비스',type:'제휴 클럽형',line:['이동전화','태블릿','웨어러블'],solo:true,key:'상품계열',max:1,ex:'T 갤럭시 클럽'},
+ {area:'로밍',type:'로밍 요금제형',line:['이동전화','태블릿'],solo:true,key:'상품계열',max:1,ex:'baro, OnePass'},
+ {area:'로밍',type:'로밍 옵션형',line:['이동전화','태블릿'],solo:true,key:'상품계열',max:1,ex:'T 기내 Wi-Fi'},
+ {area:'로밍',type:'로밍 충전형',line:['이동전화','태블릿'],solo:true,key:'상품계열',max:'N',ex:'baro 데이터 리필'},
+ {area:'플랫폼(T우주)',type:'단일 구독형',line:['무관'],solo:true,key:'상품계열',max:1,ex:'동일 서비스 중 1개만'},
+ {area:'플랫폼(T우주)',type:'결합 구독형',line:['무관'],solo:true,key:'상품계열',max:1,ex:'월간/연간 중 1개만'},
+ {area:'플랫폼(T우주)',type:'이용권형',line:['무관'],solo:true,key:'상품계열',max:'N',ex:'이용권은 여러 개 가능'},
+];
+const AREAS = ['기기서비스','이동전화','부가서비스','로밍','플랫폼(T우주)'];
+const pol = t => POLICY.find(p=>p.type===t);
+
+// ---------- 단품 (실제 상품명 발췌) ----------
+// svc: 서비스 키(정책 6 판정), inc: 포함 서비스, dev: 기종, net: 네트워크
+let ITEMS = [];
+const add = (arr, area, type, line, key, net, extra={}) => arr.forEach(n=>ITEMS.push(Object.assign({name:n,area,type,line,key,net},extra)));
+add(['iPhone 18 Pro / 256G / 실버','iPhone 18 Pro / 512G / 실버','iPhone 18 Pro / 256G / 블랙','iPhone 18 Pro / 1T / 블랙'],'기기서비스','약정형','이동전화','iPhone 18 Pro','5G',{dev:'iphone'});
+add(['갤럭시 Z 플립8 / 256G / 크림','갤럭시 Z 플립8 / 512G / 크림','갤럭시 Z 플립8 / 256G / 핑크','갤럭시 Z 플립8 / 512G / 핑크','갤럭시 Z 플립8 / 256G / 블루'],'기기서비스','약정형','이동전화','갤럭시 Z 플립8','5G',{dev:'flip'});
+add(['갤럭시 S26 / 256G / 블랙','갤럭시 S26 / 512G / 블랙','갤럭시 S26 / 256G / 화이트'],'기기서비스','약정형','이동전화','갤럭시 S26','5G',{dev:'galaxy'});
+add(['갤럭시 A17 / 128G / 블랙','갤럭시 A17 / 128G / 블루'],'기기서비스','약정형','이동전화','갤럭시 A17','LTE',{dev:'galaxy'});
+add(['갤럭시 탭 S11 / 256G / 그레이','갤럭시 탭 S11 / 512G / 그레이'],'기기서비스','약정형','태블릿','갤럭시 탭 S11','5G',{dev:'galaxy'});
+add(['Apple Watch Series 12 / 알루미늄 46mm / 블랙','Apple Watch Series 12 / 티타늄 46mm / 슬레이트'],'기기서비스','약정형','웨어러블','Apple Watch Series 12','LTE',{dev:'iphone'});
+add(['[Z플립8] SLBS 케이스 모노라인','[Z플립8] SLBS 케이스 포켓몬 네임택','[Z플립8] SLBS 케이스 패턴','[Z플립8] SLBS 케이스 인덱스'],'기기서비스','액세서리형','무관','SLBS Z플립8 케이스','-');
+add(['삼성전자 갤럭시 Z폴드8 보호필름','삼성전자 갤럭시 Z플립8 보호필름','삼성 마그넷 무선 충전기 (25W)'],'기기서비스','액세서리형','무관','삼성정품','-');
+add(['라이트 79','라이트 69','라이트 55','라이트 49'],'이동전화','요금제형','이동전화','라이트','5G');
+add(['라이트 59','라이트 59 (13GB업)','라이트 59 (30GB업)','라이트 59 (75GB업)'],'이동전화','요금제형','이동전화','라이트 59 계열','5G');
+add(['다이렉트5G 76(넷플릭스)'],'이동전화','요금제형','이동전화','다이렉트5G 76','5G',{inc:['netflix']});
+add(['다이렉트5G 76(유튜브 프리미엄)'],'이동전화','요금제형','이동전화','다이렉트5G 76','5G',{inc:['youtube']});
+add(['T플랜 세이브','베이직'],'이동전화','요금제형','이동전화','T플랜','LTE');
+add(['ZEM플랜 퍼펙트','ZEM플랜 베스트'],'이동전화','요금제형','이동전화','ZEM플랜','LTE',{seg:'키즈'});
+add(['T Tab 18','5G Tab 4GB(단독)'],'이동전화','요금제형','태블릿','태블릿 요금제','5G');
+add(['LTE Watch(단독)','LTE Watch(공유II)'],'이동전화','요금제형','웨어러블','LTE Watch','LTE');
+add(['V 컬러링','V 컬러링 플러스','V 컬러링 라이트'],'부가서비스','월정액형','이동전화','V 컬러링','-',{svc:'coloring'});
+add(['컬러링슬림팩'],'부가서비스','월정액형','이동전화','컬러링','-',{svc:'coloring'});
+add(['스마트 콜키퍼','안심클라우드','PASS 오피스도우미'],'부가서비스','월정액형','이동전화','편의','-');
+add(['FLO 앤 데이터'],'부가서비스','월정액형','이동전화','FLO 앤 데이터','-',{svc:'flo'});
+add(['Wavve 앤 데이터'],'부가서비스','월정액형','이동전화','Wavve 앤 데이터','-',{svc:'wavve'});
+add(['라이트 59 데이터 충전 13GB','라이트 59 데이터 충전 30GB'],'부가서비스','종량/충전형','이동전화','라이트 59 데이터 충전','-',{req:'라이트 59 계열'});
+add(['T 올케어+6 i일반(온라인)','T 올케어+6 i고급(온라인)'],'부가서비스','제휴 보험형','이동전화','T 올케어+6','-',{dev:'iphone',svc:'ins'});
+add(['T 올케어+6 스위치 플립(온라인)','분실파손6 플립(온라인)'],'부가서비스','제휴 보험형','이동전화','T 올케어+6 스위치','-',{dev:'flip',svc:'ins'});
+add(['T 올케어+6 일반(온라인)','T 올케어+6 고급(온라인)'],'부가서비스','제휴 보험형','이동전화','T 올케어+6','-',{dev:'galaxy',svc:'ins'});
+add(['T나는 폰교체 AI클럽','인피니티 클럽'],'부가서비스','제휴 클럽형','이동전화','클럽','-',{svc:'club'});
+add(['baro 요금제'],'로밍','로밍 요금제형','이동전화','baro','-',{svc:'roamplan'});
+add(['OnePass 500 기본형','OnePass 500 기간형'],'로밍','로밍 요금제형','이동전화','OnePass 500','-',{svc:'roamplan'});
+add(['T 기내 Wi-Fi','로밍 콜 무제한'],'로밍','로밍 옵션형','이동전화','로밍 옵션','-');
+add(['baro 1GB 충전','baro 2GB 충전','baro 3GB 충전'],'로밍','로밍 충전형','이동전화','baro 충전','-',{req:'baro'});
+add(['Netflix 광고형 스탠다드','Netflix 스탠다드','Netflix 프리미엄'],'플랫폼(T우주)','단일 구독형','무관','Netflix','-',{svc:'netflix'});
+add(['Disney+ 스탠다드','Disney+ 프리미엄'],'플랫폼(T우주)','단일 구독형','무관','Disney+','-',{svc:'disney'});
+add(['YouTube Premium','YouTube Premium Lite'],'플랫폼(T우주)','단일 구독형','무관','YouTube Premium','-',{svc:'youtube'});
+add(['티빙 스탠다드','Melon 스트리밍클럽','밀리의서재 이용권','교보문고 sam 이용권','FLO 콘텐츠 팩'],'플랫폼(T우주)','단일 구독형','무관','개별 구독','-');
+ITEMS.find(i=>i.name==='FLO 콘텐츠 팩').svc='flo';
+add(['T 우주패스 편의점&카페 (월간)','T 우주패스 편의점&카페 (연간)'],'플랫폼(T우주)','결합 구독형','무관','T 우주패스 편의점&카페','-',{svc:'pass_cvs'});
+add(['T 우주패스 미디어'],'플랫폼(T우주)','결합 구독형','무관','T 우주패스 미디어','-',{inc:['netflix','wavve']});
+add(['배스킨라빈스 쿠폰','배달의민족 쿠폰팩','CU 할인','투썸플레이스 할인','스타벅스 할인'],'플랫폼(T우주)','이용권형','무관','쿠폰/할인','-');
+ITEMS.forEach((it,i)=>{it.id='I'+i; it.solo=pol(it.type).solo; it.max=pol(it.type).max;});
+
+
+// ---------- 공통 ----------
+const $ = s=>document.querySelector(s);
+const el = (t,c,h)=>{const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;};
+function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),1800);}
+function showView(name){
+  const view=document.getElementById('v-'+name);
+  if(!view) return;
+  document.querySelectorAll('nav button[data-v]').forEach(b=>{
+    const active=b.dataset.v===name;
+    b.classList.toggle('on',active);
+    if(active) b.setAttribute('aria-current','page');
+    else b.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v===view));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('button[data-v]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.v)));
+showView('base');
+const joinKey = i => i.line==='무관' ? '무관' : (i.net && i.net!=='-' ? `${i.line}-${i.net}` : i.line);
+const variants = i => ITEMS.filter(x=>x.area===i.area && x.key===i.key && x.type===i.type);
+
+// ---------- 번들 데이터 ----------
+let BUNDLES=[];
+// 자동 생성: 단독 주문 가능한 단품 → 모델 키별 대표만 있는 번들 1개
+(function(){
+  const seen=new Set();
+  ITEMS.filter(i=>i.solo).forEach(i=>{
+    const k=i.area+'|'+i.key+'|'+i.type; if(seen.has(k)) return; seen.add(k);
+    const v=variants(i);
+    BUNDLES.push({id:'A'+BUNDLES.length,name:v.length>1?i.key:i.name,head:i,slots:[],auto:true,status:'live'});
+  });
+})();
+function addBundle(name,head,slots,status){ BUNDLES.unshift({id:'M'+Date.now()+Math.random(),name,head,slots,auto:false,status}); }
+const byName=n=>ITEMS.find(i=>i.name===n);
+addBundle('갤럭시 Z 플립8 개통 번들', byName('갤럭시 Z 플립8 / 256G / 크림'), [
+ {type:'필수',area:'이동전화',sel:['라이트 79','라이트 69','라이트 59'].map(byName)},
+ {type:'선택',area:'부가서비스',sel:['T 올케어+6 스위치 플립(온라인)','분실파손6 플립(온라인)'].map(byName)},
+ {type:'필수',area:'기기서비스',sel:[byName('삼성전자 갤럭시 Z플립8 보호필름')]}], 'live');
+addBundle('라이트 59 데이터 팩', byName('라이트 59'), [
+ {type:'선택',area:'부가서비스',sel:['V 컬러링','스마트 콜키퍼','안심클라우드'].map(byName)},
+ {type:'선택',area:'로밍',sel:['baro 요금제','OnePass 500 기본형'].map(byName)}], 'live');
+addBundle('편의점&카페 콘텐츠 팩', byName('T 우주패스 편의점&카페 (월간)'), [
+ {type:'필수',area:'플랫폼(T우주)',sel:['Melon 스트리밍클럽','밀리의서재 이용권','교보문고 sam 이용권'].map(byName)},
+ {type:'선택',area:'플랫폼(T우주)',sel:['배스킨라빈스 쿠폰','배달의민족 쿠폰팩'].map(byName)}], 'wait');
+
+function poRange(b){ const must=b.slots.filter(s=>s.type==='필수').length, opt=b.slots.filter(s=>s.type==='선택').length; return opt? `${1+must}~${1+must+opt}` : String(1+must); }
+function slotLabel(s){ return `${s.type} · ${s.area} ${s.sel.length}${s.sel.length===1?' (자동 포함)':''}`; }
+
+// ---------- 기준 화면 ----------
+(function(){
+  const tb=$('#policyTable tbody'); let last='';
+  POLICY.forEach(p=>{const tr=el('tr',p.area!==last?'lv2':''); tr.innerHTML=`<td>${p.area!==last?p.area:''}</td><td><b>${p.type}</b></td><td>${p.line.map(l=>`<span class="chip">${l}</span>`).join('')}</td><td>${p.solo?'가능':'<span class="tag bad">불가</span>'}</td><td>${p.key}</td><td style="color:var(--muted)">${p.ex}</td>`; tb.appendChild(tr); last=p.area;});
+  const fa=$('#fArea'); AREAS.forEach(a=>fa.appendChild(new Option(a,a)));
+  function render(){
+    const q=$('#fQ').value.trim(); const tb=$('#itemTable tbody'); tb.innerHTML='';
+    const list=ITEMS.filter(i=>(!fa.value||i.area===fa.value)&&(!q||i.name.includes(q)));
+    list.forEach(i=>{const auto=BUNDLES.find(b=>b.auto&&b.head.area===i.area&&b.head.key===i.key&&b.head.type===i.type); const tr=el('tr'); tr.innerHTML=`<td>${i.name}</td><td>${i.area}</td><td>${i.type}</td><td><span class="chip">${joinKey(i)}</span></td><td style="color:var(--muted)">${i.key}</td><td>${i.solo?'가능':'<span class="tag bad">불가</span>'}</td><td style="color:var(--muted)">${auto?auto.name:'없음 (운영자 번들 필요)'}</td>`; tb.appendChild(tr);});
+    $('#itemCount').textContent=`${list.length}개 (발췌 ${ITEMS.length}개)`;
+  }
+  fa.addEventListener('change',render); $('#fQ').addEventListener('input',render); render();
+})();
+
+// ---------- 번들 빌더 ----------
+const B={head:null,slots:[]};
+const bArea=$('#bArea'), bHead=$('#bHead');
+AREAS.forEach(a=>bArea.appendChild(new Option(a,a)));
+function fillHeads(){
+  bHead.innerHTML=''; const seen=new Set();
+  ITEMS.filter(i=>i.area===bArea.value).forEach(i=>{ const k=i.key+'|'+i.type; const v=variants(i); const label=v.length>1?`${i.key} (${v.length}종 자동 펼침)`:i.name; if(v.length>1&&seen.has(k)) return; seen.add(k); bHead.appendChild(new Option(label,i.id)); });
+  B.head=ITEMS.find(i=>i.id===bHead.value); onHead();
+}
+bArea.addEventListener('change',fillHeads); bHead.addEventListener('change',()=>{B.head=ITEMS.find(i=>i.id===bHead.value); onHead();});
+function onHead(){
+  const h=B.head; const v=variants(h);
+  $('#bHeadInfo').innerHTML=`${h.type} · 결합 키 <span class="chip">${joinKey(h)}</span>${h.solo?'':' · <span class="tag bad">단독 주문 불가</span> → 정책 1: 요금제 슬롯 자동 고정'}`;
+  const vb=$('#bVariants'); vb.innerHTML=''; if(v.length>1) v.forEach(x=>vb.appendChild(el('div','cand off',`<span>${x.name}<small>고객 선택지 (자동)</small></span>`)));
+  B.slots=[]; if(!h.solo) B.slots.push({type:'필수',area:'이동전화',sel:new Set(),locked:true});
+  renderSlots(); check();
+}
+$('#addSlot').addEventListener('click',()=>{ B.slots.push({type:'선택',area:B.head.area==='기기서비스'?'부가서비스':'플랫폼(T우주)',sel:new Set()}); renderSlots(); check(); });
+function candidates(si){
+  const h=B.head, s=B.slots[si];
+  const others=B.slots.filter((x,i)=>i!==si).flatMap(x=>[...x.sel]);
+  return ITEMS.filter(i=>i.area===s.area).map(o=>{
+    let off='';
+    if(o.id===h.id||(o.key===h.key&&o.type===h.type&&o.area===h.area)) off='대표와 같은 모델';
+    else if(o.svc&&h.svc&&o.svc===h.svc) off='정책 4: 대표와 같은 서비스';
+    else if(h.inc&&o.svc&&h.inc.includes(o.svc)) off='정책 4: 대표에 이미 포함';
+    else if(o.inc&&h.svc&&o.inc.includes(h.svc)) off='정책 4: 대표를 포함하는 결합 상품';
+    else if(o.type==='요금제형'&&h.type==='약정형'){ if(o.line!==h.line) off=`정책 2: 결합 키 불일치 (${joinKey(o)} ≠ ${joinKey(h)})`; else if(h.net==='LTE'&&o.net==='5G') off='정책 2: LTE 단말에는 LTE 요금제만'; else if(o.seg==='키즈'&&!/ZEM|키즈/.test(h.name)) off='키즈 요금제는 키즈폰만'; }
+    else if(o.svc==='ins'&&h.dev&&o.dev&&o.dev!==h.dev) off='보험 대상 기종 불일치';
+    else if(o.req){ const ok=[h,...others].some(x=>x.key===o.req||x.name===o.req); if(!ok) off=`전제: ${o.req} 가 같은 번들에 있어야 함`; }
+    if(!off&&others.some(x=>(x.svc&&o.svc&&x.svc===o.svc)||(x.inc&&o.svc&&x.inc.includes(o.svc)))) off='정책 4: 다른 슬롯 선택값과 같은 서비스';
+    return {o,off};
+  });
+}
+function renderSlots(){
+  const box=$('#slots'); box.innerHTML='';
+  B.slots.forEach((s,i)=>{
+    const st=el('div','step');
+    st.innerHTML=`<header><span class="n">${i+2}</span><b>추가 슬롯 ${i+1}</b><span class="why">${s.locked?'정책 1: 요금제·필수 (변경 불가)':'후보 중 고객이 1개 선택'}</span></header><div class="body"><div class="row"><label>유형</label><span class="seg"><button data-t="필수" class="${s.type==='필수'?'on':''}" ${s.locked?'disabled':''}>필수</button><button data-t="선택" class="${s.type==='선택'?'on':''}" ${s.locked?'disabled':''}>선택</button></span><label>영역</label><select ${s.locked?'disabled':''}></select>${s.locked?'':'<button class="btn sm" style="margin-left:auto">슬롯 삭제</button>'}</div><div class="cands"></div></div>`;
+    const sel=st.querySelector('select'); AREAS.forEach(a=>sel.appendChild(new Option(a,a))); sel.value=s.area;
+    sel.addEventListener('change',()=>{s.area=sel.value;s.sel.clear();renderSlots();check();});
+    st.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; s.type=b.dataset.t; renderSlots(); check(); }));
+    const del=st.querySelector('.btn.sm'); if(del) del.addEventListener('click',()=>{B.slots.splice(i,1);renderSlots();check();});
+    const c=st.querySelector('.cands');
+    candidates(i).forEach(({o,off})=>{ const d=el('label','cand'+(off?' off':'')); d.innerHTML=`<input type="checkbox" ${off?'disabled':''} ${s.sel.has(o)?'checked':''}><span>${o.name}<small>${off?'<span style="color:var(--bad)">'+off+'</span>':o.type}</small></span>`; d.querySelector('input').addEventListener('change',e=>{e.target.checked?s.sel.add(o):s.sel.delete(o); renderSlots(); check();}); c.appendChild(d); });
+    box.appendChild(st);
+  });
+}
+function check(){
+  const h=B.head; const rules=[]; const R=(ok,t,d)=>rules.push({ok,t,d});
+  if(!h.solo){ const s=B.slots[0]; const ok=s&&s.type==='필수'&&[...s.sel].some(o=>o.type==='요금제형'); R(ok,'정책 1 · 약정형 대표는 요금제 슬롯 필수',ok?'요금제 후보 있음':'슬롯 1에 요금제 후보를 체크하세요'); }
+  B.slots.forEach((s,i)=>R(s.sel.size>0,`추가 슬롯 ${i+1} 후보 1개 이상`,`${s.sel.size}개 체크${s.sel.size===1?' · 고객에게 묻지 않고 자동 포함':''}`));
+  R(true,'정책 2 · 결합 키','안 맞는 후보는 회색');
+  R(true,'정책 3 · 후보는 단품만','후보 목록에 단품만 표시');
+  R(true,'정책 4 · 같은 서비스·포함 상품 제외','해당 후보는 회색');
+  const tmp={slots:B.slots.map(s=>({type:s.type}))}; $('#poCount').innerHTML=poRange(tmp)+'<small>PO</small>';
+  $('#bSummary').innerHTML=`<div><span>대표</span>${variants(h).length>1?h.key+' ('+variants(h).length+'종)':h.name}</div>${B.slots.map((s,i)=>`<div><span>슬롯 ${i+1}</span>${s.type} · ${s.area} · 후보 ${s.sel.size}</div>`).join('')}${B.slots.length?'':'<div><span>슬롯</span>없음 (대표만 판매)</div>'}`;
+  const ul=$('#ruleList'); ul.innerHTML=''; rules.forEach(r=>{const li=el('li'); li.innerHTML=`<span class="m ${r.ok?'ok':'bad'}">${r.ok?'O':'X'}</span><span class="t">${r.t}<span class="d">${r.d}</span></span>`; ul.appendChild(li);});
+  $('#bSave').disabled=!rules.every(r=>r.ok);
+}
+$('#bReset').addEventListener('click',onHead);
+$('#bSave').addEventListener('click',()=>{ const h=B.head; addBundle(`${variants(h).length>1?h.key:h.name} 번들`,h,B.slots.map(s=>({type:s.type,area:s.area,sel:[...s.sel]})),'wait'); $('#bFilter').value=''; renderBundles(); fillDisplayObjs(); renderCats(); onHead(); showView('bundle-list'); toast('번들을 저장했습니다. 목록에서 확인하세요'); });
+function renderBundles(){
+  const f=$('#bFilter').value; const tb=$('#bundleTable tbody'); tb.innerHTML='';
+  const list=BUNDLES.filter(b=>!f||(f==='auto'?b.auto:!b.auto));
+  list.forEach(b=>{const tr=el('tr'); tr.innerHTML=`<td><b>${b.name}</b></td><td>${b.head.name}${variants(b.head).length>1?' <span class="chip">'+variants(b.head).length+'종</span>':''}</td><td>${b.slots.length?b.slots.map(slotLabel).join('<br>'):'<span style="color:var(--muted)">없음</span>'}</td><td>${poRange(b)}</td><td>${b.auto?'<span class="chip">자동</span>':'<span class="chip acc">운영자</span>'}</td><td><span class="status ${b.status}"></span>${b.status==='live'?'전시 중':'전시 대기'}</td>`; tb.appendChild(tr);});
+  $('#bCount').textContent=`${list.length}개 (자동 ${BUNDLES.filter(b=>b.auto).length}, 운영자 ${BUNDLES.filter(b=>!b.auto).length})`;
+}
+$('#bFilter').addEventListener('change',renderBundles);
+fillHeads(); renderBundles();
+
+// ---------- 전시 ----------
+const DISPLAY=[
+ {name:'Z 플립8 개통',b:'갤럭시 Z 플립8 개통 번들',ch:'T다이렉트샵',sec:'카테고리 5G 휴대폰',period:'상시',status:'live'},
+ {name:'라이트 59 데이터 팩',b:'라이트 59 데이터 팩',ch:'T월드',sec:'요금제 변경',period:'상시',status:'live'},
+ {name:'편의점&카페 콘텐츠 팩',b:'편의점&카페 콘텐츠 팩',ch:'T우주',sec:'기획전',period:'2026-10-01 ~ 상시',status:'wait'},
+];
+const CATS=[
+ {ch:'T다이렉트샵',name:'5G 휴대폰',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='5G'},
+ {ch:'T다이렉트샵',name:'휴대폰',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='LTE'},
+ {ch:'T다이렉트샵',name:'태블릿',cond:h=>h.type==='약정형'&&h.line==='태블릿'},
+ {ch:'T다이렉트샵',name:'스마트워치',cond:h=>h.type==='약정형'&&h.line==='웨어러블'},
+ {ch:'T다이렉트샵',name:'액세서리',cond:h=>h.type==='액세서리형'},
+ {ch:'T월드',name:'요금제',cond:h=>h.type==='요금제형'},
+ {ch:'T월드',name:'부가서비스',cond:h=>h.area==='부가서비스'&&!/보험|클럽/.test(h.type)},
+ {ch:'T월드',name:'보험·케어',cond:h=>/보험|클럽/.test(h.type)},
+ {ch:'T월드',name:'로밍',cond:h=>h.area==='로밍'},
+ {ch:'T우주',name:'구독',cond:h=>h.area==='플랫폼(T우주)'&&h.type!=='이용권형'},
+ {ch:'T우주',name:'쿠폰·할인',cond:h=>h.type==='이용권형'},
+];
+function renderCats(){ const tb=$('#catTable tbody'); tb.innerHTML=''; CATS.forEach(c=>{const m=BUNDLES.filter(b=>c.cond(b.head)); const tr=el('tr'); tr.innerHTML=`<td>${c.ch}</td><td><b>${c.name}</b></td><td style="color:var(--muted)">${c.cond.toString().replace(/^h=>/,'').replace(/h\./g,'').replace(/===/g,'=').replace(/&&/g,' · ').replace(/'/g,'')}</td><td>${m.length} 개 <span style="color:var(--muted)">(자동 ${m.filter(b=>b.auto).length}, 운영자 ${m.filter(b=>!b.auto).length})</span></td>`; tb.appendChild(tr);}); }
+function fillDisplayObjs(){ const s=$('#dObj'); s.innerHTML=''; BUNDLES.forEach(b=>s.appendChild(new Option(b.name+(b.auto?' (자동)':''),b.id))); dPreview(); }
+function curB(){ return BUNDLES.find(b=>b.id===$('#dObj').value); }
+function dPreview(){
+  const b=curB(); if(!b) return; const title=$('#dTitle').value.trim()||b.name; const v=variants(b.head);
+  const steps=[`대표: ${v.length>1?b.head.key+' 변형 '+v.length+'종 중 1개 선택':b.head.name+' (선택 없음)'}`,...b.slots.map((s,i)=>`슬롯 ${i+1} (${s.type}): ${s.sel.length===1?s.sel[0].name+' 자동 포함':s.sel.length+'개 중 '+(s.type==='필수'?'1개 선택':'0~1개 선택')}`)];
+  const ch=$('#dCh').value; const rules=[];
+  rules.push([!(ch==='T우주'&&b.head.area!=='플랫폼(T우주)'),'채널 적합',ch==='T우주'&&b.head.area!=='플랫폼(T우주)'?'T우주 채널에는 T우주 상품만':'채널과 영역이 맞는다']);
+  rules.push([b.status!=='off','번들 상태','전시 가능']);
+  $('#dPreview').innerHTML=`<div><span>전시명</span><b>${title}</b></div><div><span>PO</span>${poRange(b)}</div><div><span>위치</span>${ch} · ${$('#dSection').value} · ${$('#dOrder').value}번째</div><div><span>기간</span>${$('#dFrom').value} ~ ${$('#dTo').value||'상시'}</div><div><span>고객 동작</span>${steps.join('<br>')}</div>`;
+  const ul=$('#dRules'); ul.innerHTML=''; rules.forEach(([ok,t,d])=>{const li=el('li'); li.innerHTML=`<span class="m ${ok?'ok':'bad'}">${ok?'O':'X'}</span><span class="t">${t}<span class="d">${d}</span></span>`; ul.appendChild(li);});
+  $('#dSave').disabled=!rules.every(r=>r[0]);
+}
+function renderDisplay(){ const tb=$('#displayTable tbody'); tb.innerHTML=''; DISPLAY.filter(d=>!$('#dChannel').value||d.ch===$('#dChannel').value).forEach(d=>{ const b=BUNDLES.find(x=>x.name===d.b); const act=b?(b.slots.length?'대표 선택 → 슬롯 순서대로 선택 → 담기':(variants(b.head).length>1?'변형 선택 후 담기':'바로 담기')):'-'; const tr=el('tr'); tr.innerHTML=`<td><b>${d.name}</b></td><td>${d.b}</td><td>${d.ch}</td><td>${d.sec}</td><td>${d.period}</td><td>${act}</td><td><span class="status ${d.status}"></span>${d.status==='live'?'전시 중':d.status==='wait'?'전시 예약':'종료'}</td>`; tb.appendChild(tr);}); }
+['#dObj','#dCh','#dSection'].forEach(s=>$(s).addEventListener('change',dPreview)); ['#dTitle','#dOrder','#dFrom','#dTo'].forEach(s=>$(s).addEventListener('input',dPreview));
+$('#dChannel').addEventListener('change',renderDisplay);
+$('#dSave').addEventListener('click',()=>{ const b=curB(); const from=$('#dFrom').value,to=$('#dTo').value; DISPLAY.unshift({name:$('#dTitle').value.trim()||b.name,b:b.name,ch:$('#dCh').value,sec:$('#dSection').value,period:`${from} ~ ${to||'상시'}`,status:from>'2026-09-22'?'wait':'live'}); renderDisplay(); toast('전시를 저장했습니다'); });
+renderCats(); fillDisplayObjs(); renderDisplay();
+
+</script>
+  </body>
+</html>
