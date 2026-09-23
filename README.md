@@ -1,4 +1,4 @@
-# Nova 상품 운영 어드민
+# 어드민
 
 React 없이 HTML, TypeScript, Tailwind CSS v4로 구성한 Vite SPA입니다.
 
