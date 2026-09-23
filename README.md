@@ -13,6 +13,15 @@ npm run dev
 
 비밀번호 검증은 Express 서버에서 bcrypt 해시로 처리하며, 비밀번호 원문은 클라이언트 코드에 포함하지 않습니다. 세션은 서버 메모리에 저장되므로 운영 환경에서는 Redis 등의 세션 저장소와 HTTPS를 사용해야 합니다.
 
+## Vercel 배포
+
+Vercel에서는 `api/` 아래의 Serverless Function이 인증을 처리합니다. Vercel 프로젝트 Settings > Environment Variables에 다음 값을 설정하세요.
+
+- `PASSWORD_HASH`: `node -e "console.log(require('bcryptjs').hashSync('3355', 12))"` 결과
+- `SESSION_SECRET`: 충분히 긴 무작위 문자열
+
+환경변수 저장 후 Vercel에서 재배포해야 적용됩니다. Vercel은 HTTPS를 사용하므로 인증 쿠키가 정상적으로 동작합니다.
+
 ## 빌드
 
 ```powershell
