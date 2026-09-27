@@ -204,7 +204,7 @@ tr.lv2 td{border-top:1px solid var(--line-strong)}
 <nav>
   <div class="brand">상품 운영 어드민<small>번들 하나로 운영</small></div>
   <button data-v="base" class="on"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><span>기준</span></button>
-  <button data-v="bundles"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg><span>번들 만들기</span></button>
+  <button data-v="bundles"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg><span>번들 생성</span></button>
   <button data-v="bundle-list"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h7M9 12h7M9 16h7M7 8h.01M7 12h.01M7 16h.01"/></svg><span>번들 목록</span></button>
   <button data-v="display"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>전시 관리</span></button>
 </nav>
@@ -248,8 +248,8 @@ tr.lv2 td{border-top:1px solid var(--line-strong)}
 </section>
 
 <section class="view" id="v-bundles">
-  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>번들 만들기</strong></div>
-  <div class="toolbar"><h1>번들 만들기</h1><button class="btn" data-v="bundle-list" style="margin-left:auto">번들 목록 보기</button></div>
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>번들 생성</strong></div>
+  <div class="toolbar"><h1>번들 생성</h1><button class="btn" data-v="bundle-list" style="margin-left:auto">번들 목록 보기</button></div>
   <p class="sub">대표 단품을 넣고 추가 슬롯을 붙인다. 오른쪽 검사가 전부 통과해야 저장된다.</p>
   <div class="builder">
     <div>
@@ -275,7 +275,7 @@ tr.lv2 td{border-top:1px solid var(--line-strong)}
 
 <section class="view" id="v-bundle-list">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>번들 목록</strong></div>
-  <div class="toolbar"><h1>번들 목록</h1><button class="btn primary" data-v="bundles" style="margin-left:auto">+ 번들 만들기</button></div>
+  <div class="toolbar"><h1>번들 목록</h1><button class="btn primary" data-v="bundles" style="margin-left:auto">+ 번들 생성</button></div>
   <p class="sub">자동 생성된 번들과 운영자가 만든 번들의 구성 및 상태를 확인합니다.</p>
   <div class="toolbar"><select id="bFilter"><option value="">전체</option><option value="manual">운영자 생성</option><option value="auto">자동 생성(대표만)</option></select><span id="bCount" style="color:var(--muted);margin-left:auto"></span></div>
   <div class="tw"><table id="bundleTable">

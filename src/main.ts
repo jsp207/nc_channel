@@ -107,23 +107,11 @@ ITEMS.forEach((it,i)=>{it.id='I'+i; it.solo=pol(it.type).solo; it.max=pol(it.typ
 // ---------- 공통 ----------
 const $ = s=>document.querySelector(s);
 const el = (t,c,h)=>{const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;};
+const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),1800);}
-function showView(name){
-  const view=document.getElementById('v-'+name);
-  if(!view) return;
-  document.querySelectorAll('nav button[data-v]').forEach(b=>{
-    const active=b.dataset.v===name;
-    b.classList.toggle('on',active);
-    if(active) b.setAttribute('aria-current','page');
-    else b.removeAttribute('aria-current');
-  });
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v===view));
-  window.scrollTo(0,0);
-}
-document.querySelectorAll('button[data-v]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.v)));
-showView('base');
 const joinKey = i => i.line==='무관' ? '무관' : (i.net && i.net!=='-' ? `${i.line}-${i.net}` : i.line);
 const variants = i => ITEMS.filter(x=>x.area===i.area && x.key===i.key && x.type===i.type);
+const bundleVariants = b => b.variantIds ? variants(b.head).filter(i=>b.variantIds.includes(i.id)) : variants(b.head);
 
 // ---------- 번들 데이터 ----------
 let BUNDLES=[];
@@ -152,8 +140,20 @@ addBundle('편의점&카페 콘텐츠 팩', byName('T 우주패스 편의점&카
 function poRange(b){ const must=b.slots.filter(s=>s.type==='필수').length, opt=b.slots.filter(s=>s.type==='선택').length; return opt? `${1+must}~${1+must+opt}` : String(1+must); }
 function slotLabel(s){ return `${s.type} · ${s.area} ${s.sel.length}${s.sel.length===1?' (자동 포함)':''}`; }
 
+// 페이지 이동 후에도 같은 브라우저에서 저장한 데이터를 사용합니다.
+function loadSaved(key, fallback) {
+  try { const value = JSON.parse(localStorage.getItem(key)); return Array.isArray(value) ? value : fallback; }
+  catch { return fallback; }
+}
+function saveData(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch { toast('저장하지 못했습니다. 브라우저 저장 공간과 설정을 확인하세요.'); return false; }
+}
+BUNDLES = loadSaved('nova-bundles-v1', BUNDLES);
+
 // ---------- 기준 화면 ----------
 (function(){
+  if (!$('#policyTable')) return;
   const tb=$('#policyTable tbody'); let last='';
   POLICY.forEach(p=>{const tr=el('tr',p.area!==last?'lv2':''); tr.innerHTML=`<td>${p.area!==last?p.area:''}</td><td><b>${p.type}</b></td><td>${p.line.map(l=>`<span class="chip">${l}</span>`).join('')}</td><td>${p.solo?'가능':'<span class="tag bad">불가</span>'}</td><td>${p.key}</td><td style="color:var(--muted)">${p.ex}</td>`; tb.appendChild(tr); last=p.area;});
   const fa=$('#fArea'); AREAS.forEach(a=>fa.appendChild(new Option(a,a)));
@@ -167,23 +167,70 @@ function slotLabel(s){ return `${s.type} · ${s.area} ${s.sel.length}${s.sel.len
 })();
 
 // ---------- 번들 빌더 ----------
-const B={head:null,slots:[]};
+const manualVariants = document.body.dataset.variantSelection === 'manual';
+const B={head:null,slots:[],variantIds:new Set()};
+function visibleVariants(){
+  const query = $('#bVariantSearch').value.trim().toLocaleLowerCase();
+  return variants(B.head).filter(i=>i.name.toLocaleLowerCase().includes(query));
+}
+function updateVariantSelection(){
+  const visible = visibleVariants();
+  const count = visible.filter(i=>B.variantIds.has(i.id)).length;
+  const all = $('#bVariantAll');
+  all.checked = visible.length > 0 && count === visible.length;
+  all.indeterminate = count > 0 && count < visible.length;
+  all.disabled = visible.length === 0;
+  $('#bVariantAllLabel').textContent = $('#bVariantSearch').value.trim() ? '검색 결과 전체 선택' : '전체 선택';
+  check();
+}
+function renderVariantList(){
+  const box = $('#bVariants');
+  const allRow = $('#bVariantAllRow');
+  Array.from(box.children).forEach(child=>{ if (child !== allRow) child.remove(); });
+  const visible = visibleVariants();
+  visible.forEach(item=>{
+    const row = el('label', 'variant-row');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = B.variantIds.has(item.id);
+    const name = el('span');
+    name.textContent = item.name;
+    input.addEventListener('change', ()=>{
+      input.checked ? B.variantIds.add(item.id) : B.variantIds.delete(item.id);
+      updateVariantSelection();
+    });
+    row.append(input, name);
+    box.appendChild(row);
+  });
+  if (!visible.length) box.appendChild(el('p', 'variant-empty', '검색 결과가 없습니다.'));
+  updateVariantSelection();
+}
+$('#bVariantSearch')?.addEventListener('input', renderVariantList);
+$('#bVariantAll')?.addEventListener('change', event=>{
+  visibleVariants().forEach(item=>event.target.checked ? B.variantIds.add(item.id) : B.variantIds.delete(item.id));
+  renderVariantList();
+});
 const bArea=$('#bArea'), bHead=$('#bHead');
-AREAS.forEach(a=>bArea.appendChild(new Option(a,a)));
+if (bArea) AREAS.forEach(a=>bArea.appendChild(new Option(a,a)));
 function fillHeads(){
   bHead.innerHTML=''; const seen=new Set();
-  ITEMS.filter(i=>i.area===bArea.value).forEach(i=>{ const k=i.key+'|'+i.type; const v=variants(i); const label=v.length>1?`${i.key} (${v.length}종 자동 펼침)`:i.name; if(v.length>1&&seen.has(k)) return; seen.add(k); bHead.appendChild(new Option(label,i.id)); });
+  ITEMS.filter(i=>i.area===bArea.value).forEach(i=>{ const k=i.key+'|'+i.type; const v=variants(i); const label=v.length>1?`${i.key} (${v.length}종${manualVariants?' 선택 가능':' 자동 펼침'})`:i.name; if(v.length>1&&seen.has(k)) return; seen.add(k); bHead.appendChild(new Option(label,i.id)); });
   B.head=ITEMS.find(i=>i.id===bHead.value); onHead();
 }
-bArea.addEventListener('change',fillHeads); bHead.addEventListener('change',()=>{B.head=ITEMS.find(i=>i.id===bHead.value); onHead();});
+bArea?.addEventListener('change',fillHeads); bHead?.addEventListener('change',()=>{B.head=ITEMS.find(i=>i.id===bHead.value); onHead();});
 function onHead(){
   const h=B.head; const v=variants(h);
-  $('#bHeadInfo').innerHTML=`${h.type} · 결합 키 <span class="chip">${joinKey(h)}</span>${h.solo?'':' · <span class="tag bad">단독 주문 불가</span> → 정책 1: 요금제 슬롯 자동 고정'}`;
-  const vb=$('#bVariants'); vb.innerHTML=''; if(v.length>1) v.forEach(x=>vb.appendChild(el('div','cand off',`<span>${x.name}<small>고객 선택지 (자동)</small></span>`)));
+  $('#bHeadInfo').innerHTML=`${h.type} · 결합 키 <span class="chip">${joinKey(h)}</span>${h.solo?'':' · <span class="tag bad">단독 주문 불가</span> → 정책 1: 요금제 '+(manualVariants?'상품':'슬롯')+' 자동 고정'}`;
+  const vb=$('#bVariants'); if (!manualVariants) vb.innerHTML='';
+  if (manualVariants) {
+    B.variantIds = new Set(v.map(x=>x.id));
+    $('#bVariantSearch').value = '';
+  } else if(v.length>1) v.forEach(x=>vb.appendChild(el('div','cand off',`<span>${x.name}<small>고객 선택지 (자동)</small></span>`)));
   B.slots=[]; if(!h.solo) B.slots.push({type:'필수',area:'이동전화',sel:new Set(),locked:true});
   renderSlots(); check();
+  if (manualVariants) renderVariantList();
 }
-$('#addSlot').addEventListener('click',()=>{ B.slots.push({type:'선택',area:B.head.area==='기기서비스'?'부가서비스':'플랫폼(T우주)',sel:new Set()}); renderSlots(); check(); });
+$('#addSlot')?.addEventListener('click',()=>{ B.slots.push({type:'선택',area:B.head.area==='기기서비스'?'부가서비스':'플랫폼(T우주)',sel:new Set()}); renderSlots(); check(); });
 function candidates(si){
   const h=B.head, s=B.slots[si];
   const others=B.slots.filter((x,i)=>i!==si).flatMap(x=>[...x.sel]);
@@ -204,45 +251,85 @@ function renderSlots(){
   const box=$('#slots'); box.innerHTML='';
   B.slots.forEach((s,i)=>{
     const st=el('div','step');
-    st.innerHTML=`<header><span class="n">${i+2}</span><b>추가 슬롯 ${i+1}</b><span class="why">${s.locked?'정책 1: 요금제·필수 (변경 불가)':'후보 중 고객이 1개 선택'}</span></header><div class="body"><div class="row"><label>유형</label><span class="seg"><button data-t="필수" class="${s.type==='필수'?'on':''}" ${s.locked?'disabled':''}>필수</button><button data-t="선택" class="${s.type==='선택'?'on':''}" ${s.locked?'disabled':''}>선택</button></span><label>영역</label><select ${s.locked?'disabled':''}></select>${s.locked?'':'<button class="btn sm" style="margin-left:auto">슬롯 삭제</button>'}</div><div class="cands"></div></div>`;
+    st.innerHTML=`<header><span class="n">${i+2}</span><b>${manualVariants?'추가 상품':'추가 슬롯'} ${i+1}</b><span class="why">${s.locked?'정책 1: 요금제·필수 (변경 불가)':'후보 중 고객이 1개 선택'}</span></header><div class="body"><div class="row"><label>유형</label><span class="seg"><button data-t="필수" class="${s.type==='필수'?'on':''}" ${s.locked?'disabled':''}>필수</button><button data-t="선택" class="${s.type==='선택'?'on':''}" ${s.locked?'disabled':''}>선택</button></span><label>영역</label><select ${s.locked?'disabled':''}></select>${s.locked?'':'<button class="btn sm" style="margin-left:auto">'+(manualVariants?'상품 삭제':'슬롯 삭제')+'</button>'}</div><div class="cands"></div></div>`;
     const sel=st.querySelector('select'); AREAS.forEach(a=>sel.appendChild(new Option(a,a))); sel.value=s.area;
-    sel.addEventListener('change',()=>{s.area=sel.value;s.sel.clear();renderSlots();check();});
+    sel.addEventListener('change',()=>{s.area=sel.value;s.sel.clear();s.query='';renderSlots();check();});
     st.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ if(b.disabled)return; s.type=b.dataset.t; renderSlots(); check(); }));
     const del=st.querySelector('.btn.sm'); if(del) del.addEventListener('click',()=>{B.slots.splice(i,1);renderSlots();check();});
     const c=st.querySelector('.cands');
     candidates(i).forEach(({o,off})=>{ const d=el('label','cand'+(off?' off':'')); d.innerHTML=`<input type="checkbox" ${off?'disabled':''} ${s.sel.has(o)?'checked':''}><span>${o.name}<small>${off?'<span style="color:var(--bad)">'+off+'</span>':o.type}</small></span>`; d.querySelector('input').addEventListener('change',e=>{e.target.checked?s.sel.add(o):s.sel.delete(o); renderSlots(); check();}); c.appendChild(d); });
+    if (manualVariants) {
+      const search = document.createElement('input');
+      search.type = 'search';
+      search.className = 'slot-search';
+      search.placeholder = '상품명 검색';
+      search.setAttribute('aria-label', `추가 상품 ${i+1} 검색`);
+      search.value = s.query || '';
+      c.before(search);
+      const rows = [...c.children];
+      const items = candidates(i);
+      const allRow = el('label', 'cand');
+      const all = document.createElement('input');
+      all.type = 'checkbox';
+      const caption = el('span');
+      allRow.append(all, caption);
+      c.prepend(allRow);
+      const empty = el('p', 'slot-empty', '검색 결과가 없습니다.');
+      c.appendChild(empty);
+      const matches = o => o.name.toLocaleLowerCase().includes((s.query || '').trim().toLocaleLowerCase());
+      function filterRows(){
+        rows.forEach((row, n)=>{ row.style.display = matches(items[n].o) ? '' : 'none'; });
+        const selectable = items.filter(({o,off})=>!off && matches(o));
+        const selected = selectable.filter(({o})=>s.sel.has(o)).length;
+        all.checked = selectable.length > 0 && selected === selectable.length;
+        all.indeterminate = selected > 0 && selected < selectable.length;
+        all.disabled = selectable.length === 0;
+        allRow.classList.toggle('off', all.disabled);
+        caption.textContent = (s.query || '').trim() ? '검색 결과 전체 선택' : '전체 선택';
+        empty.hidden = items.some(({o})=>matches(o));
+      }
+      search.addEventListener('input', ()=>{s.query=search.value;filterRows();});
+      all.addEventListener('change', ()=>{
+        items.filter(({o,off})=>!off && matches(o)).forEach(({o})=>all.checked?s.sel.add(o):s.sel.delete(o));
+        renderSlots(); check();
+      });
+      filterRows();
+    }
     box.appendChild(st);
   });
 }
 function check(){
   const h=B.head; const rules=[]; const R=(ok,t,d)=>rules.push({ok,t,d});
-  if(!h.solo){ const s=B.slots[0]; const ok=s&&s.type==='필수'&&[...s.sel].some(o=>o.type==='요금제형'); R(ok,'정책 1 · 약정형 대표는 요금제 슬롯 필수',ok?'요금제 후보 있음':'슬롯 1에 요금제 후보를 체크하세요'); }
-  B.slots.forEach((s,i)=>R(s.sel.size>0,`추가 슬롯 ${i+1} 후보 1개 이상`,`${s.sel.size}개 체크${s.sel.size===1?' · 고객에게 묻지 않고 자동 포함':''}`));
+  if (manualVariants) R(B.variantIds.size > 0, '대표 변형 1개 이상 선택', `${B.variantIds.size}개 선택`);
+  if(!h.solo){ const s=B.slots[0]; const ok=s&&s.type==='필수'&&[...s.sel].some(o=>o.type==='요금제형'); R(ok,manualVariants?'정책 1 · 약정형 대표 상품은 요금제 필수':'정책 1 · 약정형 대표는 요금제 슬롯 필수',ok?'요금제 후보 있음':manualVariants?'추가 상품 1에 요금제 후보를 체크하세요':'슬롯 1에 요금제 후보를 체크하세요'); }
+  B.slots.forEach((s,i)=>R(s.sel.size>0,`${manualVariants?'추가 상품':'추가 슬롯'} ${i+1} 후보 1개 이상`,`${s.sel.size}개 체크${s.sel.size===1?' · 고객에게 묻지 않고 자동 포함':''}`));
   R(true,'정책 2 · 결합 키','안 맞는 후보는 회색');
   R(true,'정책 3 · 후보는 단품만','후보 목록에 단품만 표시');
   R(true,'정책 4 · 같은 서비스·포함 상품 제외','해당 후보는 회색');
   const tmp={slots:B.slots.map(s=>({type:s.type}))}; $('#poCount').innerHTML=poRange(tmp)+'<small>PO</small>';
-  $('#bSummary').innerHTML=`<div><span>대표</span>${variants(h).length>1?h.key+' ('+variants(h).length+'종)':h.name}</div>${B.slots.map((s,i)=>`<div><span>슬롯 ${i+1}</span>${s.type} · ${s.area} · 후보 ${s.sel.size}</div>`).join('')}${B.slots.length?'':'<div><span>슬롯</span>없음 (대표만 판매)</div>'}`;
+  $('#bSummary').innerHTML=`<div><span>대표</span>${manualVariants?h.key+' ('+B.variantIds.size+'종 선택)':variants(h).length>1?h.key+' ('+variants(h).length+'종)':h.name}</div>${B.slots.map((s,i)=>`<div><span>${manualVariants?'추가 상품':'슬롯'} ${i+1}</span>${s.type} · ${s.area} · 후보 ${s.sel.size}</div>`).join('')}${B.slots.length?'':'<div><span>'+(manualVariants?'추가 상품':'슬롯')+'</span>없음 (대표만 판매)</div>'}`;
   const ul=$('#ruleList'); ul.innerHTML=''; rules.forEach(r=>{const li=el('li'); li.innerHTML=`<span class="m ${r.ok?'ok':'bad'}">${r.ok?'O':'X'}</span><span class="t">${r.t}<span class="d">${r.d}</span></span>`; ul.appendChild(li);});
   $('#bSave').disabled=!rules.every(r=>r.ok);
 }
-$('#bReset').addEventListener('click',onHead);
-$('#bSave').addEventListener('click',()=>{ const h=B.head; addBundle(`${variants(h).length>1?h.key:h.name} 번들`,h,B.slots.map(s=>({type:s.type,area:s.area,sel:[...s.sel]})),'wait'); $('#bFilter').value=''; renderBundles(); fillDisplayObjs(); renderCats(); onHead(); showView('bundle-list'); toast('번들을 저장했습니다. 목록에서 확인하세요'); });
+$('#bReset')?.addEventListener('click',onHead);
+$('#bSave')?.addEventListener('click',()=>{ if ($('#bSave').disabled) return; const h=B.head; addBundle(`${variants(h).length>1?h.key:h.name} 번들`,h,B.slots.map(s=>({type:s.type,area:s.area,sel:[...s.sel]})),'wait'); if (manualVariants) { BUNDLES[0].variantIds = [...B.variantIds]; BUNDLES[0].head = variants(h).find(i=>B.variantIds.has(i.id)); } if (!saveData('nova-bundles-v1', BUNDLES)) { BUNDLES.shift(); return; } window.location.assign('bundle-list.html'); });
 function renderBundles(){
   const f=$('#bFilter').value; const tb=$('#bundleTable tbody'); tb.innerHTML='';
   const list=BUNDLES.filter(b=>!f||(f==='auto'?b.auto:!b.auto));
-  list.forEach(b=>{const tr=el('tr'); tr.innerHTML=`<td><b>${b.name}</b></td><td>${b.head.name}${variants(b.head).length>1?' <span class="chip">'+variants(b.head).length+'종</span>':''}</td><td>${b.slots.length?b.slots.map(slotLabel).join('<br>'):'<span style="color:var(--muted)">없음</span>'}</td><td>${poRange(b)}</td><td>${b.auto?'<span class="chip">자동</span>':'<span class="chip acc">운영자</span>'}</td><td><span class="status ${b.status}"></span>${b.status==='live'?'전시 중':'전시 대기'}</td>`; tb.appendChild(tr);});
+  list.forEach(b=>{const tr=el('tr'); tr.innerHTML=`<td><b>${b.name}</b></td><td>${b.head.name}${bundleVariants(b).length>1?' <span class="chip">'+bundleVariants(b).length+'종</span>':''}</td><td>${b.slots.length?b.slots.map(slotLabel).join('<br>'):'<span style="color:var(--muted)">없음</span>'}</td><td>${poRange(b)}</td><td>${b.auto?'<span class="chip">자동</span>':'<span class="chip acc">운영자</span>'}</td><td><span class="status ${b.status}"></span>${b.status==='live'?'전시 중':'전시 대기'}</td>`; tb.appendChild(tr);});
   $('#bCount').textContent=`${list.length}개 (자동 ${BUNDLES.filter(b=>b.auto).length}, 운영자 ${BUNDLES.filter(b=>!b.auto).length})`;
 }
-$('#bFilter').addEventListener('change',renderBundles);
-fillHeads(); renderBundles();
+$('#bFilter')?.addEventListener('change',renderBundles);
+if (bArea) fillHeads();
+if ($('#bundleTable')) renderBundles();
 
 // ---------- 전시 ----------
-const DISPLAY=[
+let DISPLAY=[
  {name:'Z 플립8 개통',b:'갤럭시 Z 플립8 개통 번들',ch:'T다이렉트샵',sec:'카테고리 5G 휴대폰',period:'상시',status:'live'},
  {name:'라이트 59 데이터 팩',b:'라이트 59 데이터 팩',ch:'T월드',sec:'요금제 변경',period:'상시',status:'live'},
  {name:'편의점&카페 콘텐츠 팩',b:'편의점&카페 콘텐츠 팩',ch:'T우주',sec:'기획전',period:'2026-10-01 ~ 상시',status:'wait'},
 ];
+DISPLAY = loadSaved('nova-displays-v1', DISPLAY);
 const CATS=[
  {ch:'T다이렉트샵',name:'5G 휴대폰',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='5G'},
  {ch:'T다이렉트샵',name:'휴대폰',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='LTE'},
@@ -260,17 +347,19 @@ function renderCats(){ const tb=$('#catTable tbody'); tb.innerHTML=''; CATS.forE
 function fillDisplayObjs(){ const s=$('#dObj'); s.innerHTML=''; BUNDLES.forEach(b=>s.appendChild(new Option(b.name+(b.auto?' (자동)':''),b.id))); dPreview(); }
 function curB(){ return BUNDLES.find(b=>b.id===$('#dObj').value); }
 function dPreview(){
-  const b=curB(); if(!b) return; const title=$('#dTitle').value.trim()||b.name; const v=variants(b.head);
+  const b=curB(); if(!b) return; const title=$('#dTitle').value.trim()||b.name; const v=bundleVariants(b);
   const steps=[`대표: ${v.length>1?b.head.key+' 변형 '+v.length+'종 중 1개 선택':b.head.name+' (선택 없음)'}`,...b.slots.map((s,i)=>`슬롯 ${i+1} (${s.type}): ${s.sel.length===1?s.sel[0].name+' 자동 포함':s.sel.length+'개 중 '+(s.type==='필수'?'1개 선택':'0~1개 선택')}`)];
   const ch=$('#dCh').value; const rules=[];
   rules.push([!(ch==='T우주'&&b.head.area!=='플랫폼(T우주)'),'채널 적합',ch==='T우주'&&b.head.area!=='플랫폼(T우주)'?'T우주 채널에는 T우주 상품만':'채널과 영역이 맞는다']);
   rules.push([b.status!=='off','번들 상태','전시 가능']);
-  $('#dPreview').innerHTML=`<div><span>전시명</span><b>${title}</b></div><div><span>PO</span>${poRange(b)}</div><div><span>위치</span>${ch} · ${$('#dSection').value} · ${$('#dOrder').value}번째</div><div><span>기간</span>${$('#dFrom').value} ~ ${$('#dTo').value||'상시'}</div><div><span>고객 동작</span>${steps.join('<br>')}</div>`;
+  $('#dPreview').innerHTML=`<div><span>전시명</span><b>${escapeHtml(title)}</b></div><div><span>PO</span>${poRange(b)}</div><div><span>위치</span>${ch} · ${$('#dSection').value} · ${escapeHtml($('#dOrder').value)}번째</div><div><span>기간</span>${escapeHtml($('#dFrom').value)} ~ ${escapeHtml($('#dTo').value||'상시')}</div><div><span>고객 동작</span>${steps.join('<br>')}</div>`;
   const ul=$('#dRules'); ul.innerHTML=''; rules.forEach(([ok,t,d])=>{const li=el('li'); li.innerHTML=`<span class="m ${ok?'ok':'bad'}">${ok?'O':'X'}</span><span class="t">${t}<span class="d">${d}</span></span>`; ul.appendChild(li);});
   $('#dSave').disabled=!rules.every(r=>r[0]);
 }
-function renderDisplay(){ const tb=$('#displayTable tbody'); tb.innerHTML=''; DISPLAY.filter(d=>!$('#dChannel').value||d.ch===$('#dChannel').value).forEach(d=>{ const b=BUNDLES.find(x=>x.name===d.b); const act=b?(b.slots.length?'대표 선택 → 슬롯 순서대로 선택 → 담기':(variants(b.head).length>1?'변형 선택 후 담기':'바로 담기')):'-'; const tr=el('tr'); tr.innerHTML=`<td><b>${d.name}</b></td><td>${d.b}</td><td>${d.ch}</td><td>${d.sec}</td><td>${d.period}</td><td>${act}</td><td><span class="status ${d.status}"></span>${d.status==='live'?'전시 중':d.status==='wait'?'전시 예약':'종료'}</td>`; tb.appendChild(tr);}); }
-['#dObj','#dCh','#dSection'].forEach(s=>$(s).addEventListener('change',dPreview)); ['#dTitle','#dOrder','#dFrom','#dTo'].forEach(s=>$(s).addEventListener('input',dPreview));
-$('#dChannel').addEventListener('change',renderDisplay);
-$('#dSave').addEventListener('click',()=>{ const b=curB(); const from=$('#dFrom').value,to=$('#dTo').value; DISPLAY.unshift({name:$('#dTitle').value.trim()||b.name,b:b.name,ch:$('#dCh').value,sec:$('#dSection').value,period:`${from} ~ ${to||'상시'}`,status:from>'2026-09-22'?'wait':'live'}); renderDisplay(); toast('전시를 저장했습니다'); });
-renderCats(); fillDisplayObjs(); renderDisplay();
+function renderDisplay(){ const tb=$('#displayTable tbody'); tb.innerHTML=''; DISPLAY.filter(d=>!$('#dChannel').value||d.ch===$('#dChannel').value).forEach(d=>{ const b=BUNDLES.find(x=>x.name===d.b); const act=b?(b.slots.length?'대표 선택 → 슬롯 순서대로 선택 → 담기':(bundleVariants(b).length>1?'변형 선택 후 담기':'바로 담기')):'-'; const tr=el('tr'); tr.innerHTML=`<td><b>${escapeHtml(d.name)}</b></td><td>${d.b}</td><td>${d.ch}</td><td>${d.sec}</td><td>${escapeHtml(d.period)}</td><td>${act}</td><td><span class="status ${d.status}"></span>${d.status==='live'?'전시 중':d.status==='wait'?'전시 예약':'종료'}</td>`; tb.appendChild(tr);}); }
+['#dObj','#dCh','#dSection'].forEach(s=>$(s)?.addEventListener('change',dPreview)); ['#dTitle','#dOrder','#dFrom','#dTo'].forEach(s=>$(s)?.addEventListener('input',dPreview));
+$('#dChannel')?.addEventListener('change',renderDisplay);
+$('#dSave')?.addEventListener('click',()=>{ const b=curB(); const from=$('#dFrom').value,to=$('#dTo').value; DISPLAY.unshift({name:$('#dTitle').value.trim()||b.name,b:b.name,ch:$('#dCh').value,sec:$('#dSection').value,period:`${from} ~ ${to||'상시'}`,status:from>'2026-09-22'?'wait':'live'}); if (!saveData('nova-displays-v1', DISPLAY)) { DISPLAY.shift(); return; } window.location.assign('display-list.html'); });
+if ($('#catTable')) renderCats();
+if ($('#dObj')) fillDisplayObjs();
+if ($('#displayTable')) renderDisplay();
