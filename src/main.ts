@@ -1,41 +1,6 @@
 // @ts-nocheck
 import "./style.css";
-
-async function requireAuthentication() {
-  const response = await fetch('/api/session', { credentials: 'include' });
-  const session = response.ok ? await response.json() : { authenticated: false };
-  if (session.authenticated === true) {
-    document.body.classList.add('authenticated');
-    return;
-  }
-
-  const gate = document.createElement('section');
-  gate.className = 'auth-gate';
-  gate.innerHTML = `<div class="auth-card"><h1>NC-Channel Product Admin</h1><p>관리자 비밀번호를 입력하세요.</p><form class="auth-form"><label for="authPassword">비밀번호</label><input id="authPassword" name="password" type="password" autocomplete="current-password" required><p class="auth-error" aria-live="polite"></p><button class="btn primary" type="submit">입장</button></form></div>`;
-  document.body.appendChild(gate);
-
-  const form = gate.querySelector('form');
-  const input = gate.querySelector('input');
-  const error = gate.querySelector('.auth-error');
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
-    const login = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ password: input.value }),
-    });
-    if (login.ok) {
-      gate.remove();
-      document.body.classList.add('authenticated');
-      return;
-    }
-    input.value = '';
-    error.textContent = '비밀번호가 올바르지 않습니다.';
-    input.focus();
-  });
-  input.focus();
-}
+import { requireAuthentication } from "./auth";
 
 requireAuthentication();
 
@@ -111,7 +76,7 @@ const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;'
 function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),1800);}
 const joinKey = i => i.line==='무관' ? '무관' : (i.net && i.net!=='-' ? `${i.line}-${i.net}` : i.line);
 const variants = i => ITEMS.filter(x=>x.area===i.area && x.key===i.key && x.type===i.type);
-const bundleVariants = b => b.variantIds ? variants(b.head).filter(i=>b.variantIds.includes(i.id)) : variants(b.head);
+const bundleVariants = b => b.variantNames ? b.variantNames : b.variantIds ?variants(b.head).filter(i=>b.variantIds.includes(i.id)) : variants(b.head);
 
 // ---------- 번들 데이터 ----------
 let BUNDLES=[];
@@ -137,8 +102,11 @@ addBundle('편의점&카페 콘텐츠 팩', byName('T 우주패스 편의점&카
  {type:'필수',area:'플랫폼(T우주)',sel:['Melon 스트리밍클럽','밀리의서재 이용권','교보문고 sam 이용권'].map(byName)},
  {type:'선택',area:'플랫폼(T우주)',sel:['배스킨라빈스 쿠폰','배달의민족 쿠폰팩'].map(byName)}], 'wait');
 
-function poRange(b){ const must=b.slots.filter(s=>s.type==='필수').length, opt=b.slots.filter(s=>s.type==='선택').length; return opt? `${1+must}~${1+must+opt}` : String(1+must); }
-function slotLabel(s){ return `${s.type} · ${s.area} ${s.sel.length}${s.sel.length===1?' (자동 포함)':''}`; }
+// bundle-create3에서 만든 슬롯은 선택 수(min~max)를 갖고, 나머지는 필수 1개 / 선택 0~1개로 계산합니다.
+const slotMin = s => s.min ?? (s.type==='필수'?1:0);
+const slotMax = s => s.max ?? 1;
+function poRange(b){ const base=b.head?.custom?0:1; const lo=base+b.slots.reduce((a,s)=>a+slotMin(s),0), hi=base+b.slots.reduce((a,s)=>a+slotMax(s),0); return lo===hi?String(lo):`${lo}~${hi}`; }
+function slotLabel(s){ const n=s.sel.length, lo=slotMin(s); return `${s.type} ${s.min!=null?lo+'~'+slotMax(s)+' ':''}· ${s.area} ${n}${n===Math.max(1,lo)&&n===slotMax(s)?' (자동 포함)':''}`; }
 
 // 페이지 이동 후에도 같은 브라우저에서 저장한 데이터를 사용합니다.
 function loadSaved(key, fallback) {
@@ -150,6 +118,8 @@ function saveData(key, value) {
   catch { toast('저장하지 못했습니다. 브라우저 저장 공간과 설정을 확인하세요.'); return false; }
 }
 BUNDLES = loadSaved('nova-bundles-v1', BUNDLES);
+// bundle-create3에서 저장한 번들(실제 상품 데이터 기준)을 앞에 합칩니다.
+BUNDLES = [...loadSaved('nova-bundles-v3', []).filter(b=>!BUNDLES.some(x=>x.id===b.id)), ...BUNDLES];
 
 // ---------- 기준 화면 ----------
 (function(){
@@ -316,7 +286,7 @@ $('#bSave')?.addEventListener('click',()=>{ if ($('#bSave').disabled) return; co
 function renderBundles(){
   const f=$('#bFilter').value; const tb=$('#bundleTable tbody'); tb.innerHTML='';
   const list=BUNDLES.filter(b=>!f||(f==='auto'?b.auto:!b.auto));
-  list.forEach(b=>{const tr=el('tr'); tr.innerHTML=`<td><b>${b.name}</b></td><td>${b.head.name}${bundleVariants(b).length>1?' <span class="chip">'+bundleVariants(b).length+'종</span>':''}</td><td>${b.slots.length?b.slots.map(slotLabel).join('<br>'):'<span style="color:var(--muted)">없음</span>'}</td><td>${poRange(b)}</td><td>${b.auto?'<span class="chip">자동</span>':'<span class="chip acc">운영자</span>'}</td><td><span class="status ${b.status}"></span>${b.status==='live'?'전시 중':'전시 대기'}</td>`; tb.appendChild(tr);});
+  list.forEach(b=>{const tr=el('tr'); tr.innerHTML=`<td><b>${escapeHtml(b.name)}</b></td><td>${b.head.name}${bundleVariants(b).length>1?' <span class="chip">'+bundleVariants(b).length+'종</span>':''}</td><td>${b.slots.length?b.slots.map(slotLabel).join('<br>'):'<span style="color:var(--muted)">없음</span>'}</td><td>${poRange(b)}</td><td>${b.auto?'<span class="chip">자동</span>':'<span class="chip acc">운영자</span>'}</td><td><span class="status ${b.status}"></span>${b.status==='live'?'전시 중':'전시 대기'}</td>`; tb.appendChild(tr);});
   $('#bCount').textContent=`${list.length}개 (자동 ${BUNDLES.filter(b=>b.auto).length}, 운영자 ${BUNDLES.filter(b=>!b.auto).length})`;
 }
 $('#bFilter')?.addEventListener('change',renderBundles);
@@ -348,7 +318,7 @@ function fillDisplayObjs(){ const s=$('#dObj'); s.innerHTML=''; BUNDLES.forEach(
 function curB(){ return BUNDLES.find(b=>b.id===$('#dObj').value); }
 function dPreview(){
   const b=curB(); if(!b) return; const title=$('#dTitle').value.trim()||b.name; const v=bundleVariants(b);
-  const steps=[`대표: ${v.length>1?b.head.key+' 변형 '+v.length+'종 중 1개 선택':b.head.name+' (선택 없음)'}`,...b.slots.map((s,i)=>`슬롯 ${i+1} (${s.type}): ${s.sel.length===1?s.sel[0].name+' 자동 포함':s.sel.length+'개 중 '+(s.type==='필수'?'1개 선택':'0~1개 선택')}`)];
+  const steps=[`대표: ${v.length>1?b.head.key+' 변형 '+v.length+'종 중 1개 선택':b.head.name+' (선택 없음)'}`,...b.slots.map((s,i)=>`슬롯 ${i+1} (${s.type}): ${s.sel.length===slotMax(s)&&slotMin(s)===slotMax(s)?s.sel.map(o=>o.name).join(', ')+' 자동 포함':s.sel.length+'개 중 '+(slotMin(s)===slotMax(s)?slotMin(s):slotMin(s)+'~'+slotMax(s))+'개 선택'}`)];
   const ch=$('#dCh').value; const rules=[];
   rules.push([!(ch==='T우주'&&b.head.area!=='플랫폼(T우주)'),'채널 적합',ch==='T우주'&&b.head.area!=='플랫폼(T우주)'?'T우주 채널에는 T우주 상품만':'채널과 영역이 맞는다']);
   rules.push([b.status!=='off','번들 상태','전시 가능']);
@@ -356,7 +326,7 @@ function dPreview(){
   const ul=$('#dRules'); ul.innerHTML=''; rules.forEach(([ok,t,d])=>{const li=el('li'); li.innerHTML=`<span class="m ${ok?'ok':'bad'}">${ok?'O':'X'}</span><span class="t">${t}<span class="d">${d}</span></span>`; ul.appendChild(li);});
   $('#dSave').disabled=!rules.every(r=>r[0]);
 }
-function renderDisplay(){ const tb=$('#displayTable tbody'); tb.innerHTML=''; DISPLAY.filter(d=>!$('#dChannel').value||d.ch===$('#dChannel').value).forEach(d=>{ const b=BUNDLES.find(x=>x.name===d.b); const act=b?(b.slots.length?'대표 선택 → 슬롯 순서대로 선택 → 담기':(bundleVariants(b).length>1?'변형 선택 후 담기':'바로 담기')):'-'; const tr=el('tr'); tr.innerHTML=`<td><b>${escapeHtml(d.name)}</b></td><td>${d.b}</td><td>${d.ch}</td><td>${d.sec}</td><td>${escapeHtml(d.period)}</td><td>${act}</td><td><span class="status ${d.status}"></span>${d.status==='live'?'전시 중':d.status==='wait'?'전시 예약':'종료'}</td>`; tb.appendChild(tr);}); }
+function renderDisplay(){ const tb=$('#displayTable tbody'); tb.innerHTML=''; DISPLAY.filter(d=>!$('#dChannel').value||d.ch===$('#dChannel').value).forEach(d=>{ const b=BUNDLES.find(x=>x.name===d.b); const act=b?(b.slots.length?'대표 선택 → 슬롯 순서대로 선택 → 담기':(bundleVariants(b).length>1?'변형 선택 후 담기':'바로 담기')):'-'; const tr=el('tr'); tr.innerHTML=`<td><b>${escapeHtml(d.name)}</b></td><td>${escapeHtml(d.b)}</td><td>${d.ch}</td><td>${d.sec}</td><td>${escapeHtml(d.period)}</td><td>${act}</td><td><span class="status ${d.status}"></span>${d.status==='live'?'전시 중':d.status==='wait'?'전시 예약':'종료'}</td>`; tb.appendChild(tr);}); }
 ['#dObj','#dCh','#dSection'].forEach(s=>$(s)?.addEventListener('change',dPreview)); ['#dTitle','#dOrder','#dFrom','#dTo'].forEach(s=>$(s)?.addEventListener('input',dPreview));
 $('#dChannel')?.addEventListener('change',renderDisplay);
 $('#dSave')?.addEventListener('click',()=>{ const b=curB(); const from=$('#dFrom').value,to=$('#dTo').value; DISPLAY.unshift({name:$('#dTitle').value.trim()||b.name,b:b.name,ch:$('#dCh').value,sec:$('#dSection').value,period:`${from} ~ ${to||'상시'}`,status:from>'2026-09-22'?'wait':'live'}); if (!saveData('nova-displays-v1', DISPLAY)) { DISPLAY.shift(); return; } window.location.assign('display-list.html'); });

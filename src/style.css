@@ -216,3 +216,24 @@ body[data-variant-selection="manual"] .builder{border-top:0}
 .slot-search{width:100%;min-height:38px;margin-bottom:8px;padding:8px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);font-size:12px}
 .slot-empty{grid-column:1/-1;margin:0;padding:12px;color:var(--muted);font-size:12px}
 a.btn{display:inline-flex;align-items:center;justify-content:center;color:var(--text)}
+/* bundle-create3: 선택 수 입력, 후보 안내, 체크한 후보 */
+.num{width:64px;min-height:34px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);text-align:center;font-size:12px}
+.num:disabled{opacity:.5}
+.pill{font-size:12px;color:var(--muted)}
+.slot-note{margin-top:8px;color:var(--muted);font-size:12px}
+.slot-picked{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.slot-picked:empty{display:none}
+.chip.picked{cursor:pointer;font:inherit;font-size:11px;padding:3px 8px}
+.chip.picked:hover{border-color:var(--bad);color:var(--bad)}
+/* 번들 생성 타입 전환: 서비스 화면이 아닌 프로토타입 타입 이동용이라 레이아웃 밖(배경 영역)에 작게 둔다 */
+body:has(.type-switch) .app{padding-top:34px}
+.type-switch{position:absolute;top:8px;right:18px;z-index:10;display:flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line);border-radius:6px;background:#ffffffb3;font-size:10px;line-height:1}
+.type-switch span{padding:0 6px;color:var(--muted);font-weight:600;letter-spacing:.4px}
+.type-switch a{padding:4px 8px;border-radius:4px;color:var(--muted);text-decoration:none}
+.type-switch a:hover{background:var(--accent-soft);color:var(--accent)}
+.type-switch a.on{background:var(--accent);color:#fff;font-weight:600}
+body:not(.authenticated) .type-switch{display:none}
+/* bundle-create3: 커스텀 대표 (플랫폼) */
+.custom-note{margin:0;padding:10px 12px;border-radius:8px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.7}
+.summary small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.summary .muted{color:var(--muted)}

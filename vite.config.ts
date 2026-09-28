@@ -9,6 +9,7 @@ export default defineConfig({
         index: 'index.html',
         bundleCreate: 'bundle-create.html',
         bundleCreate2: 'bundle-create2.html',
+        bundleCreate3: 'bundle-create3.html',
         bundleList: 'bundle-list.html',
         displayList: 'display-list.html',
         displayCreate: 'display-create.html',

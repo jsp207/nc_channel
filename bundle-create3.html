@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body data-variant-selection="manual">
-<div class="type-switch" role="group" aria-label="번들 생성 타입 전환"><span>TYPE</span><a href="bundle-create.html">번들생성</a><a href="bundle-create2.html" class="on" aria-current="page">번들생성 2</a><a href="bundle-create3.html">번들생성 3</a></div>
+<div class="type-switch" role="group" aria-label="번들 생성 타입 전환"><span>TYPE</span><a href="bundle-create.html">번들생성</a><a href="bundle-create2.html">번들생성 2</a><a href="bundle-create3.html" class="on" aria-current="page">번들생성 3</a></div>
 <div class="app">
 <nav>
   <div class="brand">상품 운영 어드민<small>번들 하나로 운영</small></div>
@@ -24,15 +24,18 @@
 
 <!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. -->
 <section class="view on" id="v-bundles">
-  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>번들 생성</strong></div>
   <div class="toolbar"><h1>번들 생성</h1><a class="btn" href="bundle-list.html" style="margin-left:auto">번들 목록 보기</a></div>
   <div class="builder">
     <div>
       <div class="step">
         <header><span class="n">1</span><b>대표 상품</b></header>
         <div class="body">
-          <div class="row"><label for="bArea">유형</label><select id="bArea"></select><label>단품</label><select id="bHead"></select></div>
-          <div id="bHeadInfo" style="color:var(--muted);font-size:13px"></div>
+          <div class="row"><label for="bArea">영역</label><select id="bArea"></select><label for="bHead">단품</label><select id="bHead" style="flex:1;max-width:420px"></select></div>
+          <div class="custom-head" id="bCustomRow" hidden>
+            <div class="row"><label for="bCustomTitle">제목</label><input type="text" id="bCustomTitle" placeholder="예: T 우주 Big 4" maxlength="60" style="flex:1;min-width:220px"></div>
+            <div class="row"><label for="bCustomPrice">가격</label><input type="text" id="bCustomPrice" inputmode="numeric" placeholder="예: 9,900" maxlength="12" style="width:160px"><select id="bCustomUnit" aria-label="가격 단위" style="min-width:80px"><option value="month">월</option><option value="year">년</option></select></div>
+            <p class="custom-note">커스텀 대표는 EPC 단품이 아니라 PO에 포함되지 않습니다. 가격은 번들에 직접 걸고, EPC 패스 PO가 생기면 연결합니다.</p>
+          </div>
           <div class="variant-picker">
             <input id="bVariantSearch" type="search" placeholder="상품명, 용량, 색상 검색" aria-label="상품명, 용량, 색상 검색" aria-controls="bVariants">
             <div id="bVariants" class="variant-list" role="group" aria-label="대표 상품 변형 목록">
@@ -45,7 +48,7 @@
       <button class="btn" id="addSlot">+ 추가 상품</button>
     </div>
     <aside class="panel">
-      <header><b>검사 결과</b><span class="po" id="poCount">1<small>PO</small></span></header>
+      <header><b>미리보기</b><span class="po" id="poCount">1<small>PO</small></span></header>
       <div class="summary" id="bSummary"></div>
       <ul class="rules" id="ruleList"></ul>
       <footer><button class="btn" id="bReset">초기화</button><button class="btn primary" id="bSave" disabled>번들 저장</button></footer>
@@ -56,6 +59,6 @@
 </main>
 </div>
 <div class="toast" id="toast"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/bundle-create3.ts"></script>
   </body>
 </html>
