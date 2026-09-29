@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>상품목록 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      /* 상품목록 전용 (ref/product-admin-prototype-v4-2.html) */
+      #listTable td:nth-child(2){white-space:nowrap}
+      tr.flash td{background:var(--accent-soft)}
+      .status.stop{background:var(--bad)}
+      .status.draft{background:var(--muted)}
+    </style>
+  </head>
+  <body>
+<div class="app">
+<nav>
+  <div class="brand">상품 운영 어드민<small>번들 하나로 운영</small></div>
+  <a href="index.html" ><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><span>기준</span></a>
+  <a href="bundle-create3.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg><span>번들 생성</span></a>
+  <a href="bundle-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h7M9 12h7M9 16h7M7 8h.01M7 12h.01M7 16h.01"/></svg><span>번들 목록</span></a>
+  <a href="display-create.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span>전시 생성</span></a>
+  <a href="display-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>전시 목록</span></a>
+  <a href="product-create.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M9 12h6"/></svg><span>상품등록</span></a>
+  <a href="product-list.html" class="on" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M8 12h8M8 16h5"/></svg><span>상품목록</span></a>
+</nav>
+<main>
+
+<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/product-list.ts -->
+<section class="view on" id="v-list">
+  <div class="toolbar"><h1>상품목록</h1><a class="btn primary" href="product-create.html" style="margin-left:auto">상품등록</a></div>
+  <p class="sub">등록한 상품을 유형·채널·상태로 찾는다. 수정을 누르면 등록 화면에 불러온다.</p>
+  <div class="toolbar">
+    <input type="text" id="lQ" placeholder="상품명·구성 상품 검색" style="min-width:220px" aria-label="상품명·구성 상품 검색">
+    <select id="lType" aria-label="유형"><option value="">유형 전체</option></select>
+    <select id="lCh" aria-label="채널"><option value="">채널 전체</option></select>
+    <select id="lSt" aria-label="상태"><option value="">상태 전체</option><option value="live">전시 중</option><option value="wait">전시 예약</option><option value="off">미노출</option><option value="stop">미사용</option><option value="draft">임시저장</option></select>
+    <span class="pill" id="lCnt"></span>
+  </div>
+  <div class="tw"><table id="listTable">
+    <thead><tr><th>상품명</th><th>유형</th><th>노출채널 · 카테고리</th><th>기준 단품</th><th>슬롯</th><th>PO</th><th>기간</th><th>상태</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+    <script type="module" src="/src/product-list.ts"></script>
+  </body>
+</html>

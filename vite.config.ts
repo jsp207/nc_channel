@@ -10,13 +10,21 @@ export default defineConfig({
         bundleCreate: 'bundle-create.html',
         bundleCreate2: 'bundle-create2.html',
         bundleCreate3: 'bundle-create3.html',
+        bundleCreate4: 'bundle-create4.html',
         bundleList: 'bundle-list.html',
         displayList: 'display-list.html',
         displayCreate: 'display-create.html',
+        productCreate: 'product-create.html',
+        productList: 'product-list.html',
       },
     },
   },
   server: {
+    proxy: {
+      '/api': 'http://127.0.0.1:4000',
+    },
+  },
+  preview: {
     proxy: {
       '/api': 'http://127.0.0.1:4000',
     },
