@@ -1,6 +1,6 @@
 // @ts-nocheck
 // 번들 생성 3: ref/product-admin-prototype-v3.html의 번들 만들기를 옮긴 화면.
-// 실제 상품 1,545개, 대표 검색, 슬롯별 선택 수(min~max), 후보 검색·표시 상한을 쓴다.
+// 실제 상품 1,549개, 대표 변형 체크, 구성별 선택 수(min~max), 후보 검색·표시 상한, 플랫폼 커스텀 대표를 쓴다.
 import "./style.css";
 import { requireAuthentication } from "./auth";
 import ITEMS_V3 from "./data/items-v3.json";

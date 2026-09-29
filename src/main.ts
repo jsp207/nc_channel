@@ -300,6 +300,8 @@ let DISPLAY=[
  {name:'편의점&카페 콘텐츠 팩',b:'편의점&카페 콘텐츠 팩',ch:'T우주',sec:'기획전',period:'2026-10-01 ~ 상시',status:'wait'},
 ];
 DISPLAY = loadSaved('nova-displays-v1', DISPLAY);
+// bundle-create4에서 번들과 함께 저장한 전시를 앞에 합칩니다.
+DISPLAY = [...loadSaved('nova-displays-v3', []).filter(d=>!DISPLAY.some(x=>x.id&&x.id===d.id)), ...DISPLAY];
 const CATS=[
  {ch:'T다이렉트샵',name:'5G 휴대폰',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='5G'},
  {ch:'T다이렉트샵',name:'휴대폰',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='LTE'},

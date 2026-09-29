@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>번들 생성 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      /* 번들 생성 4 전용: 대표 상품 옵션 선택 (색상·용량·사이즈·소재) */
+      .option-picker{margin-top:16px;border:1px solid var(--line);border-radius:8px;padding:18px 16px;display:grid;gap:0}
+      .option-axis{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start;padding:14px 0}
+      .option-axis:first-child{padding-top:0}
+      .option-axis+.option-axis{border-top:1px solid var(--line)}
+      .option-axis>b{font-size:12px;font-weight:500;color:#4f5e77;padding-top:7px}
+      .option-values{display:flex;flex-wrap:wrap;gap:10px 6px}
+      .option-all{font-weight:600;background:var(--surface)}
+      .option-value{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:5px 11px;border:1px solid var(--line-strong);border-radius:16px;background:var(--bg);font-size:12px;cursor:pointer}
+      .option-value:hover{border-color:#b4a8f0}
+      .option-value:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .option-value:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+      .option-value input{width:13px;height:13px}
+      .option-value.off{opacity:.45}
+      .option-result{margin:0;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+      .option-result b{color:var(--accent)}
+      .option-order{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--line)}
+      .option-order+div .option-axis:first-child{padding-top:14px}
+      /* SKU 매트릭스·주문 조건·고객 화면 (ref v3-3) */
+      .device-head{margin:20px 0 6px}
+      .device-cond{margin:14px 0 0}
+      .mx{border-collapse:collapse;font-size:12px}
+      .mx th,.mx td{border:1px solid var(--line);padding:8px 10px;text-align:center;vertical-align:middle;background:var(--bg);white-space:nowrap}
+      .mx th{background:var(--surface);color:var(--muted);font-weight:500;font-size:11px}
+      .mx td.none{background:var(--surface);color:var(--line-strong)}
+      .mx td.dim{opacity:.4}
+      .mx td.out{color:var(--warn)}
+      .mx td.ex{text-decoration:line-through;opacity:.5}
+      .mx td.def{outline:2px solid var(--accent);outline-offset:-2px}
+      .mx td label{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;cursor:pointer}
+      .mx small{display:block;width:100%;color:var(--muted);font-size:10px}
+      .chip.cond{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 10px;cursor:pointer;user-select:none}
+      .chip.cond input{width:13px;height:13px;margin:0}
+      /* 오른쪽 미리보기 패널: 고객 화면까지 들어가므로 패널 안에서 스크롤하고 버튼은 아래에 고정 */
+      .panel{max-height:calc(100vh - 40px);overflow:auto;display:flex;flex-direction:column}
+      .panel>header{position:sticky;top:0;z-index:1}
+      .panel>footer{position:sticky;bottom:0;margin-top:auto}
+      @media(max-width:1100px){.panel{max-height:none;overflow:visible}.panel>header,.panel>footer{position:static}}
+      .panel-pv{padding:16px 20px;border-bottom:1px solid var(--line)}
+      .panel-pv-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px}
+      .panel-pv-head b{font-weight:600}
+      .pv{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--bg)}
+      .pv h4{margin:0 0 4px;font-size:16px}
+      .pv .lbl{font-size:12px;color:var(--muted);margin:14px 0 6px;display:flex;justify-content:space-between}
+      .pv .sw{display:flex;gap:10px;flex-wrap:wrap}
+      .pv .sw button{width:28px;height:28px;border-radius:50%;border:2px solid var(--line-strong);padding:0;cursor:pointer}
+      .pv .sw button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+      .pv .cap{border:1px solid var(--line);border-radius:6px;padding:9px 12px;display:flex;justify-content:space-between;margin-bottom:6px;cursor:pointer;font-size:13px}
+      .pv .cap.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+      .pv .cap.out{color:var(--muted)}
+      .pv-chips{display:flex;gap:6px;flex-wrap:wrap}
+      .pv-chips button{border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:7px 12px;font-size:13px;cursor:pointer}
+      .pv-chips button.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+      .pv .warn{background:var(--warn-soft);color:var(--warn);padding:8px 10px;border-radius:6px;font-size:12px;margin-top:6px}
+      .pv-empty{margin:0;color:var(--muted);font-size:12px}
+      /* 전시 설정 (번들 저장과 함께, 선택) */
+      .display-toggle{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--accent);cursor:pointer}
+      #dStep:not(.on) .body{opacity:.45}
+      .display-auto{margin:4px 0 0;padding:10px 12px;border-radius:8px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.8}
+    </style>
+  </head>
+  <body data-variant-selection="manual">
+<div class="type-switch" role="group" aria-label="번들 생성 타입 전환"><span>TYPE</span><a href="bundle-create.html">번들생성</a><a href="bundle-create2.html">번들생성 2</a><a href="bundle-create3.html">번들생성 3</a><a href="bundle-create4.html" class="on" aria-current="page">번들생성 4</a></div>
+<div class="app">
+<nav>
+  <div class="brand">상품 운영 어드민<small>번들 하나로 운영</small></div>
+  <a href="index.html" ><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><span>기준</span></a>
+  <a href="bundle-create3.html" class="on" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg><span>번들 생성</span></a>
+  <a href="bundle-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h7M9 12h7M9 16h7M7 8h.01M7 12h.01M7 16h.01"/></svg><span>번들 목록</span></a>
+  <a href="display-create.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span>전시 생성</span></a>
+  <a href="display-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>전시 목록</span></a>
+  <a href="product-create.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M9 12h6"/></svg><span>상품등록</span></a>
+  <a href="product-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M8 12h8M8 16h5"/></svg><span>상품목록</span></a>
+</nav>
+<main>
+
+<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. -->
+<section class="view on" id="v-bundles">
+  <div class="toolbar"><h1>번들 생성</h1><a class="btn" href="bundle-list.html" style="margin-left:auto">번들 목록 보기</a></div>
+  <div class="builder">
+    <div>
+      <div class="step" id="dStep">
+        <header><span class="n">1</span><b>전시 설정</b><label class="display-toggle"><input type="checkbox" id="dOn"> 저장하면서 바로 전시</label></header>
+        <div class="body">
+          <div class="row"><label for="dCh">채널</label><select id="dCh"><option>T다이렉트샵</option><option>T월드</option><option>T우주</option></select><label for="dSection">위치</label><select id="dSection"><option>기획전</option><option>메인 배너</option><option>추천</option></select><label for="dOrder">순서</label><input type="text" id="dOrder" value="1" inputmode="numeric" style="width:56px"></div>
+          <div class="row"><label for="dTitle">전시명</label><input type="text" id="dTitle" placeholder="비우면 번들명" maxlength="60" style="flex:1;min-width:200px"></div>
+          <div class="row"><label for="dFrom">기간</label><input type="text" id="dFrom" value="2026-10-01" placeholder="YYYY-MM-DD" style="width:120px"> ~ <input type="text" id="dTo" placeholder="비우면 상시" style="width:120px"></div>
+          <p class="display-auto" id="dAuto"></p>
+        </div>
+      </div>
+      <div class="step">
+        <header><span class="n">2</span><b>대표 상품</b></header>
+        <div class="body">
+          <div class="row"><label for="bArea">영역</label><select id="bArea"></select><label for="bHead">단품</label><select id="bHead" style="flex:1;max-width:420px"></select></div>
+          <div class="custom-head" id="bCustomRow" hidden>
+            <div class="row"><label for="bCustomTitle">제목</label><input type="text" id="bCustomTitle" placeholder="예: T 우주 Big 4" maxlength="60" style="flex:1;min-width:220px"></div>
+            <div class="row"><label for="bCustomPrice">가격</label><input type="text" id="bCustomPrice" inputmode="numeric" placeholder="예: 9,900" maxlength="12" style="width:160px"><select id="bCustomUnit" aria-label="가격 단위" style="min-width:80px"><option value="month">월</option><option value="year">년</option></select></div>
+            <p class="custom-note">커스텀 대표는 EPC 단품이 아니라 PO에 포함되지 않습니다. 가격은 번들에 직접 걸고, EPC 패스 PO가 생기면 연결합니다.</p>
+          </div>
+          <div class="option-picker" id="bOptionPicker" hidden>
+            <div class="option-order" id="bAxisRow" hidden><span></span><span id="bAxisCtl"></span></div>
+            <div id="bOptions"></div>
+            <p class="option-result" id="bOptionResult" aria-live="polite"></p>
+          </div>
+          <div id="bDevice" hidden>
+            <div class="row device-head"><label>SKU 매트릭스</label><label>품절 SKU</label><span class="seg" id="soSeg"><button type="button" data-t="show" class="on">표시+입고알림</button><button type="button" data-t="hide">숨김</button></span></div>
+            <div class="tw"><table class="mx" id="mxTable"></table></div>
+            <div class="row device-cond" id="bJoinRow"><label>가입 유형</label><span id="joinOpts"></span></div>
+            <div class="row device-cond" id="bDiscRow"><label>할인 방법</label><span id="discOpts"></span></div>
+          </div>
+        </div>
+      </div>
+      <div id="slots"></div>
+      <button class="btn" id="addSlot">+ 추가 상품</button>
+    </div>
+    <aside class="panel">
+      <header><b>미리보기</b><span class="po" id="poCount">1<small>PO</small></span></header>
+      <div class="summary" id="bSummary"></div>
+      <section class="panel-pv" id="bPvSection" hidden aria-label="고객 화면 미리보기">
+        <div class="panel-pv-head"><b>고객 화면</b><span class="pill">기본 SKU가 첫 선택</span></div>
+        <div class="pv" id="pv"></div>
+      </section>
+      <ul class="rules" id="ruleList"></ul>
+      <footer><button class="btn" id="bReset">초기화</button><button class="btn primary" id="bSave" disabled>번들 저장</button></footer>
+    </aside>
+  </div>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+    <script type="module" src="/src/bundle-create4.ts"></script>
+  </body>
+</html>

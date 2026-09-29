@@ -12,9 +12,12 @@ React 없이 HTML, TypeScript, Tailwind CSS v4로 구성한 Vite 다중 페이�
 | `bundle-create.html` | 번들 생성 |
 | `bundle-create2.html` | 번들 생성: 대표 변형 검색·체크박스 선택 |
 | `bundle-create3.html` | 번들 생성: 실제 상품 1,549개, 대표 변형 검색·체크, 추가 상품별 선택 수(최소~최대). 스크립트는 `src/bundle-create3.ts` |
+| `bundle-create4.html` | 번들 생성 4: 번들 생성 3을 복사해 시작한 화면. 스크립트는 `src/bundle-create4.ts` |
 | `bundle-list.html` | 번들 목록 |
 | `display-list.html` | 전시 목록 + 카테고리(자동) |
 | `display-create.html` | 전시 생성하기 |
+| `product-create.html` | 상품등록: ref/product-admin-prototype-v4-2.html 기반. 기본정보(전시유형·상품명·노출채널·카테고리·노출·전시상태)·기준 단품(디바이스 옵션목록·EPC 매칭)·슬롯·이미지(대표·추가)·상세설명(이미지 업로드/HTML/전시빌더)·유의사항을 한 화면에서 구성. 임시저장은 검사 없이 목록에 임시저장 상태로 남는다. `?edit=<id>`로 열면 수정. 스크립트는 `src/product-create.ts` |
+| `product-list.html` | 상품목록: 유형·채널·상태 필터, 수정은 등록 화면으로 이동. 스크립트는 `src/product-list.ts`. 두 화면이 같이 쓰는 데이터·저장소는 `src/product-display-store.ts` |
 
 공통 디자인은 `src/style.css`, 데이터와 버튼 동작 및 목록 행 생성은 `src/main.ts`에서 수정합니다. JavaScript가 사용하는 `id`는 유지하세요. 공통 메뉴는 각 HTML의 `<nav>`에 있으므로 메뉴 변경 시 모든 페이지에 반영하세요.
 
