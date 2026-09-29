@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "concurrently -k \"node server.mjs\" \"vite\"",
     "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "start": "node server.mjs"
+    "preview": "concurrently -k \"node server.mjs\" \"vite preview\"",
+    "start": "node server.mjs --serve"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",

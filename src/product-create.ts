@@ -88,31 +88,36 @@ function drawHeadList(){
   });
   const onTr=tb.querySelector('tr.on'); if(onTr){ const w=tb.closest('.cl'); w.scrollTop=Math.max(0,onTr.offsetTop-40); }
   if(!rows.length) tb.innerHTML='<tr><td colspan="5" style="color:var(--muted)">검색 결과가 없습니다. 검색어를 줄여 보세요</td></tr>';
-  $('#hCnt').textContent=`${rows.length}개${rows.length>200?' 중 200개 표시. 검색으로 좁히세요':''}`;
+  $('#hCnt').textContent=`(${rows.length}개${rows.length>200?' 중 200개 표시. 검색으로 좁히세요':''})`;
 }
 function renderHeadInfo(){
   const h=F.head, box=$('#hInfo');
+  if(isDev()) $('#baseWhy').textContent=h?h.key:'';
   if(!h){ box.textContent='목록에서 1개를 고르세요'; return; }
-  box.innerHTML = isDev()
-    ? `선택: <b>${esc(h.key)}</b> · ${variants(h).length}종 · 결합 키 <span class="chip">${joinKey(h)}</span> · <span class="tag bad">단독 주문 불가</span> 정책 1로 슬롯 1 요금제 고정`
-    : `선택: <b>${esc(h.name)}</b> · ${h.type} · 결합 키 <span class="chip">${joinKey(h)}</span>`;
+  box.innerHTML = isDev() ? '' : `선택: <b>${esc(h.name)}</b> · ${h.type} · 결합 키 <span class="chip">${joinKey(h)}</span>`;
 }
 function pickHead(i){
   F.head=i; Object.assign(M,{ax:null,rows:null,dirty:false,rowSel:new Set(),sel:null}); autoCat(); pruneSlots();
   drawHeadList(); renderHeadInfo(); renderInfo(); renderMatrix(); renderSlots();
 }
+$('#hEpc').addEventListener('click',()=>{ drawHeadList(); toast('EPC에서 상품을 가져왔습니다'); });
 $('#hQ').addEventListener('input',e=>{F.hq=e.target.value; drawHeadList();});
 $('#noBase').addEventListener('change',e=>{ F.noBase=e.target.checked; F.head=null; pruneSlots(); autoCat(); renderInfo(); renderBase(); renderSlots(); });
 
 // ---------- 디바이스 옵션 ----------
 function renderCond(){
-  const mk=(box,list,st)=>{ box.innerHTML=''; list.forEach(([k])=>{
-    const on=st.allow.has(k); const l=el('label','chip '+(on?(st.def===k?'acc':''):'no')); l.title='더블클릭하면 기본값';
-    l.innerHTML=`<input type="checkbox" ${on?'checked':''}> ${k}${st.def===k?' · 기본':''}`;
+  const mk=(box,title,list,st)=>{
+    const all=list.map(([k])=>k);
+    box.innerHTML=`<div class="an">${title}<span class="ar"><button type="button" class="btn sm" data-all="1" ${st.allow.size===all.length?'disabled':''}>모두 선택</button><button type="button" class="btn sm" data-all="0" ${st.allow.size?'':'disabled'}>해제</button></span></div>`;
+    box.querySelectorAll('[data-all]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.all==='1'){ all.forEach(k=>st.allow.add(k)); if(!st.def) st.def=all[0]; } else { st.allow.clear(); st.def=null; } renderMatrix(); }));
+    const chips=el('div','axchips'); box.appendChild(chips);
+    list.forEach(([k])=>{
+    const on=st.allow.has(k); const l=el('label','axchip'+(on?' on':'')); l.title='더블클릭하면 기본값';
+    l.innerHTML=`<input type="checkbox" ${on?'checked':''}>${k}${st.def===k?' · 기본':''}`;
     l.querySelector('input').addEventListener('change',e=>{ e.target.checked?st.allow.add(k):st.allow.delete(k); if(!st.allow.has(st.def)) st.def=[...st.allow][0]||null; renderMatrix(); });
     l.addEventListener('dblclick',()=>{ if(st.allow.has(k)){ st.def=k; renderMatrix(); } });
-    box.appendChild(l); }); };
-  mk($('#joinOpts'),JOIN,M.join); mk($('#discOpts'),DISC,M.disc);
+    chips.appendChild(l); }); };
+  mk($('#joinOpts'),'가입 유형',JOIN,M.join); mk($('#discOpts'),'할인 방법',DISC,M.disc);
 }
 const devParts=()=>F.head?variants(F.head).map(i=>({i,p:skuParts(i)})).filter(x=>x.p):[];
 function devAxes(){
@@ -131,9 +136,10 @@ function renderMatrix(){
   const box=$('#axBox'); box.innerHTML='';
   axes.forEach(k=>{
     const vals=[...new Set(rows.map(r=>r.v[k]))]; const on=M.ax[k];
-    const row=el('div','row'); row.innerHTML=`<label>${k}</label><span class="optv">${vals.map(v=>`<label class="chip ${on.has(v)?'acc':''}"><input type="checkbox" data-v="${esc(v)}" ${on.has(v)?'checked':''}>${dot(k,v)}${esc(v)}</label>`).join('')}</span><span class="pill">${on.size}/${vals.length} 선택</span><button type="button" class="btn sm">${on.size===vals.length?'모두 해제':'모두 선택'}</button>`;
+    const row=el('div','axis'); row.innerHTML=`<div class="an">${k}<span class="ar"><button type="button" class="btn sm" data-all="1" ${on.size===vals.length?'disabled':''}>모두 선택</button><button type="button" class="btn sm" data-all="0" ${on.size?'':'disabled'}>해제</button></span></div>
+      <div class="axchips">${vals.map(v=>`<label class="axchip ${on.has(v)?'on':''}"><input type="checkbox" data-v="${esc(v)}" ${on.has(v)?'checked':''}>${dot(k,v)}${esc(v)}</label>`).join('')}</div>`;
     row.querySelectorAll('input').forEach(cb=>cb.addEventListener('change',()=>{ cb.checked?on.add(cb.dataset.v):on.delete(cb.dataset.v); M.dirty=M.rows!=null; renderMatrix(); }));
-    row.querySelector('button').addEventListener('click',()=>{ if(on.size===vals.length) on.clear(); else vals.forEach(v=>on.add(v)); M.dirty=M.rows!=null; renderMatrix(); });
+    row.querySelectorAll('[data-all]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.all==='1') vals.forEach(v=>on.add(v)); else on.clear(); M.dirty=M.rows!=null; renderMatrix(); }));
     box.appendChild(row);
   });
   const hit=rows.filter(r=>axes.every(k=>M.ax[k].has(r.v[k]))).length;
@@ -141,33 +147,33 @@ function renderMatrix(){
   const hint=$('#applyHint');
   hint.className='pill'+(M.dirty?' dirty':'');
   hint.textContent = !hit ? `${axes.join('·')}을 1개 이상 고르세요`
-    : `${hit}개 옵션을 만든다${combos>hit?` (EPC에 없는 조합 ${combos-hit}개 제외)`:''}${M.dirty?'. 선택이 바뀌었습니다. 다시 적용하세요':(M.rows?'. 적용됨':'')}`;
+    : `선택 조합 ${combos}개 · EPC에 없는 조합 ${combos-hit}개 제외${M.dirty?' · 선택이 바뀌었습니다. 다시 적용하세요':''}`;
   $('#applyOpt').disabled=!hit;
   drawOpt(); renderPanel();
 }
 function applyOpt(silent){
   const {axes,rows}=devAxes(); const prev=new Map((M.rows||[]).map(r=>[r.id,r]));
-  M.rows=rows.filter(r=>axes.every(k=>M.ax[k].has(r.v[k]))).map(r=>prev.get(r.i.id)||{id:r.i.id,name:axes.join(' / '),val:axes.map(k=>r.v[k]).join(' / '),v:r.v,use:true,price:skuPrice(r.i),sale:!skuOut(r.i),epc:null});
+  // 목업: 새 옵션은 EPC에 자동 연결하고, 4개 중 1개만 미연결(불일치)로 둔다
+  M.rows=rows.filter(r=>axes.every(k=>M.ax[k].has(r.v[k]))).map((r,n)=>prev.get(r.i.id)||{id:r.i.id,name:axes.join(' / '),val:axes.map(k=>r.v[k]).join(' / '),v:r.v,use:true,price:skuPrice(r.i),sale:!skuOut(r.i),epc:n%4===3?null:epcOf(r.i)});
   M.dirty=false; M.rowSel=new Set(); M.sel=null;
   if(!silent){ renderMatrix(); toast(`옵션 ${M.rows.length}개를 옵션목록에 적용했습니다`); }
 }
 $('#applyOpt').addEventListener('click',()=>applyOpt());
+$('#epcLoad').addEventListener('click',()=>{ initAx(); applyOpt(); });
 function drawOpt(){
   const tb=$('#optTable tbody'); tb.innerHTML=''; const rows=M.rows||[];
   rows.forEach(r=>{
     const tr=el('tr',r.use?'':'unused'); const k0=r.name.split(' / ');
     tr.innerHTML=`<td class="c"><input type="checkbox" class="rs" ${M.rowSel.has(r.id)?'checked':''} aria-label="${esc(r.val)} 선택"></td><td>${esc(r.name)}</td><td><span style="display:inline-flex;gap:6px;align-items:center">${k0[0]==='색상'?dot('색상',r.v['색상']):''}${esc(r.val)}</span></td>
       <td><span class="seg"><button type="button" data-u="1" class="${r.use?'on':''}">사용</button><button type="button" data-u="0" class="${r.use?'':'on'}">미사용</button></span></td>
-      <td><input type="number" class="price" min="0" step="1000" value="${r.price}" aria-label="${esc(r.val)} 가격"> 원</td>
+      <td style="white-space:nowrap;text-align:right">${r.price.toLocaleString()} 원</td>
       <td><span class="chip ${r.sale?'ok':'warn'}">${r.sale?'판매중':'품절'}</span></td>
       <td>${epcCell(r)}</td>
       <td><button type="button" class="btn sm del">삭제</button></td>`;
     const ev=tr.querySelector('.ev'); if(ev) ev.addEventListener('click',()=>openEpcView(r.id));
     const ee=tr.querySelector('.ee'); if(ee) ee.addEventListener('click',()=>openEpcMatch([r.id]));
-    const ed=tr.querySelector('.ed'); if(ed) ed.addEventListener('click',()=>{ if(!confirm(`${r.val}의 EPC 연동을 해제할까요?`)) return; r.epc=null; drawOpt(); renderPanel(); toast(`${r.val} EPC 연동을 해제했습니다`); });
     tr.querySelector('.rs').addEventListener('change',e=>{ e.target.checked?M.rowSel.add(r.id):M.rowSel.delete(r.id); drawOpt(); });
     tr.querySelectorAll('.seg button').forEach(bt=>bt.addEventListener('click',()=>{ r.use=bt.dataset.u==='1'; drawOpt(); renderPanel(); }));
-    tr.querySelector('.price').addEventListener('change',e=>{ r.price=Math.max(0,parseInt(e.target.value)||0); e.target.value=r.price; renderPanel(); });
     tr.querySelector('.del').addEventListener('click',()=>{ M.rows=M.rows.filter(x=>x!==r); M.rowSel.delete(r.id); drawOpt(); renderPanel(); toast(`${r.val} 옵션을 삭제했습니다. 다시 적용하면 복구됩니다`); });
     tb.appendChild(tr);
   });
@@ -176,9 +182,8 @@ function drawOpt(){
   const all=$('#optAll'); const n=rows.filter(r=>M.rowSel.has(r.id)).length;
   all.checked=rows.length>0&&n===rows.length; all.indeterminate=n>0&&n<rows.length; all.disabled=!rows.length;
   $('#optCnt').textContent=M.rows?`${rows.length}개 · 사용 ${rows.filter(r=>r.use).length}개`:'';
-  $('#optBar').hidden=!M.rows; $('#optBulk').hidden=!n; $('#optBulk').style.display=n?'inline-flex':'';
-  const lk=rows.filter(r=>r.epc).length, mm=rows.filter(r=>r.epc&&epcCheck(r).st!=='ok').length;
-  $('#epcSum').textContent=M.rows?`EPC 연동 ${lk}/${rows.length}${mm?` · 불일치 ${mm}`:''}`:''; $('#optSelTxt').textContent=`선택 ${n}개`;
+  $('#epcBtn').hidden=!M.rows; $('#optBulk').hidden=!n; $('#optBulk').style.display=n?'inline-flex':'';
+  $('#optSelTxt').textContent=`선택 ${n}개`;
 }
 $('#optAll').addEventListener('change',e=>{ (M.rows||[]).forEach(r=>e.target.checked?M.rowSel.add(r.id):M.rowSel.delete(r.id)); drawOpt(); });
 $('#optBulk').querySelectorAll('button').forEach(bt=>bt.addEventListener('click',()=>{
@@ -187,8 +192,6 @@ $('#optBulk').querySelectorAll('button').forEach(bt=>bt.addEventListener('click'
   else { M.rows.forEach(r=>{ if(M.rowSel.has(r.id)) r.use=act==='on'; }); toast(`옵션 ${n}개를 ${act==='on'?'사용':'미사용'}으로 바꿨습니다`); }
   M.rowSel=new Set(); drawOpt(); renderPanel();
 }));
-function syncSoSeg(){ $('#soSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===M.soldout)); }
-$('#soSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ M.soldout=b.dataset.t; syncSoSeg(); renderMatrix(); }));
 
 // ---------- EPC 연동 (목업) ----------
 const EPC_POOL=ITEMS.filter(i=>i.area==='기기서비스'&&i.type==='약정형');
@@ -203,9 +206,9 @@ function epcCheck(r){
   return {st:'ok',t:'일치'};
 }
 function epcCell(r){
-  if(!r.epc) return `<div class="epcc"><span><span class="chip">미연동</span></span><div class="acts"><button type="button" class="btn sm ee">연결</button></div></div>`;
-  const c=epcCheck(r);
-  return `<div class="epcc"><span><button type="button" class="linkbtn ev" title="EPC 상품 조회">${r.epc.code}</button> <span class="chip ${c.st==='ok'?'ok':'bad2'}">${c.t}</span></span><small>${esc(r.epc.name)}</small><div class="acts"><button type="button" class="btn sm ee">수정</button><button type="button" class="btn sm ed">삭제</button></div></div>`;
+  const ok=r.epc&&epcCheck(r).st==='ok';
+  const code=r.epc?`<button type="button" class="linkbtn ev" title="EPC 상품 조회">${r.epc.code}</button>`:'';
+  return `<div class="epcc">${code}<span class="chip ${ok?'ok':'bad2'}">${ok?'일치':'불일치'}</span>${ok?'':'<button type="button" class="btn sm ee">연동</button>'}</div>`;
 }
 const MD={mode:null,ids:[],draft:new Map(),act:null,q:'',same:true};
 function openModal(){ const m=$('#epcModal'); m.hidden=false; MD.prevFocus=document.activeElement; m.querySelector('.mbox').focus(); }
@@ -392,11 +395,11 @@ function renderDetail(){
   $('#detailImage').hidden=d.mode!=='image'; $('#detailHtml').hidden=d.mode!=='html'; $('#detailBuilder').hidden=d.mode!=='builder';
   $('#detailImgs').innerHTML=d.images.map((u,i)=>thumb(u,i,`상세 이미지 ${i+1}`)).join('')+(d.images.length<MAX_DETAIL?addTile('detailImgAdd',d.images.length?'이미지 추가':'상세 이미지 업로드 (세로로 이어 붙음)',d.images.length?'':'full'):'');
   const add=$('#detailImgAdd'); if(add) add.addEventListener('click',()=>$('#detailImgFile').click());
-  $('#detailImgs').querySelectorAll('.x').forEach(b=>b.addEventListener('click',()=>{ d.images.splice(+b.dataset.i,1); renderDetail(); }));
+  $('#detailImgs').querySelectorAll('.x').forEach(b=>b.addEventListener('click',()=>{ d.images.splice(+b.dataset.i,1); renderDetail(); renderPanel(); }));
   $('#detailHtmlInput').value=d.html;
 }
-$('#detailMode').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ F.media.detail.mode=b.dataset.m; renderDetail(); }));
-$('#detailImgFile').addEventListener('change',async e=>{ const d=F.media.detail; const us=await readImages(e.target.files,860,4000,MAX_DETAIL-d.images.length); e.target.value=''; if(us.length){ d.images.push(...us); renderDetail(); } });
+$('#detailMode').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ F.media.detail.mode=b.dataset.m; renderDetail(); renderPanel(); }));
+$('#detailImgFile').addEventListener('change',async e=>{ const d=F.media.detail; const us=await readImages(e.target.files,860,4000,MAX_DETAIL-d.images.length); e.target.value=''; if(us.length){ d.images.push(...us); renderDetail(); renderPanel(); } });
 $('#detailHtmlInput').addEventListener('input',e=>{ F.media.detail.html=e.target.value; });
 // 미리보기는 sandbox iframe이라 입력한 HTML의 스크립트는 실행되지 않는다.
 $('#htmlView').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
@@ -411,15 +414,11 @@ $('#noticeOn').addEventListener('change',e=>{ F.noticeOn=e.target.checked; rende
 $('#openBuilder').addEventListener('click',()=>toast('전시빌더는 아직 연결되지 않았습니다. 연결되면 이 버튼으로 열립니다'));
 
 // ---------- 미리보기 · 검사 ----------
-function condPv(){
-  return `<div class="lbl"><span>가입 유형</span></div>${JOIN.filter(([k])=>M.join.allow.has(k)).map(([k,d])=>`<div class="cap ${M.join.def===k?'on':''}"><span>${d} (${k})</span></div>`).join('')}
-   <div class="lbl"><span>할인 방법</span></div>${DISC.filter(([k])=>M.disc.allow.has(k)).map(([k,d])=>`<div class="cap ${M.disc.def===k?'on':''}"><span>${k}</span><span>${d}</span></div>`).join('')}`;
-}
 const liveRows=()=>(M.rows||[]).filter(r=>r.use&&(r.sale||M.soldout==='show'));
 function devPv(){
-  if(!M.rows) return `<div class="pvempty">옵션목록을 적용하면 고객이 고르는 옵션이 여기에 보인다</div>`+condPv();
+  if(!M.rows) return `<div class="pvempty">옵션목록을 적용하면 고객이 고르는 옵션이 여기에 보인다</div>`;
   const live=liveRows();
-  if(!live.length) return `<div class="pvempty">고객에게 보일 옵션이 없다. 옵션목록에서 사용으로 바꾸세요</div>`+condPv();
+  if(!live.length) return `<div class="pvempty">고객에게 보일 옵션이 없다. 옵션목록에서 사용으로 바꾸세요</div>`;
   const axes=live[0].name.split(' / '), a0=axes[0], a1=axes[1];
   const cur=live.find(r=>r.id===M.sel)||live[0];
   const firsts=[...new Set(live.map(r=>r.v[a0]))];
@@ -430,12 +429,12 @@ function devPv(){
   if(a1) h+=`<div class="lbl"><span>${a1}</span></div>`;
   h+=list.map(r=>`<div class="cap ${r.id===cur.id?'on':''} ${r.sale?'':'out'}" data-id="${r.id}"><span>${esc(a1?r.v[a1]:r.val)}</span><span>${r.price.toLocaleString()}원${r.sale?'':' · 품절'}</span></div>`).join('');
   if(!cur.sale) h+=`<div class="warn">${esc(cur.val)}는 품절이에요. 입고 알림을 신청하면 주문할 수 있을 때 알려 드려요.</div>`;
-  return h+condPv();
+  return h;
 }
 function renderPanel(){
   const t=tdef(F.type), h=F.head;
   const title=F.name.trim()||(h?(isDev()?h.key:h.name):'상품명 미입력');
-  let pv=`<h4>${esc(title)}</h4><div class="pill">${F.ch} · ${F.cat||'카테고리 미지정'} · ${t.label}${F.show?'':' · 미노출'}${F.use?'':' · 미사용'}</div>`;
+  let pv=`<h4>${esc(title)}</h4>`;
   if(F.media.main) pv+=`<img class="pv-img" src="${F.media.main}" alt="대표이미지">`;
   if(F.media.subs.length) pv+=`<div class="pv-subs">${F.media.subs.map((u,i)=>`<img src="${u}" alt="추가이미지 ${i+1}">`).join('')}</div>`;
   if(h&&isDev()) pv+=devPv();
@@ -450,14 +449,14 @@ function renderPanel(){
     else { sel.slice(0,4).forEach((o,j)=>pv+=`<div class="cap ${s.req&&j===0?'on':''}"><span>${esc(o.name)}</span><span>${o.type}</span></div>`); if(sel.length>4) pv+=`<div class="more">외 ${sel.length-4}개 더</div>`; }
     if(!s.req&&sel.length) pv+=`<div class="more">선택하지 않고 넘어갈 수 있음</div>`;
   });
+  const dt=F.media.detail;
+  if(dt.mode==='image'&&dt.images.length) pv+=`<div class="lbl"><span>상세설명</span><span>이미지 ${dt.images.length}장</span></div><div class="pv-detail">${dt.images.map((u,i)=>`<img src="${u}" alt="상세 이미지 ${i+1}">`).join('')}</div>`;
   const box=$('#pv'); box.innerHTML=pv;
   box.querySelectorAll('[data-f]').forEach(sp=>sp.addEventListener('click',()=>{ const live=liveRows(); const a0=live[0]&&live[0].name.split(' / ')[0]; const x=live.find(r=>r.v[a0]===sp.dataset.f); if(x){M.sel=x.id; renderPanel();} }));
   box.querySelectorAll('.cap[data-id]').forEach(d=>d.addEventListener('click',()=>{ M.sel=d.dataset.id; renderPanel(); }));
 
   const R=[]; const add=(st,tx,d)=>R.push({st,tx,d});
   add(F.name.trim()?'ok':'bad','상품명',F.name.trim()?esc(F.name.trim()):'기본정보에서 입력하세요');
-  add(F.cat?'ok':'bad','카테고리',F.cat?`${F.ch} > ${F.cat}`:'기본정보에서 고르세요');
-  if(F.cat&&h){ const c=catOf(F.ch,F.cat); if(c&&!c.cond(h)) add('na','카테고리 조건 불일치',`${F.cat} 조건은 ${c.desc}. 저장은 된다`); }
   if(!F.use) add('na','전시상태 미사용','저장은 되지만 고객 화면에 나오지 않는다');
   if(F.noBase) add(F.slots.some(s=>s.req&&s.sel.size)?'ok':'bad','기준 단품 없음 · 필수 슬롯 1개 이상','단품이 없으면 필수 슬롯이 판매 단위가 된다');
   else add(h?'ok':'bad',`${t.base} 선택`,h?esc(isDev()?h.key:h.name):`${t.base} 선택에서 고르세요`);
@@ -468,14 +467,11 @@ function renderPanel(){
       const u=M.rows.filter(r=>r.use); add(u.length?'ok':'bad','사용 옵션 1개 이상',`${M.rows.length}개 중 ${u.length}개 사용`);
       const np=u.filter(r=>!(r.price>0)).length; if(u.length) add(np?'bad':'ok','옵션 가격',np?`가격이 0원인 옵션 ${np}개`:'사용 옵션 모두 가격 있음');
       if(u.length&&!u.some(r=>r.sale)) add('na','판매 가능한 옵션 없음','사용 옵션이 모두 품절이다');
-      const nl=u.filter(r=>!r.epc).length, mm=u.filter(r=>r.epc&&epcCheck(r).st!=='ok').length;
-      if(u.length) add(nl||mm?'na':'ok','EPC 연동',nl||mm?`사용 옵션 중 미연동 ${nl}개, 불일치 ${mm}개`:'사용 옵션 모두 EPC 일치');
     }
-    add(M.join.allow.size&&M.disc.allow.size?'ok':'bad','가입 유형 · 할인 방법',`${[...M.join.allow].join(', ')||'없음'} / ${[...M.disc.allow].join(', ')||'없음'}`);
   }
   if(isDev()){ const s=F.slots.find(x=>x.locked); add(s&&s.sel.size?'ok':'bad','정책 1 · 디바이스형은 요금제 슬롯 필수',s&&s.sel.size?`요금제 후보 ${s.sel.size}개`:'슬롯 1에서 요금제 후보를 고르세요'); }
   F.slots.forEach((s,i)=>{ const n=s.sel.size; if(!s.locked) add(n?'ok':'bad',`슬롯 ${i+1} 후보 1개 이상`,`${s.area} · 선택 ${n}개${s.req&&n===1?' · 자동 포함':''}`); if(n&&n<s.max) add('na',`슬롯 ${i+1} 최대 선택 ${s.max}개 > 후보 ${n}개`,`고객은 ${n}개까지만 고를 수 있다`); });
-  add('ok','정책 2~4 · 결합 키, 단품만, 같은 서비스 제외','해당 후보는 목록에서 회색 처리');
+  if(F.slots.some(s=>!s.locked)) add('ok','정책 2~4 · 결합 키, 단품만, 같은 서비스 제외','해당 후보는 목록에서 회색 처리');
   const ul=$('#ruleList'); ul.innerHTML=''; R.forEach(r=>{const li=el('li'); li.innerHTML=`<span class="m ${r.st}">${r.st==='ok'?'O':r.st==='bad'?'X':'!'}</span><span class="t">${r.tx}<span class="d">${r.d}</span></span>`; ul.appendChild(li);});
   $('#poCount').innerHTML=poRange({head:h,slots:F.slots})+'<small>PO</small>';
   const bad=R.filter(r=>r.st==='bad').length;
@@ -486,7 +482,7 @@ function renderEditing(){
   $('#editTitle').textContent=on?'상품수정':'상품등록';
   if(on){ const d=DISPLAYS.find(x=>x.id===F.editId); $('#editingTxt').textContent=d&&d.draft?`"${d.name||'상품명 없음'}" 임시저장본을 이어서 작성 중. 저장하기를 누르면 목록에 등록됩니다`:`"${d?d.name:''}" 수정 중. 저장하면 목록의 같은 행이 바뀝니다`; }
 }
-function renderAll(){ renderInfo(); renderBase(); syncSoSeg(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderNotice(); renderEditing(); }
+function renderAll(){ renderInfo(); renderBase(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderNotice(); renderEditing(); }
 $('#bReset').addEventListener('click',()=>{ const k=F.type, id=F.editId; if(id){ const d=DISPLAYS.find(x=>x.id===id); if(d){ loadDisplay(d); toast('저장된 값으로 되돌렸습니다'); return; } } resetForm(); if(k!=='device') setType(k); else renderAll(); });
 $('#editCancel').addEventListener('click',()=>{ resetForm(); renderAll(); history.replaceState(null,'',location.pathname); });
 
@@ -522,7 +518,7 @@ function loadDisplay(d){
     slots:d.slots.map(s=>newSlot({req:s.req,area:s.area,ptype:s.ptype,max:s.max,locked:s.locked,sel:new Set(s.sel)}))});
   resetM();
   if(d.dev){
-    Object.assign(M,{soldout:d.dev.soldout,ax:d.dev.ax?Object.fromEntries(Object.entries(d.dev.ax).map(([k,v])=>[k,new Set(v)])):null,rows:d.dev.rows?d.dev.rows.map(r=>Object.assign({},r)):null,dirty:!!d.dev.dirty,join:{allow:new Set(d.dev.join.allow),def:d.dev.join.def},disc:{allow:new Set(d.dev.disc.allow),def:d.dev.disc.def}});
+    Object.assign(M,{soldout:'show',ax:d.dev.ax?Object.fromEntries(Object.entries(d.dev.ax).map(([k,v])=>[k,new Set(v)])):null,rows:d.dev.rows?d.dev.rows.map(r=>Object.assign({},r)):null,dirty:!!d.dev.dirty,join:{allow:new Set(d.dev.join.allow),def:d.dev.join.def},disc:{allow:new Set(d.dev.disc.allow),def:d.dev.disc.def}});
     // 예시 데이터처럼 옵션목록이 없으면 전체 옵션으로 채우고 EPC를 자동 연결한다.
     if(!M.rows&&d.head){ initAx(); applyOpt(true); M.rows.forEach(r=>{ const i=ITEM_BY_ID.get(r.id); if(i) r.epc=epcOf(i); }); }
   }

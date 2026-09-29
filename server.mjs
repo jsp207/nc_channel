@@ -64,7 +64,7 @@ app.post('/api/logout', (req, res) => {
   req.session.destroy(() => res.status(204).end());
 });
 
-if (isProduction) {
+if (isProduction || process.argv.includes('--serve')) {
   app.use(express.static(path.join(__dirname, 'dist')));
   app.get(/.*/, (req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
 }

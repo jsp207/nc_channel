@@ -63,9 +63,12 @@
       .switch span::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
       .switch input:checked+span{background:var(--accent)}
       .switch input:checked+span::after{transform:translateX(16px)}
+      .switch input:disabled{cursor:not-allowed}
       .switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
       .pv .pv-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;margin:10px 0 4px}
       .pv .pv-subs{display:flex;gap:4px;margin-bottom:4px;overflow:hidden}
+      .pv .pv-detail{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-bottom:4px}
+      .pv .pv-detail img{display:block;width:100%}
       .pv .pv-subs img{width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--line);flex:none}
       /* 전시유형: 100×100 정사각형 버튼 */
       .row.type-row{align-items:flex-start}
@@ -92,7 +95,8 @@
       .row label.chkl{min-width:0;color:var(--text)}
       .hinfo{margin-top:10px;font-size:13px;color:var(--muted)}
       .hinfo b{color:var(--text);font-weight:600}
-      .sub-h{font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--text)}
+      .hinfo:empty{display:none}
+      .sub-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--text)}
       .editing{display:none;background:var(--warn-soft);color:var(--warn);padding:8px 12px;border-radius:6px;font-size:13px;margin:0 0 14px}
       .editing.on{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
       .chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
@@ -103,19 +107,27 @@
       .optv label.chip{cursor:pointer;padding:3px 10px;display:inline-flex;align-items:center;gap:5px;color:var(--text);min-width:0}
       .optv label.chip.acc{color:var(--accent)}
       .optv label.chip input{margin:0}
+      .axis{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+      .axis .an{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:13px;font-weight:700;color:var(--text)}
+      .axis .an .ar{margin-left:auto;display:flex;gap:6px}
+      .applybar{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+      .applybar .pill{margin-right:auto}
+      .axchips{display:flex;flex-wrap:wrap;gap:7px}
+      .axchip{position:relative;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line-strong);border-radius:16px;background:var(--bg);color:var(--text);font-size:13px;cursor:pointer;user-select:none}
+      .axchip:hover{border-color:var(--accent)}
+      .axchip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .axchip input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+      .axchip:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
       .dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--line-strong);display:inline-block;flex:none}
       #applyHint.dirty{color:var(--warn)}
       #optTable{min-width:880px}
       #optTable td{vertical-align:middle}
       #optTable th,#optTable td:not(:nth-child(7)){white-space:nowrap}
       #optTable td:nth-child(7){min-width:200px}
-      #optTable input.price{width:110px;padding:5px 8px;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg);text-align:right}
       #optTable tr.unused td{color:var(--muted)}
       #optTable .seg{flex-wrap:nowrap}
       #optTable .seg button{padding:4px 10px;font-size:12px}
-      .epcc{display:flex;flex-direction:column;gap:2px;min-width:170px}
-      .epcc small{color:var(--muted);font-size:11px}
-      .epcc .acts{display:flex;gap:4px;margin-top:3px;flex-wrap:wrap}
+      .epcc{display:flex;align-items:center;gap:6px;white-space:nowrap}
       .linkbtn{border:0;background:none;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;font:inherit;text-align:left}
       /* 오른쪽 미리보기·검사: 패널 안에서 스크롤, 버튼은 아래 고정 */
       #v-edit .panel{max-height:calc(100vh - 40px);overflow:auto}
@@ -205,20 +217,17 @@
         <div class="body">
           <div class="row" id="noBaseRow" hidden><label class="chkl"><input type="checkbox" id="noBase"> 기준 단품 없이 슬롯으로만 구성</label><span class="pill">패스형(Big 4 등). EPC에 패스 PO가 없을 때 쓰고, 가격은 상품에 직접 건다</span></div>
           <div id="hWrap">
-            <div class="row"><label for="hQ">검색</label><input type="text" id="hQ" placeholder="모델·상품명" style="min-width:220px"><span class="pill" id="hCnt"></span></div>
+            <div class="row"><label for="hQ">검색 <span id="hCnt"></span></label><input type="text" id="hQ" placeholder="모델·상품명" style="min-width:220px;margin-left:auto"><button type="button" class="btn" id="hEpc">EPC에서 상품 가져오기</button></div>
             <div class="cl" style="max-height:240px"><table><thead><tr><th class="c"></th><th>상품명</th><th>상품유형</th><th>결합 키</th><th>옵션</th></tr></thead><tbody id="hList"></tbody></table></div>
             <div class="hinfo" id="hInfo"></div>
           </div>
           <div id="devBox" hidden>
-            <div class="sub-h">옵션</div>
-            <div class="row"><label>옵션 사용</label><span class="seg"><button type="button" class="on" disabled>ON</button><button type="button" disabled>OFF</button></span><span class="pill">디바이스는 옵션이 필수라 끌 수 없다</span></div>
-            <div class="row"><label>옵션 재고</label><span class="seg" id="soSeg"><button type="button" data-t="show" class="on">표시+입고알림</button><button type="button" data-t="hide">숨김</button></span><span class="pill">품절 옵션을 고객 화면에 어떻게 보일지</span></div>
+            <div class="sub-h">옵션 <label class="switch" title="디바이스는 옵션이 필수라 끌 수 없다"><input type="checkbox" checked disabled aria-label="옵션 사용"><span aria-hidden="true"></span></label></div>
             <div id="axBox"></div>
-            <div class="row"><label>가입 유형</label><span id="joinOpts" class="optv"></span><span class="pill">주문 조건. PO에 포함되지 않음</span></div>
-            <div class="row"><label>할인 방법</label><span id="discOpts" class="optv"></span><span class="pill">공시지원·선택약정은 MP. 슬롯이 아니라 가입 조건</span></div>
-            <div class="row" style="margin-top:4px"><label></label><button type="button" class="btn primary" id="applyOpt">옵션목록 적용</button><span class="pill" id="applyHint"></span></div>
-            <div class="sub-h">옵션목록 <span class="pill" id="optCnt"></span></div>
-            <div class="toolbar" id="optBar" hidden><span id="optBulk" hidden style="gap:8px;align-items:center"><span class="pill" id="optSelTxt"></span><button type="button" class="btn sm" data-a="on">사용</button><button type="button" class="btn sm" data-a="off">미사용</button><button type="button" class="btn sm" data-a="del">삭제</button></span><span class="pill" id="epcSum"></span><button type="button" class="btn" id="epcBtn" style="margin-left:auto">EPC 매칭</button></div>
+            <div class="axis" id="joinOpts"></div>
+            <div class="axis" id="discOpts"></div>
+            <div class="applybar"><span class="pill" id="applyHint"></span><button type="button" class="btn primary" id="applyOpt">옵션목록 적용</button><button type="button" class="btn" id="epcLoad">EPC에서 옵션목록 적용</button></div>
+            <div class="toolbar" id="optBar"><span class="sub-h" style="margin:0">옵션목록 <span class="pill" id="optCnt"></span></span><span id="optBulk" hidden style="gap:8px;align-items:center"><span class="pill" id="optSelTxt"></span><button type="button" class="btn sm" data-a="on">사용</button><button type="button" class="btn sm" data-a="off">미사용</button><button type="button" class="btn sm" data-a="del">삭제</button></span><button type="button" class="btn" id="epcBtn" style="margin-left:auto" hidden>EPC 매칭</button></div>
             <div class="cl" style="max-height:360px"><table id="optTable"><thead><tr><th class="c"><input type="checkbox" id="optAll" aria-label="옵션 전체 선택"></th><th>옵션명</th><th>옵션값</th><th>사용여부</th><th>가격</th><th>판매여부</th><th>EPC</th><th>삭제</th></tr></thead><tbody></tbody></table></div>
           </div>
         </div>
