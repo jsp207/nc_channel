@@ -24,8 +24,8 @@ let SEQ=0;
 function resetM(){ Object.assign(M,{soldout:'show',ax:null,rows:null,dirty:false,rowSel:new Set(),sel:null,join:{allow:new Set(['기기변경','번호이동','신규가입']),def:'번호이동'},disc:{allow:new Set(['공시지원','선택약정']),def:'선택약정'}}); }
 function newSlot(o){ return Object.assign({id:++SEQ,req:true,area:'부가서비스',ptype:'',max:1,sel:new Set(),locked:false,q:'',only:false,closed:false},o||{}); }
 const planSlot=()=>newSlot({req:true,area:'이동전화',ptype:'요금제형',max:1,locked:true});
-function resetForm(){ Object.assign(F,{editId:null,name:'',type:'device',ch:'T다이렉트샵',cat:'',catAuto:true,from:'',to:'',show:true,use:true,head:null,noBase:false,hq:'',slots:[planSlot()],media:emptyMedia(),noticeOn:true}); resetM(); }
-// 이미지·상세설명. 이미지는 줄인 data URL로 들고 있다가 상품과 함께 저장한다.
+function resetForm(){ Object.assign(F,{editId:null,name:'',type:'device',ch:'T다이렉트샵',cat:'',catAuto:true,from:'',to:'',show:true,use:true,head:null,noBase:false,hq:'',slots:[planSlot()],media:emptyMedia(),noticeOn:true,reviewOn:true,links:{order:false,pay:false}}); resetM(); }
+// 이미지·상품정보. 이미지는 줄인 data URL로 들고 있다가 상품과 함께 저장한다.
 const emptyMedia=()=>({main:null,subs:[],detail:{mode:'image',images:[],html:''}});
 const copyMedia=m=>({main:m.main,subs:[...m.subs],detail:{mode:m.detail.mode,images:[...m.detail.images],html:m.detail.html}});
 const isDev=()=>F.type==='device';
@@ -143,11 +143,10 @@ function renderMatrix(){
     box.appendChild(row);
   });
   const hit=rows.filter(r=>axes.every(k=>M.ax[k].has(r.v[k]))).length;
-  const combos=axes.reduce((n,k)=>n*M.ax[k].size,1);
   const hint=$('#applyHint');
   hint.className='pill'+(M.dirty?' dirty':'');
   hint.textContent = !hit ? `${axes.join('·')}을 1개 이상 고르세요`
-    : `선택 조합 ${combos}개 · EPC에 없는 조합 ${combos-hit}개 제외${M.dirty?' · 선택이 바뀌었습니다. 다시 적용하세요':''}`;
+    : (M.dirty?'선택이 바뀌었습니다. 다시 적용하세요':'');
   $('#applyOpt').disabled=!hit;
   drawOpt(); renderPanel();
 }
@@ -181,7 +180,7 @@ function drawOpt(){
   else if(!rows.length) tb.innerHTML='<tr><td colspan="8" style="color:var(--muted)">옵션이 모두 삭제됐습니다. 옵션목록 적용을 다시 누르세요</td></tr>';
   const all=$('#optAll'); const n=rows.filter(r=>M.rowSel.has(r.id)).length;
   all.checked=rows.length>0&&n===rows.length; all.indeterminate=n>0&&n<rows.length; all.disabled=!rows.length;
-  $('#optCnt').textContent=M.rows?`${rows.length}개 · 사용 ${rows.filter(r=>r.use).length}개`:'';
+  $('#optCnt').textContent=M.rows?`${rows.length}개`:'';
   $('#epcBtn').hidden=!M.rows; $('#optBulk').hidden=!n; $('#optBulk').style.display=n?'inline-flex':'';
   $('#optSelTxt').textContent=`선택 ${n}개`;
 }
@@ -293,7 +292,7 @@ function renderSlots(){
   F.slots.forEach((s,i)=>{
     const st=el('div','step'+(s.closed?' closed':'')); st.dataset.sid=s.id;
     const types=POLICY.filter(p=>p.area===s.area&&(!s.locked||p.type==='요금제형'));
-    st.innerHTML=`<header><b>슬롯 ${i+1}</b><span class="chip ${s.req?'acc':''}">${s.req?'필수':'선택'}</span><span class="why">${slotDesc(s)}</span>${s.locked?'':'<button type="button" class="btn sm del">삭제</button>'}${foldBtn(s.closed)}</header>
+    st.innerHTML=`<header><b>슬롯 ${i+1} - 선택형/고정형/옵션형</b><span class="chip ${s.req?'acc':''}">${s.req?'필수':'선택'}</span><span class="why">${slotDesc(s)}</span>${s.locked?'':'<button type="button" class="btn sm del">삭제</button>'}${foldBtn(s.closed)}</header>
     <div class="body">
       <div class="row"><label>유형</label><span class="seg"><button type="button" data-t="1" class="${s.req?'on':''}" ${s.locked?'disabled':''}>필수</button><button type="button" data-t="0" class="${s.req?'':'on'}" ${s.locked?'disabled':''}>선택</button></span>
         <label>영역</label><select class="sArea" ${s.locked?'disabled':''} aria-label="영역"></select>
@@ -376,6 +375,7 @@ const thumb=(src,i,label,main)=>`<div class="img-thumb"><img src="${src}" alt="$
 const addTile=(id,label,cls)=>`<button type="button" class="img-add${cls?' '+cls:''}" id="${id}"><b>+</b>${label}</button>`;
 function renderMedia(){
   const m=F.media;
+  $('#imgOn').hidden=!m.main;
   $('#mainImg').innerHTML=m.main?thumb(m.main,0,'대표이미지',true):addTile('mainImgAdd','대표이미지 등록');
   $('#subImgs').innerHTML=m.subs.map((u,i)=>thumb(u,i,`추가이미지 ${i+1}`)).join('')+(m.subs.length<MAX_SUBS?addTile('subImgAdd','추가이미지'):'');
   $('#subImgCnt').textContent=`${m.subs.length}/${MAX_SUBS}개`;
@@ -387,11 +387,12 @@ function renderMedia(){
 $('#mainImgFile').addEventListener('change',async e=>{ const [u]=await readImages(e.target.files,1000,1000,1); e.target.value=''; if(u){ F.media.main=u; renderMedia(); renderPanel(); } });
 $('#subImgFile').addEventListener('change',async e=>{ const us=await readImages(e.target.files,1000,1000,MAX_SUBS-F.media.subs.length); e.target.value=''; if(us.length){ F.media.subs.push(...us); renderMedia(); renderPanel(); } });
 
-// ---------- 상세설명 ----------
+// ---------- 상품정보 ----------
 const MAX_DETAIL=20;
 function renderDetail(){
   const d=F.media.detail;
-  $('#detailMode').querySelectorAll('button').forEach(b=>{ const on=b.dataset.m===d.mode; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
+  $('#detailMode').querySelectorAll('button').forEach(b=>{ const on=b.dataset.m===d.mode; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); if(on) $('#detailModeTag').textContent=b.textContent; });
+  $('#detailModeTag').hidden=!d.mode;
   $('#detailImage').hidden=d.mode!=='image'; $('#detailHtml').hidden=d.mode!=='html'; $('#detailBuilder').hidden=d.mode!=='builder';
   $('#detailImgs').innerHTML=d.images.map((u,i)=>thumb(u,i,`상세 이미지 ${i+1}`)).join('')+(d.images.length<MAX_DETAIL?addTile('detailImgAdd',d.images.length?'이미지 추가':'상세 이미지 업로드 (세로로 이어 붙음)',d.images.length?'':'full'):'');
   const add=$('#detailImgAdd'); if(add) add.addEventListener('click',()=>$('#detailImgFile').click());
@@ -411,7 +412,35 @@ $('#htmlView').querySelectorAll('button').forEach(b=>b.addEventListener('click',
 // 사용 여부만 저장한다. 내용 입력은 추후 추가 예정.
 function renderNotice(){ $('#noticeOn').checked=F.noticeOn; $('#noticeStep').classList.toggle('off',!F.noticeOn); }
 $('#noticeOn').addEventListener('change',e=>{ F.noticeOn=e.target.checked; renderNotice(); });
-$('#openBuilder').addEventListener('click',()=>toast('전시빌더는 아직 연결되지 않았습니다. 연결되면 이 버튼으로 열립니다'));
+// ---------- 구매후기 ----------
+// 유의사항과 같이 사용 여부만 저장한다. 내용 입력은 추후 추가 예정.
+function renderReview(){ $('#reviewOn').checked=F.reviewOn; $('#reviewStep').classList.toggle('off',!F.reviewOn); }
+$('#reviewOn').addEventListener('change',e=>{ F.reviewOn=e.target.checked; renderReview(); });
+// ---------- 주문·결제 연동 (목업) ----------
+// 노드를 누르면 연동/해제를 오간다. 실제 연동 API가 붙으면 여기서 설정 화면을 연다.
+function renderLinks(){ document.querySelectorAll('#linkFlow .flow-node').forEach(b=>{ const on=!!F.links[b.dataset.k]; b.classList.toggle('on',on); b.querySelector('.fn-st').textContent=on?'설정됨':'미설정'; }); }
+// 노드를 누르면 설정 화면이 오른쪽에서 풀페이지로 들어온다. 설정 항목은 추후 추가 예정.
+const SHEET={order:{t:'주문서 설정',sub:'주문서 · 개통 정보'},pay:{t:'결제 설정',sub:'결제수단 · 청구 정보'},builder:{t:'전시빌더',sub:'상품정보 화면 구성'}};
+let sheetKey=null, sheetFrom=null;
+function openSheet(k,from){
+  sheetKey=k; sheetFrom=from; const d=SHEET[k], sh=$('#linkSheet');
+  $('#sheetTitle').textContent=d.t; $('#sheetSub').textContent=d.sub; $('#sheetBody').textContent=`${d.t} 항목은 추후 추가 예정입니다`;
+  // 가입유형·할인방법은 디바이스형 주문서에서만 고른다
+  const ord=k==='order'&&isDev()&&!!F.head; $('#sheetOrder').hidden=!ord; $('#sheetBody').hidden=ord;
+  if(k==='order'&&isDev()&&!F.head) $('#sheetBody').textContent='디바이스를 먼저 고르면 가입유형·할인방법을 설정할 수 있습니다';
+  $('#sheetDone').textContent=k==='builder'?'저장':'설정 완료';
+  $('#sheetOff').hidden=!F.links[k]; // 전시빌더는 연동 상태가 없어 해제 버튼을 쓰지 않는다
+  sh.classList.add('open'); document.body.classList.add('sheet-on'); sh.focus();
+}
+function closeSheet(){ $('#linkSheet').classList.remove('open'); document.body.classList.remove('sheet-on'); if(sheetFrom) sheetFrom.focus({preventScroll:true}); sheetKey=null; }
+function setLink(on){ const k=sheetKey, t=SHEET[k].t; if(k==='builder'){ closeSheet(); toast('전시빌더 내용을 저장했습니다'); return; } F.links[k]=on; closeSheet(); renderLinks(); toast(`${t}${on?'을 저장했습니다':'을 해제했습니다'}`); }
+document.querySelectorAll('#linkFlow .flow-node').forEach(b=>b.addEventListener('click',()=>openSheet(b.dataset.k,b)));
+$('#sheetBack').addEventListener('click',closeSheet);
+$('#sheetCancel').addEventListener('click',closeSheet);
+$('#sheetDone').addEventListener('click',()=>setLink(true));
+$('#sheetOff').addEventListener('click',()=>setLink(false));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sheetKey) closeSheet(); });
+$('#openBuilder').addEventListener('click',e=>openSheet('builder',e.currentTarget));
 
 // ---------- 미리보기 · 검사 ----------
 const liveRows=()=>(M.rows||[]).filter(r=>r.use&&(r.sale||M.soldout==='show'));
@@ -450,7 +479,7 @@ function renderPanel(){
     if(!s.req&&sel.length) pv+=`<div class="more">선택하지 않고 넘어갈 수 있음</div>`;
   });
   const dt=F.media.detail;
-  if(dt.mode==='image'&&dt.images.length) pv+=`<div class="lbl"><span>상세설명</span><span>이미지 ${dt.images.length}장</span></div><div class="pv-detail">${dt.images.map((u,i)=>`<img src="${u}" alt="상세 이미지 ${i+1}">`).join('')}</div>`;
+  if(dt.mode==='image'&&dt.images.length) pv+=`<div class="lbl"><span>상품정보</span><span>이미지 ${dt.images.length}장</span></div><div class="pv-detail">${dt.images.map((u,i)=>`<img src="${u}" alt="상세 이미지 ${i+1}">`).join('')}</div>`;
   const box=$('#pv'); box.innerHTML=pv;
   box.querySelectorAll('[data-f]').forEach(sp=>sp.addEventListener('click',()=>{ const live=liveRows(); const a0=live[0]&&live[0].name.split(' / ')[0]; const x=live.find(r=>r.v[a0]===sp.dataset.f); if(x){M.sel=x.id; renderPanel();} }));
   box.querySelectorAll('.cap[data-id]').forEach(d=>d.addEventListener('click',()=>{ M.sel=d.dataset.id; renderPanel(); }));
@@ -482,14 +511,14 @@ function renderEditing(){
   $('#editTitle').textContent=on?'상품수정':'상품등록';
   if(on){ const d=DISPLAYS.find(x=>x.id===F.editId); $('#editingTxt').textContent=d&&d.draft?`"${d.name||'상품명 없음'}" 임시저장본을 이어서 작성 중. 저장하기를 누르면 목록에 등록됩니다`:`"${d?d.name:''}" 수정 중. 저장하면 목록의 같은 행이 바뀝니다`; }
 }
-function renderAll(){ renderInfo(); renderBase(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderNotice(); renderEditing(); }
+function renderAll(){ renderInfo(); renderBase(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderNotice(); renderReview(); renderLinks(); renderEditing(); }
 $('#bReset').addEventListener('click',()=>{ const k=F.type, id=F.editId; if(id){ const d=DISPLAYS.find(x=>x.id===id); if(d){ loadDisplay(d); toast('저장된 값으로 되돌렸습니다'); return; } } resetForm(); if(k!=='device') setType(k); else renderAll(); });
 $('#editCancel').addEventListener('click',()=>{ resetForm(); renderAll(); history.replaceState(null,'',location.pathname); });
 
 // ---------- 저장 ----------
 const DISPLAYS=loadDisplays();
 function snapshot(){
-  return {id:F.editId||'D'+Date.now(),draft:false,media:copyMedia(F.media),noticeOn:F.noticeOn,name:F.name.trim(),type:F.type,ch:F.ch,cat:F.cat,from:F.from,to:F.to,show:F.show,use:F.use,head:F.head,noBase:F.noBase,
+  return {id:F.editId||'D'+Date.now(),draft:false,media:copyMedia(F.media),noticeOn:F.noticeOn,reviewOn:F.reviewOn,links:{...F.links},name:F.name.trim(),type:F.type,ch:F.ch,cat:F.cat,from:F.from,to:F.to,show:F.show,use:F.use,head:F.head,noBase:F.noBase,
     slots:F.slots.map(s=>({req:s.req,area:s.area,ptype:s.ptype,max:s.max,locked:s.locked,sel:[...s.sel]})),
     dev:isDev()?{soldout:M.soldout,ax:M.ax?Object.fromEntries(Object.entries(M.ax).map(([k,s])=>[k,[...s]])):null,rows:M.rows?M.rows.map(r=>Object.assign({},r)):null,dirty:M.dirty,join:{allow:[...M.join.allow],def:M.join.def},disc:{allow:[...M.disc.allow],def:M.disc.def}}:null,updated:TODAY};
 }
@@ -514,7 +543,7 @@ $('#bDraft').addEventListener('click',()=>{
   toast('임시저장했습니다. 상품목록에서 이어서 작성할 수 있습니다');
 });
 function loadDisplay(d){
-  Object.assign(F,{editId:d.id,name:d.name,type:d.type,ch:d.ch,cat:d.cat,catAuto:false,from:d.from,to:d.to,show:d.show,use:d.use!==false,head:d.head,noBase:d.noBase,hq:'',media:d.media?copyMedia(d.media):emptyMedia(),noticeOn:d.noticeOn!==false,
+  Object.assign(F,{editId:d.id,name:d.name,type:d.type,ch:d.ch,cat:d.cat,catAuto:false,from:d.from,to:d.to,show:d.show,use:d.use!==false,head:d.head,noBase:d.noBase,hq:'',media:d.media?copyMedia(d.media):emptyMedia(),noticeOn:d.noticeOn!==false,reviewOn:d.reviewOn!==false,links:{order:false,pay:false,...d.links},
     slots:d.slots.map(s=>newSlot({req:s.req,area:s.area,ptype:s.ptype,max:s.max,locked:s.locked,sel:new Set(s.sel)}))});
   resetM();
   if(d.dev){
