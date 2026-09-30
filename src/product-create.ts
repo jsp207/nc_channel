@@ -3,7 +3,7 @@
 // 상품 = 기본정보 + 기준 단품(디바이스형은 옵션목록·EPC 매칭) + 슬롯 0~N개. 섹션은 헤더를 눌러 접고 펼친다.
 import "./style.css";
 import { requireAuthentication } from "./auth";
-import { POLICY, AREAS, ITEMS, ITEM_BY_ID, $, el, esc, toast, joinKey, variants, TODAY, TYPES, tdef, CHANNELS, CATS, catOf, poRange, loadDisplays, saveDisplays } from "./product-display-store";
+import { POLICY, AREAS, ITEMS, ITEM_BY_ID, $, el, esc, toast, joinKey, variants, TODAY, TYPES, tdef, CATS, poRange, loadDisplays, saveDisplays } from "./product-display-store";
 
 requireAuthentication();
 
@@ -42,10 +42,7 @@ const TYPE_ICONS={
 };
 (function(){
   const seg=$('#typeSeg'); TYPES.forEach(t=>{const b=el('button','type-tile',`<svg viewBox="0 0 24 24" aria-hidden="true">${TYPE_ICONS[t.k]}</svg><span>${t.label}</span>`); b.type='button'; b.dataset.t=t.k; b.addEventListener('click',()=>{ if(F.type===t.k) return; setType(t.k); }); seg.appendChild(b);});
-  CHANNELS.forEach(c=>$('#fCh').appendChild(new Option(c,c)));
   $('#fName').addEventListener('input',e=>{F.name=e.target.value; renderPanel();});
-  $('#fCh').addEventListener('change',e=>{ F.ch=e.target.value; if(!F.catAuto&&!catOf(F.ch,F.cat)) F.cat=''; autoCat(); renderInfo(); renderPanel(); });
-  $('#fCat').addEventListener('change',e=>{ F.cat=e.target.value; F.catAuto=false; renderInfo(); renderPanel(); });
   $('#showSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{F.show=b.dataset.t==='1'; renderInfo(); renderPanel();}));
   $('#useSeg').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{F.use=b.dataset.t==='1'; renderInfo(); renderPanel();}));
 })();
@@ -54,17 +51,13 @@ function setType(k){
   F.slots = k==='device'?[planSlot()]:[]; resetM();
   renderAll(); toast(`${t.label}으로 바꿨습니다. ${t.base} 선택과 슬롯을 비웠습니다`);
 }
+// 노출채널·카테고리 입력은 화면에서 뺐다. 채널은 전시유형 기본값, 카테고리는 기준 단품으로 자동 지정해 저장한다.
 function autoCat(){ if(!F.catAuto) return; const h=F.head; const c=h?CATS.find(c=>c.ch===F.ch&&c.cond(h)):null; F.cat=c?c.name:''; }
 function renderInfo(){
   $('#typeSeg').querySelectorAll('button').forEach(b=>{ const on=b.dataset.t===F.type; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
-  $('#fName').value=F.name; $('#fCh').value=F.ch;
+  $('#fName').value=F.name;
   $('#showSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.t==='1')===F.show));
   $('#useSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.t==='1')===F.use));
-  const s=$('#fCat'); s.innerHTML=''; s.appendChild(new Option('카테고리 선택',''));
-  CATS.filter(c=>c.ch===F.ch).forEach(c=>s.appendChild(new Option(c.name,c.name))); s.value=F.cat;
-  const hint=$('#catHint');
-  if(F.catAuto){ hint.textContent = F.cat?'기준 단품 조건으로 자동 지정':(F.head||F.noBase?'이 채널에 맞는 자동 카테고리 없음. 직접 고르세요':''); }
-  else { hint.innerHTML='직접 지정 <button type="button" class="btn sm" id="catAutoBtn">자동으로 되돌리기</button>'; $('#catAutoBtn').addEventListener('click',()=>{F.catAuto=true; autoCat(); renderInfo(); renderPanel();}); }
 }
 
 // ---------- 기준 단품 ----------
