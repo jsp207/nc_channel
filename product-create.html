@@ -55,7 +55,41 @@
       .detail-builder svg{width:34px;height:34px;fill:none;stroke:var(--accent);stroke-width:1.6}
       .detail-builder p{margin:0 0 6px;color:var(--muted);font-size:12px}
       .notice-box{width:100%;height:300px;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface)}
-      #noticeStep.off .notice-box,#reviewStep.off .notice-box{opacity:.45}
+      .age-range{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text)}
+      .age-range input{width:64px}
+      /* 아이콘·뱃지: 프로모션마다 노출 스위치 */
+      .badge-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+      .badge-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+      .badge-item.on{border-color:var(--accent);background:var(--accent-soft)}
+      .badge-item .bi-tx{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+      .badge-item .bi-tx b{font-size:13px;font-weight:600}
+      .badge-item .bi-tx small{font-size:11px;color:var(--muted)}
+      .bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:1.5;white-space:nowrap;color:#fff;flex:none}
+      .bdg svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      /* 유사한 상품: 고객 화면에 보일 타이틀 미리보기 */
+      .sim-pv{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface)}
+      .sim-pv b{font-size:16px;font-weight:600}
+      .sim-pv small{font-size:13px;color:var(--muted)}
+      .sim-pv small:empty{display:none}
+      .pill.len{min-width:44px;text-align:right}
+      /* 검색(SEO/GEO): 콤마로 끊어 태그 칩을 만든다 */
+      .row.seo-row{align-items:flex-start}
+      .row.seo-row>label{padding-top:8px}
+      .seo-field{flex:1;min-width:240px}
+      .tag-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg);cursor:text}
+      .tag-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+      .tag-chips{display:contents}
+      .tag-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 9px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:12px}
+      .tag-chip button{width:18px;height:18px;border:0;border-radius:50%;background:none;color:inherit;font-size:13px;line-height:18px;padding:0;cursor:pointer}
+      .tag-chip button:hover{background:var(--accent);color:#fff}
+      #seoTagIn{flex:1;min-width:140px;min-height:0;border:0;outline:none;box-shadow:none;padding:4px 2px;background:none}
+      #seoTagIn:disabled{cursor:not-allowed}
+      /* 공용 style.css에 없는 숫자·여러 줄 입력을 텍스트 입력과 맞춘다 */
+      #v-edit input[type=number],#seoDesc{border:1px solid var(--line-strong);border-radius:8px;padding:8px 12px;font:inherit;font-size:12px;color:var(--text);background:var(--bg)}
+      #v-edit input[type=number]{min-height:38px;padding:8px 8px}
+      #seoDesc{display:block;width:100%;resize:vertical;line-height:1.6}
+      /* ON/OFF 스위치가 꺼진 영역 */
+      .step.off>.body{opacity:.45}
       /* 주문·결제 연동 노드: 구매후기 카드에서 선이 내려와 두 노드로 갈라진다 */
       .flow{position:relative;display:flex;flex-direction:column;align-items:center;margin:-26px 0 28px}
       .flow-port{width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);position:relative;z-index:1}
@@ -102,11 +136,6 @@
       .switch input:checked+span::after{transform:translateX(16px)}
       .switch input:disabled{cursor:not-allowed}
       .switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
-      .pv .pv-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;margin:10px 0 4px}
-      .pv .pv-subs{display:flex;gap:4px;margin-bottom:4px;overflow:hidden}
-      .pv .pv-detail{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-bottom:4px}
-      .pv .pv-detail img{display:block;width:100%}
-      .pv .pv-subs img{width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--line);flex:none}
       /* 전시유형: 100×100 정사각형 버튼 */
       .row.type-row{align-items:flex-start}
       .row.type-row>label{padding-top:8px}
@@ -165,28 +194,116 @@
       #optTable tr.unused td{color:var(--muted)}
       #optTable .seg{flex-wrap:nowrap}
       #optTable .seg button{padding:4px 10px;font-size:12px}
+      /* 슬롯: 후보 전체 / 선택됨 탭 (ref/product-admin-prototype-v4-6.html) */
+      .tabs{display:inline-flex;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden}
+      .tabs button{border:0;background:var(--bg);padding:6px 14px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
+      .tabs button+button{border-left:1px solid var(--line-strong)}
+      .tabs button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .tabs button b{font-weight:600;margin-left:2px}
+      .cl table.seltab td:nth-child(3){white-space:normal;min-width:220px}
+      .cl table.seltab td:first-child,.cl table.seltab td:nth-child(2){white-space:nowrap}
+      /* 미리보기 슬롯: 고객 화면 카드 */
+      .pcs{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+      .pc{position:relative;border:1px solid var(--line-strong);border-radius:14px;padding:16px 16px 12px;background:var(--bg);cursor:pointer;text-align:left}
+      .pc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+      .pc.on{border:1.5px solid var(--text);padding:15.5px 15.5px 11.5px}
+      .pc.dis{opacity:.5;cursor:not-allowed}
+      .pc .bdg{display:inline-block;background:#3b3bf0;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;margin-bottom:8px;letter-spacing:.02em}
+      .pc .pt{font-size:15px;font-weight:700;color:var(--text)}
+      .pc .ps{font-size:12px;color:var(--muted);margin-top:2px}
+      .pc .pp{font-size:17px;font-weight:700;margin:8px 0 6px;color:var(--text)}
+      .pc .pd{font-size:11.5px;color:var(--muted);line-height:1.6}
+      .pc .pch{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+      .pc .pch span{background:var(--surface);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text)}
+      .pc .plink{border:0;background:none;padding:0;margin-top:12px;font:inherit;font-size:12px;text-decoration:underline;color:var(--text);cursor:pointer;display:block}
+      .pc .psec{font-size:11px;color:var(--muted);margin:12px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+      .pc .phint{font-size:11px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+      .pc .phint b{color:var(--text);font-weight:600}
+      .pc .pchev{position:absolute;top:14px;right:16px;font-size:14px;color:var(--muted)}
+      .pc .pnote{font-size:11px;color:var(--bad);margin-top:8px}
+      .pr{display:flex;gap:10px;align-items:flex-start;padding:7px 0;cursor:pointer;font-size:13px}
+      .pr input{margin:3px 0 0;width:16px;height:16px;flex:none}
+      .pr .rl{flex:1;display:flex;flex-direction:column;color:var(--text)}
+      .pr .rl small{font-size:11px;color:var(--muted);margin-top:1px}
+      .pr .ra{white-space:nowrap;font-size:12px;color:var(--text)}
+      .pr.bad{opacity:.5;cursor:not-allowed}
+      .pr.none{border:1px dashed var(--line-strong);border-radius:10px;padding:10px 14px}
+      .pmore{border:1px solid var(--text);background:var(--bg);border-radius:14px;padding:12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--text)}
       .epcc{display:flex;align-items:center;gap:6px;white-space:nowrap}
       .linkbtn{border:0;background:none;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;font:inherit;text-align:left}
       /* 오른쪽 미리보기·검사: 패널 안에서 스크롤, 버튼은 아래 고정 */
-      #v-edit .panel{max-height:calc(100vh - 40px);overflow:auto}
+      /* 왼쪽: 미리보기(스크롤) 위, 검사(O/X)·저장 버튼 아래로 나눠 둘 다 화면 안에 둔다 */
+      #v-edit .side{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 40px);min-width:0}
+      #v-edit .side>.panel{position:static}
+      #v-edit .pv-panel{flex:1 1 auto;min-height:200px;overflow:auto}
+      #v-edit .chk-panel{flex:none;display:flex;flex-direction:column;max-height:42vh}
+      #v-edit .chk-panel .rules{flex:1;min-height:0;overflow:auto}
+      #chkSum.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+      #chkSum.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
       .panel>header{position:sticky;top:0;z-index:1}
       .panel>footer{position:sticky;bottom:0}
       .rules .m.na{background:var(--warn-soft);color:var(--warn)}
+      /* 미리보기: 모바일 상품 상세 화면 */
       .pvbox{padding:12px 16px;border-bottom:1px solid var(--line)}
-      .pv{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--bg)}
-      .pv h4{margin:0 0 4px;font-size:16px}
-      .pv .lbl{font-size:12px;color:var(--muted);margin:12px 0 6px;display:flex;justify-content:space-between;gap:8px}
-      .pv .sw{display:flex;gap:10px;flex-wrap:wrap}
-      .pv .sw button{width:28px;height:28px;border-radius:50%;border:2px solid var(--line-strong);padding:0;cursor:pointer}
-      .pv .sw button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
-      .pv .cap{border:1px solid var(--line);border-radius:6px;padding:9px 12px;display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
-      .pv .cap[data-id],.pv .cap[data-f]{cursor:pointer}
-      .pv .cap.on{border-color:var(--accent);color:var(--accent);font-weight:600}
-      .pv .cap.out{color:var(--muted)}
-      .pv .cap span:last-child{white-space:nowrap;margin-left:10px}
-      .pv .cap span:only-child{white-space:normal;margin-left:0}
+      .pv{--ph-bg:#fff;--ph-tx:#1d2230;--ph-mu:#7a8193;--ph-ln:#e7e9f0;--ph-soft:#f3f4f9;--ph-cta:#3b3bf0;border:1px solid var(--line-strong);border-radius:24px;background:var(--ph-bg);color:var(--ph-tx);overflow:hidden;font-size:13px}
+      .ph-status{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 4px;background:var(--ph-soft);font-size:13px}
+      .ph-status b{font-weight:600}
+      .ph-status span{display:inline-flex;gap:5px;align-items:center}
+      .ph-status .sig{width:14px;height:9px;background:linear-gradient(90deg,currentColor 0 2px,transparent 2px 4px,currentColor 4px 6px,transparent 6px 8px,currentColor 8px 10px,transparent 10px 12px,currentColor 12px 14px);clip-path:polygon(0 100%,100% 0,100% 100%)}
+      .ph-status .bat{width:20px;height:9px;border:1.5px solid currentColor;border-radius:3px;background:linear-gradient(90deg,currentColor 0 75%,transparent 75%);background-clip:content-box;padding:1px}
+      .ph-hero{position:relative;background:var(--ph-soft);min-height:250px;display:flex;align-items:center;justify-content:center;padding:44px 24px 20px}
+      .ph-hero>img{width:100%;max-height:260px;object-fit:contain;display:block}
+      .ph-nav{position:absolute;top:8px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:1}
+      .ph-nav span{display:inline-flex;gap:14px}
+      .ph-nav svg{width:20px;height:20px;fill:none;stroke:var(--ph-tx);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+      .ph-noimg{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ph-mu);font-size:11px}
+      .ph-noimg svg{width:56px;height:56px;fill:none;stroke:currentColor;stroke-width:1.2}
+      .ph-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+      .ph-dots i{width:5px;height:5px;border-radius:50%;background:#c9cdd8}
+      .ph-dots i.on{width:14px;border-radius:3px;background:var(--ph-tx)}
+      .ph-info{padding:20px 18px 18px}
+      .ph-model{font-size:11px;color:var(--ph-mu);margin-bottom:4px}
+      .ph-title{font-size:16px;font-weight:700;line-height:1.4;word-break:keep-all}
+      .ph-sub{font-size:12px;color:var(--ph-mu);margin-top:10px}
+      .ph-bdgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+      .ph-bdgs span{padding:2px 5px;border-radius:3px;background:var(--ph-soft);color:var(--ph-mu);font-size:10px;font-weight:600}
+      .ph-bdgs span.dk{background:var(--ph-tx);color:#fff}
+      .ph-note{margin-top:12px;padding:10px 14px;border-radius:12px;background:var(--ph-soft);color:var(--ph-mu);font-size:11.5px;line-height:1.55}
+      .ph-gap{height:8px;background:var(--ph-soft)}
+      .ph-tabs{display:flex;border-bottom:1px solid var(--ph-ln)}
+      .ph-tabs button{flex:1;border:0;background:none;padding:14px 0 12px;font:inherit;font-size:13px;color:var(--ph-mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+      .ph-tabs button.on{color:var(--ph-tx);font-weight:600;border-bottom-color:var(--ph-tx)}
+      .ph-sec{padding:16px 16px 18px}
+      .ph-sec:empty{display:none}
+      .ph-h{font-size:15px;font-weight:700;margin:4px 0 14px;display:flex;flex-direction:column;gap:3px}
+      .ph-h small{font-size:11px;font-weight:400;color:var(--ph-mu)}
+      .ph-hs{font-size:12px;color:var(--ph-mu);margin:-8px 0 12px}
+      .ph-ai{padding:14px 16px;border:1px solid #dfe2fb;border-radius:14px;background:linear-gradient(135deg,#f1f2ff,#e2e6fd);margin-bottom:8px}
+      .ph-ai b{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ph-cta)}
+      .ph-ai b svg{width:15px;height:15px;fill:currentColor;stroke:none}
+      .ph-ai p{margin:8px 0 0;font-size:11.5px;line-height:1.55;color:var(--ph-mu)}
+      .ph-combo{padding:6px 16px 16px;border:1px solid var(--ph-ln);border-radius:14px}
+      .ph-cr{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ph-ln);font-size:12px}
+      .ph-cr span:last-child{text-align:right;line-height:1.5}
+      .ph-cta{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:var(--ph-cta);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+      .ph-sw{display:flex;gap:10px;flex-wrap:wrap}
+      .ph-sw button{width:36px;height:36px;padding:3px;border:1.5px solid transparent;border-radius:50%;background:none;cursor:pointer}
+      .ph-sw button span{display:block;width:100%;height:100%;border-radius:50%;border:1px solid #c9cdd8}
+      .ph-sw button.on{border-color:var(--ph-tx)}
+      .ph-swn{font-size:12px;color:var(--ph-mu);margin-top:8px}
+      .ph-opt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;margin-bottom:10px;padding:16px 20px;border:1px solid var(--ph-ln);border-radius:14px;background:var(--ph-bg);color:var(--ph-tx);font:inherit;text-align:left;cursor:pointer}
+      .ph-opt b{font-size:13px;font-weight:500}
+      .ph-opt .ph-price{font-size:13px}
+      .ph-opt small{font-size:11px;color:var(--ph-mu)}
+      .ph-opt.on{border:1.5px solid var(--ph-tx);padding:15.5px 19.5px}
+      .ph-opt.out{color:var(--ph-mu)}
+      .ph-html{display:block;width:100%;height:420px;border:0}
+      .ph-sim{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+      .ph-sim i{aspect-ratio:3/4;border-radius:10px;background:var(--ph-soft)}
+      .pv .pv-detail{max-height:520px;overflow:auto}
+      .pv .pv-detail img{display:block;width:100%}
       .pv .warn{background:var(--warn-soft);color:var(--warn);padding:8px 10px;border-radius:6px;font-size:12px;margin-top:6px}
-      .pv .more{font-size:12px;color:var(--muted);margin:2px 0 6px}
+      .pv .pr{font-size:12px}
       .pvempty{border:1px dashed var(--line-strong);border-radius:6px;padding:8px 10px;color:var(--muted);font-size:12px;margin-bottom:6px}
       /* EPC 모달 */
       .modal{position:fixed;inset:0;background:rgba(20,20,30,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px}
@@ -206,7 +323,7 @@
       .dl dd{margin:0}
       .toast{z-index:70}
       /* 좁은 화면에서는 입력 폼을 먼저, 미리보기·검사를 아래에 */
-      @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.panel{order:1}#v-edit .panel{max-height:none;overflow:visible}.panel>header,.panel>footer{position:static}}
+      @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{order:1;position:static;max-height:none}#v-edit .pv-panel,#v-edit .chk-panel{max-height:none;overflow:visible}.panel>header,.panel>footer{position:static}}
       @media(max-width:900px){.mgrid{grid-template-columns:1fr}}
       @media(max-width:560px){#v-edit .step>header{flex-wrap:wrap}#v-edit .step>header .why{margin-left:0;order:3;width:100%}#v-edit .step>header .fold{margin-left:auto}.type-tile{width:88px;height:88px}}
       @media(prefers-reduced-motion:reduce){.step>header .fold svg,.switch span,.switch span::after,.flow-node,.flow-node::before,.sheet,.sheet.open{transition:none}.flow-node:hover{transform:none}}
@@ -231,20 +348,39 @@
   <div class="toolbar"><h1 id="editTitle">상품등록</h1><a class="btn" href="product-list.html" style="margin-left:auto">상품목록 보기</a></div>
   <div class="editing" id="editingBar"><span id="editingTxt"></span><button class="btn sm" id="editCancel">새로 만들기로 전환</button></div>
   <div class="builder">
-    <aside class="panel">
-      <header><b>미리보기 · 검사</b><span class="po" id="poCount">0<small>PO</small></span></header>
-      <div class="pvbox"><div class="pv" id="pv"></div></div>
-      <ul class="rules" id="ruleList"></ul>
-      <footer><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>저장하기</button></footer>
+    <aside class="side">
+      <section class="panel pv-panel" aria-label="미리보기">
+        <header><b>미리보기</b></header>
+        <div class="pvbox"><div class="pv" id="pv"></div></div>
+      </section>
+      <section class="panel chk-panel" aria-label="검사">
+        <header><b>검사 <span class="chip" id="chkSum"></span></b><span class="po" id="poCount">0<small>PO</small></span></header>
+        <ul class="rules" id="ruleList"></ul>
+        <footer><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>저장하기</button></footer>
+      </section>
     </aside>
     <div>
       <div class="step">
         <header><b>기본정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body">
           <div class="row type-row"><label>전시유형</label><div class="type-tiles" id="typeSeg" role="group" aria-label="전시유형"></div></div>
-          <div class="row"><label for="fName">상품명</label><input type="text" id="fName" placeholder="예: 갤럭시 Z 플립8 개통" maxlength="60" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fName">상품명</label><input type="text" id="fName" placeholder="예: 갤럭시 Z 플립8 개통 (줄바꿈은 &lt;br&gt;)" maxlength="60" style="flex:1;min-width:240px"></div>
           <div class="row"><label>노출</label><span class="seg" id="showSeg"><button type="button" data-t="1">노출</button><button type="button" data-t="0">미노출</button></span></div>
           <div class="row" style="margin-bottom:0"><label>전시상태</label><span class="seg" id="useSeg"><button type="button" data-t="1">사용</button><button type="button" data-t="0">미사용</button></span></div>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="specStep">
+        <header><b>주요정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row"><label for="fModel">모델명</label><input type="text" id="fModel" placeholder="예: SM-F766N" maxlength="60" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fProduct">제품명</label><input type="text" id="fProduct" placeholder="예: 갤럭시 Z 폴드8" maxlength="60" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fBrand">브랜드</label><input type="text" id="fBrand" placeholder="예: 삼성" maxlength="40" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fMaker">제조사</label><input type="text" id="fMaker" placeholder="예: 삼성전자" maxlength="40" style="flex:1;min-width:240px"></div>
+          <div class="row" style="margin-bottom:0"><label>미성년자 구매</label>
+            <span class="seg" id="minorSeg"><button type="button" data-t="1">가능</button><button type="button" data-t="0">불가능</button></span>
+            <span class="age-range" id="minorAge" hidden><input type="number" id="ageFrom" min="0" max="18" inputmode="numeric" aria-label="구매 가능 시작 나이" placeholder="14">세부터<input type="number" id="ageTo" min="0" max="18" inputmode="numeric" aria-label="구매 가능 끝 나이" placeholder="18">세까지</span>
+          </div>
         </div>
       </div>
 
@@ -310,7 +446,7 @@
       </div>
 
       <div class="step extra-step closed" id="noticeStep">
-        <header><b>유의사항</b><label class="switch" title="사용 여부"><input type="checkbox" id="noticeOn" checked aria-label="유의사항 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>유의사항</b><label class="switch" title="사용 여부"><input type="checkbox" id="noticeOn" aria-label="유의사항 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body">
           <!-- 유의사항 입력 기능은 추후 추가 예정 -->
           <div class="notice-box" id="noticeBox"></div>
@@ -318,10 +454,49 @@
       </div>
 
       <div class="step extra-step closed" id="reviewStep">
-        <header><b>구매후기</b><label class="switch" title="사용 여부"><input type="checkbox" id="reviewOn" checked aria-label="구매후기 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>구매후기</b><label class="switch" title="사용 여부"><input type="checkbox" id="reviewOn" aria-label="구매후기 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body">
           <!-- 구매후기 입력 기능은 추후 추가 예정 -->
           <div class="notice-box" id="reviewBox"></div>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="badgeStep">
+        <header><b>아이콘 및 뱃지 설정</b><span class="chip acc" id="badgeCnt"></span><label class="switch" title="사용 여부"><input type="checkbox" id="badgeOn" aria-label="아이콘 및 뱃지 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <p class="pill" style="margin:0 0 10px">노출을 켠 항목이 상품명 위에 아이콘 뱃지로 표시된다</p>
+          <ul class="badge-list" id="badgeList"></ul>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="simStep">
+        <header><b>유사한 상품 구성하기</b><label class="switch" title="사용 여부"><input type="checkbox" id="simOn" aria-label="유사한 상품 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row"><label>문구</label><span class="seg" id="simMode"><button type="button" data-m="default">기본 문구</button><button type="button" data-m="custom">직접 입력</button></span></div>
+          <div id="simCustom" hidden>
+            <div class="row"><label for="simTitle">타이틀</label><input type="text" id="simTitle" maxlength="30" style="flex:1;min-width:240px"><span class="pill len" id="simTitleLen"></span></div>
+            <div class="row"><label for="simSub">소타이틀</label><input type="text" id="simSub" maxlength="30" style="flex:1;min-width:240px"><span class="pill len" id="simSubLen"></span></div>
+          </div>
+          <div class="sim-pv" id="simPv"><b id="simPvTitle"></b><small id="simPvSub"></small></div>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="seoStep">
+        <header><b>검색 (SEO/GEO)</b><label class="switch" title="사용 여부"><input type="checkbox" id="seoOn" aria-label="검색 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row seo-row"><label for="seoTagIn">태그</label>
+            <div class="seo-field">
+              <div class="tag-box" id="seoTagBox"><span id="seoTags" class="tag-chips"></span><input type="text" id="seoTagIn" placeholder="콤마(,)로 구분해 입력" aria-describedby="seoTagCnt"></div>
+              <p class="pill" id="seoTagCnt" style="margin:6px 0 0"></p>
+            </div>
+          </div>
+          <div class="row"><label for="seoTitle">Page Title</label><input type="text" id="seoTitle" maxlength="25" placeholder="검색 결과에 보일 페이지 제목" style="flex:1;min-width:240px"><span class="pill len" id="seoTitleLen"></span></div>
+          <div class="row seo-row" style="margin-bottom:0"><label for="seoDesc">Description</label>
+            <div class="seo-field">
+              <textarea id="seoDesc" maxlength="200" rows="4" placeholder="검색 결과와 AI 답변에 쓰일 상품 설명"></textarea>
+              <p class="pill" id="seoDescLen" style="margin:6px 0 0;text-align:right"></p>
+            </div>
+          </div>
         </div>
       </div>
 
