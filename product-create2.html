@@ -84,6 +84,39 @@
       .tag-chip button:hover{background:var(--accent);color:#fff}
       #seoTagIn{flex:1;min-width:140px;min-height:0;border:0;outline:none;box-shadow:none;padding:4px 2px;background:none}
       #seoTagIn:disabled{cursor:not-allowed}
+      /* 자주묻는질문: 질문·답변 묶음을 추가·삭제·순서 변경 */
+      .faq-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:faq}
+      .faq-item{display:flex;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--bg);counter-increment:faq}
+      .faq-item::before{content:"Q" counter(faq);flex:none;width:34px;font-size:13px;font-weight:600;color:var(--accent);padding-top:9px}
+      .faq-fields{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+      .faq-fields input[type=text]{width:100%}
+      .faq-fields textarea{display:block;width:100%;resize:vertical;border:1px solid var(--line-strong);border-radius:8px;padding:8px 12px;font:inherit;font-size:12px;line-height:1.6;color:var(--text);background:var(--bg)}
+      .faq-fields textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+      .faq-acts{flex:none;display:flex;flex-direction:column;gap:4px}
+      .faq-acts button{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--muted);cursor:pointer;padding:0}
+      .faq-acts button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+      .faq-acts button[data-a=del]:hover{border-color:var(--bad);color:var(--bad)}
+      .faq-acts button:disabled{opacity:.35;cursor:default}
+      .faq-acts svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .faq-foot{display:flex;align-items:center;gap:10px;margin-top:12px}
+      /* 검색정보: 검색노출 Y/N, 키워드는 알약 모양 입력칸을 + 버튼으로 늘린다 */
+      .srch-radio{display:inline-flex;gap:18px}
+      .srch-radio label{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;cursor:pointer}
+      .srch-radio input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer}
+      .kw-list{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+      .kw-chip{display:inline-flex;align-items:center;gap:2px;height:38px;padding:0 6px 0 14px;border:1px solid var(--line-strong);border-radius:19px;background:var(--bg)}
+      .kw-chip:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+      .kw-chip input{width:7em;min-height:0!important;border:0!important;box-shadow:none!important;padding:0!important;background:none;font-size:13px!important;font-weight:600;outline:none}
+      .kw-chip input::placeholder{color:var(--text);font-weight:600}
+      .kw-chip button{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer;padding:0}
+      .kw-chip button:hover{background:var(--surface);color:var(--bad)}
+      .kw-chip svg,.kw-add svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+      .kw-add{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg);color:var(--muted);cursor:pointer}
+      .kw-add:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+      .kw-add:disabled{opacity:.45;cursor:not-allowed}
+      .kw-add svg{width:18px;height:18px}
+      .kw-note{display:flex;align-items:center;gap:6px;margin:10px 0 0;color:var(--muted);font-size:12px}
+      .kw-note svg{width:16px;height:16px;flex:none;fill:var(--line-strong);stroke:#fff;stroke-width:2;stroke-linecap:round}
       /* 공용 style.css에 없는 숫자·여러 줄 입력을 텍스트 입력과 맞춘다 */
       #v-edit input[type=number],#seoDesc{border:1px solid var(--line-strong);border-radius:8px;padding:8px 12px;font:inherit;font-size:12px;color:var(--text);background:var(--bg)}
       #v-edit input[type=number]{min-height:38px;padding:8px 8px}
@@ -126,6 +159,39 @@
       .sheet [hidden]{display:none!important}
       .sheet>footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--line)}
       body.sheet-on{overflow:hidden}
+      /* 주문서 설정: 화면의 80%만 채우는 가운데 레이어 + 뒤를 어둡게 덮는 딤 */
+      .sheet-dim{position:fixed;inset:0;z-index:59;background:rgba(20,20,30,.45);opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s linear .2s}
+      .sheet-dim.open{opacity:1;visibility:visible;transition:opacity .2s,visibility 0s}
+      .sheet.pop{inset:10vh 10vw;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.25);overflow:hidden;transform:scale(.97);opacity:0;transition:transform .2s,opacity .2s,visibility 0s linear .2s}
+      .sheet.pop.open{transform:none;opacity:1;transition:transform .2s,opacity .2s,visibility 0s}
+      .sheet.pop .sheet-wrap{max-width:none}
+      /* 주문서 컨테이너 검색·목록 */
+      .ctn-search{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:16px 18px;border-radius:10px;background:var(--surface);margin-bottom:24px}
+      .ctn-search .f{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500}
+      .ctn-search .f input[type=text]{width:180px}
+      .ctn-search input[type=date]{min-height:38px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;font:inherit;font-size:12px;color:var(--text);background:var(--bg)}
+      .ctn-search .acts{display:flex;gap:6px;margin-left:auto}
+      .ctn-head{display:flex;align-items:baseline;gap:8px;margin:0 0 12px}
+      .ctn-head b{font-size:17px;font-weight:600}
+      .ctn-head span{color:var(--accent);font-size:13px}
+      .ctn-tbl{overflow:auto}
+      .ctn-tbl th,.ctn-tbl td{text-align:center;white-space:nowrap}
+      .ctn-tbl td.nm{text-align:center}
+      .ctn-tbl tbody tr{cursor:pointer}
+      .ctn-tbl tbody tr:hover td{background:var(--surface)}
+      .ctn-tbl tbody tr.act td{background:var(--accent-soft)}
+      .ctn-tbl tbody tr.act td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+      .ctn-tbl .cid{color:var(--accent)}
+      .ctn-tbl .empty td{padding:40px;color:var(--muted);cursor:default;background:none!important}
+      .ctn-foot{position:relative;display:flex;justify-content:center;align-items:center;margin-top:18px;min-height:38px}
+      .ctn-foot #ctnAdd{position:absolute;right:0}
+      .pager{display:flex;align-items:center;gap:2px}
+      .pager button{min-width:30px;height:30px;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+      .pager button:hover:not(:disabled){background:var(--surface)}
+      .pager button.on{background:var(--accent);color:#fff}
+      .pager button:disabled{color:var(--line-strong);cursor:default}
+      .pager i{padding:0 4px;color:var(--muted);font-style:normal}
+      .ctn-axis{margin-top:28px}
       @media(max-width:560px){.flow-nodes{grid-template-columns:minmax(0,1fr);gap:14px;padding-top:0;width:100%}.flow-nodes::before,.flow-node::before{display:none}}
       /* ON/OFF 스위치 */
       .switch{position:relative;display:inline-flex;width:36px;height:20px;flex:none;cursor:pointer}
@@ -333,7 +399,7 @@
       @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{order:1;position:static;max-height:none}#v-edit .pv-panel,#v-edit .chk-panel{max-height:none;overflow:visible}.panel>header,.panel>footer{position:static}}
       @media(max-width:900px){.mgrid{grid-template-columns:1fr}}
       @media(max-width:560px){#v-edit .step>header{flex-wrap:wrap}#v-edit .step>header .why{margin-left:0;order:3;width:100%}#v-edit .step>header .fold{margin-left:auto}.type-tile{width:88px;height:88px}}
-      @media(prefers-reduced-motion:reduce){.step>header .fold svg,.switch span,.switch span::after,.flow-node,.flow-node::before,.sheet,.sheet.open{transition:none}.flow-node:hover{transform:none}}
+      @media(prefers-reduced-motion:reduce){.step>header .fold svg,.switch span,.switch span::after,.flow-node,.flow-node::before,.sheet,.sheet.open,.sheet-dim,.sheet-dim.open{transition:none}.flow-node:hover{transform:none}}
     </style>
   </head>
   <body>
@@ -461,6 +527,14 @@
         </div>
       </div>
 
+      <div class="step extra-step closed" id="faqStep">
+        <header><b>자주묻는질문</b><span class="chip acc" id="faqCnt" hidden></span><label class="switch" title="사용 여부"><input type="checkbox" id="faqOn" aria-label="자주묻는질문 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <ol class="faq-list" id="faqList"></ol>
+          <div class="faq-foot"><button type="button" class="btn" id="faqAdd">+ 질문 추가</button><span class="pill" id="faqMax"></span></div>
+        </div>
+      </div>
+
       <div class="step extra-step closed" id="reviewStep">
         <header><b>구매후기</b><label class="switch" title="사용 여부"><input type="checkbox" id="reviewOn" aria-label="구매후기 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body">
@@ -508,6 +582,21 @@
         </div>
       </div>
 
+      <div class="step extra-step closed" id="srchStep">
+        <header><b>검색정보</b><span class="chip" id="srchSt">미작성</span><label class="switch" title="사용 여부"><input type="checkbox" id="srchOn" aria-label="검색정보 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row" role="radiogroup" aria-labelledby="srchShowLb"><label id="srchShowLb">검색노출 여부</label>
+            <span class="srch-radio" id="srchShow"><label><input type="radio" name="srchShow" value="Y">Y</label><label><input type="radio" name="srchShow" value="N">N</label></span>
+          </div>
+          <div class="row seo-row" style="margin-bottom:0"><label>검색키워드 관리</label>
+            <div class="seo-field">
+              <div class="kw-list"><span id="srchKws" class="tag-chips"></span><button type="button" class="kw-add" id="srchAdd" aria-label="검색키워드 추가"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>
+              <p class="kw-note"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7.5v.5"/></svg>검색태그는 최대 10개 까지 설정 가능합니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       <!-- 상품 → 주문·결제 연동: 노드 연결선 형태 -->
       <div class="flow" id="linkFlow">
@@ -537,11 +626,30 @@
   <div class="mbody" id="mBody"></div>
   <footer id="mFoot"></footer>
 </div></div>
+<div class="sheet-dim" id="sheetDim" aria-hidden="true"></div>
 <div class="sheet" id="linkSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1">
   <header><button type="button" class="back" id="sheetBack" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><b id="sheetTitle"></b><span class="pill" id="sheetSub"></span></header>
   <div class="sheet-body">
+    <!-- 주문서 설정: 주문서 컨테이너 검색·목록 -->
+    <div class="sheet-wrap" id="sheetCtn" hidden>
+      <form class="ctn-search" id="ctnForm">
+        <label class="f">카테고리<select id="ctnCat"><option value="">전체</option><option>특정 전시 상품 컨테이너</option><option>상품 유형 컨테이너</option></select></label>
+        <label class="f">컨테이너 ID<input type="text" id="ctnId" maxlength="30" placeholder="최대 30자까지 입력 가능"></label>
+        <label class="f">컨테이너명<input type="text" id="ctnNm" maxlength="30" placeholder="최대 30자까지 입력 가능"></label>
+        <span class="f">등록 기간<input type="date" id="ctnFrom" aria-label="등록 시작일">-<input type="date" id="ctnTo" aria-label="등록 종료일"></span>
+        <span class="acts"><button type="button" class="btn" id="ctnReset">초기화</button><button type="submit" class="btn primary">조회</button></span>
+      </form>
+      <div class="ctn-head"><b>조회 결과</b><span id="ctnCnt"></span></div>
+      <div class="ctn-tbl">
+        <table>
+          <thead><tr><th>No.</th><th>카테고리</th><th>컨테이너 ID</th><th>컨테이너명</th><th>승인 상태</th><th>사용 여부</th><th>최종 등록(수정)일자</th></tr></thead>
+          <tbody id="ctnRows"></tbody>
+        </table>
+      </div>
+      <div class="ctn-foot"><nav class="pager" id="ctnPager" aria-label="페이지"></nav><button type="button" class="btn primary" id="ctnAdd">등록</button></div>
+    </div>
     <!-- 주문서 설정: 디바이스형의 가입유형·할인방법 (상품등록 옵션선택에서 옮겨 옴) -->
-    <div class="sheet-wrap" id="sheetOrder" hidden>
+    <div class="sheet-wrap ctn-axis" id="sheetOrder" hidden>
       <div class="axis" id="joinOpts"></div>
       <div class="axis" id="discOpts"></div>
     </div>

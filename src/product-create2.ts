@@ -24,7 +24,7 @@ let SEQ=0;
 function resetM(){ Object.assign(M,{soldout:'show',ax:null,rows:null,dirty:false,rowSel:new Set(),sel:null,join:{allow:new Set(['기기변경','번호이동','신규가입']),def:'번호이동'},disc:{allow:new Set(['공시지원','선택약정']),def:'선택약정'}}); }
 function newSlot(o){ return Object.assign({id:++SEQ,req:true,area:'부가서비스',ptypes:new Set(),max:1,sel:new Set(),order:[],best:new Set(),def:null,more:3,grp:true,tab:'all',locked:false,q:'',closed:false},o||{}); }
 const planSlot=()=>newSlot({req:true,area:'이동전화',ptypes:new Set(['요금제형']),max:1,locked:true});
-function resetForm(){ Object.assign(F,{editId:null,name:'',type:'device',ch:'T다이렉트샵',cat:'',catAuto:true,from:'',to:'',show:true,use:true,head:null,noBase:false,hq:'',slots:[planSlot()],media:emptyMedia(),noticeOn:false,reviewOn:false,badgeOn:false,seoOn:false,spec:emptySpec(),badges:[],sim:emptySim(),seo:emptySeo(),links:{order:false,pay:false}}); resetM(); }
+function resetForm(){ Object.assign(F,{editId:null,name:'',type:'device',ch:'T다이렉트샵',cat:'',catAuto:true,from:'',to:'',show:true,use:true,head:null,noBase:false,hq:'',slots:[planSlot()],media:emptyMedia(),noticeOn:false,reviewOn:false,badgeOn:false,seoOn:false,spec:emptySpec(),badges:[],sim:emptySim(),seo:emptySeo(),srch:emptySrch(),faq:emptyFaq(),links:{order:false,pay:false}}); resetM(); }
 // 주요정보. 조건(미성년자 구매)을 사용하면 나이 범위(ageFrom~ageTo)를 받는다. 빈칸은 제한 없음.
 // 유사한 상품 영역 문구. mode가 default면 SIM_DEF를, custom이면 직접 입력한 문구(최대 30자)를 쓴다.
 const SIM_DEF={title:'방금 보신 상품과 유사한 상품',sub:'동일한 조건으로 비교한 다른 기기도 확인해보세요'}, SIM_MAX=30;
@@ -32,6 +32,12 @@ const emptySim=()=>({on:false,mode:'default',title:'',sub:''});
 // 검색(SEO/GEO): 태그 최대 10개, Page Title 25자, Description 200자.
 const SEO_MAX={tags:10,title:25,desc:200};
 const emptySeo=()=>({tags:[],title:'',desc:''});
+// 검색정보: 검색노출 Y/N(show, 미선택은 null)과 검색키워드 최대 10개. 빈 입력칸 하나로 시작한다.
+const SRCH_MAX=10;
+const emptySrch=()=>({on:false,show:null,kws:['']});
+// 자주묻는질문: 질문·답변 묶음 최대 20개. 빈 묶음 하나로 시작한다.
+const FAQ_MAX=20;
+const emptyFaq=()=>({on:false,items:[{q:'',a:''}]});
 const emptySpec=()=>({model:'',product:'',brand:'',maker:'',minor:false,ageFrom:'',ageTo:''});
 // 이미지·상품정보. 이미지는 줄인 data URL로 들고 있다가 상품과 함께 저장한다.
 const emptyMedia=()=>({main:null,subs:[],detail:{mode:'image',images:[],html:''}});
@@ -545,10 +551,12 @@ $('#htmlView').querySelectorAll('button').forEach(b=>b.addEventListener('click',
 // 헤더 스위치가 있는 영역. 기본값은 모두 OFF. 켜면 펼치고 끄면 접는다. 유의사항·구매후기는 사용 여부만 저장한다(내용 입력은 추후 추가 예정).
 const SWITCHES=[
  {step:'#noticeStep',inp:'#noticeOn',get:()=>F.noticeOn,set:v=>{F.noticeOn=v;}},
+ {step:'#faqStep',inp:'#faqOn',get:()=>F.faq.on,set:v=>{F.faq.on=v;}},
  {step:'#reviewStep',inp:'#reviewOn',get:()=>F.reviewOn,set:v=>{F.reviewOn=v;}},
  {step:'#badgeStep',inp:'#badgeOn',get:()=>F.badgeOn,set:v=>{F.badgeOn=v;}},
  {step:'#simStep',inp:'#simOn',get:()=>F.sim.on,set:v=>{F.sim.on=v;}},
  {step:'#seoStep',inp:'#seoOn',get:()=>F.seoOn,set:v=>{F.seoOn=v;}},
+ {step:'#srchStep',inp:'#srchOn',get:()=>F.srch.on,set:v=>{F.srch.on=v;}},
 ];
 function setFold(st,closed){ st.classList.toggle('closed',closed); const fb=st.querySelector(':scope>header .fold'); if(fb){ fb.setAttribute('aria-expanded',String(!closed)); fb.setAttribute('aria-label',closed?'펼치기':'접기'); } }
 // fold가 true면 ON/OFF에 맞춰 펼침 상태도 맞춘다(처음 그릴 때·불러올 때).
@@ -641,24 +649,131 @@ $('#seoTags').addEventListener('click',e=>{ const b=e.target.closest('button[dat
 $('#seoTagBox').addEventListener('click',e=>{ if(e.target.id==='seoTagBox') $('#seoTagIn').focus(); });
 $('#seoTitle').addEventListener('input',e=>{ F.seo.title=e.target.value.slice(0,SEO_MAX.title); seoLen(); });
 $('#seoDesc').addEventListener('input',e=>{ F.seo.desc=e.target.value.slice(0,SEO_MAX.desc); seoLen(); });
+// ---------- 자주묻는질문 ----------
+// 질문·답변 묶음을 추가·삭제하고 위아래로 옮긴다. 저장할 때는 질문과 답변이 모두 빈 묶음을 뺀다.
+const faqItems=()=>F.faq.items.map(x=>({q:x.q.trim(),a:x.a.trim()})).filter(x=>x.q||x.a);
+const FAQ_IC={up:'<path d="m6 15 6-6 6 6"/>',down:'<path d="m6 9 6 6 6-6"/>',del:'<path d="M6 6l12 12M18 6 6 18"/>'};
+function faqMeta(){
+  const n=faqItems().length, all=F.faq.items.length;
+  $('#faqCnt').textContent=`${n}개`; $('#faqCnt').hidden=!n;
+  $('#faqAdd').disabled=all>=FAQ_MAX; $('#faqMax').textContent=`${all}/${FAQ_MAX}개`;
+}
+function renderFaq(){
+  const it=F.faq.items, last=it.length-1;
+  const btn=(a,i,lb,off)=>`<button type="button" data-a="${a}" data-i="${i}" aria-label="${i+1}번 ${lb}" ${off?'disabled':''}><svg viewBox="0 0 24 24" aria-hidden="true">${FAQ_IC[a]}</svg></button>`;
+  $('#faqList').innerHTML=it.map((x,i)=>`<li class="faq-item"><div class="faq-fields"><input type="text" data-k="q" data-i="${i}" value="${esc(x.q)}" maxlength="100" placeholder="질문을 입력하세요" aria-label="${i+1}번 질문"><textarea data-k="a" data-i="${i}" rows="3" maxlength="1000" placeholder="답변을 입력하세요" aria-label="${i+1}번 답변">${esc(x.a)}</textarea></div><div class="faq-acts">${btn('up',i,'위로',i===0)}${btn('down',i,'아래로',i===last)}${btn('del',i,'삭제',false)}</div></li>`).join('');
+  faqMeta();
+}
+$('#faqList').addEventListener('input',e=>{ const t=e.target, i=t.dataset.i; if(i==null) return; F.faq.items[+i][t.dataset.k]=t.value; faqMeta(); });
+$('#faqList').addEventListener('change',()=>renderPanel());
+$('#faqList').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-a]'); if(!b) return; const it=F.faq.items, i=+b.dataset.i, a=b.dataset.a;
+  if(a==='del'){ if(it.length>1) it.splice(i,1); else it[0]={q:'',a:''}; }
+  else { const j=a==='up'?i-1:i+1; [it[i],it[j]]=[it[j],it[i]]; }
+  renderFaq(); renderPanel();
+  const f=$(`#faqList [data-a="${a}"][data-i="${a==='del'?Math.min(i,it.length-1):a==='up'?i-1:i+1}"]`); if(f&&!f.disabled) f.focus();
+});
+$('#faqAdd').addEventListener('click',()=>{
+  const it=F.faq.items; if(it.length>=FAQ_MAX) return;
+  it.push({q:'',a:''}); renderFaq(); $(`#faqList input[data-i="${it.length-1}"]`).focus();
+});
+// ---------- 검색정보 ----------
+// 키워드는 알약 모양 입력칸 하나에 하나씩. + 로 칸을 늘리고 × 로 지운다(마지막 한 칸은 비우기만 한다).
+const srchKws=()=>F.srch.kws.map(x=>x.trim()).filter(Boolean);
+function srchState(){
+  const s=F.srch, n=srchKws().length, st=s.show&&n?'작성완료':s.show||n?'작성중':'미작성';
+  const c=$('#srchSt'); c.textContent=st; c.classList.toggle('acc',st!=='미작성');
+  $('#srchAdd').disabled=s.kws.length>=SRCH_MAX;
+}
+function renderSrch(){
+  const s=F.srch;
+  $('#srchShow').querySelectorAll('input').forEach(r=>{ r.checked=r.value===s.show; });
+  $('#srchKws').innerHTML=s.kws.map((x,i)=>`<span class="kw-chip"><input type="text" data-i="${i}" value="${esc(x)}" maxlength="20" placeholder="+ 입력" aria-label="검색키워드 ${i+1}"><button type="button" data-i="${i}" aria-label="검색키워드 ${i+1} 삭제"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>`).join('');
+  srchState();
+}
+const srchFocus=i=>{ const inp=$(`#srchKws input[data-i="${i}"]`); if(inp) inp.focus(); };
+$('#srchShow').addEventListener('change',e=>{ F.srch.show=e.target.value; srchState(); renderPanel(); });
+$('#srchKws').addEventListener('input',e=>{ const i=e.target.dataset.i; if(i==null) return; F.srch.kws[+i]=e.target.value; srchState(); });
+$('#srchKws').addEventListener('change',()=>renderPanel());
+$('#srchKws').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-i]'); if(!b) return; const k=F.srch.kws, i=+b.dataset.i;
+  if(k.length>1) k.splice(i,1); else k[0]='';
+  renderSrch(); srchFocus(Math.min(i,k.length-1)); renderPanel();
+});
+// 입력칸에서 Enter를 치면 다음 칸을 만든다
+$('#srchKws').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.isComposing&&e.target.matches('input')){ e.preventDefault(); if(e.target.value.trim()) $('#srchAdd').click(); } });
+$('#srchAdd').addEventListener('click',()=>{
+  const k=F.srch.kws; if(k.length>=SRCH_MAX){ toast(`검색태그는 최대 ${SRCH_MAX}개까지 설정할 수 있습니다`); return; }
+  const empty=k.findIndex(x=>!x.trim()); if(empty>=0){ srchFocus(empty); return; } // 빈 칸이 있으면 그 칸부터 채운다
+  k.push(''); renderSrch(); srchFocus(k.length-1);
+});
 // ---------- 주문·결제 연동 (목업) ----------
 // 노드를 누르면 연동/해제를 오간다. 실제 연동 API가 붙으면 여기서 설정 화면을 연다.
 function renderLinks(){ document.querySelectorAll('#linkFlow .flow-node').forEach(b=>{ const on=!!F.links[b.dataset.k]; b.classList.toggle('on',on); b.querySelector('.fn-st').textContent=on?'설정됨':'미설정'; }); }
 // 노드를 누르면 설정 화면이 오른쪽에서 풀페이지로 들어온다. 설정 항목은 추후 추가 예정.
 const SHEET={order:{t:'주문서 설정',sub:'주문서 · 개통 정보'},pay:{t:'결제 설정',sub:'결제수단 · 청구 정보'},builder:{t:'전시빌더',sub:'상품정보 화면 구성'}};
+// ---------- 주문서 컨테이너 (목업) ----------
+// 주문서 설정 레이어에서 검색·선택한다. 실제 API가 붙으면 CTN 대신 조회 결과를 쓴다.
+const CTN_NAMES=['아이폰 18 pro 전용 컨테이너','상품 유형_단말 기본 컨테이너','상품 유형_단말 신규가입 기본 컨테이너','상품 유형_단말 번호이동 기본 컨테이너','상품 유형_단말 기기변경 기본 컨테이너','상품 유형_요금제 기본 컨테이너','상품 유형_부가서비스 기본 컨테이너','상품 유형_커머스 기본 컨테이너','아이폰 18 전용 컨테이너','아이폰 18 pro max 전용 컨테이너'];
+const CTN_ST=['반려','반려','반려','임시 저장','임시 저장','임시 저장','승인 완료','승인 완료','승인 완료','승인 완료'];
+const CTN=Array.from({length:253},(_,i)=>{
+  const n=i+1, j=i%10, nm=CTN_NAMES[j], d=new Date(2026,4,1+Math.floor(i*123/252),9+i%9);
+  const p=v=>String(v).padStart(2,'0');
+  return { no:n, cat:nm.startsWith('상품 유형')?'상품 유형 컨테이너':'특정 전시 상품 컨테이너', id:`CTN-ORD-${String(n).padStart(3,'0')}`, nm,
+    st:CTN_ST[j], use:CTN_ST[j]==='반려'?'N':'Y', ymd:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`, hm:`${p(d.getHours())}:00` };
+}).reverse();
+const CTN_PER=10, CTN_FROM=CTN.at(-1).ymd, CTN_TO=CTN[0].ymd;
+let ctnList=CTN, ctnPage=1, ctnPick=null;
+const ctnTag=s=>s==='승인 완료'?'ok':s==='반려'?'bad':'warn';
+function ctnSearch(){
+  const cat=$('#ctnCat').value, id=$('#ctnId').value.trim().toLowerCase(), nm=$('#ctnNm').value.trim().toLowerCase(), fr=$('#ctnFrom').value, to=$('#ctnTo').value;
+  ctnList=CTN.filter(c=>(!cat||c.cat===cat)&&(!id||c.id.toLowerCase().includes(id))&&(!nm||c.nm.toLowerCase().includes(nm))&&(!fr||c.ymd>=fr)&&(!to||c.ymd<=to));
+  ctnPage=1; renderCtn();
+}
+function ctnReset(){ $('#ctnCat').value=''; $('#ctnId').value=''; $('#ctnNm').value=''; $('#ctnFrom').value=CTN_FROM; $('#ctnTo').value=CTN_TO; ctnSearch(); }
+function renderCtn(){
+  const last=Math.max(1,Math.ceil(ctnList.length/CTN_PER)), rows=ctnList.slice((ctnPage-1)*CTN_PER,ctnPage*CTN_PER);
+  $('#ctnCnt').textContent=`${ctnList.length.toLocaleString()}건`;
+  $('#ctnRows').innerHTML=rows.length?rows.map(c=>`<tr data-id="${c.id}" class="${c.id===ctnPick?'act':''}" tabindex="0" aria-selected="${c.id===ctnPick}"><td>${c.no}</td><td>${esc(c.cat)}</td><td class="cid">${c.id}</td><td class="nm">${esc(c.nm)}</td><td><span class="tag ${ctnTag(c.st)}">${c.st}</span></td><td>${c.use}</td><td>${c.ymd.replaceAll('-','.')} ${c.hm}</td></tr>`).join('')
+    :'<tr class="empty"><td colspan="7">조회 결과가 없습니다</td></tr>';
+  // 현재 페이지를 가운데 두고 10개씩 보여 준다
+  const s=Math.max(1,Math.min(ctnPage-4,last-9)), e=Math.min(last,s+9), nums=[];
+  for(let i=s;i<=e;i++) nums.push(`<button type="button" data-p="${i}" class="${i===ctnPage?'on':''}" ${i===ctnPage?'aria-current="page"':''}>${i}</button>`);
+  const arw=(p,lb,tx,off)=>`<button type="button" data-p="${p}" aria-label="${lb}" ${off?'disabled':''}>${tx}</button>`;
+  $('#ctnPager').innerHTML=arw(1,'처음','«',ctnPage===1)+arw(ctnPage-1,'이전','‹',ctnPage===1)+nums.join('')+(e<last?`<i>…</i>${arw(last,`${last}페이지`,last,false)}`:'')+arw(ctnPage+1,'다음','›',ctnPage===last)+arw(last,'마지막','»',ctnPage===last);
+}
+function pickCtn(id){ ctnPick=ctnPick===id?null:id; const c=CTN.find(x=>x.id===ctnPick); $('#sheetSub').textContent=c?`${c.id} · ${c.nm}`:SHEET.order.sub; renderCtn(); }
+$('#ctnForm').addEventListener('submit',e=>{ e.preventDefault(); ctnSearch(); });
+$('#ctnReset').addEventListener('click',ctnReset);
+$('#ctnPager').addEventListener('click',e=>{ const b=e.target.closest('button[data-p]'); if(!b||b.disabled) return; ctnPage=+b.dataset.p; renderCtn(); });
+$('#ctnRows').addEventListener('click',e=>{ const r=e.target.closest('tr[data-id]'); if(r) pickCtn(r.dataset.id); });
+$('#ctnRows').addEventListener('keydown',e=>{ const r=e.target.closest('tr[data-id]'); if(r&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); pickCtn(r.dataset.id); $(`#ctnRows tr[data-id="${r.dataset.id}"]`).focus(); } });
+$('#ctnAdd').addEventListener('click',()=>toast('주문서 컨테이너 등록은 추후 추가 예정입니다'));
+ctnReset();
+
 let sheetKey=null, sheetFrom=null;
 function openSheet(k,from){
-  sheetKey=k; sheetFrom=from; const d=SHEET[k], sh=$('#linkSheet');
-  $('#sheetTitle').textContent=d.t; $('#sheetSub').textContent=d.sub; $('#sheetBody').textContent=`${d.t} 항목은 추후 추가 예정입니다`;
+  sheetKey=k; sheetFrom=from; const d=SHEET[k], sh=$('#linkSheet'), ord=k==='order';
+  const c=ord&&CTN.find(x=>x.id===ctnPick);
+  $('#sheetTitle').textContent=d.t; $('#sheetSub').textContent=c?`${c.id} · ${c.nm}`:d.sub; $('#sheetBody').textContent=`${d.t} 항목은 추후 추가 예정입니다`;
+  // 주문서 설정은 화면 80% 크기의 모달 레이어로 띄운다
+  sh.classList.toggle('pop',ord); $('#sheetCtn').hidden=!ord; $('#sheetBody').hidden=ord;
   // 가입유형·할인방법은 디바이스형 주문서에서만 고른다
-  const ord=k==='order'&&isDev()&&!!F.head; $('#sheetOrder').hidden=!ord; $('#sheetBody').hidden=ord;
-  if(k==='order'&&isDev()&&!F.head) $('#sheetBody').textContent='디바이스를 먼저 고르면 가입유형·할인방법을 설정할 수 있습니다';
+  $('#sheetOrder').hidden=!(ord&&isDev()&&!!F.head);
   $('#sheetDone').textContent=k==='builder'?'저장':'설정 완료';
   $('#sheetOff').hidden=!F.links[k]; // 전시빌더는 연동 상태가 없어 해제 버튼을 쓰지 않는다
+  if(ord){ renderCtn(); $('#sheetDim').classList.add('open'); }
   sh.classList.add('open'); document.body.classList.add('sheet-on'); sh.focus();
 }
-function closeSheet(){ $('#linkSheet').classList.remove('open'); document.body.classList.remove('sheet-on'); if(sheetFrom) sheetFrom.focus({preventScroll:true}); sheetKey=null; }
-function setLink(on){ const k=sheetKey, t=SHEET[k].t; if(k==='builder'){ closeSheet(); toast('전시빌더 내용을 저장했습니다'); return; } F.links[k]=on; closeSheet(); renderLinks(); toast(`${t}${on?'을 저장했습니다':'을 해제했습니다'}`); }
+function closeSheet(){ $('#linkSheet').classList.remove('open'); $('#sheetDim').classList.remove('open'); document.body.classList.remove('sheet-on'); if(sheetFrom) sheetFrom.focus({preventScroll:true}); sheetKey=null; }
+function setLink(on){
+  const k=sheetKey, t=SHEET[k].t;
+  if(k==='builder'){ closeSheet(); toast('전시빌더 내용을 저장했습니다'); return; }
+  if(on&&k==='order'&&!ctnPick){ toast('목록에서 주문서 컨테이너를 선택하세요'); return; }
+  if(!on&&k==='order') ctnPick=null;
+  F.links[k]=on; closeSheet(); renderLinks(); toast(`${t}${on?'을 저장했습니다':'을 해제했습니다'}`);
+}
+$('#sheetDim').addEventListener('click',closeSheet);
 document.querySelectorAll('#linkFlow .flow-node').forEach(b=>b.addEventListener('click',()=>openSheet(b.dataset.k,b)));
 $('#sheetBack').addEventListener('click',closeSheet);
 $('#sheetCancel').addEventListener('click',closeSheet);
@@ -797,14 +912,14 @@ function renderEditing(){
   $('#editTitle').textContent=on?'상품수정':'상품등록';
   if(on){ const d=DISPLAYS.find(x=>x.id===F.editId); $('#editingTxt').textContent=d&&d.draft?`"${nameText(d.name)||'상품명 없음'}" 임시저장본을 이어서 작성 중. 저장하기를 누르면 목록에 등록됩니다`:`"${d?nameText(d.name):''}" 수정 중. 저장하면 목록의 같은 행이 바뀝니다`; }
 }
-function renderAll(){ renderInfo(); renderBase(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderSwitches(true); renderSpec(); renderBadges(); renderSim(); renderSeo(); renderLinks(); renderEditing(); }
+function renderAll(){ renderInfo(); renderBase(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderSwitches(true); renderSpec(); renderBadges(); renderSim(); renderSeo(); renderSrch(); renderFaq(); renderLinks(); renderEditing(); }
 $('#bReset').addEventListener('click',()=>{ const k=F.type, id=F.editId; if(id){ const d=DISPLAYS.find(x=>x.id===id); if(d){ loadDisplay(d); toast('저장된 값으로 되돌렸습니다'); return; } } resetForm(); if(k!=='device') setType(k); else renderAll(); });
 $('#editCancel').addEventListener('click',()=>{ resetForm(); renderAll(); history.replaceState(null,'',location.pathname); });
 
 // ---------- 저장 ----------
 const DISPLAYS=loadDisplays();
 function snapshot(){
-  return {id:F.editId||'D'+Date.now(),draft:false,media:copyMedia(F.media),noticeOn:F.noticeOn,reviewOn:F.reviewOn,badgeOn:F.badgeOn,seoOn:F.seoOn,spec:{...F.spec},badges:[...F.badges],sim:{...F.sim},seo:{...F.seo,tags:[...F.seo.tags]},links:{...F.links},name:F.name.trim(),type:F.type,ch:F.ch,cat:F.cat,from:F.from,to:F.to,show:F.show,use:F.use,head:F.head,noBase:F.noBase,
+  return {id:F.editId||'D'+Date.now(),draft:false,media:copyMedia(F.media),noticeOn:F.noticeOn,reviewOn:F.reviewOn,badgeOn:F.badgeOn,seoOn:F.seoOn,spec:{...F.spec},badges:[...F.badges],sim:{...F.sim},seo:{...F.seo,tags:[...F.seo.tags]},srch:{...F.srch,kws:F.srch.kws.map(x=>x.trim()).filter(Boolean)},faq:{on:F.faq.on,items:faqItems()},links:{...F.links},name:F.name.trim(),type:F.type,ch:F.ch,cat:F.cat,from:F.from,to:F.to,show:F.show,use:F.use,head:F.head,noBase:F.noBase,
     slots:F.slots.map(s=>({req:s.req,area:s.area,ptypes:[...s.ptypes],max:s.max,locked:s.locked,sel:ordered(s),best:[...s.best],def:s.def,more:s.more,grp:s.grp})),
     dev:isDev()?{soldout:M.soldout,ax:M.ax?Object.fromEntries(Object.entries(M.ax).map(([k,s])=>[k,splitVals(s)])):null,rows:M.rows?M.rows.map(r=>Object.assign({},r)):null,dirty:M.dirty,join:{allow:[...M.join.allow],def:M.join.def},disc:{allow:[...M.disc.allow],def:M.disc.def}}:null,updated:TODAY};
 }
@@ -829,7 +944,7 @@ $('#bDraft').addEventListener('click',()=>{
   toast('임시저장했습니다. 상품목록에서 이어서 작성할 수 있습니다');
 });
 function loadDisplay(d){
-  Object.assign(F,{editId:d.id,name:d.name,type:d.type,ch:d.ch,cat:d.cat,catAuto:false,from:d.from,to:d.to,show:d.show,use:d.use!==false,head:d.head,noBase:d.noBase,hq:'',media:d.media?copyMedia(d.media):emptyMedia(),noticeOn:!!d.noticeOn,reviewOn:!!d.reviewOn,badgeOn:d.badgeOn!=null?!!d.badgeOn:!!(d.badges&&d.badges.length),seoOn:d.seoOn!=null?!!d.seoOn:!!(d.seo&&(d.seo.tags.length||d.seo.title||d.seo.desc)),spec:{...emptySpec(),...d.spec},badges:(d.badges||[]).filter(k=>BADGES.some(b=>b.k===k)),sim:{...emptySim(),...d.sim},seo:{...emptySeo(),...d.seo,tags:[...((d.seo&&d.seo.tags)||[])]},links:{order:false,pay:false,...d.links},
+  Object.assign(F,{editId:d.id,name:d.name,type:d.type,ch:d.ch,cat:d.cat,catAuto:false,from:d.from,to:d.to,show:d.show,use:d.use!==false,head:d.head,noBase:d.noBase,hq:'',media:d.media?copyMedia(d.media):emptyMedia(),noticeOn:!!d.noticeOn,reviewOn:!!d.reviewOn,badgeOn:d.badgeOn!=null?!!d.badgeOn:!!(d.badges&&d.badges.length),seoOn:d.seoOn!=null?!!d.seoOn:!!(d.seo&&(d.seo.tags.length||d.seo.title||d.seo.desc)),spec:{...emptySpec(),...d.spec},badges:(d.badges||[]).filter(k=>BADGES.some(b=>b.k===k)),sim:{...emptySim(),...d.sim},seo:{...emptySeo(),...d.seo,tags:[...((d.seo&&d.seo.tags)||[])]},srch:d.srch?{...emptySrch(),...d.srch,kws:d.srch.kws&&d.srch.kws.length?[...d.srch.kws]:['']}:emptySrch(),faq:d.faq&&d.faq.items&&d.faq.items.length?{on:!!d.faq.on,items:d.faq.items.map(x=>({...x}))}:{...emptyFaq(),on:!!(d.faq&&d.faq.on)},links:{order:false,pay:false,...d.links},
     slots:d.slots.map(s=>newSlot({req:s.req,area:s.area,ptypes:new Set(s.ptypes||(s.ptype?[s.ptype]:[])),max:s.max,locked:s.locked,sel:new Set(s.sel),order:[...s.sel],best:new Set(s.best||[]),def:s.def||null,more:s.more||3,grp:s.grp!==false}))});
   resetM();
   if(d.dev){
