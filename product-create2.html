@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>상품등록2 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      /* 상품등록 전용 (ref/product-admin-prototype-v4-2.html) */
+      #v-edit [hidden]{display:none!important}
+      /* 미리보기·검사 패널을 왼쪽에 둔다. 공용 style.css가 뒤에 로드되므로 #v-edit로 우선순위를 올린다 */
+      #v-edit .builder{grid-template-columns:372px minmax(0,1fr);border-top:0;padding-top:0}
+      .seg{flex-wrap:wrap}
+      .step>header .del{margin-left:8px}
+      /* 섹션 접기·펼치기: 헤더를 누르거나 오른쪽 화살표 버튼 */
+      .step>header{cursor:pointer;user-select:none}
+      #v-edit .step>header{flex-wrap:nowrap}
+      #v-edit .step>header .why{min-width:0}
+      .step>header .fold{margin-left:auto;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer;flex:none}
+      .step>header .why+.fold,.step>header .del+.fold{margin-left:4px}
+      .step>header .fold:hover{background:var(--bg);color:var(--accent)}
+      .step>header .fold svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .15s}
+      .step.closed>header{border-bottom:0}
+      .step.closed>header .fold svg{transform:rotate(-90deg)}
+      .step.closed>.body{display:none}
+      /* 이미지 · 상품정보 · 유의사항 */
+      #addSlot{margin-bottom:20px}
+      .row.img-row{align-items:flex-start}
+      .row.img-row>label{padding-top:8px}
+      .img-list{display:flex;flex-wrap:wrap;gap:8px}
+      .img-thumb{position:relative;width:100px;height:100px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+      .img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+      .img-thumb .x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,20,30,.65);color:#fff;font-size:13px;line-height:22px;padding:0;cursor:pointer}
+      .img-thumb .tag-main{position:absolute;left:4px;bottom:4px;padding:1px 6px;border-radius:4px;background:var(--accent);color:#fff;font-size:10px}
+      .img-add{width:100px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px dashed var(--line-strong);border-radius:8px;background:var(--bg);color:var(--muted);font-size:12px;cursor:pointer}
+      .img-add:hover{border-color:var(--accent);color:var(--accent)}
+      .img-add b{font-size:22px;font-weight:400;line-height:1}
+      .detail-mode{margin-bottom:12px}
+      .detail-box{width:100%;height:300px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);overflow:hidden}
+      .detail-imgs{height:100%;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+      .detail-imgs .img-thumb{width:100%;height:auto;flex:none}
+      .detail-imgs .img-thumb img{height:auto}
+      .detail-imgs .img-add{width:100%;height:120px;flex:none}
+      .detail-imgs .img-add.full{flex:1;height:auto;min-height:120px}
+      #detailHtml{display:flex;flex-direction:column}
+      .detail-html-bar{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+      .detail-html-bar .seg{margin-left:auto}
+      .detail-html-bar .seg button{padding:3px 10px;font-size:12px}
+      #detailHtmlInput{flex:1;width:100%;border:0;padding:12px;resize:none;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text);background:var(--bg);outline:none}
+      #detailHtmlPreview{flex:1;width:100%;border:0;background:#fff}
+      .detail-builder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;background:var(--surface);border-style:dashed}
+      .detail-builder svg{width:34px;height:34px;fill:none;stroke:var(--accent);stroke-width:1.6}
+      .detail-builder p{margin:0 0 6px;color:var(--muted);font-size:12px}
+      .notice-box{width:100%;height:300px;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface)}
+      .age-range{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text)}
+      .age-range input{width:64px}
+      /* 아이콘·뱃지: 프로모션마다 노출 스위치 */
+      .badge-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+      .badge-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+      .badge-item.on{border-color:var(--accent);background:var(--accent-soft)}
+      .badge-item .bi-tx{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+      .badge-item .bi-tx b{font-size:13px;font-weight:600}
+      .badge-item .bi-tx small{font-size:11px;color:var(--muted)}
+      .bdg{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;line-height:1.5;white-space:nowrap;color:#fff;flex:none}
+      .bdg svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      /* 유사한 상품: 고객 화면에 보일 타이틀 미리보기 */
+      .sim-pv{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface)}
+      .sim-pv b{font-size:16px;font-weight:600}
+      .sim-pv small{font-size:13px;color:var(--muted)}
+      .sim-pv small:empty{display:none}
+      .pill.len{min-width:44px;text-align:right}
+      /* 검색(SEO/GEO): 콤마로 끊어 태그 칩을 만든다 */
+      .row.seo-row{align-items:flex-start}
+      .row.seo-row>label{padding-top:8px}
+      .seo-field{flex:1;min-width:240px}
+      .tag-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg);cursor:text}
+      .tag-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+      .tag-chips{display:contents}
+      .tag-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 4px 2px 9px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:12px}
+      .tag-chip button{width:18px;height:18px;border:0;border-radius:50%;background:none;color:inherit;font-size:13px;line-height:18px;padding:0;cursor:pointer}
+      .tag-chip button:hover{background:var(--accent);color:#fff}
+      #seoTagIn{flex:1;min-width:140px;min-height:0;border:0;outline:none;box-shadow:none;padding:4px 2px;background:none}
+      #seoTagIn:disabled{cursor:not-allowed}
+      /* 공용 style.css에 없는 숫자·여러 줄 입력을 텍스트 입력과 맞춘다 */
+      #v-edit input[type=number],#seoDesc{border:1px solid var(--line-strong);border-radius:8px;padding:8px 12px;font:inherit;font-size:12px;color:var(--text);background:var(--bg)}
+      #v-edit input[type=number]{min-height:38px;padding:8px 8px}
+      #seoDesc{display:block;width:100%;resize:vertical;line-height:1.6}
+      /* ON/OFF 스위치가 꺼진 영역 */
+      .step.off>.body{opacity:.45}
+      /* 주문·결제 연동 노드: 구매후기 카드에서 선이 내려와 두 노드로 갈라진다 */
+      .flow{position:relative;display:flex;flex-direction:column;align-items:center;margin:-26px 0 28px}
+      .flow-port{width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);position:relative;z-index:1}
+      .flow-stem{width:2px;height:22px;background:linear-gradient(var(--accent),var(--line-strong))}
+      .flow-nodes{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,240px));gap:40px;padding-top:22px}
+      /* 가로 분기선과 각 노드로 내려가는 선 */
+      .flow-nodes::before{content:"";position:absolute;top:0;left:25%;right:25%;height:22px;border:2px solid var(--line-strong);border-bottom:0;border-radius:12px 12px 0 0}
+      .flow-node{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line-strong);border-radius:14px;background:var(--bg);color:var(--text);font:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 2px rgba(32,41,59,.04),0 4px 14px rgba(67,32,212,.06);transition:border-color .15s,box-shadow .15s,transform .15s}
+      .flow-node::before{content:"";position:absolute;top:-7px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--bg);border:2px solid var(--line-strong);transition:border-color .15s,background .15s}
+      .flow-node:hover{border-color:var(--accent);box-shadow:0 6px 20px rgba(67,32,212,.14);transform:translateY(-1px)}
+      .flow-node:hover::before{border-color:var(--accent)}
+      .flow-node:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+      .fn-ic{width:38px;height:38px;flex:none;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--accent-soft);color:var(--accent)}
+      .fn-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+      .fn-tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+      .fn-tx b{font-size:14px;font-weight:600}
+      .fn-tx small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .fn-st{flex:none;padding:2px 8px;border-radius:10px;background:var(--surface);color:var(--muted);font-size:11px}
+      .flow-node.on{border-color:var(--ok)}
+      .flow-node.on::before{border-color:var(--ok);background:var(--ok)}
+      .flow-node.on .fn-ic{background:var(--ok-soft);color:var(--ok)}
+      .flow-node.on .fn-st{background:var(--ok-soft);color:var(--ok);font-weight:600}
+      /* 주문서·결제 설정: 오른쪽에서 밀려 들어오는 풀페이지 */
+      .sheet{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--bg);transform:translateX(100%);visibility:hidden;transition:transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s linear .22s;outline:none}
+      .sheet.open{transform:none;visibility:visible;transition:transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s}
+      .sheet>header{display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line)}
+      .sheet>header b{font-size:17px;font-weight:600}
+      .sheet .back{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:8px;background:none;color:var(--text);cursor:pointer}
+      .sheet .back:hover{background:var(--surface);color:var(--accent)}
+      .sheet .back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .sheet-body{flex:1;overflow:auto;padding:24px 20px}
+      .sheet-empty{max-width:880px;margin:0 auto;height:100%;min-height:240px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line-strong);border-radius:10px;background:var(--surface);color:var(--muted);font-size:13px}
+      .sheet-wrap{max-width:880px;margin:0 auto}
+      .sheet [hidden]{display:none!important}
+      .sheet>footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--line)}
+      body.sheet-on{overflow:hidden}
+      @media(max-width:560px){.flow-nodes{grid-template-columns:minmax(0,1fr);gap:14px;padding-top:0;width:100%}.flow-nodes::before,.flow-node::before{display:none}}
+      /* ON/OFF 스위치 */
+      .switch{position:relative;display:inline-flex;width:36px;height:20px;flex:none;cursor:pointer}
+      .switch input{position:absolute;inset:0;margin:0;opacity:0;cursor:pointer}
+      .switch span{position:absolute;inset:0;border-radius:10px;background:var(--line-strong);transition:background .15s}
+      .switch span::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+      .switch input:checked+span{background:var(--accent)}
+      .switch input:checked+span::after{transform:translateX(16px)}
+      .switch input:disabled{cursor:not-allowed}
+      .switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+      /* 전시유형: 100×100 정사각형 버튼 */
+      .row.type-row{align-items:flex-start}
+      .row.type-row>label{padding-top:8px}
+      .type-tiles{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 0;min-width:0}
+      .type-tile{width:100px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--text);font-size:13px;cursor:pointer}
+      .type-tile svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
+      .type-tile:hover{border-color:var(--accent)}
+      .type-tile.on{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .type-tile.on svg{color:var(--accent)}
+      .cl{border:1px solid var(--line);border-radius:6px;overflow:auto;max-height:300px}
+      .cl table{font-size:13px}
+      .cl th{position:sticky;top:0;z-index:1}
+      .cl th,.cl td{padding:7px 10px}
+      .cl th.c,.cl td.c{width:38px;text-align:center}
+      .cl tbody tr{cursor:pointer}
+      .cl tbody tr:hover td{background:var(--surface)}
+      .cl tr.off{cursor:not-allowed}
+      .cl tr.off td{color:var(--muted)}
+      .cl tr.on td{background:var(--accent-soft)}
+      .cl td.r{color:var(--bad);font-size:12px}
+      .cl td:nth-child(3){white-space:nowrap}
+      .chkl{display:inline-flex;gap:6px;align-items:center;color:var(--text);cursor:pointer}
+      .row label.chkl{min-width:0;color:var(--text)}
+      .hinfo{margin-top:10px;font-size:13px;color:var(--muted)}
+      .hinfo b{color:var(--text);font-weight:600}
+      .hinfo:empty{display:none}
+      .sub-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:16px 0 8px;color:var(--text)}
+      .editing{display:none;background:var(--warn-soft);color:var(--warn);padding:8px 12px;border-radius:6px;font-size:13px;margin:0 0 14px}
+      .editing.on{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+      .chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+      .chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+      .chip.bad2{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+      /* 옵션값·옵션목록 */
+      .optv{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center}
+      .optv label.chip{cursor:pointer;padding:3px 10px;display:inline-flex;align-items:center;gap:5px;color:var(--text);min-width:0}
+      .optv label.chip.acc{color:var(--accent)}
+      .optv label.chip input{margin:0}
+      .axis{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+      .axis .an{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:13px;font-weight:700;color:var(--text)}
+      .axis .an .ar{margin-left:auto;display:flex;gap:6px}
+      /* 옵션선택(입력형): 축마다 콤마로 구분해 입력하고, 아래에 나눠진 값을 미리 보여 준다 */
+      .axis .an .pill{font-weight:500}
+      .axis .axin{width:100%;box-sizing:border-box}
+      .axis .axpv{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+      .axis .axpv:empty{display:none}
+      .axis .axpv .axchip{cursor:default}
+      .axis .axpv .axchip.new{border-style:dashed;color:var(--warn)}
+      .applybar{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+      .applybar .pill{margin-left:4px}
+      .applybar .pill:empty{display:none}
+      .axchips{display:flex;flex-wrap:wrap;gap:7px}
+      .axchip{position:relative;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line-strong);border-radius:16px;background:var(--bg);color:var(--text);font-size:13px;cursor:pointer;user-select:none}
+      .axchip:hover{border-color:var(--accent)}
+      .axchip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .axchip input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+      .axchip:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+      .dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--line-strong);display:inline-block;flex:none}
+      #applyHint.dirty{color:var(--warn)}
+      #optTable{min-width:880px}
+      #optTable td{vertical-align:middle}
+      #optTable th,#optTable td:not(:nth-child(7)){white-space:nowrap}
+      #optTable td:nth-child(7){min-width:200px}
+      #optTable tr.unused td{color:var(--muted)}
+      #optTable .seg{flex-wrap:nowrap}
+      #optTable .seg button{padding:4px 10px;font-size:12px}
+      /* 슬롯: 후보 전체 / 선택됨 탭 (ref/product-admin-prototype-v4-6.html) */
+      .tabs{display:inline-flex;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden}
+      .tabs button{border:0;background:var(--bg);padding:6px 14px;font:inherit;font-size:13px;cursor:pointer;color:var(--muted)}
+      .tabs button+button{border-left:1px solid var(--line-strong)}
+      .tabs button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .tabs button b{font-weight:600;margin-left:2px}
+      .cl table.seltab td:nth-child(3){white-space:normal;min-width:220px}
+      .cl table.seltab td:first-child,.cl table.seltab td:nth-child(2){white-space:nowrap}
+      /* 미리보기 슬롯: 고객 화면 카드 */
+      .pcs{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+      .pc{position:relative;border:1px solid var(--line-strong);border-radius:14px;padding:16px 16px 12px;background:var(--bg);cursor:pointer;text-align:left}
+      .pc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+      .pc.on{border:1.5px solid var(--text);padding:15.5px 15.5px 11.5px}
+      .pc.dis{opacity:.5;cursor:not-allowed}
+      .pc .bdg{display:inline-block;background:#3b3bf0;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;margin-bottom:8px;letter-spacing:.02em}
+      .pc .pt{font-size:15px;font-weight:700;color:var(--text)}
+      .pc .ps{font-size:12px;color:var(--muted);margin-top:2px}
+      .pc .pp{font-size:17px;font-weight:700;margin:8px 0 6px;color:var(--text)}
+      .pc .pd{font-size:11.5px;color:var(--muted);line-height:1.6}
+      .pc .pch{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+      .pc .pch span{background:var(--surface);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text)}
+      .pc .plink{border:0;background:none;padding:0;margin-top:12px;font:inherit;font-size:12px;text-decoration:underline;color:var(--text);cursor:pointer;display:block}
+      .pc .psec{font-size:11px;color:var(--muted);margin:12px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+      .pc .phint{font-size:11px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+      .pc .phint b{color:var(--text);font-weight:600}
+      .pc .pchev{position:absolute;top:14px;right:16px;font-size:14px;color:var(--muted)}
+      .pc .pnote{font-size:11px;color:var(--bad);margin-top:8px}
+      .pr{display:flex;gap:10px;align-items:flex-start;padding:7px 0;cursor:pointer;font-size:13px}
+      .pr input{margin:3px 0 0;width:16px;height:16px;flex:none}
+      .pr .rl{flex:1;display:flex;flex-direction:column;color:var(--text)}
+      .pr .rl small{font-size:11px;color:var(--muted);margin-top:1px}
+      .pr .ra{white-space:nowrap;font-size:12px;color:var(--text)}
+      .pr.bad{opacity:.5;cursor:not-allowed}
+      .pr.none{border:1px dashed var(--line-strong);border-radius:10px;padding:10px 14px}
+      .pmore{border:1px solid var(--text);background:var(--bg);border-radius:14px;padding:12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--text)}
+      .epcc{display:flex;align-items:center;gap:6px;white-space:nowrap}
+      .linkbtn{border:0;background:none;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline;font:inherit;text-align:left}
+      /* 오른쪽 미리보기·검사: 패널 안에서 스크롤, 버튼은 아래 고정 */
+      /* 왼쪽: 미리보기(스크롤) 위, 검사(O/X)·저장 버튼 아래로 나눠 둘 다 화면 안에 둔다 */
+      #v-edit .side{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 40px);min-width:0}
+      #v-edit .side>.panel{position:static}
+      #v-edit .pv-panel{flex:1 1 auto;min-height:320px;overflow:auto}
+      #v-edit .chk-panel{flex:none;display:flex;flex-direction:column;max-height:32vh}
+      #v-edit .chk-panel .rules{flex:1;min-height:0;overflow:auto}
+      #chkSum.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+      #chkSum.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+      .panel>header{position:sticky;top:0;z-index:1}
+      .panel>footer{position:sticky;bottom:0}
+      .rules .m.na{background:var(--warn-soft);color:var(--warn)}
+      /* 미리보기: 모바일 상품 상세 화면 */
+      .pvbox{padding:12px 16px;border-bottom:1px solid var(--line)}
+      .pv{--ph-bg:#fff;--ph-tx:#1d2230;--ph-mu:#7a8193;--ph-ln:#e7e9f0;--ph-soft:#f3f4f9;--ph-cta:#3b3bf0;border:1px solid var(--line-strong);border-radius:24px;background:var(--ph-bg);color:var(--ph-tx);overflow:hidden;font-size:13px}
+      .ph-status{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 4px;background:var(--ph-soft);font-size:13px}
+      .ph-status b{font-weight:600}
+      .ph-status span{display:inline-flex;gap:5px;align-items:center}
+      .ph-status .sig{width:14px;height:9px;background:linear-gradient(90deg,currentColor 0 2px,transparent 2px 4px,currentColor 4px 6px,transparent 6px 8px,currentColor 8px 10px,transparent 10px 12px,currentColor 12px 14px);clip-path:polygon(0 100%,100% 0,100% 100%)}
+      .ph-status .bat{width:20px;height:9px;border:1.5px solid currentColor;border-radius:3px;background:linear-gradient(90deg,currentColor 0 75%,transparent 75%);background-clip:content-box;padding:1px}
+      .ph-hero{position:relative;background:var(--ph-soft);min-height:250px;display:flex;align-items:center;justify-content:center;padding:44px 24px 20px}
+      .ph-hero>img{width:100%;max-height:260px;object-fit:contain;display:block}
+      .ph-nav{position:absolute;top:8px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:1}
+      .ph-nav span{display:inline-flex;gap:14px}
+      .ph-nav svg{width:20px;height:20px;fill:none;stroke:var(--ph-tx);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+      .ph-noimg{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ph-mu);font-size:11px}
+      .ph-noimg svg{width:56px;height:56px;fill:none;stroke:currentColor;stroke-width:1.2}
+      .ph-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+      .ph-dots i{width:5px;height:5px;border-radius:50%;background:#c9cdd8}
+      .ph-dots i.on{width:14px;border-radius:3px;background:var(--ph-tx)}
+      .ph-info{padding:20px 18px 18px}
+      .ph-model{font-size:11px;color:var(--ph-mu);margin-bottom:4px}
+      .ph-title{font-size:16px;font-weight:700;line-height:1.4;word-break:keep-all}
+      .ph-sub{font-size:12px;color:var(--ph-mu);margin-top:10px}
+      .ph-bdgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+      .ph-bdgs span{padding:2px 5px;border-radius:3px;background:var(--ph-soft);color:var(--ph-mu);font-size:10px;font-weight:600}
+      .ph-bdgs span.dk{background:var(--ph-tx);color:#fff}
+      .ph-note{margin-top:12px;padding:10px 14px;border-radius:12px;background:var(--ph-soft);color:var(--ph-mu);font-size:11.5px;line-height:1.55}
+      .ph-gap{height:8px;background:var(--ph-soft)}
+      .ph-tabs{display:flex;border-bottom:1px solid var(--ph-ln)}
+      .ph-tabs button{flex:1;border:0;background:none;padding:14px 0 12px;font:inherit;font-size:13px;color:var(--ph-mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+      .ph-tabs button.on{color:var(--ph-tx);font-weight:600;border-bottom-color:var(--ph-tx)}
+      .ph-sec{padding:16px 16px 18px}
+      .ph-sec:empty{display:none}
+      .ph-h{font-size:15px;font-weight:700;margin:4px 0 14px;display:flex;flex-direction:column;gap:3px}
+      .ph-h small{font-size:11px;font-weight:400;color:var(--ph-mu)}
+      .ph-hs{font-size:12px;color:var(--ph-mu);margin:-8px 0 12px}
+      .ph-ai{padding:14px 16px;border:1px solid #dfe2fb;border-radius:14px;background:linear-gradient(135deg,#f1f2ff,#e2e6fd);margin-bottom:8px}
+      .ph-ai b{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ph-cta)}
+      .ph-ai b svg{width:15px;height:15px;fill:currentColor;stroke:none}
+      .ph-ai p{margin:8px 0 0;font-size:11.5px;line-height:1.55;color:var(--ph-mu)}
+      .ph-combo{padding:6px 16px 16px;border:1px solid var(--ph-ln);border-radius:14px}
+      .ph-cr{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ph-ln);font-size:12px}
+      .ph-cr span:last-child{text-align:right;line-height:1.5}
+      .ph-cta{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:var(--ph-cta);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+      .ph-sw{display:flex;gap:10px;flex-wrap:wrap}
+      .ph-sw button{width:36px;height:36px;padding:3px;border:1.5px solid transparent;border-radius:50%;background:none;cursor:pointer}
+      .ph-sw button span{display:block;width:100%;height:100%;border-radius:50%;border:1px solid #c9cdd8}
+      .ph-sw button.on{border-color:var(--ph-tx)}
+      .ph-swn{font-size:12px;color:var(--ph-mu);margin-top:8px}
+      .ph-opt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;margin-bottom:10px;padding:16px 20px;border:1px solid var(--ph-ln);border-radius:14px;background:var(--ph-bg);color:var(--ph-tx);font:inherit;text-align:left;cursor:pointer}
+      .ph-opt b{font-size:13px;font-weight:500}
+      .ph-opt .ph-price{font-size:13px}
+      .ph-opt small{font-size:11px;color:var(--ph-mu)}
+      .ph-opt.on{border:1.5px solid var(--ph-tx);padding:15.5px 19.5px}
+      .ph-opt.out{color:var(--ph-mu)}
+      .ph-html{display:block;width:100%;height:420px;border:0}
+      .ph-sim{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+      .ph-sim i{aspect-ratio:3/4;border-radius:10px;background:var(--ph-soft)}
+      .pv .pv-detail{max-height:520px;overflow:auto}
+      .pv .pv-detail img{display:block;width:100%}
+      .pv .warn{background:var(--warn-soft);color:var(--warn);padding:8px 10px;border-radius:6px;font-size:12px;margin-top:6px}
+      .pv .pr{font-size:12px}
+      .pvempty{border:1px dashed var(--line-strong);border-radius:6px;padding:8px 10px;color:var(--muted);font-size:12px;margin-bottom:6px}
+      /* EPC 모달 */
+      .modal{position:fixed;inset:0;background:rgba(20,20,30,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:24px}
+      .modal[hidden]{display:none}
+      .mbox{background:var(--bg);border-radius:10px;width:min(1080px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25);outline:none}
+      .mbox.narrow{width:min(600px,100%)}
+      .mbox>header{display:flex;gap:10px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+      .mbox>header b{font-size:16px;font-weight:600}
+      .mbody{padding:16px 18px;overflow:auto;flex:1}
+      .mbox>footer{display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:12px 18px;border-top:1px solid var(--line)}
+      .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+      .mgrid h3{font-size:13px;font-weight:600;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+      .mgrid tr.act td{background:var(--accent-soft)}
+      .mgrid tr.act td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+      .dl{display:grid;grid-template-columns:120px 1fr;gap:8px 14px;font-size:13px}
+      .dl dt{color:var(--muted)}
+      .dl dd{margin:0}
+      .toast{z-index:70}
+      /* 좁은 화면에서는 입력 폼을 먼저, 미리보기·검사를 아래에 */
+      @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{order:1;position:static;max-height:none}#v-edit .pv-panel,#v-edit .chk-panel{max-height:none;overflow:visible}.panel>header,.panel>footer{position:static}}
+      @media(max-width:900px){.mgrid{grid-template-columns:1fr}}
+      @media(max-width:560px){#v-edit .step>header{flex-wrap:wrap}#v-edit .step>header .why{margin-left:0;order:3;width:100%}#v-edit .step>header .fold{margin-left:auto}.type-tile{width:88px;height:88px}}
+      @media(prefers-reduced-motion:reduce){.step>header .fold svg,.switch span,.switch span::after,.flow-node,.flow-node::before,.sheet,.sheet.open{transition:none}.flow-node:hover{transform:none}}
+    </style>
+  </head>
+  <body>
+<div class="app">
+<nav>
+  <div class="brand">상품 운영 어드민<small>번들 하나로 운영</small></div>
+  <a href="index.html" ><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg><span>기준</span></a>
+  <a href="bundle-create3.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg><span>번들 생성</span></a>
+  <a href="bundle-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 8h7M9 12h7M9 16h7M7 8h.01M7 12h.01M7 16h.01"/></svg><span>번들 목록</span></a>
+  <a href="display-create.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg><span>전시 생성</span></a>
+  <a href="display-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>전시 목록</span></a>
+  <a href="product-create.html" class="on" aria-current="page"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M9 12h6"/></svg><span>상품등록</span></a>
+  <a href="product-list.html"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4zM8 7V4h8v3M8 12h8M8 16h5"/></svg><span>상품목록</span></a>
+</nav>
+<main>
+
+<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/product-create2.ts -->
+<section class="view on" id="v-edit">
+  <div class="toolbar"><h1 id="editTitle">상품등록</h1><a class="btn" href="product-list.html" style="margin-left:auto">상품목록 보기</a></div>
+  <div class="editing" id="editingBar"><span id="editingTxt"></span><button class="btn sm" id="editCancel">새로 만들기로 전환</button></div>
+  <div class="builder">
+    <aside class="side">
+      <section class="panel pv-panel" aria-label="미리보기">
+        <header><b>미리보기</b></header>
+        <div class="pvbox"><div class="pv" id="pv"></div></div>
+      </section>
+      <section class="panel chk-panel" aria-label="검사">
+        <header><b>검사 <span class="chip" id="chkSum"></span></b><span class="po" id="poCount">0<small>PO</small></span></header>
+        <ul class="rules" id="ruleList"></ul>
+        <footer><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>저장하기</button></footer>
+      </section>
+    </aside>
+    <div>
+      <div class="step">
+        <header><b>기본정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row type-row"><label>전시유형</label><div class="type-tiles" id="typeSeg" role="group" aria-label="전시유형"></div></div>
+          <div class="row"><label for="fName">상품명</label><input type="text" id="fName" placeholder="예: 갤럭시 Z 플립8 개통 (줄바꿈은 &lt;br&gt;)" maxlength="60" style="flex:1;min-width:240px"></div>
+          <div class="row"><label>노출</label><span class="seg" id="showSeg"><button type="button" data-t="1">노출</button><button type="button" data-t="0">미노출</button></span></div>
+          <div class="row" style="margin-bottom:0"><label>전시상태</label><span class="seg" id="useSeg"><button type="button" data-t="1">사용</button><button type="button" data-t="0">미사용</button></span></div>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="specStep">
+        <header><b>주요정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row"><button type="button" class="btn" id="specEpc">EPC에서 정보 불러오기</button><span class="pill">기준 단품의 모델명·제품명·브랜드·제조사를 채웁니다</span></div>
+          <div class="row"><label for="fModel">모델명</label><input type="text" id="fModel" placeholder="예: SM-F766N" maxlength="60" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fProduct">제품명</label><input type="text" id="fProduct" placeholder="예: 갤럭시 Z 폴드8" maxlength="60" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fBrand">브랜드</label><input type="text" id="fBrand" placeholder="예: 삼성" maxlength="40" style="flex:1;min-width:240px"></div>
+          <div class="row"><label for="fMaker">제조사</label><input type="text" id="fMaker" placeholder="예: 삼성전자" maxlength="40" style="flex:1;min-width:240px"></div>
+          <div class="row" style="margin-bottom:0"><label>조건(가칭)</label>
+            <span class="seg" id="minorSeg"><button type="button" data-t="1">사용</button><button type="button" data-t="0">미사용</button></span>
+            <span class="age-range" id="minorAge" hidden><input type="number" id="ageFrom" min="0" max="18" inputmode="numeric" aria-label="구매 가능 시작 나이" placeholder="14">세부터<input type="number" id="ageTo" min="0" max="18" inputmode="numeric" aria-label="구매 가능 끝 나이" placeholder="18">세까지</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <header><b id="baseTitle"></b><span class="why" id="baseWhy"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row" id="noBaseRow" hidden><label class="chkl"><input type="checkbox" id="noBase"> 기준 단품 없이 슬롯으로만 구성</label><span class="pill">패스형(Big 4 등). EPC에 패스 PO가 없을 때 쓰고, 가격은 상품에 직접 건다</span></div>
+          <div id="hWrap">
+            <div class="row"><label for="hQ">검색 <span id="hCnt"></span></label><input type="text" id="hQ" placeholder="모델·상품명" style="min-width:220px;margin-left:auto"><button type="button" class="btn" id="hEpc">EPC에서 상품 가져오기</button></div>
+            <div class="cl" style="max-height:240px"><table><thead><tr><th class="c"></th><th>상품명</th><th>상품유형</th><th>결합 키</th><th>옵션</th></tr></thead><tbody id="hList"></tbody></table></div>
+            <div class="hinfo" id="hInfo"></div>
+          </div>
+          <div id="devBox" hidden>
+            <div class="sub-h">옵션선택</div>
+            <div id="axBox"></div>
+            <div class="applybar"><button type="button" class="btn primary" id="applyOpt">옵션목록 적용</button><button type="button" class="btn" id="epcLoad">EPC에서 옵션목록 적용</button><span class="pill" id="applyHint"></span></div>
+            <div class="toolbar" id="optBar"><span class="sub-h" style="margin:0">옵션목록 <span class="pill" id="optCnt"></span></span><span id="optBulk" hidden style="gap:8px;align-items:center"><span class="pill" id="optSelTxt"></span><button type="button" class="btn sm" data-a="on">사용</button><button type="button" class="btn sm" data-a="off">미사용</button><button type="button" class="btn sm" data-a="del">삭제</button></span><button type="button" class="btn" id="epcBtn" style="margin-left:auto" hidden>EPC 매칭</button></div>
+            <div class="cl" style="max-height:360px"><table id="optTable"><thead><tr><th class="c"><input type="checkbox" id="optAll" aria-label="옵션 전체 선택"></th><th>옵션명</th><th>옵션값</th><th>사용여부</th><th>가격</th><th>판매여부</th><th>EPC</th><th>삭제</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="slots"></div>
+      <button type="button" class="btn" id="addSlot">+ 슬롯 추가</button>
+
+      <div class="step extra-step" id="imgStep">
+        <header><b>대표이미지</b><span class="chip ok" id="imgOn" hidden>이미지 ON</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row img-row"><label>대표이미지</label>
+            <div class="img-list" id="mainImg"></div>
+          </div>
+          <div class="row img-row" style="margin-bottom:0"><label>추가이미지</label>
+            <div>
+              <div class="img-list" id="subImgs"></div>
+              <p class="pill" id="subImgCnt" style="margin:6px 0 0"></p>
+            </div>
+          </div>
+          <input type="file" id="mainImgFile" accept="image/*" hidden>
+          <input type="file" id="subImgFile" accept="image/*" multiple hidden>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="detailStep">
+        <header><b>상품정보</b><span class="chip acc" id="detailModeTag"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="seg detail-mode" id="detailMode" role="group" aria-label="상품정보 등록 방법"><button type="button" data-m="image">이미지 업로드</button><button type="button" data-m="html">HTML 수정</button><button type="button" data-m="builder">전시빌더 사용하기</button></div>
+          <div class="detail-box" id="detailImage">
+            <div class="detail-imgs" id="detailImgs"></div>
+            <input type="file" id="detailImgFile" accept="image/*" multiple hidden>
+          </div>
+          <div class="detail-box" id="detailHtml" hidden>
+            <div class="detail-html-bar"><span class="pill">HTML을 직접 입력한다. 스크립트는 실행되지 않는다</span><span class="seg" id="htmlView"><button type="button" data-v="code" class="on">코드</button><button type="button" data-v="preview">미리보기</button></span></div>
+            <textarea id="detailHtmlInput" spellcheck="false" aria-label="상품정보 HTML" placeholder="&lt;h2&gt;제품 소개&lt;/h2&gt;&#10;&lt;p&gt;상세 내용을 입력하세요&lt;/p&gt;"></textarea>
+            <iframe id="detailHtmlPreview" sandbox title="상품정보 HTML 미리보기" hidden></iframe>
+          </div>
+          <div class="detail-box detail-builder" id="detailBuilder" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>
+            <b>전시빌더로 상품정보 만들기</b>
+            <p id="detailBuilderTxt">블록을 끌어 놓아 상세 화면을 구성한다</p>
+            <button type="button" class="btn primary" id="openBuilder">전시빌더 열기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step extra-step closed" id="noticeStep">
+        <header><b>유의사항</b><label class="switch" title="사용 여부"><input type="checkbox" id="noticeOn" aria-label="유의사항 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <!-- 유의사항 입력 기능은 추후 추가 예정 -->
+          <div class="notice-box" id="noticeBox"></div>
+        </div>
+      </div>
+
+      <div class="step extra-step closed" id="reviewStep">
+        <header><b>구매후기</b><label class="switch" title="사용 여부"><input type="checkbox" id="reviewOn" aria-label="구매후기 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="false" aria-label="펼치기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <!-- 구매후기 입력 기능은 추후 추가 예정 -->
+          <div class="notice-box" id="reviewBox"></div>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="badgeStep">
+        <header><b>아이콘 및 뱃지 설정</b><span class="chip acc" id="badgeCnt"></span><label class="switch" title="사용 여부"><input type="checkbox" id="badgeOn" aria-label="아이콘 및 뱃지 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <p class="pill" style="margin:0 0 10px">노출을 켠 항목이 상품명 위에 아이콘 뱃지로 표시된다</p>
+          <ul class="badge-list" id="badgeList"></ul>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="simStep">
+        <header><b>유사한 상품 구성하기</b><label class="switch" title="사용 여부"><input type="checkbox" id="simOn" aria-label="유사한 상품 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row"><label>문구</label><span class="seg" id="simMode"><button type="button" data-m="default">기본 문구</button><button type="button" data-m="custom">직접 입력</button></span></div>
+          <div id="simCustom" hidden>
+            <div class="row"><label for="simTitle">타이틀</label><input type="text" id="simTitle" maxlength="30" style="flex:1;min-width:240px"><span class="pill len" id="simTitleLen"></span></div>
+            <div class="row"><label for="simSub">소타이틀</label><input type="text" id="simSub" maxlength="30" style="flex:1;min-width:240px"><span class="pill len" id="simSubLen"></span></div>
+          </div>
+          <div class="sim-pv" id="simPv"><b id="simPvTitle"></b><small id="simPvSub"></small></div>
+        </div>
+      </div>
+
+      <div class="step extra-step" id="seoStep">
+        <header><b>검색 (SEO/GEO)</b><label class="switch" title="사용 여부"><input type="checkbox" id="seoOn" aria-label="검색 사용"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body">
+          <div class="row seo-row"><label for="seoTagIn">태그</label>
+            <div class="seo-field">
+              <div class="tag-box" id="seoTagBox"><span id="seoTags" class="tag-chips"></span><input type="text" id="seoTagIn" placeholder="콤마(,)로 구분해 입력" aria-describedby="seoTagCnt"></div>
+              <p class="pill" id="seoTagCnt" style="margin:6px 0 0"></p>
+            </div>
+          </div>
+          <div class="row"><label for="seoTitle">Page Title</label><input type="text" id="seoTitle" maxlength="25" placeholder="검색 결과에 보일 페이지 제목" style="flex:1;min-width:240px"><span class="pill len" id="seoTitleLen"></span></div>
+          <div class="row seo-row" style="margin-bottom:0"><label for="seoDesc">Description</label>
+            <div class="seo-field">
+              <textarea id="seoDesc" maxlength="200" rows="4" placeholder="검색 결과와 AI 답변에 쓰일 상품 설명"></textarea>
+              <p class="pill" id="seoDescLen" style="margin:6px 0 0;text-align:right"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 상품 → 주문·결제 연동: 노드 연결선 형태 -->
+      <div class="flow" id="linkFlow">
+        <span class="flow-port" aria-hidden="true"></span>
+        <span class="flow-stem" aria-hidden="true"></span>
+        <div class="flow-nodes">
+          <button type="button" class="flow-node" data-k="order">
+            <span class="fn-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h3"/></svg></span>
+            <span class="fn-tx"><b>주문서 설정하기</b><small>주문서 · 개통 정보 연결</small></span>
+            <span class="fn-st">미설정</span>
+          </button>
+          <button type="button" class="flow-node" data-k="pay">
+            <span class="fn-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span>
+            <span class="fn-tx"><b>결제 설정하기</b><small>결제수단 · 청구 정보 연결</small></span>
+            <span class="fn-st">미설정</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+<div class="modal" id="epcModal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mTitle" tabindex="-1">
+  <header><b id="mTitle"></b><span class="pill" id="mSub"></span><button type="button" class="btn sm" id="mClose" style="margin-left:auto">닫기</button></header>
+  <div class="mbody" id="mBody"></div>
+  <footer id="mFoot"></footer>
+</div></div>
+<div class="sheet" id="linkSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1">
+  <header><button type="button" class="back" id="sheetBack" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><b id="sheetTitle"></b><span class="pill" id="sheetSub"></span></header>
+  <div class="sheet-body">
+    <!-- 주문서 설정: 디바이스형의 가입유형·할인방법 (상품등록 옵션선택에서 옮겨 옴) -->
+    <div class="sheet-wrap" id="sheetOrder" hidden>
+      <div class="axis" id="joinOpts"></div>
+      <div class="axis" id="discOpts"></div>
+    </div>
+    <!-- 그 밖의 설정 항목은 추후 추가 예정 -->
+    <div class="sheet-empty" id="sheetBody"></div>
+  </div>
+  <footer><button type="button" class="btn" id="sheetOff" style="margin-right:auto">설정 해제</button><button type="button" class="btn" id="sheetCancel">취소</button><button type="button" class="btn primary" id="sheetDone">설정 완료</button></footer>
+</div>
+<div class="toast" id="toast"></div>
+    <script type="module" src="/src/product-create2.ts"></script>
+  </body>
+</html>
