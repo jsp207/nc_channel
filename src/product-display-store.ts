@@ -29,6 +29,9 @@ export const ITEM_BY_ID = new Map(ITEMS.map(i=>[i.id,i]));
 export const $ = s=>document.querySelector(s);
 export const el = (t,c,h)=>{const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e;};
 export const esc = s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// 상품명은 <br>만 줄바꿈으로 허용한다. 화면 표시는 nameHtml, 목록·안내 문구처럼 한 줄로 쓸 때는 nameText.
+export const nameText = s=>String(s==null?'':s).replace(/<br\s*\/?>/gi,' ').replace(/\s+/g,' ').trim();
+export const nameHtml = s=>esc(s).replace(/&lt;br\s*\/?&gt;/gi,'<br>');
 export function toast(m){const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),2000);}
 export const joinKey = i => i.line==='무관' ? '무관' : (i.net && i.net!=='-' ? `${i.line}-${i.net}` : i.line);
 const VAR={}; ITEMS.forEach(i=>{const k=i.area+'|'+i.type+'|'+i.key; (VAR[k]=VAR[k]||[]).push(i);});
@@ -85,7 +88,7 @@ export function saveDisplays(list){ try { localStorage.setItem(STORE_KEY, JSON.s
 // ---------- 예시 데이터 ----------
 function seed(){
   const list=[];
-  const S=(area,names,req,max,locked)=>({area,ptype:locked?'요금제형':'',req,max,locked:!!locked,sel:names.map(byName).filter(Boolean)});
+  const S=(area,names,req,max,locked)=>({area,ptypes:locked?['요금제형']:[],req,max,locked:!!locked,sel:names.map(byName).filter(Boolean),best:[],def:null,more:3,grp:true});
   const mk=(o)=>{ const d=Object.assign({id:'S'+list.length,to:'',show:true,noBase:false,dev:null,updated:TODAY},o); if(!d.cat&&d.head){ const c=CATS.find(c=>c.ch===d.ch&&c.cond(d.head)); d.cat=c?c.name:''; } if(d.type==='device') d.dev={soldout:'show',ax:null,rows:null,join:{allow:['기기변경','번호이동','신규가입'],def:'번호이동'},disc:{allow:['공시지원','선택약정'],def:'선택약정'}}; list.push(d); };
   mk({name:'갤럭시 Z 플립8 개통',type:'device',ch:'T다이렉트샵',from:'2026-09-01',head:byName('갤럭시 Z 플립8 / 256G / 크림'),slots:[S('이동전화',['라이트 79','라이트 69','라이트 59'],true,1,true),S('부가서비스',['T 올케어+6 스위치 플립(온라인)','분실파손6 플립(온라인)'],false,1),S('기기서비스',['삼성전자 갤럭시 Z플립8 보호필름'],true,1)]});
   mk({name:'라이트 59 데이터 팩',type:'plan',ch:'T월드',from:'2026-09-01',head:byName('라이트 59'),slots:[S('부가서비스',['V 컬러링','스마트 콜키퍼','안심클라우드'],false,1),S('로밍',['baro 요금제','OnePass 500 기본형'],false,1)]});

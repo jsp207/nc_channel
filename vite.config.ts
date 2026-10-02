@@ -15,6 +15,7 @@ export default defineConfig({
         displayList: 'display-list.html',
         displayCreate: 'display-create.html',
         productCreate: 'product-create.html',
+        productCreate2: 'product-create2.html',
         productList: 'product-list.html',
       },
     },
