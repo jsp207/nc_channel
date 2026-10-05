@@ -48,7 +48,18 @@ export const TYPES=[
  {k:'roam',label:'로밍형',base:'로밍 상품',area:'로밍',types:null,ch:'T월드',why:'단품 1개',slot:'로밍'},
  {k:'sub',label:'구독형',base:'구독 상품',area:'플랫폼(T우주)',types:null,ch:'T우주',why:'단품 1개. 패스형은 단품 없이 구성 가능',slot:'플랫폼(T우주)'},
 ];
-export const tdef=k=>TYPES.find(t=>t.k===k);
+// product-create3 전용 전시유형(영역 기준 6종). 키가 같으면 기존 로직(디바이스 옵션·요금제 슬롯 등)을 그대로 쓴다.
+// 유선서비스는 아직 EPC 단품 데이터가 없어 기준 단품 목록이 비어 있다.
+export const TYPES3=[
+ {k:'device',label:'기기서비스',base:'디바이스',area:'기기서비스',types:['약정형'],ch:'T다이렉트샵',why:'모델 1개. 옵션값은 모델마다 다르게 나온다',slot:'부가서비스'},
+ {k:'plan',label:'이동전화',base:'요금제',area:'이동전화',types:['요금제형'],ch:'T월드',why:'단품 1개',slot:'부가서비스'},
+ {k:'addon',label:'부가서비스',base:'부가서비스',area:'부가서비스',types:['월정액형','무료형','종량/충전형'],ch:'T월드',why:'단품 1개',slot:'부가서비스'},
+ {k:'sub',label:'구독서비스',base:'구독 상품',area:'플랫폼(T우주)',types:null,ch:'T우주',why:'단품 1개. 패스형은 단품 없이 구성 가능',slot:'플랫폼(T우주)'},
+ {k:'partner',label:'제휴서비스',base:'제휴 상품',area:'부가서비스',types:['제휴 보험형','제휴 클럽형'],ch:'T월드',why:'단품 1개',slot:'부가서비스'},
+ {k:'wired',label:'유선서비스',base:'유선 상품',area:'유선서비스',types:null,ch:'T월드',why:'단품 1개',slot:'부가서비스'},
+];
+// 다른 화면(상품목록 등)에서 product-create3로 만든 제휴·유선서비스도 이름을 찾을 수 있게 TYPES3까지 본다
+export const tdef=k=>TYPES.find(t=>t.k===k)||TYPES3.find(t=>t.k===k);
 export const CHANNELS=['T다이렉트샵','T월드','T우주'];
 export const CATS=[
  {ch:'T다이렉트샵',name:'5G 휴대폰',desc:'약정형 · 이동전화 · 5G',cond:h=>h.type==='약정형'&&h.line==='이동전화'&&h.net==='5G'},
@@ -67,7 +78,8 @@ export const catOf=(ch,name)=>CATS.find(c=>c.ch===ch&&c.name===name);
 
 // ---------- PO·상태 ----------
 const selArr=s=>s.sel instanceof Set?[...s.sel]:s.sel;
-export function poRange(o){ const base=o.head?1:0; const lo=base+o.slots.filter(s=>s.req).length; const hi=base+o.slots.reduce((a,s)=>{const n=selArr(s).length; return a+(n?Math.min(s.max,n):s.max);},0); return lo===hi?String(lo):`${lo}~${hi}`; }
+// 전체 제공 슬롯(mode:'all')은 고른 상품 수만큼 항상 포함된다. mode가 없는 예전 데이터는 고객 선택으로 본다.
+export function poRange(o){ const base=o.head?1:0; const lo=base+o.slots.reduce((a,s)=>a+(s.mode==='all'?selArr(s).length:(s.req?1:0)),0); const hi=base+o.slots.reduce((a,s)=>{const n=selArr(s).length; return a+(s.mode==='all'?n:(n?Math.min(s.max,n):s.max));},0); return lo===hi?String(lo):`${lo}~${hi}`; }
 // 전시상태 미사용이 노출·기간보다 먼저. 예전에 저장한 데이터는 use가 없으므로 사용으로 본다.
 // 임시저장은 다른 상태보다 먼저 표시한다.
 export const stOf=d=>d.draft?'draft':d.use===false?'stop':!d.show?'off':(d.from>TODAY?'wait':'live');
