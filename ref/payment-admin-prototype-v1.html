@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="zzangsoo">
+<title>NOVA 결제관리 BO 프로토타입</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#eef0f6; --panel:#fff; --line:#e6e7ec; --line2:#d3d6de; --th:#f6f7f9;
+  --ink:#1d1e23; --ink2:#53586a; --ink3:#8d92a1;
+  --ac:#3a2fd8; --ac-h:#2f25bd; --ac2:#efedfe; --ac3:#d9d5fb;
+  --ok:#147a43; --okbg:#e9f6ee; --okln:#bfe2cc;
+  --warn:#a95800; --warnbg:#fff4e2; --warnln:#f3d3a3;
+  --bad:#cf2a3c; --badbg:#fdedef; --badln:#f5c2c8;
+  --mk:#ef3b3b;
+  --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:13px/1.5 var(--font);-webkit-font-smoothing:antialiased;letter-spacing:-.1px}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* shell */
+.shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+.lnb{position:sticky;top:0;height:100vh;overflow:auto;padding:26px 14px 24px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px 18px;font-weight:700;font-size:15px}
+.brand i{width:28px;height:28px;border-radius:8px;background:var(--ac);color:#fff;display:grid;place-items:center;font-style:normal;font-size:13px}
+.lnb .grp{font-size:14px;font-weight:700;margin:10px 10px 2px}
+.lnb h5{font-size:12px;font-weight:500;color:var(--ink3);margin:16px 10px 4px}
+.lnb .it{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:9px;color:var(--ink2);cursor:pointer}
+.lnb .it:hover{background:#e4e6ef}
+.lnb .it.on{background:#fff;color:var(--ac);font-weight:700;box-shadow:0 1px 2px rgba(25,25,60,.07)}
+.lnb .tools{margin-top:auto;border-top:1px solid #dcdfe8;padding-top:14px;display:grid;gap:4px}
+.lnb .tools .it{font-size:12.5px}
+.lnb .tools .it.on{box-shadow:none;background:var(--ac2)}
+.work{background:var(--panel);border-top-left-radius:28px;min-width:0;padding:36px 48px 110px}
+
+/* page head */
+.crumb{font-size:12px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.crumb b{color:var(--ink2);font-weight:500}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:8px 0 20px;border-bottom:1px solid var(--line)}
+.h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.4px}
+.ph-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sec{margin-top:44px}
+.sec:first-of-type{margin-top:32px}
+.sec-h{display:flex;align-items:center;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.sec-h h3{font-size:17px;font-weight:700;margin:0;letter-spacing:-.3px}
+.sec-h .hint{color:var(--ink3);font-size:12px}
+.sec-h .sp{flex:1}
+.desc{color:var(--ink2);margin:10px 0 0;max-width:760px}
+
+/* form table */
+.ft{width:100%;border-collapse:collapse;border-top:1px solid var(--line)}
+.ft th{width:148px;background:var(--th);text-align:left;font-weight:500;color:var(--ink2);padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+.ft td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:middle;min-height:54px}
+.ft td.ro{color:var(--ink)}
+.ft .req::after{content:" *";color:var(--bad)}
+.ft td .help{color:var(--ink3);font-size:12px;margin-left:10px}
+.sbtn{display:flex;justify-content:center;gap:8px;margin-top:16px}
+
+/* controls */
+.inp,.sel{height:34px;border:1px solid var(--line2);border-radius:6px;background:#fff;padding:0 10px;min-width:0}
+.inp{width:220px}
+.inp.wide{width:100%;max-width:420px}
+.inp.num{width:96px;text-align:right;font-variant-numeric:tabular-nums}
+.inp[type=date]{width:150px}
+.sel{appearance:none;padding-right:32px;min-width:150px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%2353586a' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 11px center;cursor:pointer}
+.sel.w200{min-width:200px}
+.inp:disabled,.sel:disabled{background-color:var(--th);color:var(--ink3);cursor:not-allowed}
+textarea.inp{height:72px;padding:8px 10px;width:100%;resize:vertical}
+.ck-g{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center}
+.ck-g label,.rd label,label.ck{display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
+.ck-g label.off{color:var(--ink3);cursor:not-allowed}
+input[type=radio],input[type=checkbox]{accent-color:var(--ac);width:16px;height:16px;margin:0;cursor:pointer}
+input:disabled{cursor:not-allowed}
+.unit{display:inline-flex;align-items:center;gap:6px}
+.unit em{font-style:normal;color:var(--ink3);font-size:12px}
+.rng{display:inline-flex;align-items:center;gap:8px}
+
+/* buttons */
+.btn{height:36px;padding:0 15px;border-radius:7px;border:1px solid var(--line2);background:#fff;cursor:pointer;font-weight:600;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#f7f7fa}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+.btn.pri:hover{background:var(--ac-h)}
+.btn.sm{height:32px;padding:0 12px;font-size:12.5px}
+.btn.lg{height:46px;min-width:78px;padding:0 20px;font-size:15px;border-radius:8px}
+.btn.dng{color:var(--bad);border-color:var(--badln)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.lk{border:0;background:none;color:var(--ac);cursor:pointer;padding:2px 3px;font-weight:500;text-align:left}
+.lk:hover{text-decoration:underline}
+.lk.strong{font-weight:700;color:var(--ink)}
+.lk.dng{color:var(--bad)}
+.acts{white-space:nowrap}
+.acts .lk{font-size:12.5px;padding:2px 5px}
+.acts .lk+.lk{border-left:1px solid var(--line2);border-radius:0}
+
+/* badges */
+.bdg{display:inline-flex;align-items:center;height:23px;padding:0 9px;border-radius:999px;font-size:11.5px;border:1px solid var(--line2);color:var(--ink2);background:#fff;white-space:nowrap;font-weight:500}
+.bdg.ok{color:var(--ok);background:var(--okbg);border-color:var(--okln)}
+.bdg.warn{color:var(--warn);background:var(--warnbg);border-color:var(--warnln)}
+.bdg.bad{color:var(--bad);background:var(--badbg);border-color:var(--badln)}
+.bdg.ac{color:var(--ac);background:var(--ac2);border-color:var(--ac3)}
+.bdg.gray{color:var(--ink3);background:var(--th)}
+.sub{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.dim-t{color:var(--ink3)}
+.mid{font-family:var(--font);font-variant-numeric:tabular-nums;letter-spacing:0}
+
+/* data table */
+.bar{display:flex;align-items:center;gap:8px;margin:30px 0 10px;flex-wrap:wrap}
+.bar .cnt{color:var(--ink2)}
+.bar .cnt b{color:var(--ac);font-weight:700}
+.bar .sp{flex:1}
+.bar .sep{width:1px;height:18px;background:var(--line2);margin:0 4px}
+.tw{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;border-top:1px solid var(--line2)}
+.tbl th{background:var(--th);font-weight:600;padding:12px 10px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
+.tbl td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+.tbl td{white-space:nowrap}
+.tbl td.l{white-space:normal;min-width:120px}
+.tbl td.l,.tbl th.l{text-align:left}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl .num{font-variant-numeric:tabular-nums}
+.tbl th.ck,.tbl td.ck{width:44px}
+.tbl tbody tr:hover{background:#fafaff}
+.tbl tbody tr.sel{background:var(--ac2)}
+.tbl tbody tr.click{cursor:pointer}
+.tbl tbody tr.flash{animation:fl 2.6s ease-out}
+.tbl tbody tr.off td{color:var(--ink3)}
+.tbl tfoot td{background:var(--th);font-weight:700;padding:12px 10px;text-align:right;font-variant-numeric:tabular-nums}
+@keyframes fl{0%,40%{background:#e4f6ea}100%{background:transparent}}
+.tbl th.sortable{cursor:pointer;user-select:none}
+.tbl th.sortable:hover{color:var(--ac)}
+.sa{font-size:10px;color:var(--ink3);margin-left:4px}
+.tbl th[aria-sort=ascending] .sa,.tbl th[aria-sort=descending] .sa{color:var(--ac)}
+.empty{padding:44px 10px!important;color:var(--ink3)}
+.pager{display:flex;justify-content:center;gap:4px;margin-top:18px}
+.pager button{min-width:32px;height:32px;border:1px solid transparent;border-radius:6px;background:none;cursor:pointer;color:var(--ink2)}
+.pager button.on{border-color:var(--ac);color:var(--ac);font-weight:700}
+.pager button:disabled{color:var(--line2);cursor:default}
+.chipline{display:inline-flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.ord{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ord span+span::before{content:"›";color:var(--ink3);margin-right:4px}
+.off-t{color:var(--ink3);text-decoration:line-through}
+
+/* tabs */
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-top:28px}
+.tabs button{border:0;background:none;padding:12px 18px;cursor:pointer;color:var(--ink3);font-size:15px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:6px}
+.tabs button.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:700}
+.tabs button:disabled{cursor:not-allowed;opacity:.5}
+.tabs.small button{font-size:13.5px;padding:11px 16px}
+.tabs b{font-weight:700}
+
+/* alerts */
+.call{display:flex;gap:10px;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--th);color:var(--ink2);margin:14px 0}
+.call.warn{background:var(--warnbg);border-color:var(--warnln);color:#6f3b00}
+.call.bad{background:var(--badbg);border-color:var(--badln);color:#8b1724}
+.call.ac{background:var(--ac2);border-color:var(--ac3);color:#2a2192}
+.call b{font-weight:700}
+.call ul{margin:4px 0 0;padding-left:18px}
+.errbox{margin-top:24px}
+
+/* marker (SB 번호) */
+.mk{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--mk);color:#fff;font-size:10.5px;font-style:normal;font-weight:700;margin-right:6px;vertical-align:1px;line-height:1;letter-spacing:0}
+
+/* toggle */
+.tgl{width:46px;height:26px;border-radius:13px;border:0;background:#cfd2dc;position:relative;cursor:pointer;padding:0;transition:background .15s}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tgl.on{background:var(--ac)}
+.tgl.on::after{left:23px}
+.tgl:disabled{opacity:.4;cursor:not-allowed}
+.hdl{border:0;background:none;cursor:grab;padding:6px;border-radius:6px;color:var(--ink)}
+.hdl:hover{background:var(--th)}
+.hdl svg{display:block;width:20px;height:20px}
+tr.dragging{opacity:.35}
+tr.over td{box-shadow:inset 0 2px 0 var(--ac)}
+
+/* footer actions */
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:60px}
+
+/* map screen */
+.map{display:grid;grid-template-columns:264px minmax(0,1fr);gap:28px;margin-top:28px;align-items:start}
+.tree{border:1px solid var(--line);border-radius:12px;padding:14px 10px;position:sticky;top:16px}
+.tree-h{display:flex;align-items:center;font-weight:700;padding:0 6px 10px}
+.tree .inp{width:100%;margin-bottom:10px}
+.pg-h{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;padding:8px 6px;cursor:pointer;font-weight:700;text-align:left;border-radius:6px}
+.pg-h:hover{background:var(--th)}
+.pg-h .car{width:12px;color:var(--ink3);font-size:11px}
+.c{margin-left:auto;color:var(--ink3);font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.mer{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:8px 8px 8px 22px;cursor:pointer;text-align:left;border-radius:8px}
+.mer:hover{background:var(--th)}
+.mer.on{background:var(--ac2)}
+.mer.on .nm{color:var(--ac);font-weight:700}
+.mer .nm{display:flex;flex-direction:column;line-height:1.35}
+.mer small{color:var(--ink3);font-size:11.5px;font-weight:400}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink3);flex:none}
+.dot.ok{background:#22a35a}.dot.warn{background:#e59a1a}.dot.gray{background:#c4c7d1}
+.tree .unl{margin-top:12px;border-top:1px solid var(--line);padding:10px 6px 0;color:var(--ink2);font-size:12px}
+.path{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 0;color:var(--ink2)}
+.path span.n{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:6px;background:var(--th);border:1px solid var(--line)}
+.path span.n.on{background:var(--ac2);border-color:var(--ac3);color:var(--ac);font-weight:700}
+.path i{font-style:normal;color:var(--ink3)}
+.emptybox{border:1px dashed var(--line2);border-radius:12px;padding:56px 24px;text-align:center;color:var(--ink2)}
+.emptybox h4{margin:0 0 6px;font-size:16px;color:var(--ink)}
+
+/* summary */
+.sum{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;margin-top:28px}
+.sum>div{padding:16px 20px}
+.sum>div+div{border-left:1px solid var(--line)}
+.sum span{color:var(--ink2);font-size:12.5px}
+.sum b{display:block;font-size:20px;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.sum b small{font-size:13px;font-weight:500;color:var(--ink2);margin-left:2px}
+.pos{color:var(--bad)}.neg{color:var(--ac)}
+
+/* detail strip */
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;margin-top:24px}
+.strip>div{padding:14px 18px}
+.strip>div+div{border-left:1px solid var(--line)}
+.strip span{display:block;color:var(--ink3);font-size:12px}
+.strip b{font-size:14.5px}
+
+/* trace chain */
+.chain{display:flex;align-items:stretch;overflow-x:auto;padding-bottom:4px}
+.chain .st{flex:1 1 0;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;min-width:104px;background:#fff}
+.chain .st span{display:block;font-size:11.5px;color:var(--ink3)}
+.chain .st b{display:block;font-size:13.5px;line-height:1.35}
+.chain .st small{color:var(--ink2)}
+.chain .st.bad{border-color:var(--badln);background:var(--badbg)}
+.chain .st.bad b{color:var(--bad)}
+.chain .st.hi{border-color:var(--ac3);background:var(--ac2)}
+.chain .ar{display:grid;place-items:center;flex:0 0 22px;color:var(--ink3)}
+
+/* IA page */
+.ia-tree{border:1px solid var(--line);border-radius:12px;padding:20px 24px}
+.ia-tree ul{list-style:none;margin:0;padding-left:22px;border-left:1px solid var(--line2)}
+.ia-tree>ul{border-left:0;padding-left:0}
+.ia-tree li{padding:5px 0}
+.ia-tree .g{font-weight:700}
+.ia-tree .sid{display:inline-block;font-size:11px;color:var(--ac);background:var(--ac2);border-radius:4px;padding:1px 6px;margin-left:6px;font-weight:600}
+.ia-tree .pop{color:var(--ink3);font-size:12px;margin-left:8px}
+.hier{display:flex;align-items:stretch;overflow-x:auto;padding-bottom:4px}
+.hb{flex:1 1 0;min-width:156px;border:1px solid var(--line2);border-radius:12px;padding:14px 16px;background:#fff}
+.hb.k{border-color:var(--ac);box-shadow:inset 0 3px 0 var(--ac)}
+.hb h4{margin:0;font-size:15px}
+.hb .n{font-size:12px;color:var(--ink3)}
+.hb ul{margin:10px 0 0;padding-left:16px;color:var(--ink2);font-size:12px}
+.ha{flex:0 0 72px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11.5px;color:var(--ink2);font-weight:600;gap:2px}
+.ha::after{content:"";width:46px;height:1px;background:var(--ink3);position:relative}
+.ha small{font-weight:400;color:var(--ink3)}
+
+/* modal */
+.dimbg{position:fixed;inset:0;background:rgba(18,19,32,.42);display:flex;align-items:flex-start;justify-content:center;padding:6vh 20px;z-index:40;overflow:auto}
+.mdl{background:#fff;border-radius:14px;width:min(720px,100%);box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.mdl.w9{width:min(960px,100%)}
+.mdl.w5{width:min(520px,100%)}
+.mdl-h{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.mdl-h h2{font-size:18px;margin:0}
+.mdl-h .x{border:0;background:none;font-size:22px;cursor:pointer;color:var(--ink3);width:34px;height:34px;border-radius:8px}
+.mdl-h .x:hover{background:var(--th)}
+.mdl-b{padding:16px 24px 8px;max-height:68vh;overflow:auto}
+.mdl-f{display:flex;justify-content:flex-end;gap:8px;padding:16px 24px 20px;border-top:1px solid var(--line);margin-top:8px}
+.mdl-b h4{font-size:14px;margin:22px 0 8px}
+.mdl-b h4:first-child{margin-top:4px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 12px}
+.kv dt{color:var(--ink3)}.kv dd{margin:0}
+.mlist{display:grid;gap:6px}
+.mlist label{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer}
+.mlist label.dis{opacity:.5;cursor:not-allowed}
+.mlist label:has(input:checked){border-color:var(--ac);background:var(--ac2)}
+.mlist .r{margin-left:auto}
+
+/* toast */
+#toast-root{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60}
+.toast{background:#22232c;color:#fff;padding:12px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);display:flex;gap:14px;align-items:center}
+.toast .lk{color:#b9b3ff}
+
+/* note drawer */
+.note{position:fixed;top:0;right:0;bottom:0;width:372px;background:#fff;border-left:1px solid var(--line);box-shadow:-12px 0 30px rgba(20,20,50,.08);z-index:30;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s}
+.note.open{transform:none}
+.note:not(.open){box-shadow:none;visibility:hidden}
+.nt-b li .mk{flex:none}
+.shell.note-on .work{margin-right:372px}
+.nt-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:22px 22px 14px;border-bottom:1px solid var(--line)}
+.nt-h .id{font-size:11.5px;color:var(--ac);font-weight:700}
+.nt-h h3{margin:2px 0 0;font-size:16px}
+.nt-b{padding:8px 22px 30px;overflow:auto}
+.nt-b ol{list-style:none;margin:0;padding:0}
+.nt-b li{display:flex;gap:6px;padding:12px 0;border-bottom:1px solid var(--line)}
+.nt-b li b{display:block;margin-bottom:2px}
+.nt-b li p{margin:0;color:var(--ink2);font-size:12.5px}
+.nt-b h4{margin:22px 0 6px;font-size:13px}
+.nt-b .q{padding:10px 12px;border-radius:8px;background:var(--warnbg);border:1px solid var(--warnln);margin-bottom:8px;font-size:12.5px;color:#5b3200}
+.nt-b .q b{display:block;color:#6f3b00}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1100px){.shell{grid-template-columns:1fr}.lnb{position:static;height:auto}.work{border-radius:0;padding:24px 18px 80px}.map{grid-template-columns:1fr}.tree{position:static}.sum,.strip{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+  <nav class="lnb" id="lnb" aria-label="메뉴"></nav>
+  <main class="work"><div id="view"></div></main>
+</div>
+<aside class="note" id="note" aria-label="기획 노트"></aside>
+<div id="modal-root"></div>
+<div id="toast-root" aria-live="polite"></div>
+
+<script>
+/* ================= 기준 상수 ================= */
+const TODAY='2026-10-04', USER='pay_admin01';
+const PGM=[{name:'KG이니시스',code:'INICIS'},{name:'NHN KCP',code:'KCP'},{name:'토스페이먼츠',code:'TOSS'},{name:'나이스페이',code:'NICE'}];
+const PGS=PGM.map(p=>p.name);
+const METHODS=['신용카드','계좌이체','가상계좌','SK Pay','카카오페이','네이버페이','휴대폰결제'];
+const SHORT={'신용카드':'카드','계좌이체':'이체','가상계좌':'가상계좌'};
+const INST_OK=['신용카드','SK Pay','카카오페이','네이버페이'];
+const BIZ=['SKT','PS&M','M&S'];
+const CHANNELS=['T멤버십','T다이렉트샵','TDS 액세서리','T우주','제휴몰'];
+const USES=['사용','일시중지','미사용'];
+const CONTRACTS=['계약중','계약예정','계약만료','해지'];
+const PSTAT=['판매중','판매중지','판매예정'];
+const CATS={'커머스':['액세서리','멤버십커머스','기프티콘'],'단말':['휴대폰','태블릿'],'구독':['OTT','라이프스타일']};
+const lv1Of=l=>Object.keys(CATS).find(k=>CATS[k].includes(l))||'';
+const JOIN=['신규가입','기기변경','번호이동'];
+const MONTHS=[3,6,9,10,12,18,24,30,36,48];
+const POST_METHODS=['계좌이체','신용카드','SK Pay','카카오페이','네이버페이','11 Pay'];
+const POST_SVC=['즉시납부','자동납부'];
+const POST_COND={'현재 납부방법':['카드','계좌','간편결제','지로'],'회선 수':['1회선','2회선 이상'],'연령대':['20대','30대','40대','50대 이상']};
+const RULES={pre:[{id:'R1',name:'평균 결제금액 30만원 이상',eff:'계좌이체를 1순위로'},{id:'R2',name:'최근 사용 결제수단',eff:'직전 결제수단을 1순위로'},{id:'R3',name:'연령대 20대',eff:'카카오페이를 1순위로'}],
+ post:[{id:'R11',name:'현재 납부방법 우선',eff:'현재 납부 중인 수단을 1순위로'},{id:'R12',name:'최근 즉시납부 수단',eff:'직전 즉시납부 수단을 1순위로'}]};
+const PAYST=['결제완료','취소','부분취소','결제실패'];
+const RECST=['일치','불일치','미수신','확인완료'];
+
+/* ================= 유틸 ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const won=n=>Math.round(n).toLocaleString('ko-KR');
+const pad=(n,l=2)=>String(n).padStart(l,'0');
+const ordM=(a,b)=>{const L=[...METHODS,'11 Pay'];return L.indexOf(a)-L.indexOf(b)};
+function rng(s){let a=0;for(const c of s)a=(a*31+c.charCodeAt(0))|0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let CLOCK=new Date('2026-10-04T10:00:00');
+function now(){CLOCK=new Date(CLOCK.getTime()+120000);return `${CLOCK.getFullYear()}-${pad(CLOCK.getMonth()+1)}-${pad(CLOCK.getDate())} ${pad(CLOCK.getHours())}:${pad(CLOCK.getMinutes())}`}
+function get(p){return p.split('.').reduce((o,k)=>o==null?o:o[k],S)}
+function set(p,v){const ks=p.split('.');let o=S;ks.slice(0,-1).forEach(k=>o=o[k]);o[ks[ks.length-1]]=v}
+function opts(arr,v,all){return (all!=null?`<option value="">${esc(all)}</option>`:'')+arr.map(o=>{const [val,lab]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}" ${String(val)===String(v)?'selected':''}>${esc(lab)}</option>`}).join('')}
+const mk=n=>S.marks?`<i class="mk">${n}</i>`:'';
+const TONE={'사용':'ok','일시중지':'warn','미사용':'gray','계약중':'ok','계약예정':'ac','계약만료':'gray','해지':'bad','판매중':'ok','판매중지':'gray','판매예정':'ac','결제완료':'ok','취소':'bad','부분취소':'warn','결제실패':'gray','일치':'ok','불일치':'bad','미수신':'warn','확인완료':'ac','적용중':'ok','적용예정':'ac','적용종료':'gray','노출':'','미노출':'gray','기준정보 해제':'bad','할부 불가':'gray','Y':'ok','N':'gray'};
+const badge=(t,tone)=>`<span class="bdg ${tone??TONE[t]??''}">${esc(t)}</span>`;
+function crumb(a){return `<nav class="crumb" aria-label="현재 위치">${a.map((c,i)=>i===a.length-1?`<b>${esc(c)}</b>`:esc(c)).join('<span aria-hidden="true">›</span>')}</nav>`}
+function ph(title,right=''){return `<div class="ph"><h1 class="h1">${title}</h1><div class="ph-r">${right}</div></div>`}
+function th(key,k,label,cls=''){const s=S.sort[key];const on=s&&s.k===k;return `<th class="sortable ${cls}" data-a="sort" data-key="${key}" data-k="${k}" aria-sort="${on?(s.d>0?'ascending':'descending'):'none'}">${label}<span class="sa">${on?(s.d>0?'▲':'▼'):'↕'}</span></th>`}
+function sortRows(rows,key,g){const s=S.sort[key];if(!s||!g[s.k])return rows;const f=g[s.k];return [...rows].sort((a,b)=>{const x=f(a),y=f(b);return (x>y?1:x<y?-1:0)*s.d})}
+function paginate(rows,key,size){const tot=Math.max(1,Math.ceil(rows.length/size));const cur=Math.min(S.page[key]||1,tot);
+ let h='';if(tot>1){h=`<nav class="pager" aria-label="페이지"><button data-a="pg" data-key="${key}" data-p="${cur-1}" ${cur===1?'disabled':''} aria-label="이전">‹</button>`;for(let i=1;i<=tot;i++)h+=`<button class="${i===cur?'on':''}" data-a="pg" data-key="${key}" data-p="${i}" ${i===cur?'aria-current="page"':''}>${i}</button>`;h+=`<button data-a="pg" data-key="${key}" data-p="${cur+1}" ${cur===tot?'disabled':''} aria-label="다음">›</button></nav>`}
+ return {rows:rows.slice((cur-1)*size,cur*size),html:h}}
+function csv(name,head,rows){const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;const t='\ufeff'+[head,...rows].map(r=>r.map(q).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download=`${name}_${TODAY.replace(/-/g,'')}.csv`;document.body.appendChild(a);a.click();a.remove();toast(`${name} 목록을 내려받았습니다. (${rows.length}건)`)}
+function toast(msg,act){const r=$('#toast-root');r.innerHTML=`<div class="toast" role="status"><span>${esc(msg)}</span>${act?`<button class="lk" data-a="${act.a}" data-id="${act.id}">${esc(act.label)}</button>`:''}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>r.innerHTML='',4500)}
+
+/* ================= 목업 데이터 ================= */
+function seed(){
+ const F=(m,type,v,from,to='',use='사용')=>({m,type,v,from,to,use});
+ const mer=[
+  {id:'M001',pg:'KG이니시스',name:'T멤버십 가맹점',mid:'INIpayTM01',biz:'SKT',ch:'T멤버십',use:'사용',contract:'계약중',cFrom:'2026-01-01',cTo:'2027-12-31',fees:[F('신용카드','정률',1.5,'2026-01-01'),F('계좌이체','정률',1.0,'2026-01-01'),F('카카오페이','정률',2.0,'2026-01-01'),F('네이버페이','정률',2.0,'2026-01-01')],updatedAt:'2026-09-24 14:12',by:USER},
+  {id:'M002',pg:'KG이니시스',name:'TDS 가맹점',mid:'INIpayTD02',biz:'PS&M',ch:'T다이렉트샵',use:'사용',contract:'계약중',cFrom:'2026-03-01',cTo:'2028-02-29',fees:[F('신용카드','정률',1.9,'2026-03-01'),F('계좌이체','정률',1.2,'2026-03-01'),F('가상계좌','정액',250,'2026-03-01')],updatedAt:'2026-09-11 10:40',by:USER},
+  {id:'M003',pg:'NHN KCP',name:'액세서리 가맹점',mid:'KCPacc0301',biz:'PS&M',ch:'TDS 액세서리',use:'사용',contract:'계약중',cFrom:'2026-07-01',cTo:'2027-06-30',fees:[F('신용카드','정률',2.2,'2026-07-01','2026-10-31'),F('신용카드','정률',2.1,'2026-11-01'),F('계좌이체','정률',1.8,'2026-07-01'),F('가상계좌','정액',300,'2026-07-01','','일시중지'),F('SK Pay','정률',2.0,'2026-07-01')],updatedAt:'2026-09-29 16:40',by:USER},
+  {id:'M004',pg:'NHN KCP',name:'액세서리 에스크로',mid:'KCPesc0302',biz:'PS&M',ch:'TDS 액세서리',use:'미사용',contract:'계약만료',cFrom:'2025-07-01',cTo:'2026-06-30',fees:[F('가상계좌','정액',300,'2025-07-01','2026-06-30')],updatedAt:'2026-07-01 09:00',by:USER},
+  {id:'M005',pg:'토스페이먼츠',name:'T우주 구독 가맹점',mid:'tosstu0401',biz:'M&S',ch:'T우주',use:'사용',contract:'계약중',cFrom:'2026-02-01',cTo:'',fees:[F('신용카드','정률',2.5,'2026-02-01'),F('SK Pay','정률',2.3,'2026-02-01'),F('카카오페이','정률',2.4,'2026-02-01'),F('네이버페이','정률',2.4,'2026-02-01')],updatedAt:'2026-09-25 09:30',by:USER},
+  {id:'M006',pg:'토스페이먼츠',name:'단말 가맹점',mid:'tosstd0402',biz:'PS&M',ch:'T다이렉트샵',use:'사용',contract:'계약중',cFrom:'2026-02-01',cTo:'',fees:[F('신용카드','정률',1.8,'2026-02-01'),F('계좌이체','정률',1.3,'2026-02-01'),F('가상계좌','정액',200,'2026-02-01'),F('SK Pay','정률',1.9,'2026-02-01')],updatedAt:'2026-09-18 17:05',by:USER},
+  {id:'M007',pg:'나이스페이',name:'기프티콘 가맹점',mid:'niceGF0501',biz:'SKT',ch:'T멤버십',use:'일시중지',contract:'계약중',cFrom:'2026-01-01',cTo:'2026-12-31',fees:[F('신용카드','정률',2.6,'2026-01-01'),F('휴대폰결제','정률',3.5,'2026-01-01')],updatedAt:'2026-09-20 08:30',by:USER},
+  {id:'M008',pg:'나이스페이',name:'제휴몰 가맹점',mid:'niceAL0502',biz:'SKT',ch:'제휴몰',use:'사용',contract:'계약예정',cFrom:'2026-11-01',cTo:'2027-10-31',fees:[F('신용카드','정률',2.4,'2026-11-01'),F('계좌이체','정률',1.6,'2026-11-01')],updatedAt:'2026-09-30 13:22',by:USER}
+ ];
+ const P=(id,name,lv2,ch,biz,mer,st='판매중',mapAt='2026-07-01')=>({id,name,lv1:lv1Of(lv2),lv2,ch,biz,mer,st,mapAt:mer?mapAt:''});
+ const prod=[
+  P('P10001','갤럭시 Z 폴드8 보호필름','액세서리','TDS 액세서리','PS&M','M003'),
+  P('P10002','갤럭시 버즈4 실리콘 케이스','액세서리','TDS 액세서리','PS&M','M003'),
+  P('P10003','C타입 고속충전기 45W','액세서리','TDS 액세서리','PS&M','M003'),
+  P('P10004','맥세이프 무선충전 패드','액세서리','TDS 액세서리','PS&M','M003'),
+  P('P10005','아이폰 17 클리어 케이스','액세서리','TDS 액세서리','PS&M','M003'),
+  P('P10006','갤럭시 워치8 스포츠 스트랩','액세서리','TDS 액세서리','PS&M','M003','판매중지'),
+  P('P10007','차량용 무선충전 거치대','액세서리','T멤버십','SKT','M001','판매중','2026-08-12'),
+  P('P10008','20000mAh 보조배터리','액세서리','TDS 액세서리','PS&M',null,'판매예정'),
+  P('P11001','VIP 영화 예매권','멤버십커머스','T멤버십','SKT','M001'),
+  P('P11002','베이커리 교환권 1만원','멤버십커머스','T멤버십','SKT','M001'),
+  P('P11003','편의점 5천원권','멤버십커머스','T멤버십','SKT','M001'),
+  P('P11004','놀이공원 자유이용권','멤버십커머스','T멤버십','SKT','M001'),
+  P('P11005','커피 2잔 세트','멤버십커머스','T멤버십','SKT','M001','판매중지'),
+  P('P11006','도서 정기배송 3개월','멤버십커머스','T멤버십','SKT',null,'판매예정'),
+  P('P12001','치킨 기프티콘','기프티콘','T멤버십','SKT','M007'),
+  P('P12002','아이스크림 파인트 기프티콘','기프티콘','T멤버십','SKT','M007'),
+  P('P12003','아메리카노 기프티콘','기프티콘','T멤버십','SKT','M007'),
+  P('P12004','문화상품권 1만원','기프티콘','T멤버십','SKT','M007','판매중지'),
+  P('P20001','갤럭시 Z 폴드8 512GB','휴대폰','T다이렉트샵','PS&M','M006'),
+  P('P20002','갤럭시 Z 플립8 256GB','휴대폰','T다이렉트샵','PS&M','M006'),
+  P('P20003','갤럭시 S26 울트라 256GB','휴대폰','T다이렉트샵','PS&M','M006'),
+  P('P20004','아이폰 17 256GB','휴대폰','T다이렉트샵','PS&M','M002'),
+  P('P20005','아이폰 17 Pro 512GB','휴대폰','T다이렉트샵','PS&M','M002'),
+  P('P20006','갤럭시 A57 128GB','휴대폰','T다이렉트샵','PS&M',null),
+  P('P21001','갤럭시 탭 S11 256GB','태블릿','T다이렉트샵','PS&M','M006'),
+  P('P21002','아이패드 에어 7세대','태블릿','T다이렉트샵','PS&M','M002'),
+  P('P21003','갤럭시 탭 A11+','태블릿','T다이렉트샵','PS&M','M006','판매중지'),
+  P('P30001','TVING+Wavve 스탠다드','OTT','T우주','M&S','M005'),
+  P('P30002','유튜브 프리미엄','OTT','T우주','M&S','M005'),
+  P('P30003','디즈니+ 스탠다드','OTT','T우주','M&S','M005'),
+  P('P30004','넷플릭스 광고형','OTT','T우주','M&S','M005'),
+  P('P30005','FLO 무제한','OTT','T우주','M&S','M005','판매중지'),
+  P('P31001','배민클럽','라이프스타일','T우주','M&S','M005'),
+  P('P31002','컬리멤버스','라이프스타일','T우주','M&S',null,'판매예정'),
+  P('P31003','쏘카 패스','라이프스타일','T우주','M&S','M005'),
+  P('P31004','밀리의서재','라이프스타일','T우주','M&S',null)
+ ];
+ const pays=genPays(mer,prod);
+ const exp=[
+  {id:'EX-001',kind:'pre',unit:'상품유형',lv1:'커머스',lv2:'액세서리',pids:[],join:['신규가입','기기변경','번호이동'],pay:{one:true,inst:false},months:[],list:[{m:'신용카드',on:true},{m:'계좌이체',on:true},{m:'가상계좌',on:true},{m:'SK Pay',on:true},{m:'카카오페이',on:false},{m:'네이버페이',on:false}],mode:'운영자',rules:[],use:'Y',updatedAt:'2026-09-30 17:10',by:USER},
+  {id:'EX-002',kind:'pre',unit:'상품유형',lv1:'단말',lv2:'휴대폰',pids:[],join:['신규가입','기기변경','번호이동'],pay:{one:false,inst:true},months:[12,24,36],list:[{m:'신용카드',on:true},{m:'SK Pay',on:true},{m:'계좌이체',on:true},{m:'가상계좌',on:false}],mode:'개인화',rules:['R1','R2'],use:'Y',updatedAt:'2026-09-30 17:22',by:USER},
+  {id:'EX-003',kind:'pre',unit:'개별상품',lv1:'',lv2:'',pids:['P20004'],join:['기기변경','번호이동'],pay:{one:true,inst:false},months:[],list:[{m:'계좌이체',on:true},{m:'신용카드',on:true},{m:'가상계좌',on:true}],mode:'운영자',rules:[],use:'Y',updatedAt:'2026-09-30 17:31',by:USER},
+  {id:'EX-004',kind:'pre',unit:'상품유형',lv1:'구독',lv2:'OTT',pids:[],join:['신규가입','기기변경','번호이동'],pay:{one:true,inst:false},months:[],list:[{m:'SK Pay',on:true},{m:'신용카드',on:true},{m:'카카오페이',on:true},{m:'네이버페이',on:true}],mode:'운영자',rules:[],use:'Y',updatedAt:'2026-09-29 11:05',by:USER},
+  {id:'EX-005',kind:'pre',unit:'상품유형',lv1:'커머스',lv2:'기프티콘',pids:[],join:['신규가입','기기변경','번호이동'],pay:{one:true,inst:false},months:[],list:[{m:'신용카드',on:true},{m:'휴대폰결제',on:true}],mode:'운영자',rules:[],use:'Y',updatedAt:'2026-09-02 09:12',by:USER},
+  {id:'EX-101',kind:'post',svc:'즉시납부',cond:{t:'',v:''},list:POST_METHODS.map(m=>({m,on:true})),mode:'운영자',rules:[],use:'Y',updatedAt:'2026-09-30 18:20',by:USER},
+  {id:'EX-102',kind:'post',svc:'즉시납부',cond:{t:'현재 납부방법',v:'카드'},list:['신용카드','SK Pay','계좌이체','카카오페이','네이버페이','11 Pay'].map(m=>({m,on:true})),mode:'개인화',rules:['R11'],use:'Y',updatedAt:'2026-09-30 18:26',by:USER},
+  {id:'EX-103',kind:'post',svc:'자동납부',cond:{t:'',v:''},list:['계좌이체','신용카드'].map(m=>({m,on:true})),mode:'운영자',rules:[],use:'N',updatedAt:'2026-09-28 15:02',by:USER}
+ ];
+ const hist=[
+  {at:'2026-09-29 16:40',by:USER,tid:'M003',tname:'액세서리 가맹점 (KCPacc0301)',area:'가맹점',field:'수수료 추가',before:'-',after:'신용카드 정률 2.1% (2026-11-01~)'},
+  {at:'2026-09-20 08:30',by:USER,tid:'M007',tname:'기프티콘 가맹점 (niceGF0501)',area:'가맹점',field:'사용여부',before:'사용',after:'일시중지'},
+  {at:'2026-08-12 11:20',by:USER,tid:'M001',tname:'T멤버십 가맹점 (INIpayTM01)',area:'상품 Mapping',field:'P10007 차량용 무선충전 거치대',before:'미연결',after:'T멤버십 가맹점 (INIpayTM01)'},
+  {at:'2026-09-30 17:10',by:USER,tid:'EX-001',tname:'선불 / 커머스 > 액세서리',area:'결제수단 노출',field:'노출 순서',before:'신용카드 › SK Pay › 계좌이체 › 가상계좌',after:'신용카드 › 계좌이체 › 가상계좌 › SK Pay'}
+ ];
+ return {mer,prod,pays,exp,hist,
+  bill:{'2026-09':{M003:12400,M005:-3180,M007:null},'2026-08':{M006:5200}},
+  rstate:{'2026-08|M006':{st:'확인완료',memo:'PG 소급 정산분. 9월 청구서에서 차감된 것 확인',at:'2026-09-12 15:20',by:USER}}};
+}
+const AMT={'액세서리':[9900,79000],'멤버십커머스':[5000,50000],'기프티콘':[3000,30000],'휴대폰':[890000,2100000],'태블릿':[450000,1300000],'OTT':[9900,19900],'라이프스타일':[4900,29000]};
+function genPays(mer,prod){
+ const r=rng('nova-pay');const out=[];const live=prod.filter(p=>p.mer&&p.st!=='판매예정');let seq=0;
+ for(let i=0;i<620;i++){
+  const p=live[Math.floor(r()*live.length)];const m=mer.find(x=>x.id===p.mer);
+  const day=new Date(Date.UTC(2026,7,1+Math.floor(r()*61)));const d=day.toISOString().slice(0,10);
+  if(m.id==='M007'&&d>='2026-09-20')continue;
+  const ms=[...new Set(m.fees.filter(f=>f.use==='사용'&&f.from<=d&&(!f.to||f.to>=d)).map(f=>f.m))];if(!ms.length)continue;
+  const w=ms.map((x,k)=>k===0?4:1);const tw=w.reduce((a,b)=>a+b,0);let pick=r()*tw,mi=0;while(pick>w[mi]){pick-=w[mi];mi++}
+  const [lo,hi]=AMT[p.lv2];const amt=Math.round((lo+r()*(hi-lo))/100)*100;
+  const x=r();const st=x<.8?'결제완료':x<.88?'취소':x<.93?'부분취소':'결제실패';
+  const cancel=st==='취소'?amt:st==='부분취소'?Math.round(amt*(.2+r()*.4)/100)*100:0;
+  const at=`${d} ${pad(8+Math.floor(r()*14))}:${pad(Math.floor(r()*60))}:${pad(Math.floor(r()*60))}`;
+  out.push({no:`ORD${d.replace(/-/g,'').slice(2)}${pad(++seq,4)}`,pid:p.id,mer:m.id,pg:m.pg,mid:m.mid,method:ms[mi],amt,cancel,at,st,refund:st==='취소'?'환불완료':st==='부분취소'?'부분환불':'-'});
+ }
+ return out.sort((a,b)=>b.at.localeCompare(a.at));
+}
+
+/* ================= 상태 ================= */
+let S;
+function freshState(){
+ return {route:'mer',merView:'list',merId:null,merTab:'basic',draft:null,formErr:[],
+  mf:{pg:'',name:'',mid:'',biz:'',ch:'',use:'',contract:''},mfA:{},merSel:[],bulkUse:'',
+  mapMer:null,mapTab:'linked',mapQ:'',mapSt:'',linkSel:[],addSel:[],treeQ:'',closed:{},
+  af:{q:'',lv1:'',lv2:'',ch:'',biz:'',pg:'',mer:'',st:''},afA:{},
+  pf:{from:'2026-09-01',to:'2026-09-30',q:'',pg:'',mer:'',m:'',st:''},pfA:null,
+  rf:{mon:'2026-09',pg:'',st:'',diff:false},rfA:null,
+  expKind:'pre',expView:'list',ed:null,edErr:[],ef:{unit:'',lv1:'',lv2:'',mode:'',use:'',svc:''},efA:{},
+  iaPid:'P10007',
+  sort:{},page:{},modal:null,marks:false,note:false,flash:[],
+  ...seed()};
+}
+S=freshState();S.pfA={...S.pf};S.rfA={...S.rf};
+
+/* ================= 도메인 ================= */
+const mer=id=>S.mer.find(m=>m.id===id);
+const prod=id=>S.prod.find(p=>p.id===id);
+const merLabel=m=>m?`${m.name} (${m.mid})`:'미연결';
+const cat=p=>`${p.lv1} > ${p.lv2}`;
+const prodCnt=id=>S.prod.filter(p=>p.mer===id).length;
+const feeTxt=f=>f?(f.type==='정률'?`${f.v}%`:`${won(f.v)}원`):'-';
+const feeSt=f=>f.to&&f.to<TODAY?'적용종료':f.from>TODAY?'적용예정':'적용중';
+function feeAt(m,method,d){return m.fees.filter(f=>f.m===method&&f.from<=d&&(!f.to||f.to>=d)).sort((a,b)=>b.from.localeCompare(a.from))[0]||null}
+function merMethods(m){const by={};m.fees.forEach(f=>(by[f.m]=by[f.m]||[]).push(f));
+ return Object.keys(by).sort(ordM).map(k=>{const cur=feeAt(m,k,TODAY);const next=by[k].filter(f=>f.from>TODAY).sort((a,b)=>a.from.localeCompare(b.from))[0]||null;return {m:k,cur,next,use:(cur||next||by[k][0]).use}}).filter(x=>x.cur||x.next)}
+const merLive=m=>m.use==='사용'&&m.contract==='계약중'&&m.cFrom<=TODAY&&(!m.cTo||m.cTo>=TODAY);
+function blockReason(m){if(m.use==='미사용')return '미사용 가맹점에는 상품을 연결할 수 없습니다.';if(['계약만료','해지'].includes(m.contract))return `계약이 종료된 가맹점(${m.contract})에는 상품을 연결할 수 없습니다.`;return ''}
+function warnReason(m){if(m.use==='일시중지')return '일시중지 가맹점입니다. 연결은 되지만 사용으로 바꾸기 전까지 이 상품은 결제할 수 없습니다.';if(m.contract==='계약예정')return `계약 시작일(${m.cFrom}) 전까지는 결제할 수 없습니다.`;return ''}
+const netAmt=p=>p.st==='결제완료'?p.amt:p.st==='부분취소'?p.amt-p.cancel:0;
+function payFee(p){const m=mer(p.mer);const f=feeAt(m,p.method,p.at.slice(0,10));if(!f)return null;const b=netAmt(p);if(b<=0)return 0;return f.type==='정률'?Math.round(b*f.v/100):f.v}
+function recon(mon){
+ const g={};S.pays.forEach(p=>{if(!p.at.startsWith(mon)||!['결제완료','부분취소'].includes(p.st))return;
+  const r=g[p.mer]||(g[p.mer]={mer:p.mer,cnt:0,amt:0,exp:0,missing:0,by:{}});const fee=payFee(p);
+  r.cnt++;r.amt+=netAmt(p);if(fee==null)r.missing++;else r.exp+=fee;
+  const b=r.by[p.method]||(r.by[p.method]={m:p.method,cnt:0,amt:0,exp:0});b.cnt++;b.amt+=netAmt(p);b.exp+=fee||0});
+ const bill=S.bill[mon]||{};
+ return Object.values(g).map(r=>{const m=mer(r.mer);const d=bill[r.mer];const act=d===null?null:r.exp+(d||0);const diff=act==null?null:act-r.exp;
+  const rs=S.rstate[`${mon}|${r.mer}`];const st=rs?rs.st:act==null?'미수신':diff===0?'일치':'불일치';
+  return {...r,m,pg:m.pg,act,diff,st,rs,eff:r.amt?r.exp/r.amt*100:0}}).sort((a,b)=>PGS.indexOf(a.pg)-PGS.indexOf(b.pg)||a.mer.localeCompare(b.mer))}
+function addHist(rows){const at=now();rows.forEach(r=>S.hist.unshift({at,by:USER,...r}))}
+
+/* 노출: 후보 결제수단 = 대상 상품이 Mapping된 MID의 결제수단 */
+function targetProds(e){if(e.kind!=='pre')return [];return e.unit==='상품유형'?S.prod.filter(p=>p.lv2===e.lv2&&e.lv2):S.prod.filter(p=>e.pids.includes(p.id))}
+function avail(e){const map=new Map();
+ if(e.kind==='post'){POST_METHODS.forEach(m=>map.set(m,{srcs:['요금납부 수단 (BSS)'],paused:false}));return map}
+ const ms=[...new Set(targetProds(e).map(p=>p.mer).filter(Boolean))].map(mer).filter(m=>m.use!=='미사용'&&!['계약만료','해지'].includes(m.contract));
+ ms.forEach(m=>merMethods(m).forEach(x=>{if(!x.cur&&m.contract!=='계약예정')return;const paused=m.use!=='사용'||m.contract!=='계약중'||x.use!=='사용';
+  const c=map.get(x.m)||{srcs:[],paused:true};c.srcs.push(`${m.pg} · ${m.mid}`);c.paused=c.paused&&paused;map.set(x.m,c)}));
+ return new Map([...map.entries()].sort((a,b)=>ordM(a[0],b[0])))}
+const instOnly=e=>e.kind==='pre'&&e.pay.inst&&!e.pay.one;
+function rowState(e,row,cand){const c=cand.get(row.m);
+ if(!c)return {t:'기준정보 해제',fo:false};
+ if(instOnly(e)&&!INST_OK.includes(row.m))return {t:'할부 불가',fo:false};
+ if(!row.on)return {t:'미노출',fo:false};
+ if(c.paused)return {t:'일시중지',fo:false};
+ return {t:'노출',fo:true}}
+function rowsOf(e){const cand=avail(e);return e.list.map(r=>({...r,c:cand.get(r.m),s:rowState(e,r,cand)}))}
+function foOrder(e,pid){const rows=rowsOf(e).filter(r=>r.s.fo).map(r=>r.m);if(e.kind!=='pre'||!pid)return {order:rows,cut:[]};
+ const p=prod(pid);if(!p.mer)return {order:[],cut:[],nomid:true};const m=mer(p.mer);
+ if(!merLive(m))return {order:[],cut:[],dead:m};
+ const ok=merMethods(m).filter(x=>x.cur&&x.use==='사용').map(x=>x.m);return {order:rows.filter(x=>ok.includes(x)),cut:rows.filter(x=>!ok.includes(x)),m}}
+function syncList(e,fresh){const cand=avail(e);if(fresh){e.list=[...cand.keys()].map(m=>({m,on:true}));return}
+ const have=e.list.map(r=>r.m);[...cand.keys()].forEach(m=>{if(!have.includes(m))e.list.push({m,on:false,nw:true})})}
+function tName(e){if(e.kind==='post')return `${e.svc} / ${e.cond.t?`${e.cond.t} = ${e.cond.v}`:'기본'}`;
+ if(e.unit==='상품유형')return e.lv2?`${e.lv1} > ${e.lv2}`:'-';const ps=e.pids.map(prod);return ps.length?ps[0].name+(ps.length>1?` 외 ${ps.length-1}`:''):'-'}
+const payTxt=e=>e.pay.one&&e.pay.inst?'전체':e.pay.one?'일시불':e.pay.inst?'할부':'-';
+const orderTxt=list=>list.join(' › ');
+
+/* ================= 렌더 ================= */
+const ROUTES=[['mer','결제 가맹점 정보관리'],['map','결제 가맹점 상품관리'],['pay','결제이력 관리']];
+function renderLnb(){
+ const it=(r,l)=>`<button class="it ${S.route===r?'on':''}" data-a="go" data-v="${r}" ${S.route===r?'aria-current="page"':''}>${l}</button>`;
+ $('#lnb').innerHTML=`<div class="brand"><i>N</i>NOVA 통합 BO</div>
+ <div class="grp">결제관리</div>
+ <h5>결제 정보/이력 관리</h5>${ROUTES.map(([r,l])=>it(r,l)).join('')}
+ <h5>정산/대사 (제안)</h5>${it('rec','PG 수수료/정산 대사')}
+ <h5>결제수단 노출</h5>${it('exp','결제수단 노출 우선순위 관리')}
+ <h5>기획 참고</h5>${it('ia','IA / 데이터 구조')}
+ <div class="tools">
+  <button class="it ${S.marks?'on':''}" data-a="toggleMarks" aria-pressed="${S.marks}">${S.marks?'Description 번호 숨기기':'Description 번호 보기'}</button>
+  <button class="it ${S.note?'on':''}" data-a="toggleNote" aria-pressed="${S.note}">${S.note?'기획 노트 닫기':'기획 노트 열기'}</button>
+  <button class="it" data-a="resetAll">목업 데이터 초기화</button>
+ </div>`}
+function render(){
+ renderLnb();let h='',k='';
+ if(S.route==='ia'){h=vIA();k='ia'}
+ else if(S.route==='mer'){if(S.merView==='list'){h=vMerList();k='mer.list'}else if(S.merView==='form'){h=vMerForm();k='mer.form'}else{h=vMerDetail();k='mer.detail'}}
+ else if(S.route==='map'){h=vMap();k='map'}
+ else if(S.route==='pay'){h=vPay();k='pay'}
+ else if(S.route==='rec'){h=vRec();k='rec'}
+ else if(S.route==='exp'){if(S.expView==='list'){h=vExpList();k='exp.list'}else{h=vExpForm();k='exp.form'}}
+ S.noteKey=k;$('#view').innerHTML=h;renderNote();renderModal();
+ if(S.flash.length){clearTimeout(render.t);render.t=setTimeout(()=>{S.flash=[]},2700)}
+}
+
+/* ---------- SCREEN 01 : 가맹점 정보관리 ---------- */
+function merFilter(){const f=S.mfA;return S.mer.filter(m=>(!f.pg||m.pg===f.pg)&&(!f.name||m.name.includes(f.name.trim()))&&(!f.mid||m.mid.toLowerCase().includes(f.mid.trim().toLowerCase()))&&(!f.biz||m.biz===f.biz)&&(!f.ch||m.ch===f.ch)&&(!f.use||m.use===f.use)&&(!f.contract||m.contract===f.contract))}
+function methodsCell(m){const ms=merMethods(m);if(!ms.length)return '<span class="dim-t">-</span>';const all=ms.map(x=>x.m+(x.use!=='사용'?' (일시중지)':'')+(!x.cur?' (예정)':'')).join(', ');
+ const shown=ms.slice(0,2).map(x=>`<span class="${x.use!=='사용'||!x.cur?'dim-t':''}">${x.m}</span>`).join(', ');return `<span title="${esc(all)}">${shown}${ms.length>2?` <span class="dim-t">외 ${ms.length-2}</span>`:''}</span>`}
+function feeCell(m){const ms=merMethods(m).filter(x=>x.cur);if(!ms.length){const nx=merMethods(m)[0];return nx?`<span class="dim-t">${nx.next.from} 적용예정</span>`:'<span class="dim-t">-</span>'}
+ const all=ms.map(x=>`${x.m} ${feeTxt(x.cur)}`+(x.next?` → ${feeTxt(x.next)} (${x.next.from}~)`:'')).join('\n');
+ return `<span title="${esc(all)}">${ms.slice(0,2).map(x=>`${SHORT[x.m]||x.m} ${feeTxt(x.cur)}`).join(' / ')}${ms.length>2?` <span class="dim-t">외 ${ms.length-2}</span>`:''}${ms.some(x=>x.next)?' <span class="bdg ac" style="height:19px;font-size:10.5px">변경예정</span>':''}</span>`}
+function searchFt(rows){return `<table class="ft"><tbody>${rows.map(r=>`<tr>${r.map(([l,c,span])=>`<th>${l}</th><td ${span?`colspan="${span}"`:''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+function radios(path,arr,v,all){return `<div class="ck-g rd">${(all!=null?[['',all]]:[]).concat(arr.map(a=>Array.isArray(a)?a:[a,a])).map(([val,l])=>`<label><input type="radio" name="${path}" value="${esc(val)}" data-b="${path}" ${String(v)===String(val)?'checked':''}>${esc(l)}</label>`).join('')}</div>`}
+function vMerList(){
+ const f=S.mf;const all=sortRows(merFilter(),'mer',{pg:m=>m.pg+m.name,name:m=>m.name,cnt:m=>prodCnt(m.id),upd:m=>m.updatedAt});
+ const pg=paginate(all,'mer',10);const allOn=pg.rows.length&&pg.rows.every(m=>S.merSel.includes(m.id));
+ return `${crumb(['홈','결제관리','결제 정보/이력 관리','결제 가맹점 정보관리'])}${ph('결제 가맹점 정보관리')}
+ <div class="sec">${searchFt([
+  [[mk('1')+'PG사',`<select class="sel w200" data-b="mf.pg">${opts(PGS,f.pg,'전체')}</select>`],['가맹점명',`<input class="inp" data-b="mf.name" data-enter="mfSearch" value="${esc(f.name)}" placeholder="일부만 입력해도 됩니다">`]],
+  [['MID',`<input class="inp" data-b="mf.mid" data-enter="mfSearch" value="${esc(f.mid)}" placeholder="예: INIpayTM01">`],['사업주체',`<select class="sel w200" data-b="mf.biz">${opts(BIZ,f.biz,'전체')}</select>`]],
+  [['채널',`<select class="sel w200" data-b="mf.ch">${opts(CHANNELS,f.ch,'전체')}</select>`],['계약상태',`<select class="sel w200" data-b="mf.contract">${opts(CONTRACTS,f.contract,'전체')}</select>`]],
+  [['사용여부',radios('mf.use',USES,f.use,'전체'),3]]])}
+ <div class="sbtn"><button class="btn" data-a="mfReset">초기화</button><button class="btn pri" data-a="mfSearch">검색</button></div></div>
+ <div class="bar">${mk('2')}<span class="cnt">총 <b>${all.length}</b>건</span><span class="cnt">선택 <b>${S.merSel.length}</b>건</span><span class="sp"></span>
+  <select class="sel" data-b="bulkUse" aria-label="일괄 변경할 사용여부"><option value="">사용여부 일괄 변경</option>${opts(USES,S.bulkUse)}</select>
+  <button class="btn sm" data-a="bulkUse" ${!S.merSel.length||!S.bulkUse?'disabled':''}>적용</button><span class="sep"></span>
+  <button class="btn sm" data-a="histModal">변경이력</button><button class="btn sm" data-a="csvMer">엑셀 다운로드</button><button class="btn sm pri" data-a="merNew">가맹점 등록</button></div>
+ <div class="tw"><table class="tbl"><thead><tr><th class="ck"><input type="checkbox" data-a="merAll" ${allOn?'checked':''} aria-label="이 페이지 전체 선택"></th>
+  ${th('mer','pg','PG사')}${th('mer','name','가맹점명','l')}<th>MID</th><th>사업주체</th><th>채널</th><th class="l">${mk('3')}결제수단</th><th class="l">수수료</th><th>사용여부</th>${th('mer','cnt',mk('4')+'연결상품 수')}${th('mer','upd','수정일')}<th>${mk('5')}관리</th></tr></thead>
+ <tbody>${pg.rows.map(m=>{const sel=S.merSel.includes(m.id);return `<tr class="${sel?'sel':''} ${m.use==='미사용'?'off':''}">
+  <td class="ck"><input type="checkbox" data-a="merSel" data-id="${m.id}" ${sel?'checked':''} aria-label="${esc(m.name)} 선택"></td>
+  <td>${m.pg}</td><td class="l"><button class="lk strong" data-a="merDetail" data-id="${m.id}">${esc(m.name)}</button></td><td class="mid">${esc(m.mid)}</td><td>${m.biz}</td><td>${m.ch}</td>
+  <td class="l">${methodsCell(m)}</td><td class="l">${feeCell(m)}</td><td>${badge(m.use)}<div class="sub">${m.contract}</div></td>
+  <td><button class="lk" data-a="goMap" data-id="${m.id}">${prodCnt(m.id)}개</button></td><td class="num">${m.updatedAt.slice(0,10)}</td>
+  <td class="acts"><button class="lk" data-a="merDetail" data-id="${m.id}">상세</button><button class="lk" data-a="merEdit" data-id="${m.id}">수정</button><button class="lk" data-a="goMap" data-id="${m.id}">상품관리</button><button class="lk" data-a="feeModal" data-id="${m.id}">수수료관리</button></td></tr>`}).join('')||`<tr><td colspan="12" class="empty">조건에 맞는 가맹점이 없습니다. 검색조건을 줄여 보세요.</td></tr>`}</tbody></table></div>${pg.html}`}
+
+/* 수수료 편집 컴포넌트 (등록 화면, 수수료관리 팝업 공용) */
+function feeEditor(path,rows){
+ return `<div class="tw"><table class="tbl"><thead><tr><th>결제수단</th><th>수수료 구분</th><th>수수료</th><th>적용 시작일</th><th>적용 종료일</th><th>수단 상태</th><th>적용 상태</th><th>삭제</th></tr></thead><tbody>
+ ${rows.map((f,i)=>`<tr><td><select class="sel" data-b="${path}.${i}.m" aria-label="결제수단">${opts(METHODS,f.m,'선택')}</select></td>
+  <td><select class="sel" style="min-width:96px" data-b="${path}.${i}.type" data-r aria-label="수수료 구분">${opts(['정률','정액'],f.type)}</select></td>
+  <td><span class="unit"><input class="inp num" type="number" min="0" step="${f.type==='정률'?'0.01':'10'}" data-b="${path}.${i}.v" value="${esc(f.v)}" aria-label="수수료"><em>${f.type==='정률'?'%':'원/건'}</em></span></td>
+  <td><input type="date" class="inp" data-b="${path}.${i}.from" data-r value="${esc(f.from)}" aria-label="적용 시작일"></td>
+  <td><input type="date" class="inp" data-b="${path}.${i}.to" data-r value="${esc(f.to)}" aria-label="적용 종료일"></td>
+  <td><select class="sel" style="min-width:104px" data-b="${path}.${i}.use" aria-label="수단 상태">${opts(['사용','일시중지'],f.use)}</select></td>
+  <td>${f.from?badge(feeSt(f)):'-'}</td><td><button class="lk dng" data-a="feeDel" data-p="${path}" data-i="${i}">삭제</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">등록된 결제수단이 없습니다. [결제수단 추가]로 시작하세요.</td></tr>'}
+ </tbody></table></div><div style="margin-top:10px"><button class="btn sm" data-a="feeAdd" data-p="${path}">+ 결제수단 추가</button><span class="help dim-t" style="margin-left:10px;font-size:12px">요율 변경은 기존 행에 종료일을 넣고 같은 수단으로 새 행을 추가합니다.</span></div>`}
+function feeErrors(fees){const e=[];if(!fees.length)e.push('결제수단을 1개 이상 등록하세요.');
+ fees.forEach((f,i)=>{const n=`수수료 ${i+1}행`;const v=Number(f.v);if(!f.m)e.push(`${n}: 결제수단을 선택하세요.`);
+  if(f.v===''||isNaN(v)||v<=0)e.push(`${n}: 수수료를 0보다 크게 입력하세요.`);else if(f.type==='정률'&&v>10)e.push(`${n}: 정률 수수료는 10% 이하로 입력하세요.`);
+  if(!f.from)e.push(`${n}: 적용 시작일을 입력하세요.`);if(f.to&&f.from&&f.to<f.from)e.push(`${n}: 종료일이 시작일보다 빠릅니다.`)});
+ for(let i=0;i<fees.length;i++)for(let j=i+1;j<fees.length;j++){const a=fees[i],b=fees[j];if(a.m&&a.m===b.m&&a.from&&b.from&&a.from<=(b.to||'9999-12-31')&&b.from<=(a.to||'9999-12-31'))e.push(`${a.m}: ${i+1}행과 ${j+1}행의 적용기간이 겹칩니다.`)}
+ return e}
+const feeSum=fees=>[...fees].sort((a,b)=>ordM(a.m,b.m)||a.from.localeCompare(b.from)).map(f=>`${f.m} ${f.type} ${feeTxt({...f,v:Number(f.v)})} (${f.from}~${f.to||''})${f.use!=='사용'?' 일시중지':''}`).join(', ');
+const errBox=e=>e.length?`<div class="call bad errbox" role="alert"><div><b>저장할 수 없습니다. 아래 항목을 확인하세요.</b><ul>${e.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`:'';
+
+function vMerForm(){
+ const d=S.draft,isNew=!d.id;const linked=d.id?S.prod.filter(p=>p.mer===d.id):[];const selling=linked.filter(p=>p.st==='판매중').length;
+ return `${crumb(['홈','결제관리','결제 정보/이력 관리','결제 가맹점 정보관리',isNew?'가맹점 등록':'가맹점 수정'])}${ph(isNew?'결제 가맹점 등록':'결제 가맹점 수정')}
+ <section class="sec"><div class="sec-h">${mk('1')}<h3>PG 정보</h3></div>
+ <table class="ft"><tbody><tr><th class="req">PG사</th><td><select class="sel w200" data-b="draft.pg" ${isNew?'':'disabled'}>${opts(PGS,d.pg,'선택')}</select><span class="help">PG사는 기준정보에서 선택합니다. 신규 PG사 등록은 관리 주체가 정해진 뒤 추가합니다.</span></td></tr></tbody></table></section>
+ <section class="sec"><div class="sec-h">${mk('2')}<h3>가맹점 정보</h3></div>
+ <table class="ft"><tbody>
+  <tr><th class="req">가맹점명</th><td><input class="inp wide" data-b="draft.name" value="${esc(d.name)}" placeholder="예: T멤버십 가맹점"></td><th class="req">${mk('3')}MID</th><td><input class="inp" data-b="draft.mid" value="${esc(d.mid)}" ${isNew?'':'disabled'} placeholder="PG사가 부여한 가맹점 코드">${isNew?'':'<span class="help">등록 후 변경 불가</span>'}</td></tr>
+  <tr><th class="req">사업/정산 주체</th><td><select class="sel w200" data-b="draft.biz">${opts(BIZ,d.biz,'선택')}</select></td><th class="req">채널</th><td><select class="sel w200" data-b="draft.ch">${opts(CHANNELS,d.ch,'선택')}</select></td></tr>
+  <tr><th>${mk('4')}계약상태</th><td>${radios('draft.contract',CONTRACTS,d.contract)}</td><th>계약기간</th><td><span class="rng"><input type="date" class="inp" data-b="draft.cFrom" value="${esc(d.cFrom)}" aria-label="계약 시작일">~<input type="date" class="inp" data-b="draft.cTo" value="${esc(d.cTo)}" aria-label="계약 종료일"></span></td></tr>
+  <tr><th>사용여부</th><td colspan="3">${radios('draft.use',USES,d.use).replace(/data-b="draft.use"/g,'data-b="draft.use" data-r')}
+   ${!isNew&&d.use!=='사용'&&selling?`<div class="call warn" style="margin:10px 0 0"><span>판매중 상품 <b>${selling}개</b>가 이 가맹점에 연결되어 있습니다. 저장하면 이 상품들은 결제할 수 없습니다.</span></div>`:''}</td></tr>
+ </tbody></table></section>
+ <section class="sec"><div class="sec-h">${mk('5')}<h3>결제수단 / 수수료</h3><span class="hint">결제수단 1행에 계약 수수료 1건</span></div>${feeEditor('draft.fees',d.fees)}</section>
+ ${errBox(S.formErr)}
+ <div class="foot"><button class="btn lg" data-a="merCancel">취소</button><button class="btn lg pri" data-a="merSave">${mk('6')}저장</button></div>`}
+
+/* ---------- SCREEN 03 : 가맹점 상세 ---------- */
+function vMerDetail(){
+ const m=mer(S.merId);const linked=S.prod.filter(p=>p.mer===m.id);const pays=S.pays.filter(p=>p.mer===m.id);
+ const sep=pays.filter(p=>p.at.startsWith('2026-09')).reduce((a,p)=>a+netAmt(p),0);
+ const T=[['basic','기본정보'],['prod',`연결상품 ${linked.length}`],['fee','결제수단/수수료'],['pay','결제이력'],['hist','변경이력']];
+ let body='';
+ if(S.merTab==='basic')body=`<table class="ft"><tbody>
+  <tr><th>PG사</th><td>${m.pg}</td><th>가맹점명</th><td>${esc(m.name)}</td></tr>
+  <tr><th>MID</th><td class="mid">${esc(m.mid)}</td><th>사업/정산 주체</th><td>${m.biz}</td></tr>
+  <tr><th>채널</th><td>${m.ch}</td><th>사용여부</th><td>${badge(m.use)}</td></tr>
+  <tr><th>계약상태</th><td>${badge(m.contract)}</td><th>계약기간</th><td>${m.cFrom} ~ ${m.cTo||'종료일 없음'}</td></tr>
+  <tr><th>결제 가능 여부</th><td colspan="3">${merLive(m)?badge('결제 가능','ok'):badge('결제 불가','bad')+`<span class="help">${m.use!=='사용'?`사용여부 ${m.use}`:m.contract!=='계약중'?`계약상태 ${m.contract}`:'계약기간 외'}</span>`}</td></tr>
+  <tr><th>최종 수정</th><td colspan="3">${m.updatedAt} / ${m.by}</td></tr></tbody></table>`;
+ if(S.merTab==='prod'){const pg=paginate(linked,'dprod',10);body=`<div class="bar" style="margin-top:20px">${mk('3')}<span class="cnt">연결상품 <b>${linked.length}</b>개</span><span class="sp"></span><button class="btn sm" data-a="goMap" data-id="${m.id}">상품관리에서 편집</button></div>
+  <table class="tbl"><thead><tr><th>상품번호</th><th class="l">상품명</th><th>카테고리</th><th>채널</th><th>사업주체</th><th>상품상태</th><th>연결일</th><th>추적</th></tr></thead><tbody>
+  ${pg.rows.map(p=>`<tr><td class="mid">${p.id}</td><td class="l">${esc(p.name)}</td><td>${cat(p)}</td><td>${p.ch}</td><td>${p.biz}</td><td>${badge(p.st)}</td><td class="num">${p.mapAt||'-'}</td><td><button class="lk" data-a="trace" data-id="${p.id}">보기</button></td></tr>`).join('')||'<tr><td colspan="8" class="empty">연결된 상품이 없습니다. [상품관리에서 편집]으로 상품을 연결하세요.</td></tr>'}</tbody></table>${pg.html}`}
+ if(S.merTab==='fee')body=`<div class="bar" style="margin-top:20px">${mk('4')}<span class="cnt">수수료 이력 <b>${m.fees.length}</b>건</span><span class="sp"></span><button class="btn sm" data-a="feeModal" data-id="${m.id}">수수료관리</button></div>
+  <table class="tbl"><thead><tr><th>결제수단</th><th>수수료 구분</th><th class="r">수수료</th><th>적용기간</th><th>수단 상태</th><th>적용 상태</th></tr></thead><tbody>
+  ${[...m.fees].sort((a,b)=>ordM(a.m,b.m)||a.from.localeCompare(b.from)).map(f=>`<tr class="${feeSt(f)==='적용종료'?'off':''}"><td>${f.m}</td><td>${f.type}</td><td class="r num">${feeTxt(f)}</td><td class="num">${f.from} ~ ${f.to||''}</td><td>${badge(f.use)}</td><td>${badge(feeSt(f))}</td></tr>`).join('')}</tbody></table>`;
+ if(S.merTab==='pay'){const pg=paginate(pays,'dpay',10);body=`<div class="bar" style="margin-top:20px">${mk('5')}<span class="cnt">결제 <b>${pays.length}</b>건 (2026-08-01 ~ 2026-09-30)</span><span class="sp"></span><button class="btn sm" data-a="payByMer" data-id="${m.id}">결제이력 관리에서 보기</button></div>${payTable(pg.rows,false)}${pg.html}`}
+ if(S.merTab==='hist')body=histTable(S.hist.filter(h=>h.tid===m.id),true);
+ return `${crumb(['홈','결제관리','결제 정보/이력 관리','결제 가맹점 정보관리','가맹점 상세'])}
+ ${ph(`${esc(m.name)} ${badge(m.use)}`,`<button class="btn sm" data-a="merList">목록</button><button class="btn sm" data-a="goMap" data-id="${m.id}">상품관리</button><button class="btn sm pri" data-a="merEdit" data-id="${m.id}">수정</button>`)}
+ ${S.marks?`<div style="margin-top:24px">${mk('1')}</div>`:''}<div class="strip">${[['PG사',m.pg],['MID',m.mid],['사업주체',m.biz],['채널',m.ch],['연결상품',`${linked.length}개`],['9월 순결제금액',`${won(sep)}원`]].map(([a,b])=>`<div><span>${a}</span><b>${esc(b)}</b></div>`).join('')}</div>
+ <div class="tabs small" role="tablist">${mk('2')}${T.map(([k,l])=>`<button role="tab" aria-selected="${S.merTab===k}" class="${S.merTab===k?'on':''}" data-a="merTab" data-v="${k}">${l}</button>`).join('')}</div>
+ <div style="margin-top:20px">${body}</div>
+ ${S.merTab==='basic'?`<p class="desc dim-t">${mk('6')}가맹점은 삭제하지 않습니다. 거래와 정산 이력이 남아 있어 사용여부 미사용, 계약상태 계약만료로 정리합니다.</p>`:''}`}
+function histTable(rows,small){const pg=paginate(rows,'hist'+(small?'s':''),10);
+ return `<div class="tw"><table class="tbl"><thead><tr><th>변경일시</th><th>변경자</th><th class="l">대상</th><th>영역</th><th class="l">변경항목</th><th class="l">변경 전</th><th class="l">변경 후</th></tr></thead><tbody>
+ ${pg.rows.map(h=>`<tr><td class="num">${h.at}</td><td>${h.by}</td><td class="l">${esc(h.tname)}</td><td>${h.area}</td><td class="l">${esc(h.field)}</td><td class="l dim-t">${esc(h.before)}</td><td class="l">${esc(h.after)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">변경이력이 없습니다.</td></tr>'}</tbody></table></div>${pg.html}`}
+
+/* ---------- SCREEN 02 : 가맹점 상품관리 ---------- */
+function vMap(){
+ const m=S.mapMer?mer(S.mapMer):null;const q=S.treeQ.trim().toLowerCase();
+ const unl=S.prod.filter(p=>!p.mer);const unlSell=unl.filter(p=>p.st==='판매중');
+ const tree=PGS.map(pg=>{const ms=S.mer.filter(x=>x.pg===pg&&(!q||(x.name+x.mid).toLowerCase().includes(q)));if(q&&!ms.length)return '';const open=!S.closed[pg]||q;
+  return `<div><button class="pg-h" data-a="pgToggle" data-pg="${pg}" aria-expanded="${!!open}"><span class="car">${open?'▾':'▸'}</span>${pg}<span class="c">${ms.length}</span></button>
+  ${open?ms.map(x=>`<button class="mer ${x.id===S.mapMer?'on':''}" data-a="pickMer" data-id="${x.id}" ${x.id===S.mapMer?'aria-current="true"':''}><span class="dot ${TONE[x.use]}" title="${x.use}"></span><span class="nm">${esc(x.name)}<small>${esc(x.mid)}${x.contract!=='계약중'?` · ${x.contract}`:''}</small></span><span class="c">${prodCnt(x.id)}</span></button>`).join(''):''}</div>`}).join('');
+ return `${crumb(['홈','결제관리','결제 정보/이력 관리','결제 가맹점 상품관리'])}${ph('결제 가맹점 상품관리',m?`<button class="btn sm" data-a="histModal" data-id="${m.id}">변경이력</button><button class="btn sm" data-a="merDetail" data-id="${m.id}">가맹점 상세</button>`:'')}
+ <div class="map"><aside class="tree" aria-label="PG사와 가맹점 선택"><div class="tree-h">${mk('1')}PG사 / 가맹점</div>
+  <input class="inp" type="search" data-b="treeQ" data-r value="${esc(S.treeQ)}" placeholder="가맹점명, MID 검색" aria-label="가맹점 검색">${tree||'<p class="dim-t" style="padding:6px">일치하는 가맹점이 없습니다.</p>'}
+  <div class="unl">MID 미연결 상품 <b>${unl.length}</b>개 (판매중 <b style="color:var(--bad)">${unlSell.length}</b>)${m?`<br><button class="lk" data-a="showUnlinked">미연결 상품 찾기</button>`:''}</div></aside>
+ <section>${m?mapBody(m):`<div class="emptybox"><h4>왼쪽에서 가맹점을 고르세요</h4><p>가맹점(MID)을 고르면 연결된 상품을 보고, 상품을 검색해 한 번에 연결할 수 있습니다.</p>
+  ${unlSell.length?`<div class="call warn" style="text-align:left;max-width:560px;margin:20px auto 0"><span>판매중인데 가맹점이 없는 상품이 <b>${unlSell.length}개</b> 있습니다. 결제할 수 없는 상태입니다: ${unlSell.map(p=>esc(p.name)).join(', ')}</span></div>`:''}</div>`}</section></div>`}
+function mapBody(m){
+ const linked=S.prod.filter(p=>p.mer===m.id);const br=blockReason(m),wr=warnReason(m);
+ const ms=merMethods(m);
+ return `<table class="ft"><tbody>
+  <tr><th>${mk('2')}PG사</th><td>${m.pg}</td><th>가맹점명</th><td><b>${esc(m.name)}</b></td></tr>
+  <tr><th>MID</th><td class="mid">${esc(m.mid)}</td><th>상태</th><td>${badge(m.use)} ${badge(m.contract)}</td></tr>
+  <tr><th>사업주체 / 채널</th><td>${m.biz} / ${m.ch}</td><th>연결상품</th><td>${linked.length}개 (판매중 ${linked.filter(p=>p.st==='판매중').length})</td></tr>
+  <tr><th>결제수단 / 수수료</th><td colspan="3"><span class="chipline">${ms.map(x=>`<span class="bdg ${x.use!=='사용'?'warn':''}">${x.m} ${x.cur?feeTxt(x.cur):`${feeTxt(x.next)} 예정`}${x.use!=='사용'?' 일시중지':''}</span>`).join('')||'-'}</span></td></tr></tbody></table>
+ <div class="path" aria-label="결제 경로">${[m.pg,`${m.name} (${m.mid})`,`상품 ${linked.length}개`].map((t,i)=>`<span class="n ${i===1?'on':''}">${esc(t)}</span>`).join('<i>›</i>')}<i>›</i><span class="n">결제</span><i>›</i><span class="n">수수료/대사</span></div>
+ ${br?`<div class="call bad"><span><b>Mapping 불가.</b> ${br}</span></div>`:wr?`<div class="call warn"><span>${wr}</span></div>`:''}
+ <div class="tabs small" role="tablist">${mk('3')}<button role="tab" aria-selected="${S.mapTab==='linked'}" class="${S.mapTab==='linked'?'on':''}" data-a="mapTab" data-v="linked">연결된 상품 <b>${linked.length}</b></button><button role="tab" aria-selected="${S.mapTab==='add'}" class="${S.mapTab==='add'?'on':''}" data-a="mapTab" data-v="add">상품 검색 후 추가</button></div>
+ ${S.mapTab==='linked'?linkedPane(m,linked):addPane(m,br)}`}
+function prodRow(p,selArr,selAct,extra=''){const sel=selArr.includes(p.id);const m=p.mer?mer(p.mer):null;
+ return `<tr class="${sel?'sel':''} ${S.flash.includes(p.id)?'flash':''}"><td class="ck"><input type="checkbox" data-a="${selAct}" data-id="${p.id}" ${sel?'checked':''} aria-label="${esc(p.name)} 선택"></td>
+ <td><button class="lk mid" data-a="trace" data-id="${p.id}" title="PG부터 정산까지 추적">${p.id}</button></td><td class="l">${esc(p.name)}</td><td>${cat(p)}</td><td>${p.ch}</td><td>${p.biz}</td>
+ <td>${m?m.pg:'<span class="dim-t">-</span>'}</td><td class="l">${m?`<span class="mid">${esc(m.mid)}</span><div class="sub">${esc(m.name)}</div>`:'<span class="dim-t">미연결</span>'}</td><td>${badge(p.st)}</td>${extra}</tr>`}
+function linkedPane(m,linked){
+ const q=S.mapQ.trim();const rows=sortRows(linked.filter(p=>(!q||(p.id+p.name).includes(q))&&(!S.mapSt||p.st===S.mapSt)),'linked',{id:p=>p.id,name:p=>p.name,map:p=>p.mapAt});
+ const pg=paginate(rows,'linked',10);const allOn=pg.rows.length&&pg.rows.every(p=>S.linkSel.includes(p.id));const n=S.linkSel.length;
+ return `<div class="bar"><input class="inp" type="search" data-b="mapQ" data-r value="${esc(q)}" placeholder="상품명, 상품번호" aria-label="연결상품 검색"><select class="sel" data-b="mapSt" data-r aria-label="상품상태">${opts(PSTAT,S.mapSt,'상품상태 전체')}</select>
+  <span class="cnt">${rows.length}개 중 선택 <b>${n}</b></span><span class="sp"></span>${mk('4')}
+  <button class="btn sm" data-a="mapTab" data-v="add">상품 추가</button><button class="btn sm" data-a="mapChange" ${n?'':'disabled'}>Mapping 변경</button><button class="btn sm dng" data-a="mapUnlink" ${n?'':'disabled'}>Mapping 해제</button><span class="sep"></span><button class="btn sm" data-a="csvLinked">엑셀 다운로드</button></div>
+ <div class="tw"><table class="tbl"><thead><tr><th class="ck"><input type="checkbox" data-a="linkAll" ${allOn?'checked':''} aria-label="이 페이지 전체 선택"></th>${th('linked','id','상품번호')}${th('linked','name','상품명','l')}<th>카테고리</th><th>채널</th><th>사업주체</th><th>현재 PG</th><th class="l">현재 MID</th><th>상품상태</th>${th('linked','map','연결일')}</tr></thead>
+ <tbody>${pg.rows.map(p=>prodRow(p,S.linkSel,'linkSel',`<td class="num">${p.mapAt||'-'}</td>`)).join('')||`<tr><td colspan="10" class="empty">${linked.length?'조건에 맞는 상품이 없습니다.':'연결된 상품이 없습니다. [상품 추가]에서 상품을 검색해 연결하세요.'}</td></tr>`}</tbody></table></div>${pg.html}`}
+function addFilter(){const f=S.afA;const q=(f.q||'').trim();return S.prod.filter(p=>{const m=p.mer?mer(p.mer):null;
+ return (!q||(p.id+p.name).includes(q))&&(!f.lv1||p.lv1===f.lv1)&&(!f.lv2||p.lv2===f.lv2)&&(!f.ch||p.ch===f.ch)&&(!f.biz||p.biz===f.biz)&&(!f.pg||(f.pg==='__none'?!m:m&&m.pg===f.pg))&&(!f.mer||p.mer===f.mer)&&(!f.st||p.st===f.st)})}
+function addPane(m,br){
+ const f=S.af;const rows=sortRows(addFilter(),'add',{id:p=>p.id,name:p=>p.name});const pg=paginate(rows,'add',10);
+ const selectable=pg.rows.filter(p=>p.mer!==m.id);const allOn=selectable.length&&selectable.every(p=>S.addSel.includes(p.id));
+ const merOpts=S.mer.filter(x=>!f.pg||f.pg==='__none'||x.pg===f.pg).map(x=>[x.id,`${x.name} (${x.mid})`]);
+ const moving=S.addSel.filter(id=>prod(id).mer).length;
+ return `<div style="margin-top:20px">${searchFt([
+  [[mk('5')+'상품명/번호',`<input class="inp wide" data-b="af.q" data-enter="afSearch" value="${esc(f.q)}" placeholder="상품명 또는 상품번호">`],['카테고리',`<select class="sel" data-b="af.lv1" data-c="afLv1" aria-label="LV1">${opts(Object.keys(CATS),f.lv1,'LV1 전체')}</select> <select class="sel" data-b="af.lv2" aria-label="LV2" ${f.lv1?'':'disabled'}>${opts(CATS[f.lv1]||[],f.lv2,'LV2 전체')}</select>`]],
+  [['판매 채널',`<select class="sel w200" data-b="af.ch">${opts(CHANNELS,f.ch,'전체')}</select>`],['사업주체',`<select class="sel w200" data-b="af.biz">${opts(BIZ,f.biz,'전체')}</select>`]],
+  [['현재 PG',`<select class="sel w200" data-b="af.pg" data-c="afPg">${opts([['__none','미연결 상품만'],...PGS.map(x=>[x,x])],f.pg,'전체')}</select>`],['현재 MID',`<select class="sel w200" data-b="af.mer" ${f.pg==='__none'?'disabled':''}>${opts(merOpts,f.mer,'전체')}</select>`]],
+  [['상품상태',radios('af.st',PSTAT,f.st,'전체'),3]]])}
+  <div class="sbtn"><button class="btn" data-a="afReset">초기화</button><button class="btn pri" data-a="afSearch">검색</button></div></div>
+ <div class="bar">${mk('6')}<span class="cnt">검색결과 <b>${rows.length}</b>개</span><span class="cnt">선택 <b>${S.addSel.length}</b>개${moving?` (다른 가맹점 연결 ${moving})`:''}</span>${S.addSel.length?'<button class="lk" data-a="addClear">선택 해제</button>':''}<span class="sp"></span>
+  ${mk('7')}<button class="btn sm pri" data-a="mapAssign" ${S.addSel.length&&!br?'':'disabled'}>선택 상품을 이 가맹점에 Mapping (${S.addSel.length})</button></div>
+ <div class="tw"><table class="tbl"><thead><tr><th class="ck"><input type="checkbox" data-a="addAll" ${allOn?'checked':''} aria-label="이 페이지 전체 선택"></th>${th('add','id','상품번호')}${th('add','name','상품명','l')}<th>카테고리</th><th>채널</th><th>사업주체</th><th>현재 PG</th><th class="l">현재 MID</th><th>상품상태</th><th>연결 상태</th></tr></thead>
+ <tbody>${pg.rows.map(p=>{const here=p.mer===m.id;const st=here?badge('이 가맹점','ac'):p.mer?badge('다른 가맹점 연결','warn'):badge('미연결','gray');
+  if(here)return prodRow(p,[],'noop',`<td>${st}</td>`).replace(/<input type="checkbox"[^>]*>/,`<input type="checkbox" disabled aria-label="이미 연결됨">`).replace('<tr class="','<tr class="off ');
+  return prodRow(p,S.addSel,'addSel',`<td>${st}</td>`)}).join('')||'<tr><td colspan="10" class="empty">조건에 맞는 상품이 없습니다. 검색조건을 줄여 보세요.</td></tr>'}</tbody></table></div>${pg.html}`}
+
+/* ---------- 결제이력 관리 ---------- */
+function payFilter(){const f=S.pfA;const q=(f.q||'').trim();return S.pays.filter(p=>{const d=p.at.slice(0,10);const pr=prod(p.pid);
+ return (!f.from||d>=f.from)&&(!f.to||d<=f.to)&&(!q||(p.no+p.pid+pr.name).includes(q))&&(!f.pg||p.pg===f.pg)&&(!f.mer||p.mer===f.mer)&&(!f.m||p.method===f.m)&&(!f.st||p.st===f.st)})}
+function payTable(rows,sortable){const T=(k,l,c)=>sortable?th('pay',k,l,c):`<th class="${c||''}">${l}</th>`;
+ return `<div class="tw"><table class="tbl"><thead><tr><th>주문번호</th><th class="l">상품</th><th>PG사</th><th class="l">가맹점(MID)</th><th>결제수단</th>${T('amt','결제금액','r')}${T('at','결제일시')}<th>결제상태</th><th>취소/환불</th></tr></thead><tbody>
+ ${rows.map(p=>{const pr=prod(p.pid);return `<tr class="click" data-a="tracePay" data-id="${p.no}" tabindex="0"><td class="mid">${p.no}</td><td class="l">${esc(pr.name)}<div class="sub">${p.pid}</div></td><td>${p.pg}</td><td class="l"><span class="mid">${p.mid}</span><div class="sub">${esc(mer(p.mer).name)}</div></td><td>${p.method}</td><td class="r num">${won(p.amt)}</td><td class="num">${p.at.slice(0,16)}</td><td>${badge(p.st)}</td><td>${p.refund==='-'?'<span class="dim-t">-</span>':`${p.refund}<div class="sub">${won(p.cancel)}원</div>`}</td></tr>`}).join('')||'<tr><td colspan="9" class="empty">조건에 맞는 결제가 없습니다. 기간을 넓혀 보세요.</td></tr>'}</tbody></table></div>`}
+function vPay(){
+ const f=S.pf;const rows=sortRows(payFilter(),'pay',{amt:p=>p.amt,at:p=>p.at});const pg=paginate(rows,'pay',15);
+ const ok=rows.filter(p=>p.st!=='결제실패');const tot=ok.reduce((a,p)=>a+p.amt,0),can=ok.reduce((a,p)=>a+p.cancel,0);
+ const merOpts=S.mer.filter(x=>!f.pg||x.pg===f.pg).map(x=>[x.id,`${x.name} (${x.mid})`]);
+ return `${crumb(['홈','결제관리','결제 정보/이력 관리','결제이력 관리'])}${ph('결제이력 관리')}
+ <div class="sec">${searchFt([
+  [[mk('1')+'결제일',`<span class="rng"><input type="date" class="inp" data-b="pf.from" value="${f.from}" aria-label="시작일">~<input type="date" class="inp" data-b="pf.to" value="${f.to}" aria-label="종료일"></span>`],['주문번호/상품',`<input class="inp wide" data-b="pf.q" data-enter="pfSearch" value="${esc(f.q)}" placeholder="주문번호, 상품번호, 상품명">`]],
+  [['PG사',`<select class="sel w200" data-b="pf.pg" data-c="pfPg">${opts(PGS,f.pg,'전체')}</select>`],['가맹점(MID)',`<select class="sel w200" data-b="pf.mer">${opts(merOpts,f.mer,'전체')}</select>`]],
+  [['결제수단',`<select class="sel w200" data-b="pf.m">${opts(METHODS,f.m,'전체')}</select>`],['결제상태',radios('pf.st',PAYST,f.st,'전체')]]])}
+ <div class="sbtn"><button class="btn" data-a="pfReset">초기화</button><button class="btn pri" data-a="pfSearch">검색</button></div></div>
+ <div class="bar">${mk('2')}<span class="cnt">조회 <b>${rows.length}</b>건</span><span class="sep"></span><span class="cnt">결제금액 <b>${won(tot)}</b>원</span><span class="cnt">취소금액 <b style="color:var(--bad)">${won(can)}</b>원</span><span class="cnt">순결제금액 <b>${won(tot-can)}</b>원</span><span class="sp"></span><button class="btn sm" data-a="csvPay">엑셀 다운로드</button></div>
+ ${mk('3')}${payTable(pg.rows,true)}${pg.html}<p class="desc dim-t">${mk('4')}행을 누르면 상품에서 정산까지 이어지는 경로를 확인할 수 있습니다.</p>`}
+
+/* ---------- SCREEN 04 : PG 수수료 / 정산 대사 ---------- */
+function rateTxt(r){const m=r.m;const mon=S.rfA.mon;const d=mon+'-28';const ms=Object.keys(r.by).sort(ordM);const fs=ms.map(x=>[x,feeAt(m,x,d)]);
+ return `<span title="${esc(fs.map(([x,f])=>`${x} ${feeTxt(f)}`).join('\n'))}">${fs.slice(0,2).map(([x,f])=>`${SHORT[x]||x} ${feeTxt(f)}`).join(' / ')}${fs.length>2?` <span class="dim-t">외 ${fs.length-2}</span>`:''}</span><div class="sub">실효 ${r.eff.toFixed(2)}%</div>`}
+const diffTxt=v=>v==null?'<span class="dim-t">-</span>':v===0?'0':`<span class="${v>0?'pos':'neg'}">${v>0?'+':''}${won(v)}</span>`;
+function vRec(){
+ const f=S.rf,a=S.rfA;let rows=recon(a.mon).filter(r=>(!a.pg||r.pg===a.pg)&&(!a.st||r.st===a.st)&&(!a.diff||(r.diff!==0)));
+ rows=sortRows(rows,'rec',{amt:r=>r.amt,cnt:r=>r.cnt,diff:r=>Math.abs(r.diff??1e12)});
+ const T={cnt:0,amt:0,exp:0,act:0,diff:0};rows.forEach(r=>{T.cnt+=r.cnt;T.amt+=r.amt;T.exp+=r.exp;if(r.act!=null){T.act+=r.act;T.diff+=r.diff}});
+ const miss=rows.filter(r=>r.act==null).length;
+ return `${crumb(['홈','결제관리','정산/대사','PG 수수료/정산 대사'])}${ph('PG 수수료 / 정산 대사')}
+ <div class="sec">${searchFt([
+  [[mk('1')+'대사월',`<select class="sel w200" data-b="rf.mon">${opts([['2026-09','2026년 9월'],['2026-08','2026년 8월']],f.mon)}</select>`],['PG사',`<select class="sel w200" data-b="rf.pg">${opts(PGS,f.pg,'전체')}</select>`]],
+  [['대사상태',radios('rf.st',RECST,f.st,'전체')],['보기',`<label class="ck"><input type="checkbox" data-b="rf.diff" ${f.diff?'checked':''}>차액 있는 건만</label>`]]])}
+ <div class="sbtn"><button class="btn" data-a="rfReset">초기화</button><button class="btn pri" data-a="rfSearch">검색</button></div></div>
+ ${S.marks?`<div style="margin-top:24px">${mk('2')}</div>`:''}<div class="sum" aria-label="대사 요약">
+  <div><span>총 거래금액</span><b>${won(T.amt)}<small>원</small></b></div><div><span>총 거래건수</span><b>${won(T.cnt)}<small>건</small></b></div>
+  <div><span>예상 PG 수수료</span><b>${won(T.exp)}<small>원</small></b></div><div><span>실제 PG 수수료</span><b>${won(T.act)}<small>원</small></b>${miss?`<span class="sub">미수신 ${miss}건 제외</span>`:''}</div>
+  <div><span>차액 (실제 - 예상)</span><b class="${T.diff>0?'pos':T.diff<0?'neg':''}">${T.diff>0?'+':''}${won(T.diff)}<small>원</small></b></div></div>
+ <div class="bar">${mk('3')}<span class="cnt">${a.mon.replace('-','년 ')}월 <b>${rows.length}</b>개 MID</span><span class="cnt">불일치 <b style="color:var(--bad)">${rows.filter(r=>r.st==='불일치').length}</b></span><span class="cnt">미수신 <b style="color:var(--warn)">${miss}</b></span><span class="sp"></span><button class="btn sm" data-a="csvRec">엑셀 다운로드</button></div>
+ <div class="tw"><table class="tbl"><thead><tr><th>PG사</th><th class="l">MID</th>${th('rec','cnt','거래건수','r')}${th('rec','amt','거래금액','r')}<th class="l">계약수수료율</th><th class="r">예상수수료</th><th class="r">실제수수료</th>${th('rec','diff','차액','r')}<th>${mk('4')}대사상태</th><th>상세</th></tr></thead>
+ <tbody>${rows.map(r=>`<tr class="click" data-a="recModal" data-id="${r.mer}" tabindex="0"><td>${r.pg}</td><td class="l"><span class="mid">${r.m.mid}</span><div class="sub">${esc(r.m.name)}</div></td><td class="r num">${won(r.cnt)}</td><td class="r num">${won(r.amt)}</td><td class="l">${rateTxt(r)}</td><td class="r num">${won(r.exp)}${r.missing?`<div class="sub" style="color:var(--bad)">기준값 없음 ${r.missing}건</div>`:''}</td><td class="r num">${r.act==null?'<span class="dim-t">미수신</span>':won(r.act)}</td><td class="r num">${diffTxt(r.diff)}</td><td>${badge(r.st)}</td><td><button class="lk" data-a="recModal" data-id="${r.mer}">${['불일치','미수신'].includes(r.st)?'확인':'보기'}</button></td></tr>`).join('')||'<tr><td colspan="10" class="empty">조건에 맞는 대사 결과가 없습니다.</td></tr>'}</tbody>
+ ${rows.length?`<tfoot><tr><td colspan="2" style="text-align:left">합계</td><td>${won(T.cnt)}</td><td>${won(T.amt)}</td><td></td><td>${won(T.exp)}</td><td>${won(T.act)}</td><td>${diffTxt(T.diff)}</td><td colspan="2"></td></tr></tfoot>`:''}</table></div>
+ <p class="desc dim-t">거래금액은 결제완료와 부분취소 건의 순결제금액 기준입니다. 예상수수료는 결제일에 유효한 계약 수수료로 건별 계산 후 합산합니다(정액은 건당).</p>`}
+
+/* ---------- 결제수단 노출 우선순위 : 목록 ---------- */
+function expFilter(){const f=S.efA;return S.exp.filter(e=>e.kind===S.expKind&&(e.kind==='post'?(!f.svc||e.svc===f.svc):((!f.unit||e.unit===f.unit)&&(!f.lv1||(e.unit==='상품유형'?e.lv1===f.lv1:targetProds(e).some(p=>p.lv1===f.lv1)))&&(!f.lv2||(e.unit==='상품유형'?e.lv2===f.lv2:targetProds(e).some(p=>p.lv2===f.lv2)))))&&(!f.mode||e.mode===f.mode)&&(!f.use||e.use===f.use))}
+function foCell(e){const rows=rowsOf(e);const o=rows.filter(r=>r.s.fo).map(r=>r.m);const pz=rows.filter(r=>r.s.t==='일시중지').length,rm=rows.filter(r=>r.s.t==='기준정보 해제').length,nw=rows.filter(r=>r.nw).length;
+ return `<span class="ord">${o.slice(0,4).map(x=>`<span>${x}</span>`).join('')||'<span class="dim-t">노출 수단 없음</span>'}${o.length>4?` <em class="dim-t" style="font-style:normal">외 ${o.length-4}</em>`:''}</span>${pz||rm?`<div style="margin-top:5px;display:flex;gap:4px">${pz?badge(`일시중지 ${pz}`,'warn'):''}${rm?badge(`기준정보 해제 ${rm}`,'bad'):''}</div>`:''}`}
+function vExpList(){
+ const k=S.expKind,f=S.ef;const rows=expFilter();const pg=paginate(rows,'exp',10);
+ const search=k==='pre'?searchFt([
+  [[mk('2')+'적용단위',radios('ef.unit',['상품유형','개별상품'],f.unit,'전체')],['상품유형',`<select class="sel" data-b="ef.lv1" data-c="efLv1" aria-label="LV1">${opts(Object.keys(CATS),f.lv1,'LV1 전체')}</select> <select class="sel" data-b="ef.lv2" ${f.lv1?'':'disabled'} aria-label="LV2">${opts(CATS[f.lv1]||[],f.lv2,'LV2 전체')}</select>`]],
+  [['순서 적용 방식',radios('ef.mode',[['운영자','운영자 직접 지정'],['개인화','개인화 규칙 적용']],f.mode,'전체')],['사용여부',radios('ef.use',['Y','N'],f.use,'전체')]]])
+  :searchFt([[[mk('2')+'서비스유형',radios('ef.svc',POST_SVC,f.svc,'전체')],['사용여부',radios('ef.use',['Y','N'],f.use,'전체')]]]);
+ return `${crumb(['홈','결제수단 관리','결제수단 노출'])}${ph('결제수단 노출 우선순위 관리')}
+ <div class="tabs" role="tablist">${mk('1')}<button role="tab" aria-selected="${k==='pre'}" class="${k==='pre'?'on':''}" data-a="expKind" data-v="pre">선불 (상품결제)</button><button role="tab" aria-selected="${k==='post'}" class="${k==='post'?'on':''}" data-a="expKind" data-v="post">후불 (요금납부)</button></div>
+ <div class="sec" style="margin-top:24px">${search}<div class="sbtn"><button class="btn" data-a="efReset">초기화</button><button class="btn pri" data-a="efSearch">검색</button></div></div>
+ <div class="bar">${mk('3')}<span class="cnt">총 <b>${rows.length}</b>건</span><span class="sp"></span><button class="btn sm" data-a="histExp">변경이력</button>${mk('4')}<button class="btn sm pri" data-a="expNew">${k==='pre'?'선불':'후불'} 노출 등록</button></div>
+ <div class="tw"><table class="tbl"><thead><tr><th>No</th>${k==='pre'?'<th>적용단위</th><th class="l">적용대상</th><th>가입유형</th><th>결제방식</th>':'<th>서비스유형</th><th class="l">고객조건</th>'}<th class="l">FO 노출 순서 (오늘 기준)</th><th>순서 방식</th><th>사용여부</th><th>수정일</th></tr></thead>
+ <tbody>${pg.rows.map(e=>`<tr class="click ${e.use==='N'?'off':''}" data-a="expEdit" data-id="${e.id}" tabindex="0"><td class="mid">${e.id}</td>
+  ${k==='pre'?`<td>${e.unit}</td><td class="l"><b>${esc(tName(e))}</b></td><td>${e.join.length===3?'전체':e.join.join(', ')}</td><td>${payTxt(e)}${e.pay.inst?`<div class="sub">${e.months.join('/')}개월</div>`:''}</td>`:`<td>${e.svc}${e.svc==='자동납부'?' '+badge('TBD','warn'):''}</td><td class="l">${e.cond.t?`${e.cond.t} = ${e.cond.v}`:'<span class="dim-t">기본 (조건 없음)</span>'}</td>`}
+  <td class="l">${foCell(e)}</td><td>${e.mode==='운영자'?'운영자 지정':`개인화<div class="sub">${e.rules.join(', ')}</div>`}</td><td>${badge(e.use)}</td><td class="num">${e.updatedAt.slice(0,10)}</td></tr>`).join('')||'<tr><td colspan="10" class="empty">등록된 노출 설정이 없습니다. [노출 등록]으로 시작하세요.</td></tr>'}</tbody></table></div>${pg.html}`}
+
+/* ---------- 결제수단 노출 우선순위 : 등록/수정 ---------- */
+const HANDLE='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M4 10h12M4 14h12" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>';
+function vExpForm(){
+ const e=S.ed,isNew=S.edNew,pre=e.kind==='pre';const rows=rowsOf(e);const tp=targetProds(e);const hasTarget=pre?(e.unit==='상품유형'?!!e.lv2:e.pids.length>0):true;
+ const title=`${pre?'선불':'후불'} 결제수단 노출 ${isNew?'등록':'수정'}`;
+ const s2=pre?`<tr><th>${mk('2-1')}적용단위</th><td><div class="ck-g rd">${['상품유형','개별상품'].map(u=>`<label><input type="radio" name="ed-unit" value="${u}" data-c="edUnit" ${e.unit===u?'checked':''} ${isNew?'':'disabled'}>${u}</label>`).join('')}</div></td></tr>
+  <tr><th>${mk('2-2')}${e.unit==='상품유형'?'상품유형':'상품'}</th><td>${e.unit==='상품유형'?`<select class="sel w200" data-c="edLv1" ${isNew?'':'disabled'} aria-label="LV1">${opts(Object.keys(CATS),e.lv1,'LV1 선택')}</select> <select class="sel w200" data-c="edLv2" ${isNew&&e.lv1?'':'disabled'} aria-label="LV2">${opts(CATS[e.lv1]||[],e.lv2,'LV2 선택')}</select>${!isNew?'<span class="help">적용대상은 수정할 수 없습니다. 바꾸려면 새로 등록하세요.</span>':''}`
+   :`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select class="sel" style="min-width:320px" data-b="ed.pick" aria-label="상품 선택">${opts(S.prod.filter(p=>!e.pids.includes(p.id)).map(p=>[p.id,`${p.id} ${p.name} (${p.mer?mer(p.mer).mid:'MID 미연결'})`]),e.pick,'상품 선택')}</select><button class="btn sm" data-a="edAddProd">추가</button></div>
+   <div class="chipline" style="margin-top:8px">${e.pids.map(id=>{const p=prod(id);return `<span class="bdg ${p.mer?'':'bad'}">${esc(p.name)} · ${p.mer?mer(p.mer).mid:'MID 미연결'}<button class="lk" style="padding:0 0 0 6px" data-a="edDelProd" data-id="${id}" aria-label="${esc(p.name)} 빼기">×</button></span>`}).join('')}</div>`}</td></tr>`
+  :`<tr><th>${mk('2-1')}서비스유형</th><td><div class="ck-g rd">${POST_SVC.map(u=>`<label><input type="radio" name="ed-svc" value="${u}" data-b="ed.svc" data-r ${e.svc===u?'checked':''} ${isNew?'':'disabled'}>${u}${u==='자동납부'?' '+badge('TBD','warn'):''}</label>`).join('')}</div></td></tr>`;
+ const s3=pre?`<tr><th>${mk('3-1')}가입유형</th><td><div class="ck-g">${JOIN.map(j=>`<label><input type="checkbox" data-a="edJoin" data-v="${j}" ${e.join.includes(j)?'checked':''}>${j}</label>`).join('')}</div></td></tr>
+  <tr><th>${mk('3-2')}결제방식</th><td><div class="ck-g"><label><input type="checkbox" data-a="edPay" data-v="all" ${e.pay.one&&e.pay.inst?'checked':''}>전체</label><label><input type="checkbox" data-a="edPay" data-v="one" ${e.pay.one?'checked':''}>일시불</label><label><input type="checkbox" data-a="edPay" data-v="inst" ${e.pay.inst?'checked':''}>할부</label></div></td></tr>
+  <tr><th>${mk('3-3')}노출 할부 개월수</th><td><div class="ck-g">${MONTHS.map(n=>`<label class="${e.pay.inst?'':'off'}"><input type="checkbox" data-a="edMon" data-v="${n}" ${e.months.includes(n)?'checked':''} ${e.pay.inst?'':'disabled'}>${n}개월</label>`).join('')}</div>${e.pay.inst?'':'<div class="sub">결제방식에서 할부를 고르면 선택할 수 있습니다.</div>'}</td></tr>`
+  :`<tr><th>${mk('3-1')}고객조건</th><td><select class="sel" data-c="edCondT" aria-label="조건 유형">${opts(Object.keys(POST_COND),e.cond.t,'조건 없음 (기본 순서)')}</select> <select class="sel" data-b="ed.cond.v" ${e.cond.t?'':'disabled'} aria-label="조건 값">${opts(POST_COND[e.cond.t]||[],e.cond.v,'값 선택')}</select><span class="help">조건이 없으면 이 서비스유형의 기본 순서로 씁니다.</span></td></tr>`;
+ const body=!hasTarget?`<tr><td colspan="6" class="empty">${e.unit==='상품유형'?'상품유형(LV2)을 선택하면 기준정보에 등록된 결제수단을 불러옵니다.':'상품을 추가하면 그 상품의 가맹점(MID) 결제수단을 불러옵니다.'}</td></tr>`
+  :rows.length?rows.map((r,i)=>`<tr data-di="${i}" draggable="true" class="${['기준정보 해제','할부 불가'].includes(r.s.t)?'off':''}"><td class="num">${i+1}</td><td><button class="hdl" data-a="noop" data-i="${i}" aria-label="${r.m} 순서 이동. 위아래 화살표키로 이동">${HANDLE}</button></td>
+   <td><b>${r.m}</b>${r.nw?` ${badge('신규 수단','ac')}`:''}</td><td class="dim-t">${r.c?esc(r.c.srcs[0])+(r.c.srcs.length>1?` 외 ${r.c.srcs.length-1}`:''):'<span style="color:var(--bad)">기준정보 없음</span>'}</td>
+   <td><button class="tgl ${r.on?'on':''}" role="switch" aria-checked="${r.on}" data-a="edShow" data-i="${i}" aria-label="${r.m} 노출 여부" ${r.c?'':'disabled'}></button></td><td>${badge(r.s.t)}</td></tr>`).join('')
+  :`<tr><td colspan="6" class="empty">이 대상의 상품에 연결된 가맹점이 없어 불러올 결제수단이 없습니다. 상품관리에서 MID를 먼저 연결하세요.</td></tr>`;
+ const fo=hasTarget?foBlock(e,tp):'';
+ const rl=RULES[e.kind];
+ return `${crumb(['홈','결제수단 관리','결제수단 노출',title])}${ph(title)}
+ <div class="tabs" role="tablist">${mk('1')}<button role="tab" aria-selected="${pre}" class="${pre?'on':''}" data-a="edKind" data-v="pre" ${isNew?'':'disabled'}>선불 (상품결제)</button><button role="tab" aria-selected="${!pre}" class="${!pre?'on':''}" data-a="edKind" data-v="post" ${isNew?'':'disabled'}>후불 (요금납부)</button></div>
+ <section class="sec"><div class="sec-h">${mk('2')}<h3>결제수단 구성</h3></div><table class="ft"><tbody>${s2}
+  <tr><th>${mk(pre?'2-3':'2-2')}사용여부</th><td>${radios('ed.use',['Y','N'],e.use)}</td></tr></tbody></table></section>
+ <section class="sec"><div class="sec-h">${mk('3')}<h3>조건값 설정</h3>${pre?'<span class="hint">가입유형 조건값은 확정 전 (Q7)</span>':''}</div><table class="ft"><tbody>${s3}</tbody></table></section>
+ <section class="sec"><div class="sec-h">${mk('4')}<h3>노출 우선순위 설정</h3><span class="hint">≡를 끌어 순서를 바꿉니다</span></div>
+  <div class="tw"><table class="tbl" id="prio"><thead><tr><th style="width:80px">${mk('4-1')}순서</th><th style="width:90px">${mk('4-2')}이동</th><th>${mk('4-3')}결제수단</th><th>${mk('4-4')}기준정보 출처</th><th>${mk('4-5')}노출 여부</th><th>${mk('4-6')}상태</th></tr></thead><tbody>${body}</tbody></table></div>${fo}</section>
+ <section class="sec"><div class="sec-h">${mk('5')}<h3>노출순서 방식</h3></div><table class="ft"><tbody>
+  <tr><th>${mk('5-1')}순서 적용 방식</th><td>${radios('ed.mode',[['운영자','운영자 직접 지정'],['개인화','개인화 규칙 적용']],e.mode).replace(/data-b="ed.mode"/g,'data-b="ed.mode" data-r')}</td></tr>
+  <tr><th>${mk('5-2')}적용 규칙</th><td>${e.mode==='개인화'?`<div class="ck-g">${rl.map(r=>`<label><input type="checkbox" data-a="edRule" data-v="${r.id}" ${e.rules.includes(r.id)?'checked':''}>${r.id} ${r.name} <span class="dim-t">(${r.eff})</span></label>`).join('')}</div><div class="sub">여러 규칙에 해당하면 위 규칙을 먼저 적용합니다. 규칙에 해당하지 않는 고객은 위 노출 우선순위를 그대로 봅니다.</div>`:'<span class="dim-t">운영자 직접 지정은 위 노출 우선순위를 그대로 씁니다.</span>'}</td></tr></tbody></table></section>
+ ${errBox(S.edErr)}
+ <div class="foot"><button class="btn lg" data-a="expCancel">${mk('6')}취소</button><button class="btn lg pri" data-a="expSave">${mk('7')}저장</button></div>`}
+function foBlock(e,tp){
+ const pv=e.kind==='pre'?e.pv:'';const r=foOrder(e,pv);
+ let res;if(r.nomid)res=`<span style="color:var(--bad)">이 상품은 가맹점(MID)이 연결되지 않아 결제할 수 없습니다.</span>`;
+ else if(r.dead)res=`<span style="color:var(--bad)">이 상품의 가맹점(${esc(r.dead.mid)})이 ${r.dead.use!=='사용'?r.dead.use:r.dead.contract} 상태라 결제할 수 없습니다.</span>`;
+ else res=`<span class="ord">${r.order.map(x=>`<span><b>${x}</b></span>`).join('')||'<span class="dim-t">노출되는 결제수단 없음</span>'}</span>${r.cut.length?`<div class="sub">이 상품의 MID(${esc(r.m.mid)})가 지원하지 않아 제외: ${r.cut.join(', ')}</div>`:''}`;
+ const mids=[...new Set(tp.map(p=>p.mer).filter(Boolean))];
+ return `<div class="call ac" style="margin-top:14px;align-items:flex-start;flex-wrap:wrap"><b style="white-space:nowrap">${mk('4-7')}FO 노출 결과</b>
+  ${e.kind==='pre'&&tp.length?`<select class="sel" data-b="ed.pv" data-r aria-label="미리보기 상품" style="min-width:280px">${opts(tp.map(p=>[p.id,`${p.name} (${p.mer?mer(p.mer).mid:'MID 미연결'})`]),pv,'대상 전체 기준')}</select>`:''}
+  <div style="flex:1;min-width:260px">${res}${e.kind==='pre'&&!pv&&mids.length>1?`<div class="sub">이 대상의 상품이 MID ${mids.length}개에 나뉘어 있습니다. 상품을 골라 실제 노출을 확인하세요.</div>`:''}</div></div>`}
+
+/* ---------- IA / 데이터 구조 ---------- */
+function vIA(){
+ const live=S.prod.filter(p=>p.mer).length;
+ const L=(r,t,sid,pop='')=>`<li><button class="lk strong" data-a="go" data-v="${r}">${t}</button><span class="sid">${sid}</span>${pop?`<span class="pop">${pop}</span>`:''}</li>`;
+ const rules=[['PG사 1 : N 가맹점(MID)','가맹점 정보관리 목록, 상품관리 왼쪽 트리'],['가맹점(MID) 1 : N 상품','상품관리 연결된 상품 탭, 가맹점 상세 연결상품 탭'],['상품 1 : 1 가맹점(MID)','상품에는 MID 필드가 하나뿐입니다. 다른 MID에 연결된 상품을 Mapping하면 기존 연결을 끊고 옮깁니다.'],['다른 PG/MID가 필요하면 별도 상품','상품관리에서 한 상품에 MID를 두 개 붙이는 기능을 두지 않습니다.'],['같은 카드 결제라도 상품마다 PG가 다를 수 있음','결제이력과 노출 미리보기에서 상품별 PG/MID를 따로 보여줍니다.'],['같은 PG라도 사업주체/채널/계약별 MID 분리','가맹점 정보관리에서 MID마다 사업주체, 채널, 계약을 따로 관리합니다.']];
+ const states=[['가맹점 사용여부','사용 / 일시중지 / 미사용','운영자가 바꾸는 값. 미사용은 Mapping 차단, 일시중지는 경고 후 허용'],['가맹점 계약상태','계약중 / 계약예정 / 계약만료 / 해지','계약만료와 해지는 Mapping 차단, 계약예정은 시작일 전까지 결제 불가'],['결제수단 상태','사용 / 일시중지','MID 안의 수단 단위. 노출관리에서 "일시중지"로 FO 제외'],['수수료 적용 상태','적용중 / 적용예정 / 적용종료','적용기간으로 자동 계산'],['상품 연결 상태','이 가맹점 / 다른 가맹점 / 미연결','상품관리 검색결과에서 표시'],['결제상태','결제완료 / 취소 / 부분취소 / 결제실패','PG 승인 결과'],['대사상태','일치 / 불일치 / 미수신 / 확인완료','미수신은 PG 청구 데이터가 아직 없는 상태'],['노출 상태','노출 / 미노출 / 일시중지 / 기준정보 해제 / 할부 불가','노출여부 토글과 기준정보를 합쳐 계산']];
+ const ex=[['다른 MID에 연결된 상품을 Mapping','"현재 다른 가맹점에 연결되어 있습니다." 경고, 변경 동의 체크 후 저장. 신규 연결만 따로 저장 가능'],['미사용, 계약종료 가맹점에 Mapping','Mapping 버튼 비활성, 사유 표시'],['일시중지, 계약예정 가맹점에 Mapping','경고 후 허용'],['판매중 상품 Mapping 해제','결제 불가 안내, 동의 체크 후 해제'],['판매중인데 MID가 없는 상품','상품관리 첫 화면과 트리 하단에 건수 표시, 추적 팝업에서 "결제 불가"'],['연결상품이 있는 가맹점을 일시중지/미사용으로 변경','영향 상품 수 확인 팝업'],['같은 수단의 수수료 적용기간 겹침','저장 차단'],['결제일에 유효한 수수료가 없음','대사 예상수수료에 "기준값 없음 N건" 표시'],['PG 청구 데이터 미수신','대사상태 미수신, 합계에서 제외 표시'],['노출 설정 수단이 기준정보에서 빠짐','"기준정보 해제" 상태, FO 자동 제외'],['할부 전용 조건에 할부 불가 수단','"할부 불가" 상태, FO 자동 제외'],['상품 Mapping 변경 후 과거 결제','결제는 결제 시점 PG/MID로 저장되어 바뀌지 않음']];
+ return `${crumb(['홈','기획 참고','IA / 데이터 구조'])}${ph('IA / 데이터 구조')}
+ <p class="desc">이 BO가 관리하는 것은 판매자가 아니라 "PG사, PG 가맹점(MID), 상품, 결제, 수수료/정산"의 연결입니다. 운영자는 어떤 상품이 어느 PG의 어느 MID로 결제되고, 그 결제에 어떤 수수료가 붙는지를 한 경로로 추적할 수 있어야 합니다.</p>
+ <section class="sec"><div class="sec-h"><h3>데이터 Hierarchy</h3><span class="hint">숫자는 현재 목업 데이터 기준</span></div>
+ <div class="hier">
+  <div class="hb"><h4>PG사</h4><span class="n">${PGS.length}개 (기준정보)</span><ul><li>PG사명, PG 코드</li><li>관리 주체 미확정 (Q1)</li></ul></div>
+  <div class="ha">1 : N</div>
+  <div class="hb k"><h4>결제 가맹점 (MID)</h4><span class="n">${S.mer.length}개</span><ul><li>MID, 사업주체, 채널</li><li>사용여부, 계약상태</li><li>결제수단별 계약 수수료</li></ul></div>
+  <div class="ha">1 : N<small>상품은 MID 1개</small></div>
+  <div class="hb"><h4>상품</h4><span class="n">${S.prod.length}개 (연결 ${live})</span><ul><li>상품번호, 카테고리</li><li>판매채널, 사업주체</li><li>연결 MID</li></ul></div>
+  <div class="ha">1 : N</div>
+  <div class="hb"><h4>결제 / 거래</h4><span class="n">${S.pays.length}건 (8~9월)</span><ul><li>주문번호, 결제수단</li><li>결제 시점 PG/MID</li><li>결제/취소 상태</li></ul></div>
+  <div class="ha">N : 1<small>MID+월</small></div>
+  <div class="hb"><h4>수수료 / 정산 대사</h4><span class="n">MID별 월 대사</span><ul><li>예상 수수료 (계약)</li><li>실제 수수료 (PG 청구)</li><li>차액, 대사상태</li></ul></div>
+ </div>
+ <div class="call ac" style="margin-top:16px;flex-wrap:wrap;align-items:center"><b>경로 추적해 보기</b><select class="sel" style="min-width:300px" data-b="iaPid" data-r aria-label="추적할 상품">${opts(S.prod.map(p=>[p.id,`${p.id} ${p.name}`]),S.iaPid)}</select><button class="btn sm pri" data-a="trace" data-id="${S.iaPid}">추적</button></div></section>
+ <section class="sec"><div class="sec-h"><h3>IA 및 화면 관계</h3></div>
+ <div class="ia-tree"><ul><li class="g">결제관리<ul>
+  <li class="g">결제 정보/이력 관리<ul>${L('mer','결제 가맹점 정보관리','SCR-01','등록/수정 SCR-01-1, 상세 SCR-03, 수수료관리 POP-01')}${L('map','결제 가맹점 상품관리','SCR-02','Mapping 확인 POP-02, Mapping 변경 POP-03, Mapping 해제 POP-04, 경로 추적 POP-05')}${L('pay','결제이력 관리','SCR-05','경로 추적 POP-05')}</ul></li>
+  <li class="g">정산/대사 <span class="bdg warn">메뉴 위치 제안</span><ul>${L('rec','PG 수수료/정산 대사','SCR-04','대사 상세 POP-06')}</ul></li>
+  <li class="g">결제수단 노출<ul>${L('exp','결제수단 노출 우선순위 관리','SCR-06','선불/후불 등록·수정 SCR-06-1')}</ul></li></ul></li></ul></div>
+ <p class="desc dim-t">화면 이동: 가맹점 목록의 "연결상품 수"와 [상품관리]는 상품관리로 이동하며 그 가맹점을 선택합니다. 상품번호와 결제 행은 어디서든 경로 추적 팝업을 엽니다. 노출관리는 상품관리의 Mapping 결과를 읽어 결제수단 후보를 만듭니다.</p></section>
+ <section class="sec"><div class="sec-h"><h3>비즈니스 규칙과 화면 반영</h3></div><table class="tbl"><thead><tr><th style="width:60px">No</th><th class="l">규칙</th><th class="l">화면 반영</th></tr></thead><tbody>${rules.map((r,i)=>`<tr><td>${i+1}</td><td class="l"><b>${r[0]}</b></td><td class="l">${r[1]}</td></tr>`).join('')}</tbody></table></section>
+ <section class="sec"><div class="sec-h"><h3>상태값 정의</h3></div><table class="tbl"><thead><tr><th class="l">구분</th><th class="l">값</th><th class="l">설명</th></tr></thead><tbody>${states.map(r=>`<tr><td class="l"><b>${r[0]}</b></td><td class="l">${r[1]}</td><td class="l">${r[2]}</td></tr>`).join('')}</tbody></table></section>
+ <section class="sec"><div class="sec-h"><h3>예외 케이스</h3></div><table class="tbl"><thead><tr><th class="l">상황</th><th class="l">처리</th></tr></thead><tbody>${ex.map(r=>`<tr><td class="l"><b>${r[0]}</b></td><td class="l">${r[1]}</td></tr>`).join('')}</tbody></table></section>
+ <section class="sec"><div class="sec-h"><h3>확인 필요 (Open Issue)</h3></div><table class="tbl"><thead><tr><th style="width:60px">No</th><th class="l">항목</th><th class="l">현재 프로토타입 처리</th></tr></thead><tbody>${QS.map(q=>`<tr><td>${q.n}</td><td class="l"><b>${q.t}</b></td><td class="l">${q.b}</td></tr>`).join('')}</tbody></table></section>`}
+
+/* ================= 모달 ================= */
+const MODALS={
+ fee(md){const m=mer(md.id);return {t:`수수료관리: ${m.name} (${m.mid})`,w:'w9',b:`<p class="dim-t" style="margin:0 0 12px">${m.pg} / ${m.biz} / ${m.ch}. 저장하면 바로 반영되고 변경이력이 남습니다.</p>${feeEditor('modal.fees',md.fees)}${errBox(md.err||[])}`,f:`<button class="btn" data-a="closeModal">취소</button><button class="btn pri" data-a="feeSave">저장</button>`}},
+ mapConfirm(md){const t=mer(md.target);const ps=md.pids.map(prod);const fresh=ps.filter(p=>!p.mer),move=ps.filter(p=>p.mer&&p.mer!==t.id),same=ps.filter(p=>p.mer===t.id);
+  const stop=ps.filter(p=>p.st==='판매중지').length;const br=blockReason(t),wr=warnReason(t);const sellMove=move.filter(p=>p.st==='판매중').length;
+  return {t:'가맹점 Mapping 확인',w:'w9',b:`<dl class="kv"><dt>연결할 가맹점</dt><dd><b>${t.pg} › ${esc(t.name)} (${esc(t.mid)})</b> ${badge(t.use)}</dd><dt>선택 상품</dt><dd>${ps.length}개 = 신규 연결 <b>${fresh.length}</b> + 기존 Mapping 변경 <b style="color:var(--warn)">${move.length}</b>${same.length?` + 이미 연결 ${same.length} (제외)`:''}</dd></dl>
+   ${br?`<div class="call bad"><span><b>저장할 수 없습니다.</b> ${br}</span></div>`:''}${wr?`<div class="call warn"><span>${wr}</span></div>`:''}
+   ${move.length?`<div class="call warn" style="flex-direction:column;gap:8px"><b>현재 다른 가맹점에 연결되어 있습니다. (${move.length}개)</b><span>상품 1개는 MID 1개에만 연결됩니다. 저장하면 기존 Mapping은 해제되고 아래 가맹점으로 바뀝니다.${sellMove?` 판매중 ${sellMove}개는 다음 결제부터 새 MID로 결제되고, 이미 결제된 주문의 취소/환불은 기존 MID로 처리됩니다.`:''}</span></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>상품번호</th><th class="l">상품명</th><th class="l">현재 PG / MID</th><th></th><th class="l">변경 후</th><th>상품상태</th></tr></thead><tbody>${move.map(p=>{const o=mer(p.mer);return `<tr><td class="mid">${p.id}</td><td class="l">${esc(p.name)}</td><td class="l dim-t">${o.pg} / ${o.mid}</td><td>→</td><td class="l"><b>${t.pg} / ${t.mid}</b></td><td>${badge(p.st)}</td></tr>`}).join('')}</tbody></table></div>
+    <label class="ck" style="margin-top:14px"><input type="checkbox" data-b="modal.agree" data-r ${md.agree?'checked':''}>기존 Mapping을 해제하고 이 가맹점으로 변경합니다.</label>`:''}
+   ${fresh.length?`<h4>신규 연결 (${fresh.length})</h4><p style="margin:0">${fresh.map(p=>esc(p.name)).join(', ')}</p>`:''}
+   ${stop?`<p class="dim-t" style="margin-top:12px">판매중지 상품 ${stop}개가 포함되어 있습니다. 연결은 되지만 판매를 재개하기 전까지 결제가 일어나지 않습니다.</p>`:''}`,
+   f:`<button class="btn" data-a="closeModal">취소</button>${move.length&&fresh.length?`<button class="btn" data-a="mapSave" data-only="1" ${br?'disabled':''}>신규 연결만 저장 (${fresh.length})</button>`:''}<button class="btn pri" data-a="mapSave" ${br||(move.length&&!md.agree)||(!fresh.length&&!move.length)?'disabled':''}>저장 (${fresh.length+move.length})</button>`}},
+ mapPick(md){const cur=mer(S.mapMer);const list=S.mer.filter(x=>x.id!==cur.id&&(!md.pg||x.pg===md.pg));
+  return {t:'Mapping 변경: 옮길 가맹점 선택',b:`<p style="margin:0 0 12px">선택한 상품 <b>${md.pids.length}개</b>를 <b>${esc(cur.name)} (${cur.mid})</b>에서 다른 가맹점으로 옮깁니다.</p>
+   <div style="margin-bottom:12px"><select class="sel w200" data-b="modal.pg" data-r aria-label="PG사">${opts(PGS,md.pg,'PG사 전체')}</select></div>
+   <div class="mlist" role="radiogroup">${list.map(x=>{const br=blockReason(x);return `<label class="${br?'dis':''}"><input type="radio" name="pickmer" value="${x.id}" data-b="modal.target" data-r ${md.target===x.id?'checked':''} ${br?'disabled':''}><span><b>${x.pg} › ${esc(x.name)}</b><div class="sub">${x.mid} / ${x.biz} / ${x.ch}${br?` / ${br}`:''}</div></span><span class="r">${badge(x.use)}</span></label>`}).join('')}</div>`,
+   f:`<button class="btn" data-a="closeModal">취소</button><button class="btn pri" data-a="pickNext" ${md.target?'':'disabled'}>다음</button>`}},
+ unlink(md){const ps=md.pids.map(prod);const sell=ps.filter(p=>p.st==='판매중');const m=mer(S.mapMer);
+  return {t:'Mapping 해제',w:'w5',b:`<p style="margin:0">선택한 상품 <b>${ps.length}개</b>를 <b>${esc(m.name)} (${m.mid})</b>에서 해제합니다.</p>
+   ${sell.length?`<div class="call bad"><span><b>판매중 상품 ${sell.length}개</b>는 해제 즉시 결제할 수 없습니다. 다른 가맹점으로 옮기려면 [Mapping 변경]을 쓰세요.<br>${sell.map(p=>esc(p.name)).join(', ')}</span></div><label class="ck"><input type="checkbox" data-b="modal.agree" data-r ${md.agree?'checked':''}>판매중 상품이 결제 불가 상태가 되는 것을 확인했습니다.</label>`:''}`,
+   f:`<button class="btn" data-a="closeModal">취소</button><button class="btn pri" data-a="unlinkSave" ${sell.length&&!md.agree?'disabled':''}>해제</button>`}},
+ useConfirm(md){const ms=md.ids.map(mer);const aff=S.prod.filter(p=>md.ids.includes(p.mer)&&p.st==='판매중');
+  return {t:'사용여부 일괄 변경',w:'w5',b:`<p style="margin:0">가맹점 <b>${ms.length}개</b>의 사용여부를 <b>${md.val}</b>(으)로 바꿉니다.</p><p class="dim-t">${ms.map(m=>esc(m.name)).join(', ')}</p>${aff.length&&md.val!=='사용'?`<div class="call warn"><span>판매중 상품 <b>${aff.length}개</b>가 이 가맹점들에 연결되어 있습니다. 변경하면 이 상품들은 결제할 수 없고, 노출관리에서 해당 결제수단이 "일시중지"로 빠집니다.</span></div>`:''}`,
+   f:`<button class="btn" data-a="closeModal">취소</button><button class="btn pri" data-a="useSave">변경</button>`}},
+ trace(md){return {t:'결제 경로 추적',w:'w9',b:traceBody(md),f:`<button class="btn" data-a="closeModal">닫기</button>`}},
+ hist(md){const rows=S.hist.filter(h=>md.area?h.area===md.area:md.id?h.tid===md.id:h.area!=='결제수단 노출');return {t:md.title||'변경이력',w:'w9',b:histTable(rows,false),f:`<button class="btn" data-a="closeModal">닫기</button>`}},
+ rec(md){const r=recon(md.mon).find(x=>x.mer===md.mer);const ms=Object.values(r.by).sort((a,b)=>ordM(a.m,b.m));const open=['불일치','미수신'].includes(r.st)||r.rs;
+  return {t:`대사 상세: ${r.m.name} (${r.m.mid})`,w:'w9',b:`<dl class="kv"><dt>대사월</dt><dd>${md.mon}</dd><dt>PG사 / MID</dt><dd>${r.pg} / ${r.m.mid}</dd><dt>대사상태</dt><dd>${badge(r.st)}${r.rs?` <span class="dim-t">${r.rs.at} ${r.rs.by}</span>`:''}</dd></dl>
+   <h4>결제수단별 예상 수수료</h4><table class="tbl"><thead><tr><th>결제수단</th><th class="r">거래건수</th><th class="r">거래금액</th><th>계약 수수료</th><th class="r">예상수수료</th></tr></thead><tbody>${ms.map(b=>`<tr><td>${b.m}</td><td class="r num">${won(b.cnt)}</td><td class="r num">${won(b.amt)}</td><td>${feeTxt(feeAt(r.m,b.m,md.mon+'-28'))}</td><td class="r num">${won(b.exp)}</td></tr>`).join('')}</tbody>
+   <tfoot><tr><td style="text-align:left">합계</td><td>${won(r.cnt)}</td><td>${won(r.amt)}</td><td></td><td>${won(r.exp)}</td></tr></tfoot></table>
+   <dl class="kv" style="margin-top:14px"><dt>실제 PG 청구</dt><dd>${r.act==null?'<span style="color:var(--warn)">PG 청구 데이터를 아직 받지 못했습니다.</span>':won(r.act)+'원'}</dd><dt>차액</dt><dd>${diffTxt(r.diff)}${r.diff!=null&&r.diff!==0?'원':''}</dd></dl>
+   ${open?`<h4>대사 처리</h4><label class="ck"><input type="checkbox" data-b="modal.done" data-r ${md.done?'checked':''}>확인완료로 처리</label><div style="margin-top:8px"><textarea class="inp" data-b="modal.memo" placeholder="처리 내용을 남기세요. 예: PG 정산 소급분, 다음 달 청구에서 차감 확인">${esc(md.memo)}</textarea></div>${md.err?`<p style="color:var(--bad);margin:6px 0 0">${md.err}</p>`:''}`:''}`,
+   f:`<button class="btn" data-a="closeModal">닫기</button>${open?`<button class="btn pri" data-a="recSave">저장</button>`:''}`}}
+};
+function traceBody(md){
+ const pay=md.no?S.pays.find(p=>p.no===md.no):null;const p=prod(pay?pay.pid:md.id);const curM=p.mer?mer(p.mer):null;const m=pay?mer(pay.mer):curM;
+ const st=(k,b,s,cls='')=>`<div class="st ${cls}"><span>${k}</span><b>${b}</b>${s?`<small>${s}</small>`:''}</div>`;const ar='<div class="ar" aria-hidden="true">→</div>';
+ let chain=st('상품',esc(p.name),`${p.id} / ${cat(p)}`);
+ if(!m){chain+=ar+st('가맹점(MID)','미연결',p.st==='판매중'?'판매중이지만 결제 불가':'결제 불가','bad');
+  return `<div class="chain">${chain}</div><div class="call bad"><span>이 상품은 가맹점(MID)에 연결되어 있지 않습니다. 결제 가맹점 상품관리에서 MID를 연결하세요.</span></div>`}
+ chain+=ar+st('PG사',m.pg)+ar+st('가맹점(MID)',esc(m.mid),`${esc(m.name)} / ${m.use}`,merLive(m)?'hi':'bad');
+ const mon=pay?pay.at.slice(0,7):'2026-09';const rr=recon(mon).find(x=>x.mer===m.id);
+ if(pay){const f=feeAt(m,pay.method,pay.at.slice(0,10));const fee=payFee(pay);
+  chain+=ar+st('결제',`${won(pay.amt)}원`,`${pay.method} / ${pay.st}`)+ar+st('PG 수수료',fee==null?'기준값 없음':`${won(fee)}원`,f?`${pay.method} ${feeTxt(f)}`:'',fee==null?'bad':'')+ar+st(`${mon} 대사`,rr?rr.st:'-',rr?`차액 ${rr.diff==null?'-':won(rr.diff)}`:'',rr&&rr.st==='불일치'?'bad':'')}
+ else{const ps=S.pays.filter(x=>x.pid===p.id&&x.at.startsWith(mon));const amt=ps.reduce((a,x)=>a+netAmt(x),0);const fee=ps.reduce((a,x)=>a+(payFee(x)||0),0);
+  chain+=ar+st(`${mon} 결제`,`${ps.length}건`,`순결제 ${won(amt)}원`)+ar+st('예상 PG 수수료',`${won(fee)}원`,'결제 시점 계약 요율')+ar+st(`${mon} 대사 (MID)`,rr?rr.st:'-',rr?`차액 ${rr.diff==null?'-':won(rr.diff)}`:'',rr&&rr.st==='불일치'?'bad':'')}
+ const moved=pay&&curM&&curM.id!==pay.mer?`<div class="call warn"><span>이 상품은 지금 <b>${esc(curM.name)} (${curM.mid})</b>에 연결되어 있습니다. 이 결제는 결제 시점의 MID(${pay.mid}) 기준으로 정산됩니다.</span></div>`:pay&&!curM?`<div class="call warn"><span>이 상품은 지금 MID가 해제된 상태입니다. 이 결제는 결제 시점의 MID(${pay.mid}) 기준으로 정산됩니다.</span></div>`:'';
+ const recent=S.pays.filter(x=>x.pid===p.id).slice(0,5);
+ return `<div class="chain">${chain}</div>${moved}
+  <h4>${esc(m.name)}의 결제수단 / 수수료 (오늘 기준)</h4><table class="tbl"><thead><tr><th>결제수단</th><th>수수료</th><th>수단 상태</th><th>변경 예정</th></tr></thead><tbody>${merMethods(m).map(x=>`<tr><td>${x.m}</td><td class="num">${x.cur?feeTxt(x.cur):'-'}</td><td>${badge(x.use)}</td><td class="num">${x.next?`${feeTxt(x.next)} (${x.next.from}~)`:'-'}</td></tr>`).join('')}</tbody></table>
+  ${!pay?`<h4>최근 결제 5건</h4>${recent.length?payTable(recent,false).replace(/data-a="tracePay"/g,'data-a="tracePay"'):'<p class="dim-t">결제 내역이 없습니다.</p>'}`:''}`}
+function renderModal(){const md=S.modal;const r=$('#modal-root');if(!md){r.innerHTML='';return}const f=MODALS[md.type](md);
+ const had=r.querySelector('.mdl-b');const sc=had?had.scrollTop:0;
+ r.innerHTML=`<div class="dimbg" data-a="dimClose"><div class="mdl ${f.w||''}" role="dialog" aria-modal="true" aria-labelledby="mdl-t"><div class="mdl-h"><h2 id="mdl-t">${f.t}</h2><button class="x" data-a="closeModal" aria-label="닫기">×</button></div><div class="mdl-b">${f.b}</div><div class="mdl-f">${f.f}</div></div></div>`;
+ const b=r.querySelector('.mdl-b');if(b)b.scrollTop=sc;}
+
+/* ================= 기획 노트 ================= */
+const NOTES={
+ 'ia':{id:'REF',t:'IA / 데이터 구조',d:[['-','이 화면의 용도','기획 공유용 참고 화면입니다. 운영 BO 메뉴에는 넣지 않습니다.'],['-','경로 추적','상품을 골라 [추적]을 누르면 PG, MID, 결제, 수수료, 대사 상태가 한 줄로 이어집니다. 상품관리와 결제이력에서도 같은 팝업을 씁니다.']],q:['Q1','Q6']},
+ 'mer.list':{id:'SCR-01',t:'결제 가맹점 정보관리',d:[['1','검색조건','PG사, 사업주체, 채널, 계약상태는 단일 선택, 가맹점명과 MID는 부분 일치. [검색]을 눌러야 목록에 반영됩니다. 입력칸에서 Enter도 검색.'],['2','결과 툴바','체크한 가맹점의 사용여부를 한 번에 바꿉니다. 판매중 상품이 연결된 가맹점을 일시중지나 미사용으로 바꾸면 영향 상품 수를 확인 팝업으로 보여줍니다.'],['3','결제수단 / 수수료','오늘 적용 중인 수수료만 보여줍니다. 일시중지 수단은 회색, 요율 변경이 예약된 MID는 "변경예정" 배지. 마우스를 올리면 전체 목록.'],['4','연결상품 수','이 MID에 Mapping된 상품 수. 누르면 상품관리로 이동하고 이 가맹점이 선택된 상태로 열립니다. PG사, 가맹점명, 연결상품 수, 수정일은 헤더를 눌러 정렬.'],['5','관리','상세 / 수정 / 상품관리 / 수수료관리. 수수료관리는 팝업에서 바로 저장하고 변경이력을 남깁니다.']],q:['Q1','Q2']},
+ 'mer.form':{id:'SCR-01-1',t:'결제 가맹점 등록/수정',d:[['1','PG사','PG사 기준정보에서 고르기만 합니다. PG사 신규 등록 기능은 Master 관리 주체가 정해지면 붙입니다.'],['2','가맹점 정보','가맹점명, MID, 사업주체, 채널은 필수.'],['3','MID','같은 PG사 안에서 중복 불가. PG사와 MID는 등록 후 수정할 수 없습니다. MID가 바뀌면 새 가맹점을 만들고 상품관리에서 [Mapping 변경]으로 옮깁니다.'],['4','상태','사용여부와 계약상태를 따로 둡니다. 결제 가능 조건은 사용 + 계약중 + 계약기간 안.'],['5','결제수단 / 수수료','결제수단 1행에 수수료 1건. 요율 변경은 기존 행에 종료일을 넣고 같은 수단 새 행을 이어 붙여 예약합니다. 같은 수단의 기간이 겹치면 저장할 수 없습니다.'],['6','저장','필수값, MID 중복, 수수료 기간 순서로 검사합니다. 바뀐 필드마다 변경이력을 남기고 상세 화면으로 이동합니다.']],q:['Q1','Q2']},
+ 'mer.detail':{id:'SCR-03',t:'결제 가맹점 상세',d:[['1','요약','PG사, MID, 사업주체, 채널, 연결상품 수, 지난달 순결제금액.'],['2','탭','기본정보 / 연결상품 / 결제수단·수수료 / 결제이력 / 변경이력.'],['3','연결상품','조회 전용. 편집은 [상품관리에서 편집]으로 이동합니다.'],['4','결제수단 / 수수료','적용중, 적용예정, 적용종료를 모두 보여줘 요율 이력을 그대로 확인할 수 있습니다.'],['5','결제이력 / 변경이력','이 MID로 필터한 결과. 결제 행을 누르면 경로 추적.'],['6','삭제 없음','거래와 정산 이력이 남아 있어 삭제하지 않고 미사용 + 계약만료로 정리합니다.']],q:[]},
+ 'map':{id:'SCR-02',t:'결제 가맹점 상품관리',d:[['1','PG사 / 가맹점 선택','PG사를 펼쳐 가맹점(MID)을 고릅니다. 점 색은 사용여부, 숫자는 연결상품 수. 하단에 MID 미연결 상품 수를 항상 보여줍니다.'],['2','가맹점 기본정보','선택한 MID의 상태, 결제수단, 수수료. 그 아래 PG › MID › 상품 › 결제 › 수수료 경로를 표시합니다. 미사용이나 계약종료 MID는 Mapping 버튼이 막힙니다.'],['3','연결된 상품 / 상품 검색 후 추가','연결된 상품은 이 MID로 결제되는 상품 목록. 상품번호를 누르면 경로 추적 팝업.'],['4','일괄 액션','여러 상품을 골라 [Mapping 변경]으로 다른 MID에 옮기거나 [Mapping 해제]. 판매중 상품을 해제하면 결제가 막히므로 동의를 한 번 더 받습니다.'],['5','상품 검색조건','상품명/번호, 카테고리, 판매채널, 사업주체, 현재 PG, 현재 MID, 상품상태. 현재 PG를 "미연결 상품만"으로 두면 MID가 없는 상품만 나옵니다.'],['6','검색 결과','이 가맹점에 이미 연결된 상품은 선택할 수 없습니다. 다른 가맹점에 연결된 상품은 "다른 가맹점 연결" 배지로 구분합니다. 페이지를 넘겨도 선택이 유지됩니다.'],['7','일괄 Mapping','저장 전 확인 팝업에서 신규 연결과 기존 Mapping 변경을 나눠 보여줍니다. 변경 건이 있으면 "현재 다른 가맹점에 연결되어 있습니다." 경고와 동의 체크가 있어야 저장됩니다. 신규 연결만 따로 저장할 수도 있습니다.']],q:['Q5','Q6']},
+ 'pay':{id:'SCR-05',t:'결제이력 관리',d:[['1','검색','기본 기간은 지난달. PG사를 고르면 가맹점(MID) 목록이 그 PG사로 좁혀집니다.'],['2','요약','조회 결과의 결제금액, 취소금액, 순결제금액. 결제실패는 합계에서 뺍니다.'],['3','목록','결제 시점의 PG와 MID를 저장합니다. 나중에 상품 Mapping이 바뀌어도 과거 결제의 MID는 그대로입니다.'],['4','경로 추적','행을 누르면 상품, PG, MID, 결제, 수수료, 그달 대사 상태를 한 팝업에 보여줍니다.']],q:['Q3']},
+ 'rec':{id:'SCR-04',t:'PG 수수료 / 정산 대사',d:[['1','조회조건','대사월 단위. "차액 있는 건만"을 켜면 불일치와 미수신만 남습니다.'],['2','Summary','조회 결과 합계. 차액 = 실제 - 예상. 양수(빨강)는 PG가 더 청구한 금액입니다. 미수신 MID는 실제 수수료 합계에서 빠집니다.'],['3','목록','1행 = PG사 + MID. 예상수수료는 결제 건마다 결제일에 유효한 계약 수수료를 곱해 더합니다(정액은 건당). 결제일에 유효한 수수료가 없으면 "기준값 없음"으로 표시합니다.'],['4','대사상태','일치 / 불일치 / 미수신 / 확인완료. 불일치와 미수신은 상세 팝업에서 결제수단별 내역을 보고 메모를 남겨 확인완료로 처리합니다.']],q:['Q3','Q4']},
+ 'exp.list':{id:'SCR-06',t:'결제수단 노출 우선순위 관리',d:[['1','탭','선불(상품결제) / 후불(요금납부).'],['2','검색','선불은 적용단위, 상품유형, 순서 방식, 사용여부. 후불은 서비스유형, 사용여부.'],['3','목록','1행 = 적용대상 + 조건값 1건. "FO 노출 순서"는 오늘 기준정보로 계산한 실제 결과라 MID가 일시중지되면 바로 빠지고 배지로 알려줍니다.'],['4','등록','등록 화면으로 이동. 행을 누르면 수정.']],q:['Q7','Q8','Q9']},
+ 'exp.form':{id:'SCR-06-1',t:'결제수단 노출 등록/수정',d:[['1','선불 / 후불','등록할 때만 전환됩니다. 수정 화면에서는 고정.'],['2-1','적용단위','상품유형(LV2) 또는 개별상품. 같은 조건이면 개별상품 설정을 상품유형보다 먼저 적용합니다(제안).'],['2-2','상품유형 / 상품','대상을 고르면 그 상품들이 Mapping된 MID의 결제수단을 불러옵니다. 수정 화면에서는 대상 변경 불가.'],['2-3','사용여부','N이면 상위 기준(개별상품 → 상품유형 → 시스템 기본)으로 노출합니다.'],['3-1','가입유형','신규가입, 기기변경, 번호이동. 확정 전 조건값입니다.'],['3-2','결제방식','전체 = 일시불 + 할부. 할부만 고르면 할부가 안 되는 수단(계좌이체, 가상계좌, 휴대폰결제)은 "할부 불가"로 빠집니다.'],['3-3','노출 할부 개월수','할부를 골랐을 때만 활성. 할부를 고르면 1개 이상 필수.'],['4-1','순서','FO 노출 순서. 저장 시 이 순서대로 1부터 다시 매깁니다.'],['4-2','이동','≡를 끌어서 순서를 바꿉니다. ≡에 포커스를 두고 위아래 화살표키로도 이동합니다.'],['4-3','결제수단','기준정보에서 새로 들어온 수단은 "신규 수단" 배지와 함께 미노출로 맨 아래 추가됩니다.'],['4-4','기준정보 출처','이 수단을 제공하는 PG / MID. 대상 상품이 여러 MID에 나뉘면 "외 N"으로 표시합니다.'],['4-5','노출 여부','운영자가 켜고 끄는 값.'],['4-6','상태','노출 여부와 기준정보를 합친 결과. 노출 / 미노출 / 일시중지(MID나 수단이 일시중지) / 기준정보 해제 / 할부 불가.'],['4-7','FO 노출 결과','상품유형 단위로 순서를 정해도 실제 FO에는 그 상품 MID가 지원하는 수단만 남습니다. 상품을 골라 바로 확인합니다.'],['5-1','순서 적용 방식','운영자 직접 지정 / 개인화 규칙 적용.'],['5-2','적용 규칙','개인화를 고르면 규칙 1개 이상 필수. 여러 규칙에 해당하면 위 규칙 우선.'],['6','취소','저장하지 않고 목록으로 돌아갑니다.'],['7','저장','대상 필수, 가입유형 1개 이상, 결제방식, 할부 개월수, 노출 수단 1개 이상, 같은 대상+조건 중복 순서로 검사합니다.']],q:['Q7','Q8','Q9']}
+};
+const QS=[
+ {n:'Q1',t:'PG사 Master 관리 주체',b:'NOVA에서 직접 등록할지, BSS나 외부 시스템에서 받을지 미정. 지금은 PG사 4개를 기준정보로 두고 선택만 합니다. 신규 등록 기능은 없습니다.'},
+ {n:'Q2',t:'PG사별 지원 결제수단 목록 소관',b:'가맹점 등록 시 결제수단을 전체 목록에서 고릅니다. PG 계약 수단으로 좁힐지, 그 목록을 누가 관리할지 정해야 합니다.'},
+ {n:'Q3',t:'취소, 부분취소 수수료 환입 기준',b:'예상수수료를 순결제금액 기준으로 계산했습니다. PG마다 취소 수수료 환입 방식이 다르면 산출식을 PG별로 나눠야 합니다.'},
+ {n:'Q4',t:'PG 청구 데이터 수신 방식과 주기',b:'정산파일인지 API인지, 월 단위인지 일 단위인지. 지금은 월 단위 MID별 청구 금액을 받는다고 가정했습니다.'},
+ {n:'Q5',t:'Mapping 변경 적용 시점',b:'저장 즉시 반영합니다. 특정 일시에 바꾸는 예약 변경이 필요한지 확인이 필요합니다.'},
+ {n:'Q6',t:'상품 마스터 연동 범위',b:'상품 목록과 상태는 NOVA 상품관리 기준 데이터로 가정했습니다. 상품관리 범위가 재합의되면 검색조건과 컬럼이 바뀔 수 있습니다.'},
+ {n:'Q7',t:'가입유형 조건값',b:'스크린샷 SB 기준으로 신규가입, 기기변경, 번호이동을 넣었습니다. 노출관리에서만 쓰는 조건인지 확정이 필요합니다.'},
+ {n:'Q8',t:'후불 자동납부 범위',b:'BSS 범위가 정해지지 않아 TBD 배지만 달았습니다.'},
+ {n:'Q9',t:'상품유형 단위 노출과 상품별 MID 차이',b:'같은 LV2 안에서 상품마다 MID가 다르면, 상품유형 순서를 따르되 FO에서는 상품 MID가 지원하는 수단만 남기는 방식을 제안합니다.'}
+];
+function renderNote(){const n=NOTES[S.noteKey]||NOTES.ia;const el=$('#note');el.classList.toggle('open',S.note);$('#shell').classList.toggle('note-on',S.note);el.setAttribute('aria-hidden',String(!S.note));
+ el.innerHTML=`<div class="nt-h"><div><div class="id">${n.id}</div><h3>${n.t}</h3></div><button class="btn sm" data-a="toggleNote">닫기</button></div>
+ <div class="nt-b"><ol>${n.d.map(([k,t,d])=>`<li>${k==='-'?'':`<i class="mk">${k}</i>`}<div><b>${t}</b><p>${d}</p></div></li>`).join('')}</ol>
+ ${n.q.length?`<h4>확인 필요</h4>${QS.filter(q=>n.q.includes(q.n)).map(q=>`<div class="q"><b>${q.n}. ${q.t}</b>${q.b}</div>`).join('')}`:''}</div>`}
+
+/* ================= 액션 ================= */
+const sel=(arr,id)=>arr.includes(id)?arr.filter(x=>x!==id):[...arr,id];
+const A={
+ noop(){},
+ go(el){S.route=el.dataset.v;S.merView='list';S.expView='list';S.modal=null;render();window.scrollTo(0,0)},
+ toggleMarks(){S.marks=!S.marks;if(S.marks)S.note=true;render()},
+ toggleNote(){S.note=!S.note;render()},
+ resetAll(){const k={route:S.route,marks:S.marks,note:S.note};S=freshState();S.pfA={...S.pf};S.rfA={...S.rf};Object.assign(S,k);render();toast('목업 데이터를 처음 상태로 되돌렸습니다.')},
+ sort(el){const key=el.dataset.key,k=el.dataset.k;const s=S.sort[key];S.sort[key]=s&&s.k===k?{k,d:-s.d}:{k,d:1};render()},
+ pg(el){S.page[el.dataset.key]=+el.dataset.p;render()},
+ closeModal(){S.modal=null;render()},
+ dimClose(el,e){if(e.target===el){S.modal=null;render()}},
+ /* 가맹점 */
+ mfSearch(){S.mfA={...S.mf};S.page.mer=1;render()},
+ mfReset(){S.mf={pg:'',name:'',mid:'',biz:'',ch:'',use:'',contract:''};S.mfA={};S.page.mer=1;render()},
+ merSel(el){S.merSel=sel(S.merSel,el.dataset.id);render()},
+ merAll(el){const ids=paginate(sortRows(merFilter(),'mer',{pg:m=>m.pg+m.name,name:m=>m.name,cnt:m=>prodCnt(m.id),upd:m=>m.updatedAt}),'mer',10).rows.map(m=>m.id);S.merSel=el.checked?[...new Set([...S.merSel,...ids])]:S.merSel.filter(x=>!ids.includes(x));render()},
+ bulkUse(){const ids=S.merSel.filter(id=>mer(id).use!==S.bulkUse);if(!ids.length){toast(`선택한 가맹점은 이미 ${S.bulkUse} 상태입니다.`);return}S.modal={type:'useConfirm',ids,val:S.bulkUse};render()},
+ useSave(){const md=S.modal;const at=now();md.ids.forEach(id=>{const m=mer(id);S.hist.unshift({at,by:USER,tid:id,tname:merLabel(m),area:'가맹점',field:'사용여부',before:m.use,after:md.val});m.use=md.val;m.updatedAt=at});S.modal=null;S.merSel=[];S.bulkUse='';render();toast(`가맹점 ${md.ids.length}개의 사용여부를 ${md.val}(으)로 바꿨습니다.`)},
+ csvMer(){const rows=sortRows(merFilter(),'mer',{});csv('결제가맹점',['PG사','가맹점명','MID','사업주체','채널','결제수단/수수료','사용여부','계약상태','계약기간','연결상품 수','수정일'],rows.map(m=>[m.pg,m.name,m.mid,m.biz,m.ch,merMethods(m).map(x=>`${x.m} ${x.cur?feeTxt(x.cur):'예정'}`).join(' / '),m.use,m.contract,`${m.cFrom}~${m.cTo}`,prodCnt(m.id),m.updatedAt]))},
+ merNew(){S.draft={id:null,pg:'',name:'',mid:'',biz:'',ch:'',use:'사용',contract:'계약중',cFrom:TODAY,cTo:'',fees:[{m:'신용카드',type:'정률',v:'',from:TODAY,to:'',use:'사용'}]};S.formErr=[];S.merView='form';S.route='mer';render();window.scrollTo(0,0)},
+ merEdit(el){S.draft=clone(mer(el.dataset.id));S.formErr=[];S.merView='form';S.route='mer';render();window.scrollTo(0,0)},
+ merDetail(el){S.merId=el.dataset.id;S.merTab='basic';S.merView='detail';S.route='mer';S.modal=null;render();window.scrollTo(0,0)},
+ merList(){S.merView='list';render()},
+ merTab(el){S.merTab=el.dataset.v;render()},
+ merCancel(){S.merView=S.draft.id?'detail':'list';if(S.draft.id)S.merId=S.draft.id;render()},
+ merSave(){const d=S.draft;const e=[];const LBL={pg:'PG사를 선택하세요.',name:'가맹점명을 입력하세요.',mid:'MID를 입력하세요.',biz:'사업/정산 주체를 선택하세요.',ch:'채널을 선택하세요.'};
+  Object.keys(LBL).forEach(k=>{if(!String(d[k]||'').trim())e.push(LBL[k])});
+  if(d.mid.trim()&&d.pg&&S.mer.some(m=>m.id!==d.id&&m.pg===d.pg&&m.mid.toLowerCase()===d.mid.trim().toLowerCase()))e.push(`${d.pg}에 같은 MID(${d.mid.trim()})가 이미 있습니다.`);
+  if(!d.cFrom)e.push('계약 시작일을 입력하세요.');if(d.cTo&&d.cFrom&&d.cTo<d.cFrom)e.push('계약 종료일이 시작일보다 빠릅니다.');
+  e.push(...feeErrors(d.fees));S.formErr=e;if(e.length){render();setTimeout(()=>document.querySelector('.errbox')?.scrollIntoView({block:'center',behavior:'smooth'}),0);return}
+  d.fees.forEach(f=>f.v=Number(f.v));d.name=d.name.trim();d.mid=d.mid.trim();const at=now();
+  if(!d.id){d.id='M'+pad(S.mer.length+1,3);d.updatedAt=at;d.by=USER;S.mer.push(d);S.hist.unshift({at,by:USER,tid:d.id,tname:merLabel(d),area:'가맹점',field:'가맹점 등록',before:'-',after:`${d.pg} / ${d.mid} / ${feeSum(d.fees)}`});toast(`${d.name} (${d.mid})을(를) 등록했습니다. 상품관리에서 상품을 연결하세요.`,{label:'상품 연결하기',a:'goMap',id:d.id})}
+  else{const o=mer(d.id);const F={name:'가맹점명',biz:'사업/정산 주체',ch:'채널',use:'사용여부',contract:'계약상태',cFrom:'계약 시작일',cTo:'계약 종료일'};const ch=[];
+   Object.keys(F).forEach(k=>{if(o[k]!==d[k])ch.push({field:F[k],before:o[k]||'-',after:d[k]||'-'})});if(feeSum(o.fees)!==feeSum(d.fees))ch.push({field:'결제수단/수수료',before:feeSum(o.fees),after:feeSum(d.fees)});
+   ch.forEach(c=>S.hist.unshift({at,by:USER,tid:d.id,tname:merLabel(d),area:'가맹점',...c}));d.updatedAt=at;d.by=USER;Object.assign(o,d);toast(ch.length?`변경사항 ${ch.length}건을 저장했습니다.`:'바뀐 내용이 없습니다.')}
+  S.merId=d.id;S.merView='detail';S.merTab='basic';render();window.scrollTo(0,0)},
+ feeAdd(el){get(el.dataset.p).push({m:'',type:'정률',v:'',from:TODAY,to:'',use:'사용'});render()},
+ feeDel(el){get(el.dataset.p).splice(+el.dataset.i,1);render()},
+ feeModal(el){const m=mer(el.dataset.id);S.modal={type:'fee',id:m.id,fees:clone(m.fees),err:[]};render()},
+ feeSave(){const md=S.modal;const e=feeErrors(md.fees);if(e.length){md.err=e;render();return}const m=mer(md.id);md.fees.forEach(f=>f.v=Number(f.v));
+  if(feeSum(m.fees)!==feeSum(md.fees)){addHist([{tid:m.id,tname:merLabel(m),area:'가맹점',field:'결제수단/수수료',before:feeSum(m.fees),after:feeSum(md.fees)}]);m.fees=md.fees;m.updatedAt=S.hist[0].at;toast(`${m.name}의 수수료를 저장했습니다.`)}else toast('바뀐 내용이 없습니다.');S.modal=null;render()},
+ histModal(el){const id=el.dataset.id;S.modal={type:'hist',id,title:id?`변경이력: ${merLabel(mer(id))}`:'가맹점 / 상품 Mapping 변경이력'};render()},
+ /* 상품관리 */
+ goMap(el){S.route='map';S.mapMer=el.dataset.id||S.mapMer;S.mapTab='linked';S.linkSel=[];S.addSel=[];S.page.linked=1;S.modal=null;render();window.scrollTo(0,0)},
+ pickMer(el){if(S.mapMer!==el.dataset.id){S.mapMer=el.dataset.id;S.linkSel=[];S.addSel=[];S.page.linked=1;S.page.add=1;S.mapTab='linked';S.mapQ='';S.mapSt=''}render()},
+ pgToggle(el){S.closed[el.dataset.pg]=!S.closed[el.dataset.pg];render()},
+ mapTab(el){S.mapTab=el.dataset.v;render()},
+ showUnlinked(){S.mapTab='add';S.af={q:'',lv1:'',lv2:'',ch:'',biz:'',pg:'__none',mer:'',st:''};S.afA={...S.af};S.page.add=1;render()},
+ linkSel(el){S.linkSel=sel(S.linkSel,el.dataset.id);render()},
+ linkAll(el){const q=S.mapQ.trim();const rows=sortRows(S.prod.filter(p=>p.mer===S.mapMer&&(!q||(p.id+p.name).includes(q))&&(!S.mapSt||p.st===S.mapSt)),'linked',{id:p=>p.id,name:p=>p.name,map:p=>p.mapAt});const ids=paginate(rows,'linked',10).rows.map(p=>p.id);S.linkSel=el.checked?[...new Set([...S.linkSel,...ids])]:S.linkSel.filter(x=>!ids.includes(x));render()},
+ addSel(el){S.addSel=sel(S.addSel,el.dataset.id);render()},
+ addAll(el){const ids=paginate(sortRows(addFilter(),'add',{id:p=>p.id,name:p=>p.name}),'add',10).rows.filter(p=>p.mer!==S.mapMer).map(p=>p.id);S.addSel=el.checked?[...new Set([...S.addSel,...ids])]:S.addSel.filter(x=>!ids.includes(x));render()},
+ addClear(){S.addSel=[];render()},
+ afSearch(){S.afA={...S.af};S.page.add=1;render()},
+ afReset(){S.af={q:'',lv1:'',lv2:'',ch:'',biz:'',pg:'',mer:'',st:''};S.afA={};S.page.add=1;render()},
+ afLv1(el){S.af.lv1=el.value;S.af.lv2='';render()},
+ afPg(el){S.af.pg=el.value;S.af.mer='';render()},
+ mapAssign(){S.modal={type:'mapConfirm',target:S.mapMer,pids:[...S.addSel],mode:'assign',agree:false};render()},
+ mapChange(){S.modal={type:'mapPick',pids:[...S.linkSel],pg:'',target:''};render()},
+ pickNext(){const md=S.modal;S.modal={type:'mapConfirm',target:md.target,pids:md.pids,mode:'change',agree:false};render()},
+ mapSave(el){const md=S.modal;const t=mer(md.target);const only=!!el.dataset.only;const at=now();
+  const ps=md.pids.map(prod).filter(p=>p.mer!==t.id&&(!only||!p.mer));
+  ps.forEach(p=>{const o=p.mer?mer(p.mer):null;S.hist.unshift({at,by:USER,tid:t.id,tname:merLabel(t),area:'상품 Mapping',field:`${p.id} ${p.name}`,before:o?merLabel(o):'미연결',after:merLabel(t)});
+   if(o)S.hist.unshift({at,by:USER,tid:o.id,tname:merLabel(o),area:'상품 Mapping',field:`${p.id} ${p.name}`,before:merLabel(o),after:`${merLabel(t)}(으)로 이동`});p.mer=t.id;p.mapAt=TODAY});
+  const moved=ps.filter(p=>md.pids.includes(p.id)).length;S.modal=null;S.flash=ps.map(p=>p.id);
+  if(md.mode==='assign'){S.addSel=[];S.mapTab='linked';S.page.linked=1;S.sort.linked={k:'map',d:-1};render();toast(`상품 ${moved}개를 ${t.name} (${t.mid})에 연결했습니다.`)}
+  else{S.linkSel=[];render();toast(`상품 ${moved}개를 ${t.name} (${t.mid})(으)로 옮겼습니다.`,{label:'옮긴 가맹점 보기',a:'pickMer',id:t.id})}},
+ mapUnlink(){S.modal={type:'unlink',pids:[...S.linkSel],agree:false};render()},
+ unlinkSave(){const md=S.modal;const m=mer(S.mapMer);const at=now();md.pids.map(prod).forEach(p=>{S.hist.unshift({at,by:USER,tid:m.id,tname:merLabel(m),area:'상품 Mapping',field:`${p.id} ${p.name}`,before:merLabel(m),after:'미연결'});p.mer=null;p.mapAt=''});
+  S.modal=null;S.linkSel=[];render();toast(`상품 ${md.pids.length}개의 Mapping을 해제했습니다.`)},
+ csvLinked(){const rows=S.prod.filter(p=>p.mer===S.mapMer);const m=mer(S.mapMer);csv(`연결상품_${m.mid}`,['상품번호','상품명','카테고리','채널','사업주체','현재 PG','현재 MID','상품상태','연결일'],rows.map(p=>[p.id,p.name,cat(p),p.ch,p.biz,m.pg,m.mid,p.st,p.mapAt]))},
+ trace(el){S.modal={type:'trace',id:el.dataset.id};render()},
+ tracePay(el){S.modal={type:'trace',no:el.dataset.id};render()},
+ /* 결제이력 */
+ pfSearch(){S.pfA={...S.pf};S.page.pay=1;render()},
+ pfReset(){S.pf={from:'2026-09-01',to:'2026-09-30',q:'',pg:'',mer:'',m:'',st:''};S.pfA={...S.pf};S.page.pay=1;render()},
+ pfPg(el){S.pf.pg=el.value;S.pf.mer='';render()},
+ payByMer(el){const m=mer(el.dataset.id);S.route='pay';S.pf={from:'2026-08-01',to:'2026-09-30',q:'',pg:m.pg,mer:m.id,m:'',st:''};S.pfA={...S.pf};S.page.pay=1;render();window.scrollTo(0,0)},
+ csvPay(){const rows=sortRows(payFilter(),'pay',{amt:p=>p.amt,at:p=>p.at});csv('결제이력',['주문번호','상품번호','상품명','PG사','가맹점','MID','결제수단','결제금액','결제일시','결제상태','취소/환불','취소금액'],rows.map(p=>[p.no,p.pid,prod(p.pid).name,p.pg,mer(p.mer).name,p.mid,p.method,p.amt,p.at,p.st,p.refund,p.cancel]))},
+ /* 대사 */
+ rfSearch(){S.rfA={...S.rf};render()},
+ rfReset(){S.rf={mon:'2026-09',pg:'',st:'',diff:false};S.rfA={...S.rf};render()},
+ recModal(el,e){e.stopPropagation&&e.stopPropagation();const rs=S.rstate[`${S.rfA.mon}|${el.dataset.id}`];S.modal={type:'rec',mon:S.rfA.mon,mer:el.dataset.id,done:rs?rs.st==='확인완료':false,memo:rs?rs.memo:''};render()},
+ recSave(){const md=S.modal;const key=`${md.mon}|${md.mer}`;const m=mer(md.mer);
+  if(md.done&&!md.memo.trim()){md.err='확인완료로 처리하려면 처리 내용을 입력하세요.';render();return}
+  const prev=S.rstate[key];if(md.done){S.rstate[key]={st:'확인완료',memo:md.memo.trim(),at:now(),by:USER}}else delete S.rstate[key];
+  addHist([{tid:m.id,tname:merLabel(m),area:'정산 대사',field:`${md.mon} 대사상태`,before:prev?prev.st:'미처리',after:md.done?`확인완료 (${md.memo.trim()})`:'처리 취소'}]);S.modal=null;render();toast(md.done?`${m.mid} ${md.mon} 대사를 확인완료로 처리했습니다.`:'처리를 취소했습니다.')},
+ csvRec(){const rows=recon(S.rfA.mon);csv(`PG수수료대사_${S.rfA.mon}`,['PG사','가맹점','MID','거래건수','거래금액','실효수수료율(%)','예상수수료','실제수수료','차액','대사상태'],rows.map(r=>[r.pg,r.m.name,r.m.mid,r.cnt,r.amt,r.eff.toFixed(2),r.exp,r.act??'',r.diff??'',r.st]))},
+ /* 노출 */
+ expKind(el){S.expKind=el.dataset.v;S.ef={unit:'',lv1:'',lv2:'',mode:'',use:'',svc:''};S.efA={};S.page.exp=1;render()},
+ efSearch(){S.efA={...S.ef};S.page.exp=1;render()},
+ efReset(){S.ef={unit:'',lv1:'',lv2:'',mode:'',use:'',svc:''};S.efA={};render()},
+ efLv1(el){S.ef.lv1=el.value;S.ef.lv2='';render()},
+ histExp(){S.modal={type:'hist',area:'결제수단 노출',title:'결제수단 노출 변경이력'};render()},
+ expNew(){S.ed=S.expKind==='pre'?{id:null,kind:'pre',unit:'상품유형',lv1:'',lv2:'',pids:[],join:['신규가입'],pay:{one:true,inst:false},months:[],list:[],mode:'운영자',rules:[],use:'Y',pv:'',pick:''}
+  :{id:null,kind:'post',svc:'즉시납부',cond:{t:'',v:''},list:POST_METHODS.map(m=>({m,on:true})),mode:'운영자',rules:[],use:'Y'};S.edNew=true;S.edErr=[];S.expView='form';render();window.scrollTo(0,0)},
+ expEdit(el){const e=clone(S.exp.find(x=>x.id===el.dataset.id));e.pv='';e.pick='';syncList(e,false);S.ed=e;S.edNew=false;S.edErr=[];S.expView='form';render();window.scrollTo(0,0)},
+ edKind(el){S.expKind=el.dataset.v;A.expNew()},
+ edUnit(el){const e=S.ed;e.unit=el.value;e.lv1='';e.lv2='';e.pids=[];e.list=[];e.pv='';render()},
+ edLv1(el){const e=S.ed;e.lv1=el.value;e.lv2='';e.list=[];e.pv='';render()},
+ edLv2(el){const e=S.ed;e.lv2=el.value;e.pv='';syncList(e,true);render()},
+ edAddProd(){const e=S.ed;if(!e.pick)return;e.pids.push(e.pick);e.pick='';e.list.length?syncList(e,false):syncList(e,true);e.list.forEach(r=>{if(r.nw){r.on=true;delete r.nw}});render()},
+ edDelProd(el){const e=S.ed;e.pids=e.pids.filter(x=>x!==el.dataset.id);if(e.pv===el.dataset.id)e.pv='';const cand=avail(e);e.list=e.list.filter(r=>cand.has(r.m));render()},
+ edCondT(el){S.ed.cond={t:el.value,v:''};render()},
+ edJoin(el){S.ed.join=sel(S.ed.join,el.dataset.v);render()},
+ edPay(el){const p=S.ed.pay;const v=el.dataset.v;if(v==='all'){const on=!(p.one&&p.inst);p.one=on;p.inst=on}else p[v]=!p[v];if(!p.inst)S.ed.months=[];render()},
+ edMon(el){const n=+el.dataset.v;S.ed.months=sel(S.ed.months,n).sort((a,b)=>a-b);render()},
+ edShow(el){const r=S.ed.list[+el.dataset.i];r.on=!r.on;delete r.nw;render();document.querySelector(`.tgl[data-i="${el.dataset.i}"]`)?.focus()},
+ edRule(el){S.ed.rules=sel(S.ed.rules,el.dataset.v);render()},
+ expCancel(){S.expView='list';render();window.scrollTo(0,0)},
+ expSave(){const d=S.ed;const e=[];
+  if(d.kind==='pre'){if(d.unit==='상품유형'&&!d.lv2)e.push('상품유형 LV2를 선택하세요.');if(d.unit==='개별상품'&&!d.pids.length)e.push('상품을 1개 이상 추가하세요.');
+   if(!d.join.length)e.push('가입유형을 1개 이상 선택하세요.');if(!d.pay.one&&!d.pay.inst)e.push('결제방식을 선택하세요.');if(d.pay.inst&&!d.months.length)e.push('할부를 골랐다면 노출 할부 개월수를 1개 이상 선택하세요.');
+   const c=S.exp.find(x=>x.id!==d.id&&x.kind==='pre'&&x.unit===d.unit&&(d.unit==='상품유형'?x.lv2===d.lv2:x.pids.some(p=>d.pids.includes(p)))&&x.join.some(j=>d.join.includes(j))&&((x.pay.one&&d.pay.one)||(x.pay.inst&&d.pay.inst)));
+   if(c&&(d.lv2||d.pids.length))e.push(`같은 대상과 조건으로 등록된 설정(${c.id})이 있습니다. 가입유형이나 결제방식을 나눠 등록하세요.`)}
+  else{if(d.cond.t&&!d.cond.v)e.push('고객조건 값을 선택하세요.');const c=S.exp.find(x=>x.id!==d.id&&x.kind==='post'&&x.svc===d.svc&&x.cond.t===d.cond.t&&x.cond.v===d.cond.v);if(c)e.push(`같은 서비스유형과 고객조건으로 등록된 설정(${c.id})이 있습니다.`)}
+  if(!rowsOf(d).some(r=>r.s.fo))e.push('FO에 노출되는 결제수단이 없습니다. 노출 여부를 1개 이상 켜세요.');
+  if(d.mode==='개인화'&&!d.rules.length)e.push('개인화 규칙을 1개 이상 선택하세요.');
+  S.edErr=e;if(e.length){render();setTimeout(()=>document.querySelector('.errbox')?.scrollIntoView({block:'center',behavior:'smooth'}),0);return}
+  const cand=avail(d);const out=clone(d);out.list=out.list.filter(r=>cand.has(r.m)).map(r=>({m:r.m,on:r.on}));delete out.pv;delete out.pick;const at=now();out.updatedAt=at;out.by=USER;
+  const label=d.kind==='pre'?`선불 / ${tName(out)}`:`후불 / ${tName(out)}`;
+  if(!d.id){const pre=d.kind==='pre';const ids=S.exp.filter(x=>x.kind===d.kind).map(x=>+x.id.slice(3));out.id='EX-'+pad((ids.length?Math.max(...ids):pre?0:100)+1,3);S.exp.push(out);
+   S.hist.unshift({at,by:USER,tid:out.id,tname:label,area:'결제수단 노출',field:'노출 등록',before:'-',after:orderTxt(rowsOf(out).filter(r=>r.s.fo).map(r=>r.m))});toast(`${label} 노출 설정을 등록했습니다.`)}
+  else{const o=S.exp.find(x=>x.id===d.id);const ch=[];const ot=orderTxt(o.list.filter(r=>r.on).map(r=>r.m)),nt=orderTxt(out.list.filter(r=>r.on).map(r=>r.m));
+   if(ot!==nt)ch.push({field:'노출 순서/여부',before:ot,after:nt});if(o.mode!==out.mode||o.rules.join()!==out.rules.join())ch.push({field:'노출순서 방식',before:`${o.mode} ${o.rules.join(', ')}`,after:`${out.mode} ${out.rules.join(', ')}`});
+   if(o.use!==out.use)ch.push({field:'사용여부',before:o.use,after:out.use});if(d.kind==='pre'&&(o.join.join()!==out.join.join()||payTxt(o)!==payTxt(out)||o.months.join()!==out.months.join()))ch.push({field:'조건값',before:`${o.join.join(', ')} / ${payTxt(o)} ${o.months.join('/')}`,after:`${out.join.join(', ')} / ${payTxt(out)} ${out.months.join('/')}`});
+   if(d.kind==='post'&&o.cond.v!==out.cond.v)ch.push({field:'고객조건',before:o.cond.v||'-',after:out.cond.v||'-'});
+   ch.forEach(c=>S.hist.unshift({at,by:USER,tid:o.id,tname:label,area:'결제수단 노출',...c}));Object.assign(o,out);toast(ch.length?`변경사항 ${ch.length}건을 저장했습니다.`:'바뀐 내용이 없습니다.')}
+  S.expView='list';render();window.scrollTo(0,0)}
+};
+
+/* ================= 이벤트 ================= */
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;if(el.tagName==='TR'&&e.target.closest('button,input,select,a')&&e.target.closest('[data-a]')!==el)return;const f=A[el.dataset.a];if(f)f(el,e)});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.c&&A[el.dataset.c]){A[el.dataset.c](el,e);return}
+ if(el.dataset.b){set(el.dataset.b,el.type==='checkbox'?el.checked:el.value);if(el.dataset.r!==undefined)render();else if(el.type==='radio'||el.tagName==='SELECT'||el.type==='checkbox')renderSoft()}});
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset.b&&(el.tagName==='TEXTAREA'||['text','search','number'].includes(el.type)))set(el.dataset.b,el.value)});
+document.addEventListener('keydown',e=>{const el=e.target;
+ if(e.key==='Escape'&&S.modal){S.modal=null;render();return}
+ if(e.key==='Enter'&&el.dataset.enter&&A[el.dataset.enter]){set(el.dataset.b,el.value);A[el.dataset.enter](el);return}
+ if(e.key==='Enter'&&el.tagName==='TR'&&el.dataset.a){A[el.dataset.a](el,e);return}
+ if(el.classList&&el.classList.contains('hdl')&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const i=+el.dataset.i,j=i+(e.key==='ArrowUp'?-1:1);moveRow(i,j);document.querySelector(`.hdl[data-i="${Math.max(0,Math.min(j,S.ed.list.length-1))}"]`)?.focus()}});
+/* 일괄 변경 셀렉트처럼 재렌더가 필요하지만 data-r이 없는 경우: 버튼 활성 상태만 갱신 */
+function renderSoft(){if(S.route==='mer'&&S.merView==='list'){const b=document.querySelector('[data-a="bulkUse"].btn');if(b)b.disabled=!S.merSel.length||!S.bulkUse}}
+function moveRow(i,j){const L=S.ed.list;if(j<0||j>=L.length||i===j)return;const [r]=L.splice(i,1);L.splice(j,0,r);render()}
+let DRAG=null,HANDLE_DOWN=false;
+document.addEventListener('mousedown',e=>{HANDLE_DOWN=!!e.target.closest('.hdl')});
+document.addEventListener('dragstart',e=>{const tr=e.target.closest&&e.target.closest('tr[data-di]');if(!tr)return;if(!HANDLE_DOWN){e.preventDefault();return}DRAG=+tr.dataset.di;tr.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(DRAG))});
+document.addEventListener('dragover',e=>{const tr=e.target.closest&&e.target.closest('tr[data-di]');if(!tr||DRAG==null)return;e.preventDefault();document.querySelectorAll('tr.over').forEach(x=>x!==tr&&x.classList.remove('over'));tr.classList.add('over')});
+document.addEventListener('drop',e=>{const tr=e.target.closest&&e.target.closest('tr[data-di]');if(!tr||DRAG==null)return;e.preventDefault();const to=+tr.dataset.di;const from=DRAG;DRAG=null;moveRow(from,to)});
+document.addEventListener('dragend',()=>{DRAG=null;document.querySelectorAll('tr.over,tr.dragging').forEach(x=>x.classList.remove('over','dragging'))});
+
+render();
+</script>
+</body>
+</html>
