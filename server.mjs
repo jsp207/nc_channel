@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = Number(process.env.PORT || 4000);
 const isProduction = process.env.NODE_ENV === 'production';
-const passwordHash = '$2b$12$mQbjZCJQN8USVEX5I50JBOzorbzOqks0NcTs2C3JMqgy.QVjKd3ai';
+const passwordHash = '$2b$12$y21rFNdfChyRddFSBcd.deSOUucEVfn/6TG5VvkynkPPxKKQq/F7a';
 const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 app.disable('x-powered-by');
