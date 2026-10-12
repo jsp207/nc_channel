@@ -20,10 +20,12 @@
       #v-edit .step>header{flex-wrap:nowrap}
       .step>header .fold{margin-left:4px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer;flex:none}
       .step>header .fold:hover{background:var(--bg);color:var(--accent)}
-      .step>header .fold svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .15s}
+      .step>header .fold svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .3s cubic-bezier(.4,0,.2,1)}
       .step>header .st{margin-left:auto}
       .step>header .chip{margin:0}
-      .step.closed>header{border-bottom:0}
+      /* 접힐 때 머리줄 아래 선이 순간적으로 사라지지 않게 색만 서서히 바꾼다 */
+      .step>header{transition:border-color .3s}
+      .step.closed>header{border-bottom-color:transparent}
       .step.closed>header .fold svg{transform:rotate(-90deg)}
       .step.closed>.body{display:none}
       .step.na>.body{opacity:.6}
@@ -60,10 +62,6 @@
       .srch-radio label{display:inline-flex;align-items:center;gap:6px;min-width:0;color:var(--text);font-size:13px;font-weight:500;cursor:pointer}
       .srch-radio input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer}
       .er{font-size:12px;color:var(--bad);margin-top:6px}
-      .fb{border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;line-height:1.8}
-      .fb.ok{background:var(--ok-soft);color:var(--ok)}
-      .fb.ng{background:var(--warn-soft);color:var(--warn)}
-      .fb a{color:inherit;text-decoration:underline;cursor:pointer}
       /* 입력 요소: 공용 style.css에 없는 날짜·숫자·여러 줄 입력을 텍스트 입력과 맞춘다 */
       #v-edit input[type=date],#v-edit input[type=time],#v-edit input[type=number]{min-height:38px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;font:inherit;font-size:12px;color:var(--text);background:var(--bg)}
       #v-edit input[type=number]{width:72px;text-align:center}
@@ -254,10 +252,12 @@
       #v-edit .pv-panel{flex:none;height:800px;max-height:calc(100vh - var(--dock-h) - 40px);max-height:calc(100dvh - var(--dock-h) - 40px);display:flex;flex-direction:column;overflow:hidden}
       #v-edit .pv-panel .pvbox{flex:1;min-height:0;display:flex}
       #v-edit .pv-panel .pv{flex:1;min-height:0;display:flex;flex-direction:column}
-      #chkSum.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
-      #chkSum.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
       .panel>header{position:sticky;top:0;z-index:1}
       .rules li[data-go]{cursor:pointer}
+      /* 바텀시트 연결 상품 목록 */
+      .conn-list .m{background:var(--accent-soft);color:var(--accent)}
+      .conn-list .v{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:600}
+      .conn-list li.none{color:var(--muted);justify-content:center;padding:24px}
       .rules li[data-go]:hover{background:var(--surface)}
       .rules .m.na{background:var(--warn-soft);color:var(--warn)}
       .rules .m.skip{background:var(--surface);color:var(--muted)}
@@ -272,12 +272,11 @@
       .dock-bar{display:flex;align-items:center;gap:12px;height:var(--dock-h);padding:0 16px 0 20px;cursor:pointer}
       .dock-toggle{display:flex;align-items:center;gap:10px;flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
       .dock-toggle>b{font-size:13px;font-weight:600}
-      .dock-toggle #chkSum{margin:0}
       .dock .po{font-size:20px}
       .dock-chev{width:18px;height:18px;margin-left:2px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
       .dock.open .dock-chev{transform:rotate(180deg)}
       .dock-acts{display:flex;gap:8px;flex:none;cursor:default}
-      .dock-sheet{display:flex;flex-direction:column;max-height:min(60vh,520px);border-bottom:1px solid var(--line);animation:dockUp .22s ease-out}
+      .dock-sheet{display:flex;flex-direction:column;max-height:min(60vh,520px);border-bottom:1px solid var(--line)}
       .dock-sheet>header{position:relative;display:flex;align-items:center;justify-content:space-between;padding:22px 16px 10px 20px}
       .dock-sheet>header b{font-size:14px;font-weight:600}
       .dock-handle{position:absolute;top:8px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line-strong)}
@@ -286,25 +285,32 @@
       .dock-close svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
       .dock-sheet .rules{flex:1;min-height:0;overflow:auto;padding:0 0 8px}
       .dock-dim{position:fixed;inset:0;z-index:39;background:rgba(20,20,30,.32)}
-      @keyframes dockUp{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
-      @media(prefers-reduced-motion:reduce){.dock-sheet{animation:none}.dock-chev{transition:none}}
+      @media(prefers-reduced-motion:reduce){.dock-chev{transition:none}}
       @media(max-width:900px){.dock{left:10px;right:10px}}
       @media(max-width:560px){.dock-bar{gap:8px;padding:0 10px 0 14px}.dock-toggle>b,.dock-chev{display:none}.dock-acts .btn{padding-left:10px;padding-right:10px}}
 
       /* 미리보기: 모바일 상품 상세 화면 (product-create3과 동일) */
       .pvbox{padding:12px 16px;border-bottom:1px solid var(--line)}
       .pv{--ph-bg:#fff;--ph-tx:#1d2230;--ph-mu:#7a8193;--ph-ln:#e7e9f0;--ph-soft:#f3f4f9;--ph-cta:#3b3bf0;border:1px solid var(--line-strong);border-radius:24px;background:var(--ph-bg);color:var(--ph-tx);overflow:hidden;font-size:13px}
-      .ph-status{flex:none;display:flex;justify-content:space-between;align-items:center;padding:10px 18px 4px;background:var(--ph-soft);font-size:13px}
-      .ph-status b{font-weight:600}
-      .ph-status span{display:inline-flex;gap:5px;align-items:center}
-      .ph-status .sig{width:14px;height:9px;background:linear-gradient(90deg,currentColor 0 2px,transparent 2px 4px,currentColor 4px 6px,transparent 6px 8px,currentColor 8px 10px,transparent 10px 12px,currentColor 12px 14px);clip-path:polygon(0 100%,100% 0,100% 100%)}
-      .ph-status .bat{width:20px;height:9px;border:1.5px solid currentColor;border-radius:3px;background:linear-gradient(90deg,currentColor 0 75%,transparent 75%);background-clip:content-box;padding:1px}
-      .ph-hero{position:relative;background:var(--ph-soft);min-height:250px;display:flex;align-items:center;justify-content:center;padding:44px 24px 20px}
+      /* 고정 상단 바(뒤로·공유·메뉴)와 가입 중단 안내 */
+      .ph-top{flex:none;display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px;background:var(--ph-bg)}
+      .ph-top span{display:inline-flex;gap:16px}
+      .ph-top svg{width:21px;height:21px;fill:none;stroke:var(--ph-tx);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+      .ph-stop{display:flex;gap:8px;align-items:flex-start;margin:2px 12px 12px;padding:10px 12px;border-radius:12px;background:var(--ph-soft)}
+      .ph-stop>svg{width:15px;height:15px;flex:none;margin-top:1px;fill:var(--ph-mu)}
+      .ph-stop b{display:block;font-size:11.5px;font-weight:600;color:var(--ph-tx)}
+      .ph-stop p{margin:2px 0 0;font-size:11px;color:var(--ph-mu);line-height:1.5}
+      /* AI 분석 사유 + 추천 조합 */
+      .ph-ai{margin-bottom:10px;padding:14px 16px;border:1px solid #dfe2fb;border-radius:14px;background:linear-gradient(135deg,#f1f2ff,#e2e6fd)}
+      .ph-ai b{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ph-cta)}
+      .ph-ai b svg{width:15px;height:15px;fill:currentColor;stroke:none}
+      .ph-ai p{margin:8px 0 0;font-size:11.5px;line-height:1.55;color:var(--ph-mu)}
+      .ph-combo{padding:6px 16px 16px;border:1px solid var(--ph-ln);border-radius:14px}
+      .ph-cr{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--ph-ln);font-size:12px}
+      .ph-cr span:last-child{text-align:right;line-height:1.5}
+      .ph-hero{position:relative;background:var(--ph-soft);min-height:250px;display:flex;align-items:center;justify-content:center;padding:24px}
       .ph-hero.has-img{padding:0;min-height:0;aspect-ratio:1/1}
       .ph-hero.has-img>img{width:100%;height:100%;max-height:none;object-fit:cover;display:block}
-      .ph-nav{position:absolute;top:8px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center;z-index:1}
-      .ph-nav span{display:inline-flex;gap:14px}
-      .ph-nav svg{width:20px;height:20px;fill:none;stroke:var(--ph-tx);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
       .ph-noimg{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ph-mu);font-size:11px;text-align:center;word-break:break-all}
       .ph-noimg svg{width:56px;height:56px;fill:none;stroke:currentColor;stroke-width:1.2}
       .ph-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px}
@@ -314,12 +320,16 @@
       .ph-model{font-size:11px;color:var(--ph-mu);margin-bottom:4px}
       .ph-title{font-size:16px;font-weight:700;line-height:1.4;word-break:keep-all}
       .ph-title.ph-empty{color:var(--ph-mu)}
-      .ph-sub{font-size:12px;color:var(--ph-mu);margin-top:10px}
-      .ph-bdgs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-      .ph-bdgs span{padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;border:1px solid transparent}
+      .ph-sub{font-size:12px;color:var(--ph-mu);margin-top:6px}
+      .ph-sub.ph-empty{color:#b2b9c9}
+      .ph-bdgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+      .ph-bdgs span{padding:2px 6px;border-radius:3px;background:var(--ph-soft);color:var(--ph-mu);font-size:10px;font-weight:600}
+      .ph-bdgs span.dk{background:var(--ph-tx);color:#fff}
       .ph-note{margin-top:12px;padding:10px 14px;border-radius:12px;background:var(--ph-soft);color:var(--ph-mu);font-size:11.5px;line-height:1.55}
       .ph-gap{height:8px;background:var(--ph-soft)}
-      .ph-scroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+      /* 스크롤은 되지만 스크롤바는 숨긴다 (휴대폰 화면처럼) */
+      .ph-scroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none}
+      .ph-scroll::-webkit-scrollbar{display:none}
       .ph-tabs{position:sticky;top:0;z-index:2;display:flex;border-bottom:1px solid var(--ph-ln);background:var(--ph-bg)}
       .ph-tabmark{display:block;height:0}
       .ph-tabs button{flex:1;border:0;background:none;padding:14px 0 12px;font:inherit;font-size:13px;color:var(--ph-mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
@@ -329,19 +339,40 @@
       .ph-h{font-size:15px;font-weight:700;margin:4px 0 14px;display:flex;flex-direction:column;gap:3px}
       .ph-h small{font-size:11px;font-weight:400;color:var(--ph-mu)}
       .ph-hs{font-size:11px;color:var(--ph-mu);margin:8px 0 0}
-      .ph-foot{flex:none;padding:10px 16px 12px;border-top:1px solid var(--ph-ln);background:var(--ph-bg);box-shadow:0 -4px 12px rgba(29,34,48,.05)}
-      .ph-sum{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:8px;font-size:11px;line-height:1.4;color:var(--ph-mu)}
-      .ph-sum b{font-size:16px;color:var(--ph-tx);white-space:nowrap}
       .ph-cta{width:100%;padding:12px;border:0;border-radius:10px;background:var(--ph-cta);color:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+      /* 금액 플로팅: 스크롤 영역 아래쪽에 붙어 떠 있다 */
+      .ph-float{position:sticky;bottom:14px;z-index:3;display:flex;justify-content:center;padding:14px 0 4px;pointer-events:none}
+      .ph-pill-wrap{position:relative;pointer-events:auto}
+      .ph-pill{display:inline-flex;align-items:center;gap:10px;padding:12px 22px;border:0;border-radius:999px;background:#fff;box-shadow:0 6px 20px rgba(29,34,48,.16);font:inherit;font-size:13px;font-weight:600;color:var(--ph-tx);cursor:pointer}
+      .ph-pill b{color:var(--ph-cta)}
+      .ph-pill svg{width:14px;height:14px;fill:none;stroke:var(--ph-mu);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+      .ph-pill[aria-expanded="true"] svg{transform:rotate(180deg)}
+      .ph-pop{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);min-width:190px;padding:10px 14px;border-radius:12px;background:#fff;box-shadow:0 6px 20px rgba(29,34,48,.16);font-size:12px}
+      .ph-pop div{display:flex;justify-content:space-between;gap:16px;padding:4px 0}
+      .ph-pop span{color:var(--ph-mu)}
+      /* 맨 아래 고객 선택 안내 + 상품 주문하기 (스크롤 고정 아님) */
+      .ph-buy{padding:10px 16px 20px}
+      .ph-insight{margin:0 0 12px;font-size:11.5px;color:var(--ph-cta)}
+      .ph-buy-row{display:flex;align-items:center;gap:10px}
+      .ph-tbtn{width:46px;height:46px;flex:none;display:grid;place-items:center;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(29,34,48,.14);color:var(--ph-cta);cursor:pointer}
+      .ph-tbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+      .ph-buy .ph-cta{flex:1;margin:0;padding:14px;border-radius:999px;font-size:14px}
+      @media(prefers-reduced-motion:reduce){.ph-pill svg{transition:none}}
       .ph-cta:disabled{background:#c9cdd8;cursor:default}
       .ph-sw{display:flex;gap:10px;flex-wrap:wrap}
       .ph-sw button{width:36px;height:36px;padding:3px;border:1.5px solid transparent;border-radius:50%;background:none;cursor:pointer}
       .ph-sw button span{display:block;width:100%;height:100%;border-radius:50%;border:1px solid #c9cdd8}
       .ph-sw button.on{border-color:var(--ph-tx)}
-      .ph-swn{font-size:12px;color:var(--ph-mu);margin:8px 0 14px}
       .ph-opt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;margin-bottom:10px;padding:16px 20px;border:1px solid var(--ph-ln);border-radius:14px;background:var(--ph-bg);color:var(--ph-tx);font:inherit;text-align:left;cursor:pointer}
       .ph-opt b{font-size:13px;font-weight:500}
       .ph-opt.on{border:1.5px solid var(--ph-tx);padding:15.5px 19.5px}
+      .ph-optt{display:flex;justify-content:space-between;align-items:center;width:100%}
+      .ph-optt em{font-style:normal;font-size:12px;color:var(--ph-mu)}
+      .ph-opt .ph-price{font-size:13px;font-weight:600}
+      .ph-opt small{font-size:11px;color:var(--ph-mu)}
+      .ph-opt.out b,.ph-opt.out .ph-price{color:var(--ph-mu)}
+      .ph-sw{margin-bottom:4px}
+      .ph-sw button{width:42px;height:42px}
       .ph-order{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:140px;padding:20px;border:1.5px dashed var(--accent);border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:13px;text-align:center}
       .ph-order b{font-size:14px;font-weight:700}
       .ph-rich{font-size:12px;line-height:1.7;word-break:break-word}
@@ -542,12 +573,12 @@
   <!-- 하단 고정 1라인: 검사 요약·연결 상품 수 + 저장 버튼. 라인을 누르면 바텀시트로 섹션별 검사(O/X) 상세가 펼쳐진다 -->
   <div class="dock-dim" id="dockDim" hidden></div>
   <div class="dock" id="dock">
-    <section class="dock-sheet" id="dockSheet" aria-label="검사 결과" hidden>
-      <header><i class="dock-handle" aria-hidden="true"></i><b>검사 결과</b><button type="button" class="dock-close" id="dockClose" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
-      <ul class="rules" id="ruleList"></ul>
+    <section class="dock-sheet" id="dockSheet" aria-label="연결 상품" hidden>
+      <header><i class="dock-handle" aria-hidden="true"></i><b>연결 상품</b><button type="button" class="dock-close" id="dockClose" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+      <ul class="rules conn-list" id="connList"></ul>
     </section>
     <div class="dock-bar" id="dockBar">
-      <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="false" aria-controls="dockSheet"><b>검사</b><span class="chip" id="chkSum"></span><span class="po" id="poCount">0<small>상품</small></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
+      <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="false" aria-controls="dockSheet"><b>연결 상품</b><span class="po" id="poCount">0<small>상품</small></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
       <span class="dock-acts"><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>저장하기</button></span>
     </div>
   </div>

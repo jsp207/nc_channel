@@ -27,6 +27,8 @@ export default defineConfig({
         payExposure: 'payment-exposure.html',
         payPolicy: 'payment-policy.html',
         productList: 'product-list.html',
+        order1: 'order1.html',
+        order1Create: 'order1-create.html',
       },
     },
   },

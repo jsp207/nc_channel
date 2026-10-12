@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-      /* 히스토리 탭: 상품 / 결제 */
+      /* 히스토리 탭: 상품 / 주문 / 결제 */
       .h-tabs{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--line)}
       .h-tabs button{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;margin-bottom:-1px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
       .h-tabs button:hover{color:var(--text)}
@@ -31,7 +31,7 @@
 </nav>
 <main>
 
-<!-- 작업한 화면 파일 목록입니다. 상품·결제 탭으로 나눠 둡니다. -->
+<!-- 작업한 화면 파일 목록입니다. 상품·주문·결제 탭으로 나눠 둡니다. -->
 <section class="view on" id="v-history">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> <strong>히스토리</strong></div>
   <h1>히스토리</h1>
@@ -39,6 +39,7 @@
   <!-- 탭마다 tbody 맨 위에 한 줄씩 추가하세요(최근 날짜순) -->
   <div class="h-tabs" role="tablist" aria-label="히스토리 구분">
     <button type="button" role="tab" id="tab-prod" aria-controls="panel-prod" data-tab="prod">상품 <span class="h-cnt">13</span></button>
+    <button type="button" role="tab" id="tab-order" aria-controls="panel-order" data-tab="order">주문 <span class="h-cnt">2</span></button>
     <button type="button" role="tab" id="tab-pay" aria-controls="panel-pay" data-tab="pay">결제 <span class="h-cnt">7</span></button>
   </div>
   <div role="tabpanel" id="panel-prod" aria-labelledby="tab-prod">
@@ -58,6 +59,15 @@
         <tr><td>2026-09-27</td><td><a href="display-create.html">전시생성</a></td><td>display-create.html</td></tr>
         <tr><td>2026-09-27</td><td><a href="display-list.html">전시목록</a></td><td>display-list.html</td></tr>
         <tr><td>2026-09-23</td><td><a href="policy.html">기준·정책</a></td><td>policy.html</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div role="tabpanel" id="panel-order" aria-labelledby="tab-order" hidden>
+    <div class="tw"><table id="historyOrder">
+      <thead><tr><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
+      <tbody>
+        <tr><td>2026-10-12</td><td><a href="order1.html">주문 템플릿 관리 1차 (목록)</a></td><td>order1.html</td></tr>
+        <tr><td>2026-10-12</td><td><a href="order1-create.html">주문 템플릿 관리 1차 (등록)</a></td><td>order1-create.html</td></tr>
       </tbody>
     </table></div>
   </div>
