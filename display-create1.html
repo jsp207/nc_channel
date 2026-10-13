@@ -205,6 +205,12 @@
       .s-link{background:var(--accent-soft);color:var(--accent)}
       .s-copy{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
       .s-none{background:var(--warn-soft);color:var(--warn)}
+      .grip{flex:none;display:flex;align-items:center;justify-content:center;width:18px;height:28px;padding:0;border:0;border-radius:4px;background:none;color:var(--muted);cursor:grab}
+      .grip:hover,.grip:focus-visible{color:var(--accent);background:var(--surface)}
+      .grip svg{width:10px;height:14px;fill:currentColor}
+      .ali.dragging{opacity:.4}
+      .ali.drop-b{box-shadow:0 -3px 0 var(--accent)}
+      .ali.drop-a{box-shadow:0 3px 0 var(--accent)}
       .bx{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--surface);font-size:12px;line-height:1.8;white-space:pre-line}
       /* 주문 구성 방식: 구성안 카드 · 필요한 주문 항목 · 시나리오 안내 */
       .op-plan{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:24px 28px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface)}
