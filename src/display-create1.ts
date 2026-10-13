@@ -88,6 +88,9 @@ const TPL=[
  {id:'TPL-0006',n:'10월 프로모션 안내',t:'마케팅 정보',v:'v1',use:3,body:'10월 가입 고객에게 커피 쿠폰을 드려요'},
 ];
 const tplBy=id=>TPL.find(t=>t.id===id);
+// 상품이 가진 템플릿 (EPC 상품 정보에서 온다고 가정. 프로토타입은 상품 구분별로 정함)
+const TYPE_TPL={기기서비스:['TPL-0001','TPL-0002','TPL-0004'],요금제:['TPL-0003','TPL-0004'],부가서비스:['TPL-0003','TPL-0004'],구독서비스:['TPL-0005','TPL-0004'],액세서리:['TPL-0001','TPL-0004']};
+const poTpls=p=>TYPE_TPL[p.type]||[];
 
 // 주문 구성 (주문 구성 관리에서 정의된 흐름으로 가정). 연결 상품 유형으로 자동 결정
 const FLOWS={
@@ -107,7 +110,7 @@ const img=n=>({n,u:null});
 const PLANS=['PLN-001','PLN-002','PLN-003','PLN-004','PLN-005'];
 const galaxyArea=n=>Object.assign(newArea(n,'opt'),{pos:['DEV-001','DEV-002','DEV-003','DEV-004'],opts:[{name:'용량',vals:['256GB','512GB'],disp:'text'},{name:'색상',vals:['블랙','실버'],disp:'chip'}],map:{'256GB|블랙':'DEV-001','256GB|실버':'DEV-002','512GB|블랙':'DEV-003','512GB|실버':'DEV-004'}});
 // 예전 구조(한 줄 소개, images 배열)를 지금 구조로 맞춘다. 전시 여부가 없던 예전 저장본·샘플은 전시(Y)로 본다
-function norm(d){ if(d.images){ d.main=d.images[0]||null; d.subs=d.images.slice(1); delete d.images; } d.main=d.main||null; d.mainAlt=d.mainAlt||''; d.subs=d.subs||[]; d.subAlt=d.subAlt||''; d.fromTime=d.fromTime||'00:00'; d.toTime=d.toTime||'23:59'; d.channels=[...new Set((d.channels||[]).map(c=>({웹:'통합 WEB',앱:'통합 APP'}[c]||c)))]; delete d.summary;
+function norm(d){ if(d.images){ d.main=d.images[0]||null; d.subs=d.images.slice(1); delete d.images; } d.main=d.main||null; d.mainAlt=d.mainAlt||''; d.subs=d.subs||[]; d.subAlt=d.subAlt||''; d.fromTime=d.fromTime||'00:00'; d.toTime=d.toTime||'23:59'; d.channels=[...new Set((d.channels||[]).map(c=>({웹:'통합 WEB',앱:'통합 APP',BSS:'BSS(TBD)'}[c]||c)))]; delete d.summary;
  if(d.desc!=null){ const t=String(d.desc).trim(); if(t&&!d.descHtml){ const e=x=>x.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); d.descHtml=t.split(/\n{2,}/).map(p=>`<p>${e(p).replace(/\n/g,'<br>')}</p>`).join(''); if(!(d.descImgs&&d.descImgs.length)) d.descMode='html'; } delete d.desc; }
  d.descMode=d.descMode||'image'; d.descImgs=d.descImgs||[]; d.descHtml=d.descHtml||''; d.descNote=d.descNote||''; (d.areas||[]).forEach(a=>{ if(a.name==='고객 선택 방식'||/^구성 영역( d+)?$/.test(a.name)) a.name=''; }); if(d.orderPlan===undefined) d.orderPlan=null;
  const sr=d.search=Object.assign({on:false,kw:[]},d.search); if(sr.title==null) sr.title=String(sr.line||'').slice(0,25); delete sr.line; sr.desc=sr.desc||''; sr.og=sr.og||null; if(d.noEnd==null) d.noEnd=!d.to; if(d.show==null) d.show=true; return d; }
@@ -159,6 +162,22 @@ const IC={
 // 설정 결과 안내 박스: 첫 줄은 핵심(강조는 <b>), 둘째 줄은 보충 설명
 const guide=(main,sub)=>`<div class="guide">${svg(IC.info)}<div><p>${main}</p>${sub?`<p class="gs">${sub}</p>`:''}</div></div>`;
 const ntc=(kind,txt)=>`<div class="ntc ${kind||''}">${svg(kind==='warn'?IC.warn:IC.info)}<span>${txt}</span></div>`;
+// 목록 순서 변경(드래그앤드롭): 항목을 끌어 대상 항목의 위/아래 절반에 놓는다. 손잡이에 포커스하면 위·아래 화살표로 한 칸씩 옮긴다
+const gripBtn=(i,label)=>`<button type="button" class="grip" data-gi="${i}" aria-label="${label} 순서 이동 (위·아래 화살표 키)" title="끌어서 순서 변경"><svg viewBox="0 0 12 16" aria-hidden="true"><circle cx="3.5" cy="3" r="1.4"/><circle cx="8.5" cy="3" r="1.4"/><circle cx="3.5" cy="8" r="1.4"/><circle cx="8.5" cy="8" r="1.4"/><circle cx="3.5" cy="13" r="1.4"/><circle cx="8.5" cy="13" r="1.4"/></svg></button>`;
+function dndList(box,key,list,done){
+ let drag=null; const items=$$(`${box} .ali[data-${key}]`), clr=()=>items.forEach(a=>a.classList.remove('dragging','drop-b','drop-a'));
+ items.forEach(el=>{
+  el.draggable=true;
+  el.addEventListener('dragstart',e=>{ drag=+el.dataset[key]; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',''); });
+  el.addEventListener('dragend',()=>{ drag=null; clr(); });
+  el.addEventListener('dragover',e=>{ if(drag==null) return; e.preventDefault(); const r=el.getBoundingClientRect(), b=e.clientY<r.top+r.height/2; el.classList.toggle('drop-b',b); el.classList.toggle('drop-a',!b); });
+  el.addEventListener('dragleave',e=>{ if(!el.contains(e.relatedTarget)) el.classList.remove('drop-b','drop-a'); });
+  el.addEventListener('drop',e=>{ e.preventDefault(); if(drag==null) return; const id=drag, to0=+el.dataset[key], b=el.classList.contains('drop-b'); drag=null; clr(); if(id===to0) return;
+   const [m]=list.splice(list.findIndex(y=>y.id===id),1), to=list.findIndex(y=>y.id===to0); list.splice(b?to:to+1,0,m); done(); });
+ });
+ $$(`${box} [data-gi]`).forEach(g=>g.addEventListener('keydown',e=>{ const i=+g.dataset.gi, j=e.key==='ArrowUp'?i-1:e.key==='ArrowDown'?i+1:-1; if(j<0||j>=list.length) return; e.preventDefault();
+  [list[i],list[j]]=[list[j],list[i]]; done(); const n=$(`${box} [data-gi="${j}"]`); if(n) n.focus(); }));
+}
 const mvBtns=(attr,i,n,label)=>`<span class="mv"><button type="button" data-${attr}u="${i}" ${i===0?'disabled':''} aria-label="${label} 위로">${svg(IC.up)}</button><button type="button" data-${attr}d="${i}" ${i===n-1?'disabled':''} aria-label="${label} 아래로">${svg(IC.down)}</button></span>`;
 function combos(a){const os=a.opts.filter(o=>o.name.trim()&&o.vals.length);if(!os.length)return[];return os.reduce((acc,o)=>acc.flatMap(c=>o.vals.map(v=>c.concat(v))),[[]]).map(c=>c.join('|'));}
 const areaHasSel=a=>a.pos.some(id=>hasSel(poBy(id)));
@@ -284,7 +303,7 @@ function rKind(){
  const T=[['po','상품 전시'],['ps','상품 개별 전시 (PS)']];
  $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
  ${ntc('',E.kind==='po'?'EPC 상품(PO)을 연결해 판매합니다. 고객 선택 방식과 주문 구성을 설정해요.':'PO 안의 서비스(PS) 하나를 소개용으로 전시합니다. 주문은 PS가 속한 PO 전시에서 진행되므로 고객 선택 방식과 주문 구성은 쓰지 않아요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
- $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.areas=k==='po'?[newArea('','fixed')]:[]; E.method='fixed'; cur=E.areas[0]&&E.areas[0].id; PV={}; renderAll(); }));
+ $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.areas=k==='po'?[newArea('','fixed')]:[]; E.method='fixed'; cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); renderAll(); }));
 }
 
 // ---------- 2. 연결 상품 ----------
@@ -301,7 +320,19 @@ function rConn(){
 }
 // 고정형·선택형은 영역이 1개라 연결 상품이 그대로 영역의 PO가 된다
 function syncSingle(){ if(E.kind!=='po'||E.method==='complex'||!E.areas[0]) return; const a=E.areas[0]; a.pos=[...a.pos.filter(id=>E.conn.includes(id)),...E.conn.filter(id=>!a.pos.includes(id))]; a.def=(a.def||[]).filter(id=>a.pos.includes(id)); Object.keys(a.map).forEach(k=>{ if(!a.pos.includes(a.map[k])) delete a.map[k]; }); if(a.mode==='opt'&&areaHasSel(a)) a.mode='list'; }
-function onConnChange(){ syncSingle(); PV={}; rConn(); rMethod(); rBasic(); rDesc(); rSearch(); rOrder(); refresh(); }
+// 연결 상품이 가진 템플릿을 추가 정보에 자동으로 넣는다(템플릿 연결). 이미 있는 템플릿은 다시 넣지 않고,
+// 연결 해제로 가진 상품이 없어진 자동 항목은 뺀다. 복사해 직접 수정한 항목과 사용자가 지운 템플릿은 건드리지 않는다
+const connPoList=()=>E.conn.map(k=>E.kind==='po'?poBy(k):psBy(k).po);
+const tplOwners=id=>[...new Set(connPoList().filter(p=>poTpls(p).includes(id)).map(p=>p.name))];
+function syncConnTpls(){
+ const off=E.tplOff||[], want=[...new Set(connPoList().flatMap(poTpls))].filter(id=>!off.includes(id));
+ const n0=E.extras.length; E.extras=E.extras.filter(x=>!(x.auto&&x.mode==='link'&&!want.includes(x.src)));
+ const have=new Set(E.extras.map(x=>x.src).filter(Boolean)), add=want.filter(id=>!have.has(id));
+ add.forEach(id=>E.extras.push({id:nid(),t:tplBy(id).t,mode:'link',src:id,show:true,txt:'',auto:true}));
+ if(add.length||E.extras.length!==n0) rExtra();
+ return add.length;
+}
+function onConnChange(){ syncSingle(); PV={}; const n=syncConnTpls(); rConn(); rMethod(); rBasic(); rDesc(); rSearch(); rOrder(); refresh(); return n; }
 
 // ---------- 3. 고객 선택 방식 ----------
 const curArea=()=>E.areas.find(a=>a.id===cur);
@@ -334,10 +365,9 @@ function rAreas(){
  rDetail();
 }
 function rAreaList(){
- $('#al').innerHTML=E.areas.map((a,i)=>{ const tg=''; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]} · PO ${a.pos.length}</small>${tg?`<div>${tg}</div>`:''}</div>${mvBtns('a',i,E.areas.length,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
- $$('#al .ali[data-a]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.mv')) return; cur=+el.dataset.a; rAreas(); }));
- $$('#al [data-au]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.au; [E.areas[i-1],E.areas[i]]=[E.areas[i],E.areas[i-1]]; rAreas(); refresh(); }));
- $$('#al [data-ad]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.ad; [E.areas[i+1],E.areas[i]]=[E.areas[i],E.areas[i+1]]; rAreas(); refresh(); }));
+ $('#al').innerHTML=E.areas.map((a,i)=>{ const tg=''; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]} · PO ${a.pos.length}</small>${tg?`<div>${tg}</div>`:''}</div>${gripBtn(i,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
+ $$('#al .ali[data-a]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.grip')) return; cur=+el.dataset.a; rAreas(); }));
+ dndList('#al','a',E.areas,()=>{ rAreas(); refresh(); });
 }
 // PO 카드: EPC의 Delivery type·Price policy를 읽기 전용으로 보여 준다
 function poCard(po,canRemove){
@@ -411,7 +441,7 @@ function rDetail(){
 const bstyle=b=>b.s==='f'?`background:${b.c};color:#fff;border-color:${b.c}`:`background:transparent;color:${b.c};border-color:${b.c}`;
 // 이미지 칸: key는 'main'(대표이미지) 또는 추가이미지 순번
 const thumb=(m,key)=>`<div class="img-thumb">${m.u?`<img src="${m.u}" alt="${esc(m.n)}">`:`<div class="img-ph">${svg(IC.image)}${esc(m.n)}</div>`}${key==='main'?'<span class="tag-main">대표</span>':''}<button type="button" class="x" data-imx="${key}" aria-label="${esc(m.n)} 삭제">×</button></div>`;
-const CHS=['통합 APP','통합 WEB','BSS'], SUB_MAX=4;
+const CHS=['통합 APP','통합 WEB','BSS(TBD)'], SUB_MAX=4;
 // 이미지 아래 공통 구성: 대체 텍스트 입력 + 등록 안내
 // id가 없으면 대체 텍스트 칸 없이 안내 목록만 그린다
 const imgMeta=(id,val,first,label,size='1440 * 2560',fmt='JPG, PNG')=>`${id?`<div class="alt-row"><input type="text" id="${id}" value="${esc(val)}" maxlength="20" placeholder="웹접근성을 위한 대체 Text를 20자 이내로 입력하세요" aria-label="${label} 대체 텍스트"><span class="pill len" id="${id}Len">${val.length}/20</span></div>`:''}
@@ -536,30 +566,29 @@ function rDesc(){
 $('#descFile').addEventListener('change',e=>{ const fs=[...e.target.files]; e.target.value=''; const room=DESC_MAX-E.descImgs.length; readImgs(fs.slice(0,room)).then(l=>{ if(!l.length) return; E.descImgs.push(...l); rDesc(); refresh(); toast(fs.length>room?`상세 이미지는 최대 ${DESC_MAX}장이라 ${l.length}장만 추가했어요`:`상세 이미지 ${l.length}장을 추가했어요`); }); });
 
 // ---------- 6. 추가 정보 ----------
-function xBadge(x){ if(x.mode==='link') return '<span class="src s-link">템플릿 연결</span>'; if(x.mode==='copy') return '<span class="src s-copy">템플릿 복사</span>'; return x.txt.trim()?'<span class="src s-copy">직접 입력</span>':'<span class="src s-none">미입력</span>'; }
+function xBadge(x){ if(x.mode==='link') return `<span class="src s-link">${x.auto?'상품 템플릿':'템플릿 연결'}</span>`; if(x.mode==='copy') return '<span class="src s-copy">템플릿 복사</span>'; return x.txt.trim()?'<span class="src s-copy">직접 입력</span>':'<span class="src s-none">미입력</span>'; }
 const sw=(attr,id,on,label)=>`<label class="switch" title="노출"><input type="checkbox" ${attr}="${id}" ${on?'checked':''} aria-label="${label} 노출"><span aria-hidden="true"></span></label>`;
 function rExtra(){
  if(!E.extras.find(x=>x.id===curX)) curX=E.extras[0]&&E.extras[0].id;
  const on=E.extras.filter(x=>x.show).length;
- $('#sb-extra').innerHTML=`<div class="sec-h"><span class="pill">${E.extras.length}개 · 노출 ${on}개 · 고객 화면에 이 순서로 나와요</span><button type="button" class="btn sm" id="xTpl" style="margin-left:auto">템플릿 불러오기</button><button type="button" class="btn sm" id="xNew">+ 직접 입력</button></div>
- ${E.extras.length?`<div class="ae"><div class="al">${E.extras.map((x,i)=>`<div class="ali ${x.id===curX?'on':''} ${x.show?'':'off'}" data-x="${x.id}">${mvBtns('x',i,E.extras.length,esc(x.t))}<div class="nm"><b>${esc(x.t)||'제목 없음'}</b><div>${xBadge(x)}</div></div>${sw('data-xs',x.id,x.show,esc(x.t))}</div>`).join('')}</div><div class="ad" id="xd"></div></div>`
+ $('#sb-extra').innerHTML=`<div class="sec-h"><span class="pill">${E.extras.length}개 · 노출 ${on}개 · 고객 화면에 이 순서로 나와요 (끌어서 순서 변경)</span><button type="button" class="btn sm" id="xTpl" style="margin-left:auto">템플릿 불러오기</button><button type="button" class="btn sm" id="xNew">+ 직접 입력</button></div>
+ ${E.extras.length?`<div class="ae"><div class="al">${E.extras.map((x,i)=>`<div class="ali ${x.id===curX?'on':''} ${x.show?'':'off'}" data-x="${x.id}" draggable="true">${gripBtn(i,esc(x.t)||'제목 없음')}<div class="nm"><b>${esc(x.t)||'제목 없음'}</b><div>${xBadge(x)}</div></div>${sw('data-xs',x.id,x.show,esc(x.t))}</div>`).join('')}</div><div class="ad" id="xd"></div></div>`
  :'<div class="empty">템플릿 불러오기나 직접 입력으로 유의사항·약관·판매자 정보 같은 콘텐츠를 추가하세요</div>'}`;
  $('#xTpl').addEventListener('click',openTplModal);
  $('#xNew').addEventListener('click',()=>{ const x={id:nid(),t:'',mode:'direct',src:'',show:true,txt:''}; E.extras.push(x); curX=x.id; rExtra(); refresh(); const t=$('#xt'); if(t) t.focus(); });
- $$('#sb-extra .ali[data-x]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.mv,.switch')) return; curX=+el.dataset.x; rExtra(); }));
+ $$('#sb-extra .ali[data-x]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.grip,.switch')) return; curX=+el.dataset.x; rExtra(); }));
  $$('#sb-extra [data-xs]').forEach(c=>c.addEventListener('change',()=>{ const x=E.extras.find(y=>y.id===+c.dataset.xs); x.show=c.checked; rExtra(); refresh(); }));
- $$('#sb-extra [data-xu]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.xu; [E.extras[i-1],E.extras[i]]=[E.extras[i],E.extras[i-1]]; rExtra(); refresh(); }));
- $$('#sb-extra [data-xd]').forEach(b=>b.addEventListener('click',()=>{ const i=+b.dataset.xd; [E.extras[i+1],E.extras[i]]=[E.extras[i],E.extras[i+1]]; rExtra(); refresh(); }));
+ dndList('#sb-extra','x',E.extras,()=>{ rExtra(); refresh(); });
  const x=E.extras.find(y=>y.id===curX); if(!x) return;
  const t=x.src&&tplBy(x.src);
  let body='';
- if(x.mode==='link') body=`<p class="pill" style="margin:0 0 6px">연결된 템플릿</p><div class="row" style="margin-bottom:10px"><span class="src s-link">템플릿</span><b>${esc(t.n)}</b><span class="pill">${t.id} · ${t.v} · 전시 ${t.use}곳에서 사용 중</span></div><p class="pill" style="margin:0 0 6px">불러온 내용 (템플릿 관리에서만 수정)</p><div class="bx">${esc(t.body)}</div><p class="hinfo">이 전시에서만 다르게 쓰려면 <a href="#" id="xDetach">복사해서 직접 수정</a>으로 바꾸세요. 이후 템플릿이 바뀌어도 반영되지 않아요</p>`;
+ if(x.mode==='link') body=`<p class="pill" style="margin:0 0 6px">연결된 템플릿</p><div class="row" style="margin-bottom:10px"><span class="src s-link">템플릿</span><b>${esc(t.n)}</b><span class="pill">${t.id} · ${t.v} · 전시 ${t.use}곳에서 사용 중</span></div><p class="pill" style="margin:0 0 6px">불러온 내용 (템플릿 관리에서만 수정)</p><div class="bx">${esc(t.body)}</div>${x.auto?`<p class="hinfo">연결 상품(${esc(tplOwners(x.src).join(', '))})이 가진 템플릿이라 자동으로 넣었어요. 해당 상품의 연결을 모두 해제하면 함께 빠져요</p>`:''}<p class="hinfo">이 전시에서만 다르게 쓰려면 <a href="#" id="xDetach">복사해서 직접 수정</a>으로 바꾸세요. 이후 템플릿이 바뀌어도 반영되지 않아요</p>`;
  else body=`${x.mode==='copy'&&t?`<p class="pill" style="margin:0 0 6px">${esc(t.n)} ${t.v}에서 복사함 · 템플릿 변경은 반영되지 않아요</p>`:''}<textarea class="ta" id="xtx" rows="6" placeholder="고객에게 보여줄 내용을 입력하세요">${esc(x.txt)}</textarea>${!x.txt.trim()?'<div class="er">내용이 비어 있으면 노출을 켜도 고객 화면에 나오지 않아요</div>':''}`;
- $('#xd').innerHTML=`<div class="row"><input type="text" id="xt" value="${esc(x.t)}" placeholder="콘텐츠 제목" style="flex:1;font-weight:600"><span class="pill">노출</span>${sw('id','xs2',x.show,'콘텐츠')}<button type="button" class="btn sm" id="xDel">삭제</button></div>${body}`;
+ $('#xd').innerHTML=`<div class="row"><input type="text" id="xt" value="${esc(x.t)}" placeholder="콘텐츠 제목" style="flex:1;font-weight:600"><button type="button" class="btn sm" id="xDel">삭제</button></div>${body}`;
  $('#xt').addEventListener('input',e=>{ x.t=e.target.value; refresh(); });
  $('#xt').addEventListener('change',()=>rExtra());
- $('#xs2').addEventListener('change',e=>{ x.show=e.target.checked; rExtra(); refresh(); });
- $('#xDel').addEventListener('click',()=>{ E.extras=E.extras.filter(y=>y!==x); rExtra(); refresh(); });
+ // 자동으로 넣은 상품 템플릿을 지우면 다음에 상품을 연결해도 다시 넣지 않는다
+ $('#xDel').addEventListener('click',()=>{ if(x.auto&&x.src) E.tplOff=[...new Set([...(E.tplOff||[]),x.src])]; E.extras=E.extras.filter(y=>y!==x); rExtra(); refresh(); });
  const dt=$('#xDetach'); if(dt) dt.addEventListener('click',e=>{ e.preventDefault(); x.txt=t.body; x.mode='copy'; rExtra(); refresh(); });
  const tx=$('#xtx'); if(tx){ tx.addEventListener('input',e=>{ x.txt=e.target.value; refresh(); }); tx.addEventListener('change',()=>rExtra()); }
 }
@@ -675,7 +704,7 @@ function drawConn(){
  $('#cmReset').addEventListener('click',()=>{ CM.f={g:'전체',k:'전체',q:''}; CM.a={...CM.f}; drawConn(); $('#cq').focus(); });
  $('#mFoot').innerHTML=`<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>추가하기</button>`;
  $('#mc').addEventListener('click',closeModal);
- $('#mo').addEventListener('click',()=>{ const add=[...CM.sel]; E.conn.push(...add); closeModal(); onConnChange(); toast(`${add.length}개 상품을 연결했어요`); });
+ $('#mo').addEventListener('click',()=>{ const add=[...CM.sel]; E.conn.push(...add); closeModal(); const n=onConnChange(); toast(`${add.length}개 상품을 연결했어요${n?` · 상품 템플릿 ${n}개를 추가 정보에 넣었어요`:''}`); });
  drawConnRows();
 }
 // 표만 다시 그린다. 체크는 행 상태만 바꿔 스크롤 위치를 지킨다
@@ -752,7 +781,7 @@ function drawPs(){
  const n=CM.sel.size;
  $('#mFoot').innerHTML=foot(n?`${n}개 선택`:'PS를 고르세요',n,n?n+'개 연결':'연결');
  $('#mc').addEventListener('click',closeModal);
- $('#mo').addEventListener('click',()=>{ E.conn.push(...CM.sel); closeModal(); onConnChange(); });
+ $('#mo').addEventListener('click',()=>{ E.conn.push(...CM.sel); closeModal(); const t=onConnChange(); if(t) toast(`상품 템플릿 ${t}개를 추가 정보에 넣었어요`); });
 }
 // PO 상세 보기
 function openPoDetail(id){ const p=poBy(id); modal(p.name,`${p.epc} · ${p.id} · ${p.ver} · ${p.type}`,640); $('#mBody').innerHTML=`<p class="pill" style="margin:0 0 10px">${esc(p.desc)}</p>${poCard(p,false)}<p class="pill" style="margin:0">대표 이미지: ${p.img.join(', ')}</p>`; $('#mFoot').innerHTML=`<span class="pill" style="margin-right:auto">EPC 읽기 전용</span><button type="button" class="btn" id="mc">닫기</button>`; $('#mc').addEventListener('click',closeModal); }
