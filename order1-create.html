@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#ebeef6" />
+    <title>주문 템플릿 등록 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+    <!-- 주문 템플릿 관리 · 등록/상세/수정 (ref/template-register-3pane-start-mockup-v20.html). 목록은 order1.html. 스타일은 src/order1.css -->
+  </head>
+  <body>
+<div class="app">
+<nav class="rail" aria-label="주 메뉴">
+  <a class="rail-logo" href="index.html" aria-label="히스토리" title="히스토리"><svg class="rail-logo-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="railLogoGrad" x1="3" y1="29" x2="29" y2="3" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3fd6f0"/><stop offset=".5" stop-color="#4f7cf7"/><stop offset="1" stop-color="#b48cff"/></linearGradient></defs><g fill="url(#railLogoGrad)"><circle cx="24.20" cy="16.00" r="1.05"/><circle cx="23.71" cy="18.80" r="1.05"/><circle cx="22.28" cy="21.27" r="1.05"/><circle cx="20.10" cy="23.10" r="1.05"/><circle cx="17.42" cy="24.08" r="1.05"/><circle cx="14.58" cy="24.08" r="1.05"/><circle cx="11.90" cy="23.10" r="1.05"/><circle cx="9.72" cy="21.27" r="1.05"/><circle cx="8.29" cy="18.80" r="1.05"/><circle cx="7.80" cy="16.00" r="1.05"/><circle cx="8.29" cy="13.20" r="1.05"/><circle cx="9.72" cy="10.73" r="1.05"/><circle cx="11.90" cy="8.90" r="1.05"/><circle cx="14.58" cy="7.92" r="1.05"/><circle cx="17.42" cy="7.92" r="1.05"/><circle cx="20.10" cy="8.90" r="1.05"/><circle cx="22.28" cy="10.73" r="1.05"/><circle cx="23.71" cy="13.20" r="1.05"/><circle cx="26.60" cy="16.00" r="1.20"/><circle cx="26.24" cy="18.74" r="1.20"/><circle cx="25.18" cy="21.30" r="1.20"/><circle cx="23.50" cy="23.50" r="1.20"/><circle cx="21.30" cy="25.18" r="1.20"/><circle cx="18.74" cy="26.24" r="1.20"/><circle cx="16.00" cy="26.60" r="1.20"/><circle cx="13.26" cy="26.24" r="1.20"/><circle cx="10.70" cy="25.18" r="1.20"/><circle cx="8.50" cy="23.50" r="1.20"/><circle cx="6.82" cy="21.30" r="1.20"/><circle cx="5.76" cy="18.74" r="1.20"/><circle cx="5.40" cy="16.00" r="1.20"/><circle cx="5.76" cy="13.26" r="1.20"/><circle cx="6.82" cy="10.70" r="1.20"/><circle cx="8.50" cy="8.50" r="1.20"/><circle cx="10.70" cy="6.82" r="1.20"/><circle cx="13.26" cy="5.76" r="1.20"/><circle cx="16.00" cy="5.40" r="1.20"/><circle cx="18.74" cy="5.76" r="1.20"/><circle cx="21.30" cy="6.82" r="1.20"/><circle cx="23.50" cy="8.50" r="1.20"/><circle cx="25.18" cy="10.70" r="1.20"/><circle cx="26.24" cy="13.26" r="1.20"/><circle cx="29.00" cy="16.00" r="1.30"/><circle cx="28.72" cy="18.70" r="1.30"/><circle cx="27.88" cy="21.29" r="1.30"/><circle cx="26.52" cy="23.64" r="1.30"/><circle cx="24.70" cy="25.66" r="1.30"/><circle cx="22.50" cy="27.26" r="1.30"/><circle cx="20.02" cy="28.36" r="1.30"/><circle cx="17.36" cy="28.93" r="1.30"/><circle cx="14.64" cy="28.93" r="1.30"/><circle cx="11.98" cy="28.36" r="1.30"/><circle cx="9.50" cy="27.26" r="1.30"/><circle cx="7.30" cy="25.66" r="1.30"/><circle cx="5.48" cy="23.64" r="1.30"/><circle cx="4.12" cy="21.29" r="1.30"/><circle cx="3.28" cy="18.70" r="1.30"/><circle cx="3.00" cy="16.00" r="1.30"/><circle cx="3.28" cy="13.30" r="1.30"/><circle cx="4.12" cy="10.71" r="1.30"/><circle cx="5.48" cy="8.36" r="1.30"/><circle cx="7.30" cy="6.34" r="1.30"/><circle cx="9.50" cy="4.74" r="1.30"/><circle cx="11.98" cy="3.64" r="1.30"/><circle cx="14.64" cy="3.07" r="1.30"/><circle cx="17.36" cy="3.07" r="1.30"/><circle cx="20.02" cy="3.64" r="1.30"/><circle cx="22.50" cy="4.74" r="1.30"/><circle cx="24.70" cy="6.34" r="1.30"/><circle cx="26.52" cy="8.36" r="1.30"/><circle cx="27.88" cy="10.71" r="1.30"/><circle cx="28.72" cy="13.30" r="1.30"/></g></svg></a>
+  <div class="rail-actions">
+    <button class="rail-btn" type="button" aria-label="계정" title="계정"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></button>
+    <button class="rail-btn" type="button" aria-label="설정" title="설정"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
+    <button class="rail-btn on" type="button" aria-label="라이트 테마" aria-pressed="true" title="라이트 테마"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" class="fill"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg></button>
+  </div>
+</nav>
+  <main class="main">
+    <!-- ===== 등록 / 수정 / 상세 ===== -->
+    <div class="sheet" id="scrForm">
+      <div class="crumb">홈 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg> 주문 관리 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg> <a href="order1.html">주문 템플릿 관리</a> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg> <span class="cur" id="crCur">템플릿 등록</span></div>
+      <h1 id="pgTitle">템플릿 등록</h1>
+      <div class="hr"></div>
+      <div class="ptabs" id="ptabs" hidden><button class="ptab on" type="button" data-t="info">상세 정보</button><button class="ptab" type="button" data-t="hist">변경/승인 이력</button></div>
+      <div id="paneMain">
+
+      <!-- 1 기본 정보 -->
+      <section class="sec" id="secBasic">
+        <h2>기본 정보</h2>
+        <div class="bt">
+          <div class="th req"><span>카테고리</span></div>
+          <div class="td"><div class="sel"><select id="fCat">
+            <option>선택</option><option>상품 유형 템플릿</option><option selected>전시 상품 템플릿</option></select></div><span class="hint tbd tbdh" id="hCat" hidden>[TBD] 등록 후 변경 가능 여부 검토 필요</span></div>
+          <div class="th req"><span>연결 대상 상품 유형</span></div>
+          <div class="td"><div class="sel"><select id="fProd">
+            <option>선택</option><option selected>기기서비스</option><option>요금제</option><option>부가서비스</option><option>로밍</option><option>구독</option><option>커머스</option><option>악세서리</option></select></div><span class="hint tbd tbdh" id="hProd" hidden>[TBD] 등록 후 변경 가능 여부 검토 필요</span></div>
+
+          <div class="th req"><span>템플릿 ID</span></div>
+          <div class="td"><div class="ro" id="fId">등록 시 자동채번</div></div>
+          <div class="th req"><span>템플릿명</span></div>
+          <div class="td"><div class="tf"><input type="text" id="fName" placeholder="템플릿명을 입력하세요." autocomplete="off"><button class="clr" type="button" data-clr="fName" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
+
+          <div class="th"><span>설명</span></div>
+          <div class="td wide"><div class="tf w630"><input type="text" id="fDesc" placeholder="어떤 상품에 적합한 템플릿 구성인지 입력하세요." autocomplete="off"><button class="clr" type="button" data-clr="fDesc" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
+
+          <div class="th req"><span>사용 여부</span></div>
+          <div class="td wide"><div class="rad"><label><input type="radio" name="use" id="uY" value="Y" disabled>Y</label><label><input type="radio" name="use" id="uN" value="N" checked>N</label></div><span class="hint" id="uHint">등록 시 N 고정 · 승인 완료 후 Y 선택 가능</span></div>
+        </div>
+      </section>
+      <section class="sec" id="secDInfo" hidden>
+        <h2>기본 정보</h2>
+        <div class="bt" id="dInfo"></div>
+      </section>
+
+      <!-- 2 템플릿 구성 -->
+      <section class="sec">
+        <h2>템플릿 구성</h2>
+        <div class="grid3">
+          <div class="card" id="leftCard"></div>
+          <div class="card">
+            <div class="card-h"><h3>미리보기</h3><span class="cnt" id="pvcnt"></span><span class="rt"><button class="btn sm lineacc" id="bEpc" type="button">EPC 상품 불러오기</button></span></div>
+            <div class="pvprod" id="pvprod"></div>
+            <div class="pv">
+              <div class="phone" id="phone">
+                <div class="fo-top"><div class="fo-step"><b id="foStepNo"></b><span id="foStepNm"></span></div><div class="fo-prog" id="foProg"></div></div>
+                <div class="scroll" id="scroll"><div class="sg" id="sg"></div></div>
+                <div class="fo-bottom" id="foBottom"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3>코너 상세 설정</h3></div>
+            <div id="detail"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 구성 검증 -->
+      <section class="sec" id="vsec">
+        <h2>구성 검증</h2>
+        <div id="vbox"></div>
+      </section>
+
+      <div class="foot" id="footForm">
+        <button class="btn" id="bCancel" type="button">취소</button>
+        <button class="btn line" id="bVerify" type="button">전체 구성 검증</button>
+        <button class="btn primary" id="bSave" type="button">저장</button>
+      </div>
+      </div>
+      <div id="paneHist" hidden>
+        <div class="tbl ltbl htbl"><table>
+          <thead><tr><th style="width:48px">번호</th><th>상태</th><th>승인 요청자</th><th>요청 일시</th><th class="l">요청 사유</th><th>승인 담당자</th><th>처리 일시</th><th class="l">처리 사유</th><th>변경내용</th><th>버전</th></tr></thead>
+          <tbody id="hBody"></tbody></table>
+          <div class="emptyrow" id="hEmpty" hidden>변경/승인 이력이 없습니다.</div>
+        </div>
+        <div id="hPager"></div>
+        <p class="hnote">변경/승인 이력 화면은 BO 공통 화면 정의에 따릅니다. (목업은 예시 구성)</p>
+      </div>
+      <div class="foot" id="footDet" hidden>
+        <button class="btn" id="bToList" type="button">목록</button>
+        <button class="btn primary" id="bEdit" type="button">수정</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 템플릿 복사하기 (PU02) -->
+<div class="dim" id="copyDim"><div class="modal" role="dialog" aria-label="템플릿 복사하기">
+  <div class="m-head"><div><h3>템플릿 복사하기</h3><p>복사할 템플릿을 선택하세요.</p></div><button class="m-close" id="copyX" type="button">×</button></div>
+  <div class="m-body">
+    <div class="sfilter"><span class="fl">검색</span>
+      <select id="fType"><option value="">전체</option><option value="n">템플릿명</option><option value="i">템플릿 ID</option></select>
+      <input type="text" id="fKey" placeholder="내용을 입력하세요." autocomplete="off">
+      <button class="btn" id="copyReset" type="button">초기화</button><button class="btn primary" id="fBtn" type="button">조회</button>
+    </div>
+    <p class="cnt2" id="cnt2"></p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th style="width:40px"></th><th>카테고리</th><th>템플릿 ID</th><th class="l">템플릿명</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="emptyrow" id="emptyMsg" hidden>조회된 템플릿이 없습니다.</div>
+    </div>
+    <div id="copyPager"></div>
+    <div class="notice"><ul>
+      <li>화면(단계) 구성과 코너만 복사됩니다. 템플릿명·ID·설명 등 기본 정보는 현재 입력값이 유지됩니다.</li>
+      <li>복사한 구성은 등록 화면에서 자유롭게 수정할 수 있습니다.</li>
+    </ul></div>
+  </div>
+  <div class="m-foot"><button class="btn" id="copyCancel" type="button">닫기</button><button class="btn primary" id="copyOk" type="button" disabled>적용</button></div>
+</div></div>
+
+<!-- EPC 상품 조회 (PU03) -->
+<div class="dim" id="epcDim"><div class="modal" role="dialog" aria-label="EPC 상품 조회">
+  <div class="m-head"><div><h3>EPC 상품 조회</h3><p>미리보기에 연동할 상품을 선택하세요. 연동한 상품 정보는 템플릿에 저장되지 않습니다.</p></div><button class="m-close" id="epcX" type="button">×</button></div>
+  <div class="m-body">
+    <div class="sfilter"><span class="fl">운영 상태</span><div class="chk"><label><input type="checkbox" id="eS0" checked>전체</label><label><input type="checkbox" id="eS1" checked>전시중</label><label><input type="checkbox" id="eS2" checked>예정</label></div></div>
+    <div class="sfilter"><span class="fl">검색</span>
+      <select id="eKind"><option value="">전체</option><option value="n">상품명</option><option value="i">전시 코드</option></select>
+      <input type="text" id="eKey" placeholder="내용을 입력하세요." autocomplete="off">
+      <button class="btn" id="eReset" type="button">초기화</button><button class="btn primary" id="eBtn" type="button">조회</button>
+    </div>
+    <p class="cnt2" id="eCnt"></p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th style="width:40px"></th><th>전시 코드</th><th class="l">상품명</th><th>상품 유형</th><th>운영 상태</th></tr></thead>
+        <tbody id="eRows"></tbody>
+      </table>
+      <div class="emptyrow" id="eEmpty" hidden>조회된 상품이 없습니다.</div>
+    </div>
+    <div id="ePager"></div>
+    <div class="notice"><ul>
+      <li>선택한 상품은 미리보기에만 반영되며, 템플릿 저장 시 포함되지 않습니다. (코너 구성만 저장)</li>
+      <li>상품 기본 정보·옵션·옵션별 가격은 상품관리 전시정보 기준으로 표시됩니다. (읽기 전용)</li>
+    </ul></div>
+  </div>
+  <div class="m-foot"><button class="btn" id="eCancel" type="button">닫기</button><button class="btn primary" id="eOk" type="button" disabled>적용</button></div>
+</div></div>
+
+<!-- 코너 추가하기 (PU01) -->
+<div class="dim" id="addDim"><div class="modal" role="dialog" aria-label="코너 추가하기">
+  <div class="m-head"><div><h3>코너 추가하기</h3><p>전시화면 관리에서 등록한 코너를 검색해 현재 화면(단계)에 추가하세요. (복수 선택 가능)</p></div><button class="m-close" id="addX" type="button">×</button></div>
+  <div class="m-body">
+    <div class="sfilter"><span class="fl">상태</span><div class="chk"><label><input type="checkbox" id="aS0" checked>전체</label><label><input type="checkbox" id="aS1" checked>추가됨</label><label><input type="checkbox" id="aS2" checked>미추가</label></div></div>
+    <div class="sfilter"><span class="fl">검색</span>
+      <select id="aKind"><option value="">전체</option><option value="n">코너명</option><option value="i">코너 ID</option></select>
+      <input type="text" id="aKey" placeholder="내용을 입력하세요." autocomplete="off">
+      <button class="btn" id="aReset" type="button">초기화</button><button class="btn primary" id="aBtn" type="button">조회</button>
+    </div>
+    <p class="cnt2" id="aCnt"></p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th style="width:40px"></th><th>코너 ID</th><th class="l">코너명</th><th>구분</th><th>상태</th></tr></thead>
+        <tbody id="aRows"></tbody>
+      </table>
+      <div class="emptyrow" id="aEmpty" hidden>조회된 코너가 없습니다.</div>
+    </div>
+    <div id="aPager"></div>
+  </div>
+  <div class="m-foot"><button class="btn" id="addCancel" type="button">닫기</button><button class="btn primary" id="addOk" type="button">적용</button></div>
+</div></div>
+
+<!-- Alert -->
+<div class="dim top" id="alDim"><div class="modal sm" role="alertdialog">
+  <div class="confirm-b"><b id="alT"></b><span id="alB"></span></div>
+  <div class="m-foot"><button class="btn" id="alCancel" type="button">취소</button><button class="btn primary" id="alOk" type="button">확인</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+    <script type="module" src="/src/order1-create.ts"></script>
+  </body>
+</html>
