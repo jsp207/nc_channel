@@ -632,7 +632,7 @@ function rOrder(){
   <div class="op-acts"><button type="button" class="btn" data-op="pick">구성안 선택</button><button type="button" class="btn" data-op="make">구성안 만들기</button></div>
  </div>
  ${plan?'':'<div class="op-err" role="alert">사용할 주문 구성안 하나를 선택해 주세요</div>'}`;
- $$('#sb-order [data-op]').forEach(b=>b.addEventListener('click',()=>b.dataset.op==='pick'?openPlanModal():toast({make:'주문 구성안 만들기 화면으로 이동할 예정이에요'}[b.dataset.op])));
+ $$('#sb-order [data-op]').forEach(b=>b.addEventListener('click',()=>b.dataset.op==='pick'?openPlanModal():window.open('/order1-create.html','_blank')));
 }
 
 // ---------- 모달 공통 ----------
