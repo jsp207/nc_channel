@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="zzangsoo">
+<title>고객 선택 방식 · 복합형 릴레이션 프로토타입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f5f8; --card:#ffffff; --sub:#f7f8fb; --line:#e3e5ec; --line2:#cfd3dd;
+  --text:#1d2130; --muted:#6b7183; --faint:#9aa0b0;
+  --acc:#3b2bd6; --acc-soft:#efedfd; --acc-line:#b9b2f2;
+  --ok:#17804f; --ok-soft:#e5f4ec; --warn:#9a6200; --warn-soft:#fff4dc; --bad:#c23b2e; --bad-soft:#fdebe8;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14151b; --card:#1c1e26; --sub:#22252f; --line:#2e313d; --line2:#3d4150;
+  --text:#eceef4; --muted:#a2a7b8; --faint:#757b8d;
+  --acc:#9c90ff; --acc-soft:#2a2650; --acc-line:#4c4590;
+  --ok:#5ccf93; --ok-soft:#173026; --warn:#e6b64a; --warn-soft:#3a2f12; --bad:#f08a7c; --bad-soft:#3a1f1c;
+}}
+:root[data-theme="dark"]{
+  --bg:#14151b; --card:#1c1e26; --sub:#22252f; --line:#2e313d; --line2:#3d4150;
+  --text:#eceef4; --muted:#a2a7b8; --faint:#757b8d;
+  --acc:#9c90ff; --acc-soft:#2a2650; --acc-line:#4c4590;
+  --ok:#5ccf93; --ok-soft:#173026; --warn:#e6b64a; --warn-soft:#3a2f12; --bad:#f08a7c; --bad-soft:#3a1f1c;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;font-size:14px;line-height:1.5;padding:24px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.page{max-width:1240px;margin:0 auto}
+
+.card{background:var(--card);border:1px solid var(--acc);border-radius:14px;padding:22px 24px}
+.ch{display:flex;align-items:center;gap:8px}
+.ch h1{font-size:17px;font-weight:700;margin:0}
+.pill{font-size:12px;padding:2px 10px;border-radius:12px;white-space:nowrap}
+.pill.req{background:var(--bad-soft);color:var(--bad)}
+.pill.st{background:var(--sub);color:var(--muted);border:1px solid var(--line)}
+.pill.st.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.st.ng{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+
+.frow{display:grid;grid-template-columns:150px 1fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:16px 0 20px}
+.frow .fl{background:var(--sub);padding:12px 14px;color:var(--muted);font-size:13px}
+.frow .fc{padding:10px 16px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.rd{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.rd input{accent-color:var(--acc);width:16px;height:16px;margin:0}
+
+.bar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.bar h2{font-size:15px;font-weight:700;margin:0;white-space:nowrap}
+.bar h2::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--text);vertical-align:middle;margin-right:8px}
+.btn{height:36px;padding:0 14px;border:1px solid var(--line2);border-radius:8px;background:var(--card);font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--sub)}
+.btn.sm{height:30px;padding:0 10px;font-size:12px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.wrap{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}
+.lp{position:sticky;top:16px}
+.gl{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--sub)}
+.gi{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--card);border:1px solid var(--line);margin-bottom:8px;cursor:pointer}
+.gi:last-child{margin-bottom:0}
+.gi.on{border:1.5px solid var(--acc);padding:11.5px;background:var(--acc-soft)}
+.gl{position:relative}
+.gi{position:relative;z-index:1}
+.gi.drag{opacity:.4}
+.gi.over{box-shadow:0 0 0 2px var(--acc-line)}
+.gi .hd{color:var(--faint);cursor:grab;font-size:14px;line-height:1}
+.gi .no{font-size:13px;color:var(--faint);width:14px;text-align:center}
+.gi .nm{flex:1;min-width:0}
+.gi .nm b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gi .nm small{font-size:12px;color:var(--muted);margin-right:2px}
+.tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;margin-left:4px;white-space:nowrap;vertical-align:1px}
+.tag.lnk{background:var(--acc-soft);color:var(--acc);border:1px solid var(--acc-line)}
+.tag.cond{background:var(--sub);color:var(--muted);border:1px solid var(--line)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.ng{background:var(--warn-soft);color:var(--warn)}
+.arw{display:flex;flex-direction:column}
+.arw button{border:0;background:none;color:var(--faint);padding:0 2px;font-size:11px;line-height:1.2}
+.arw button:disabled{opacity:.3;cursor:not-allowed}
+.add{width:100%;margin-top:10px;justify-content:center;height:44px}
+.un{margin-top:10px;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6}
+.un.ng{background:var(--warn-soft);color:var(--warn);border:1px solid #f0d9a8}
+.un.ok{background:var(--ok-soft);color:var(--ok)}
+.un b{font-weight:700}
+
+.pd{border:1px solid var(--line);border-radius:12px;padding:22px 24px;background:var(--card)}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.ph h3{font-size:17px;font-weight:700;margin:0}
+.lb{font-size:13px;font-weight:500;margin:0 0 8px}
+.lb small{font-weight:400;color:var(--muted);margin-left:6px}
+.in{width:100%;height:42px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;background:var(--card)}
+.in.num{width:76px;text-align:center}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.mr{display:flex;gap:24px;flex-wrap:wrap;font-size:14px}
+.seg{display:flex;background:var(--sub);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;height:36px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font-size:13px}
+.seg button.on{background:var(--card);border-color:var(--acc);color:var(--acc);font-weight:500}
+.sec{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}
+.pg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.pr{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.pr.on{border-color:var(--acc);background:var(--acc-soft)}
+.pr input{accent-color:var(--acc);width:17px;height:17px;margin:0}
+.pr .pn{flex:1;min-width:0}
+.pr .pn small{font-size:11px;color:var(--faint);margin-left:4px}
+.ty{font-size:11px;padding:2px 7px;border-radius:4px;background:var(--sub);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.info{background:var(--sub);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text)}
+.info b{color:var(--acc);font-weight:500}
+.ck{display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.ck input{accent-color:var(--acc);width:16px;height:16px;margin:0}
+.er{font-size:12px;color:var(--warn);margin-top:6px}
+
+.oc{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.vc{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 6px 0 12px;border:1px solid var(--line2);border-radius:15px;font-size:12px;margin:0 6px 6px 0}
+.vc button{border:0;background:none;color:var(--faint);padding:0 2px}
+.mt{width:100%;border-collapse:collapse;font-size:13px}
+.mt th,.mt td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left}
+.mt th{font-weight:400;color:var(--muted);font-size:12px;background:var(--sub)}
+.mt select{width:100%;height:34px;border:1px solid var(--line2);border-radius:6px;background:var(--card);padding:0 8px}
+
+.cd{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cd label{display:flex;gap:8px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.cd label.on{border:1.5px solid var(--acc);padding:11.5px;background:var(--acc-soft)}
+.cd label.dis{opacity:.45;cursor:not-allowed}
+.cd input{accent-color:var(--acc);margin:3px 0 0}
+.cd b{font-weight:500;font-size:13px;display:block}
+.cd small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+
+.rel{border:1px solid var(--acc-line);border-radius:12px;padding:16px;margin-top:12px;background:var(--card)}
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt th,.rt td{border-bottom:1px solid var(--line);padding:10px;vertical-align:middle;text-align:left}
+.rt th{font-weight:400;color:var(--muted);font-size:12px;background:var(--sub)}
+.rt tr:last-child td{border-bottom:0}
+.cp{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--line2);font-size:12px;margin:3px 6px 3px 0;cursor:pointer;background:var(--card)}
+.cp.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.skip{font-size:12px;color:var(--faint)}
+.fbx{border-radius:8px;padding:10px 12px;font-size:12px;margin-top:12px;line-height:1.6}
+.fbx.ok{background:var(--ok-soft);color:var(--ok)}
+.fbx.ng{background:var(--warn-soft);color:var(--warn)}
+.sim{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;background:var(--sub);border-radius:8px;padding:10px 12px;font-size:13px}
+.sim select{height:32px;border:1px solid var(--line2);border-radius:6px;background:var(--card);padding:0 8px}
+.sim b{font-weight:500;color:var(--acc)}
+
+.foot{margin-top:20px;border-radius:12px;padding:14px 18px;display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.7}
+.foot.idle{background:var(--sub);color:var(--muted)}
+.foot.ok{background:var(--ok-soft);color:var(--ok)}
+.foot.ng{background:var(--sub);border:1px solid var(--line)}
+.foot.ng .ttl{color:var(--acc);font-weight:700}
+.foot a{color:var(--acc);text-decoration:underline;cursor:pointer}
+.foot ul{margin:4px 0 0;padding-left:18px;color:var(--text)}
+.ico{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;margin-top:2px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--card);padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.simple{border:1px dashed var(--line2);border-radius:12px;padding:28px;text-align:center;color:var(--muted);line-height:1.8}
+
+@media (max-width:960px){
+  .bar{flex-wrap:wrap}
+  body{padding:12px}
+  .card{padding:16px}
+  .wrap{grid-template-columns:1fr}
+  .lp{position:static}
+  .g2,.pg,.cd{grid-template-columns:1fr}
+  .frow{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){ .toast{transition:none} }
+</style>
+</head>
+<body>
+<div class="page">
+<section class="card" aria-labelledby="ttl">
+  <div class="ch"><h1 id="ttl">고객 선택 방식</h1><span class="pill req" style="margin-left:auto">필수</span><span class="pill st" id="stPill">미작성</span></div>
+
+  <div class="frow">
+    <div class="fl">구성 방식</div>
+    <div class="fc" id="kind">
+      <label class="rd"><input type="radio" name="kind" value="fixed">고정형</label>
+      <label class="rd"><input type="radio" name="kind" value="select">선택형</label>
+      <label class="rd"><input type="radio" name="kind" value="composite" checked>복합형</label>
+    </div>
+  </div>
+
+  <div id="body"></div>
+  <div class="foot idle" id="foot"></div>
+</section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const P=[
+ {n:'5G 스탠다드',t:'요금제'},{n:'5G 라이트',t:'요금제'},
+ {n:'구글 혜택 A',t:'부가서비스'},{n:'구글 혜택 B',t:'부가서비스'},
+ {n:'데이터 플러스 5GB',t:'부가서비스'},{n:'콘텐츠 이용팩',t:'부가서비스'},
+ {n:'콘텐츠 구독 월간',t:'구독'},{n:'무선 충전기',t:'악세사리'}
+];
+const MN={fix:'고정',list:'목록에서 선택',opt:'옵션 선택'};
+const CONDN={always:'항상 제공',only:'특정 선택일 때만',relation:'선택에 따라 후보 바꾸기'};
+let seq=4, kind='composite', checked=false, cur=1, dragId=null, simV={};
+const blank=n=>({id:seq++,n,m:'fix',s:new Set(),q:1,useMax:false,mx:2,opt0:false,O:[{n:'',v:[]}],map:{},cond:'always',parent:null,trig:new Set(),rel:{}});
+let A=[
+ Object.assign(blank('요금제'),{id:1,m:'list',s:new Set([0,1])}),
+ Object.assign(blank('부가서비스'),{id:2,m:'list',s:new Set([2,3,4,5]),cond:'relation',parent:1,rel:{0:[2,4],1:[3]}}),
+ Object.assign(blank('악세사리'),{id:3,m:'opt',s:new Set([7]),O:[{n:'색상',v:['보라','블랙']}],map:{'보라':7},cond:'only',parent:1,trig:new Set([0])})
+];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const idx=a=>A.indexOf(a);
+const byId=id=>A.find(a=>a.id===id);
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('on'),2200); }
+const combos=a=>{ const os=a.O.filter(o=>o.n.trim()&&o.v.length); if(!os.length) return []; return os.reduce((acc,o)=>acc.flatMap(c=>o.v.map(v=>c.concat(v))),[[]]).map(c=>c.join(' / ')); };
+const parentOf=a=>a.cond!=='always'?byId(a.parent):null;
+function depth(a,seen=new Set()){ const p=parentOf(a); if(!p||seen.has(a.id)) return 0; seen.add(a.id); return depth(p,seen)+1; }
+
+/* 순서 규칙: 하위 영역은 상위 영역보다 아래 */
+function orderOk(arr){ return arr.every((a,i)=>{ if(a.cond==='always') return true; const pi=arr.findIndex(x=>x.id===a.parent); return pi>=0&&pi<i; }); }
+function tryMove(from,to){
+  if(from===to) return;
+  const n=A.slice(); const [m]=n.splice(from,1); n.splice(to,0,m);
+  if(!orderOk(n)){ toast('하위 영역은 기준이 되는 상위 영역보다 위로 갈 수 없어요'); return; }
+  A=n; render();
+}
+
+/* 검사 */
+function issues(a){
+  const e=[], i=idx(a);
+  if(!a.n.trim()) e.push('구성명을 입력하세요');
+  if(!a.s.size) e.push('구성 상품을 1개 이상 고르세요');
+  if(a.m==='list'&&a.s.size){
+    const hi=a.useMax?a.mx:a.q;
+    if(hi>a.s.size) e.push(`선택 수량(${hi}개)이 배정 상품 수(${a.s.size}개)보다 많아요`);
+  }
+  if(a.m==='opt'){
+    if(!a.O.some(o=>o.n.trim())) e.push('옵션을 1개 이상 만드세요');
+    if(a.O.some(o=>o.n.trim()&&!o.v.length)) e.push('값이 없는 옵션이 있어요');
+    const c=combos(a), um=c.filter(k=>a.map[k]==null||!a.s.has(a.map[k]));
+    if(c.length&&um.length) e.push(`상품이 매핑되지 않은 조합 ${um.length}개`);
+  }
+  if(a.cond!=='always'){
+    const p=parentOf(a);
+    if(i===0) e.push('첫 번째 영역은 제공 조건을 쓸 수 없어요');
+    else if(!p) e.push('기준 영역을 고르세요');
+    else if(a.cond==='only'&&![...a.trig].some(v=>p.s.has(v))) e.push('어떤 선택일 때 보여줄지 고르세요');
+    else if(a.cond==='relation'){
+      const used=new Set(Object.entries(a.rel).filter(([v])=>p.s.has(+v)).flatMap(([,c])=>c.filter(x=>a.s.has(x))));
+      const unused=[...a.s].filter(c=>!used.has(c));
+      if(!used.size) e.push('규칙 표에서 후보를 연결하세요');
+      else if(unused.length) e.push(`어떤 선택에도 안 나오는 후보 ${unused.length}개`);
+    }
+  }
+  return e;
+}
+function globalIssues(){
+  const e=[];
+  const un=P.map((p,r)=>r).filter(r=>!A.some(a=>a.s.has(r)));
+  if(un.length) e.push(`어느 영역에도 배정되지 않은 상품 ${un.length}개`);
+  if(!A.length) e.push('구성 영역을 1개 이상 만드세요');
+  return e;
+}
+
+/* 왼쪽 목록 */
+function listHTML(){
+  return A.map((a,i)=>{
+    const p=parentOf(a), e=issues(a);
+    const ctag=a.cond==='relation'&&p?`<span class="tag lnk">${idx(p)+1}번 ${esc(p.n)}에 따라</span>`:a.cond==='only'&&p?`<span class="tag cond">조건부 · ${idx(p)+1}번 기준</span>`:'';
+    const st=checked?(e.length?'<span class="tag ng">확인 필요</span>':'<span class="tag ok">완료</span>'):'';
+    return `<div class="gi ${a.id===cur?'on':''}" style="margin-left:${Math.min(depth(a),3)*24}px" draggable="true" data-id="${a.id}" tabindex="0" role="button" aria-label="${i+1}번 ${esc(a.n)}">
+      <span class="hd" aria-hidden="true">⋮⋮</span><span class="no">${i+1}</span>
+      <div class="nm"><b>${esc(a.n)||'이름 없음'}</b><small>${MN[a.m]} · 상품 ${a.s.size}</small>${ctag}${st?' '+st:''}</div>
+      <div class="arw"><button data-up="${i}" ${i===0?'disabled':''} aria-label="위로">▲</button><button data-dn="${i}" ${i===A.length-1?'disabled':''} aria-label="아래로">▼</button></div>
+    </div>`;
+  }).join('')||'<div style="color:var(--muted);font-size:13px;padding:10px">구성 영역을 추가하세요</div>';
+}
+function unassignedHTML(){
+  const un=P.map((p,r)=>r).filter(r=>!A.some(a=>a.s.has(r)));
+  return un.length?`<div class="un ng"><b>미배정 ${un.length}</b><br>${un.map(r=>esc(P[r].n)).join(', ')}</div>`:'<div class="un ok">대상 상품이 모두 배정됐어요</div>';
+}
+
+/* 방식별 설정 */
+function listBody(a){
+  const N=a.s.size;
+  let f;
+  if(a.opt0) f=`<span>최대</span><input class="in num" id="mx" type="number" min="1" value="${a.useMax?a.mx:a.q}"><span>개까지</span>`;
+  else if(a.useMax) f=`<span>최소</span><input class="in num" id="q" type="number" min="1" value="${a.q}"><span>~ 최대</span><input class="in num" id="mx" type="number" min="1" value="${a.mx}"><span>개</span>`;
+  else f=`<span>선택 수량</span><input class="in num" id="q" type="number" min="1" value="${a.q}"><span>개</span>`;
+  const lo=a.opt0?0:a.q, hi=a.opt0?(a.useMax?a.mx:a.q):(a.useMax?a.mx:a.q);
+  const t=a.opt0?`${N}개 중 최대 ${hi}개까지 고를 수 있고, 안 골라도 돼요`:(lo===hi?`${N}개 중 ${lo}개를 골라야 해요`:`${N}개 중 ${lo}~${hi}개를 골라야 해요`);
+  return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)">${f}</div>
+  <div style="display:flex;gap:18px;margin-top:12px;flex-wrap:wrap"><label class="ck"><input type="checkbox" id="um" ${a.useMax?'checked':''}>최대 수량 따로 설정</label><label class="ck"><input type="checkbox" id="o0" ${a.opt0?'checked':''}>선택하지 않아도 됨</label></div>
+  <div class="info" style="margin-top:12px">고객은 <b>${t}</b></div>`;
+}
+function optBody(a){
+  const c=combos(a), as=[...a.s], mapped=c.filter(k=>a.map[k]!=null&&a.s.has(a.map[k])).length;
+  return `<div style="display:flex;align-items:center;margin-bottom:10px"><span class="lb" style="margin:0">옵션 구성<small>값을 넣으면 아래 조합이 자동으로 만들어져요</small></span><button class="btn sm" id="addo" style="margin-left:auto">+ 옵션 추가</button></div>
+  ${a.O.map((o,k)=>`<div class="oc"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input class="in" data-on="${k}" value="${esc(o.n)}" placeholder="옵션명 (예: 색상, 용량)" style="height:36px"><button class="btn sm" data-ox="${k}">삭제</button></div>
+    <div>${o.v.map((v,j)=>`<span class="vc">${esc(v)}<button data-vx="${k}:${j}" aria-label="${esc(v)} 삭제">×</button></span>`).join('')}<input class="in" data-va="${k}" placeholder="값 입력 후 Enter" style="width:160px;height:30px;font-size:12px;display:inline-block"></div></div>`).join('')}
+  <div style="display:flex;align-items:center;margin:16px 0 8px"><span class="lb" style="margin:0">조합별 상품 매핑<small>${c.length}개 조합</small></span><span class="tag ${c.length&&mapped===c.length?'ok':'ng'}" style="margin-left:auto">${mapped}/${c.length} 매핑</span></div>
+  ${c.length?`<table class="mt"><thead><tr><th style="width:40%">조합</th><th>매핑 상품</th></tr></thead><tbody>${c.map(k=>`<tr><td>${esc(k)}</td><td><select data-mk="${esc(k)}" aria-label="${esc(k)} 매핑 상품"><option value="">상품 선택</option>${as.map(r=>`<option value="${r}" ${a.map[k]===r?'selected':''}>${esc(P[r].n)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`:'<div class="info">옵션명과 값을 넣으면 조합이 생겨요</div>'}
+  ${as.length?'':'<div class="er">구성 상품을 먼저 골라야 매핑할 수 있어요</div>'}`;
+}
+function methodBody(a){
+  if(a.m==='fix') return `<div class="info">구성 상품 <b>${a.s.size}개</b>가 모두 포함돼요. 고객이 고르지 않아요</div>`;
+  if(a.m==='list') return listBody(a);
+  return optBody(a);
+}
+
+/* 제공 조건 */
+function condBody(a){
+  const i=idx(a), prev=A.slice(0,i);
+  const opts=Object.entries(CONDN).map(([k,l])=>{
+    const dis=k!=='always'&&i===0;
+    const sub={always:'다른 영역과 관계없이 늘 보여줘요',only:'앞 영역에서 특정 상품을 골랐을 때만 이 영역이 나와요',relation:'앞 영역 선택값마다 이 영역 후보를 따로 정해요 (A면 B, C면 D)'}[k];
+    return `<label class="${a.cond===k?'on':''} ${dis?'dis':''}"><input type="radio" name="cd" value="${k}" ${a.cond===k?'checked':''} ${dis?'disabled':''}><span><b>${l}</b><small>${dis?'첫 번째 영역은 쓸 수 없어요':sub}</small></span></label>`;
+  }).join('');
+  let extra='';
+  if(a.cond!=='always'&&i>0){
+    const p=parentOf(a);
+    const sel=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap"><span class="lb" style="margin:0">기준 영역</span><select class="in" id="pa" style="width:auto;min-width:220px;height:36px">${prev.map(x=>`<option value="${x.id}" ${p&&x.id===p.id?'selected':''}>${idx(x)+1}번 ${esc(x.n)}</option>`).join('')}</select></div>`;
+    if(a.cond==='only'&&p){
+      const ps=[...p.s];
+      extra=`<div class="rel">${sel}<div class="lb">${idx(p)+1}번 ${esc(p.n)}에서 이걸 고르면 이 영역을 보여줘요</div><div>${ps.map(v=>`<span class="cp ${a.trig.has(v)?'on':''}" data-t="${v}" role="checkbox" aria-checked="${a.trig.has(v)}" tabindex="0">${a.trig.has(v)?'✓ ':''}${esc(P[v].n)}</span>`).join('')||'<span class="skip">기준 영역에 배정된 상품이 없어요</span>'}</div></div>`;
+    }
+    if(a.cond==='relation'&&p){
+      const ps=[...p.s], cs=[...a.s];
+      const rows=ps.map(v=>{ const on=(a.rel[v]||[]).filter(c=>a.s.has(c)); return `<tr><td style="width:30%"><span style="font-size:12px;color:var(--muted)">${esc(p.n)}</span><br><b style="font-weight:500">${esc(P[v].n)}</b> 고르면</td><td>${cs.map(c=>`<span class="cp ${on.includes(c)?'on':''}" data-v="${v}" data-c="${c}" role="checkbox" aria-checked="${on.includes(c)}" tabindex="0">${on.includes(c)?'✓ ':''}${esc(P[c].n)}</span>`).join('')||'<span class="skip">위 구성 상품을 먼저 고르세요</span>'}${cs.length&&!on.length?'<span class="skip">후보 없음 · 이 영역을 건너뛰어요</span>':''}</td></tr>`; }).join('');
+      const used=new Set(ps.flatMap(v=>(a.rel[v]||[]).filter(c=>a.s.has(c))));
+      const unused=cs.filter(c=>!used.has(c)), empty=ps.filter(v=>!(a.rel[v]||[]).some(c=>a.s.has(c)));
+      const fb=!cs.length?'':unused.length?`<div class="fbx ng">어떤 선택에도 안 나오는 후보 ${unused.length}개: ${unused.map(c=>esc(P[c].n)).join(', ')}</div>`:`<div class="fbx ok">모든 후보가 규칙에 연결됐어요${empty.length?` · ${empty.map(v=>esc(P[v].n)).join(', ')} 선택 시 이 영역은 건너뛰어요`:''}</div>`;
+      const sv=simV[a.id]!=null&&ps.includes(simV[a.id])?simV[a.id]:ps[0];
+      const sl=sv!=null?(a.rel[sv]||[]).filter(c=>a.s.has(c)):[];
+      const sim=ps.length&&cs.length?`<div class="sim"><span style="color:var(--muted)">고객 흐름 확인</span><select id="sim" aria-label="상위 선택값">${ps.map(v=>`<option value="${v}" ${v===sv?'selected':''}>${esc(p.n)}: ${esc(P[v].n)}</option>`).join('')}</select><span>→ ${esc(a.n)}</span><b>${sl.length?sl.map(c=>esc(P[c].n)).join(', ')+' 중 선택':'건너뜀'}</b></div>`:'';
+      extra=`<div class="rel">${sel}${ps.length?`<table class="rt"><thead><tr><th>상위 선택값</th><th>이 영역에 보여줄 후보 (위 구성 상품 중)</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="skip">기준 영역에 배정된 상품이 없어요</div>'}${fb}${sim}</div>`;
+    }
+  }
+  return `<div class="lb">구성 제공 조건</div><div class="cd">${opts}</div>${extra}`;
+}
+
+/* 오른쪽 상세 */
+function detailHTML(){
+  const a=byId(cur);
+  if(!a) return '<div class="pd"><div class="simple">왼쪽에서 구성 영역을 고르세요</div></div>';
+  const i=idx(a), e=checked?issues(a):[];
+  const children=A.filter(x=>x.cond!=='always'&&x.parent===a.id);
+  return `<div class="pd" id="detail">
+    <div class="ph"><h3>${i+1}번 구성 영역</h3>${checked?(e.length?'<span class="tag ng">확인 필요</span>':'<span class="tag ok">완료</span>'):''}${children.length?`<span class="tag cond">하위 ${children.length}개가 이 영역을 기준으로 써요</span>`:''}<button class="btn" id="del" style="margin-left:auto">삭제</button></div>
+    <div><div class="lb">구성명</div><input class="in" id="an" value="${esc(a.n)}" placeholder="고객에게 보이는 단계 이름" style="max-width:520px"></div>
+    <div class="sec"><div class="lb">구성 선택 방식</div><div class="mr" id="am">${Object.entries(MN).map(([k,l])=>`<label class="rd"><input type="radio" name="am" value="${k}" ${a.m===k?'checked':''}>${l}</label>`).join('')}</div></div>
+    <div class="sec"><div class="lb">구성 상품 <span style="color:var(--acc)">${a.s.size}</span><small>/ ${P.length} · 같은 상품을 여러 영역에 넣을 수 있어요</small></div>
+      <div class="pg">${P.map((p,r)=>{ const o=A.filter(x=>x!==a&&x.s.has(r)).map(x=>idx(x)+1); return `<label class="pr ${a.s.has(r)?'on':''}"><input type="checkbox" data-r="${r}" ${a.s.has(r)?'checked':''}><span class="pn">${esc(p.n)}${o.length?`<small>· ${o.join(',')}번에도</small>`:''}</span><span class="ty">${p.t}</span></label>`; }).join('')}</div>
+    </div>
+    <div class="sec"><div class="lb">${MN[a.m]} 설정<small>구성 선택 방식에 따라 바뀌어요</small></div>${methodBody(a)}</div>
+    <div class="sec">${condBody(a)}</div>
+    ${e.length?`<div class="sec">${e.map(x=>`<div class="er">· ${esc(x)}</div>`).join('')}</div>`:''}
+  </div>`;
+}
+
+/* 하단 피드백 */
+function footRender(){
+  const f=$('foot');
+  const all=A.map(a=>[a,issues(a)]), bad=all.filter(([,e])=>e.length), gl=globalIssues();
+  const done=!bad.length&&!gl.length;
+  $('stPill').className='pill st'+(checked?(done?' ok':' ng'):'');
+  $('stPill').textContent=checked?(done?'작성 완료':'확인 필요'):'미작성';
+  if(kind!=='composite'){ f.className='foot idle'; f.innerHTML='<span class="ico">i</span><span>이 방식의 설정은 이 프로토타입 범위 밖이에요</span>'; return; }
+  if(!checked){ f.className='foot idle'; f.innerHTML='<span class="ico">i</span><span>설정을 마치면 오른쪽 위 <b>선택 흐름 확인</b>을 눌러 빠진 곳을 확인하세요</span>'; return; }
+  if(done){
+    const flow=A.map(a=>{ const p=parentOf(a); return a.cond==='relation'?`${a.n}(${p.n}에 따라)`:a.cond==='only'?`${a.n}(조건부)`:a.n; }).join(' → ');
+    f.className='foot ok'; f.innerHTML=`<span class="ico">✓</span><span>구성 영역 ${A.length}개 모두 완료. 고객 진행 순서: ${esc(flow)}</span>`; return;
+  }
+  f.className='foot ng';
+  f.innerHTML=`<span class="ico" style="color:var(--acc)">i</span><div><div class="ttl">완료 ${A.length-bad.length}개 · 확인 필요 ${bad.length}개${gl.length?` · 전체 ${gl.length}건`:''}</div><ul>${bad.map(([a,e])=>`<li><a data-go="${a.id}">${idx(a)+1}번 ${esc(a.n)||'이름 없음'}</a>: ${e.map(esc).join(', ')}</li>`).join('')}${gl.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  f.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{ cur=+x.dataset.go; render(); $('detail').scrollIntoView({behavior:'smooth',block:'start'}); });
+}
+
+/* 렌더 */
+function render(){
+  const b=$('body');
+  if(kind!=='composite'){
+    b.innerHTML=`<div class="simple">${kind==='fixed'?'고정형은 대상 상품 전부를 포함해요.':'선택형은 고객이 대상 상품 중 고르는 한 단계 구조예요.<br><b style="color:var(--acc);font-weight:500">A를 고르면 B를 보여주는 단계별 연결</b>이 필요하면 복합형으로 바꾸세요.'}<br><button class="btn" id="toComp" style="margin-top:12px">복합형으로 바꾸기</button></div>`;
+    $('toComp').onclick=()=>{ kind='composite'; document.querySelector('input[name=kind][value=composite]').checked=true; render(); };
+    footRender(); return;
+  }
+  b.innerHTML=`<div class="bar"><h2>그룹 설정</h2><span style="font-size:12px;color:var(--muted)">고객은 위에서부터 순서대로 진행해요</span><button class="btn" id="chk" style="margin-left:auto">선택 흐름 확인</button></div>
+  <div class="wrap"><div class="lp"><div class="gl" id="gl">${listHTML()}</div><button class="btn add" id="add">+ 구성 영역 추가</button>${unassignedHTML()}</div><div id="pdWrap">${detailHTML()}</div></div>`;
+  bind(); footRender();
+}
+function bind(){
+  $('chk').onclick=()=>{ checked=true; render(); $('foot').scrollIntoView({behavior:'smooth',block:'center'}); };
+  $('add').onclick=()=>{ const a=blank(`구성 영역 ${A.length+1}`); A.push(a); cur=a.id; render(); const n=$('an'); n.focus(); n.select(); };
+  document.querySelectorAll('.gi').forEach(el=>{
+    el.onclick=e=>{ if(e.target.closest('.arw')) return; cur=+el.dataset.id; render(); };
+    el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cur=+el.dataset.id; render(); } };
+    el.ondragstart=()=>{ dragId=+el.dataset.id; el.classList.add('drag'); };
+    el.ondragend=()=>el.classList.remove('drag');
+    el.ondragover=e=>{ e.preventDefault(); el.classList.add('over'); };
+    el.ondragleave=()=>el.classList.remove('over');
+    el.ondrop=e=>{ e.preventDefault(); el.classList.remove('over'); tryMove(A.findIndex(a=>a.id===dragId),A.findIndex(a=>a.id===+el.dataset.id)); };
+  });
+  document.querySelectorAll('[data-up]').forEach(x=>x.onclick=()=>{ const i=+x.dataset.up; tryMove(i,i-1); });
+  document.querySelectorAll('[data-dn]').forEach(x=>x.onclick=()=>{ const i=+x.dataset.dn; tryMove(i,i+1); });
+
+  const a=byId(cur); if(!a) return;
+  $('an').oninput=e=>{ a.n=e.target.value; $('gl').innerHTML=listHTML(); bindListOnly(); footRender(); };
+  $('an').onchange=()=>render();
+  $('del').onclick=()=>{
+    const kids=A.filter(x=>x.cond!=='always'&&x.parent===a.id);
+    if(kids.length&&!confirm(`${kids.map(k=>k.n).join(', ')} 영역이 이 영역을 기준으로 쓰고 있어요. 삭제하면 그 영역들의 제공 조건이 "항상 제공"으로 바뀝니다. 삭제할까요?`)) return;
+    kids.forEach(k=>{ k.cond='always'; k.parent=null; });
+    const i=idx(a); A.splice(i,1); cur=(A[i]||A[i-1]||{}).id; render(); toast(`${a.n||'구성 영역'}을 삭제했어요`);
+  };
+  document.querySelectorAll('input[name=am]').forEach(x=>x.onchange=()=>{ a.m=x.value; render(); });
+  document.querySelectorAll('[data-r]').forEach(cb=>cb.onchange=()=>{ const r=+cb.dataset.r; cb.checked?a.s.add(r):a.s.delete(r); render(); });
+
+  const num=(id,f)=>{ const x=$(id); if(x) x.onchange=()=>{ f(Math.max(1,parseInt(x.value)||1)); render(); }; };
+  num('q',v=>{ const lim=Math.max(1,a.s.size); if(v>lim){ toast(`배정 상품이 ${lim}개라 ${lim}개까지예요`); v=lim; } a.q=v; if(a.useMax&&a.mx<v) a.mx=v; });
+  num('mx',v=>{ const lim=Math.max(1,a.s.size); if(v>lim){ toast(`배정 상품이 ${lim}개라 ${lim}개까지예요`); v=lim; } const lo=a.opt0?1:a.q; if(v<lo){ toast('최대는 최소보다 작을 수 없어요'); v=lo; } if(a.opt0&&!a.useMax) a.q=v; else a.mx=v; });
+  const um=$('um'); if(um) um.onchange=()=>{ a.useMax=um.checked; if(a.useMax) a.mx=Math.min(Math.max(a.q+1,2),Math.max(2,a.s.size)); render(); };
+  const o0=$('o0'); if(o0) o0.onchange=()=>{ a.opt0=o0.checked; render(); };
+
+  const ao=$('addo'); if(ao) ao.onclick=()=>{ a.O.push({n:'',v:[]}); render(); };
+  document.querySelectorAll('[data-on]').forEach(t=>t.onchange=()=>{ a.O[+t.dataset.on].n=t.value.trim(); render(); });
+  document.querySelectorAll('[data-ox]').forEach(x=>x.onclick=()=>{ a.O.splice(+x.dataset.ox,1); if(!a.O.length) a.O.push({n:'',v:[]}); render(); });
+  document.querySelectorAll('[data-vx]').forEach(x=>x.onclick=()=>{ const [k,j]=x.dataset.vx.split(':').map(Number); a.O[k].v.splice(j,1); render(); });
+  document.querySelectorAll('[data-va]').forEach(t=>t.onkeydown=ev=>{ if(ev.key!=='Enter'||ev.isComposing) return; ev.preventDefault(); const v=t.value.trim(), o=a.O[+t.dataset.va]; if(!v) return; if(o.v.includes(v)){ toast('이미 있는 값이에요'); return; } o.v.push(v); render(); const n=document.querySelector(`[data-va="${t.dataset.va}"]`); if(n) n.focus(); });
+  document.querySelectorAll('[data-mk]').forEach(s=>s.onchange=()=>{ a.map[s.dataset.mk]=s.value===''?null:+s.value; render(); });
+
+  document.querySelectorAll('input[name=cd]').forEach(r=>r.onchange=()=>{
+    a.cond=r.value;
+    if(a.cond!=='always'&&!byId(a.parent)){ const prev=A.slice(0,idx(a)); a.parent=prev.length?prev[prev.length-1].id:null; }
+    render();
+  });
+  const pa=$('pa'); if(pa) pa.onchange=()=>{ a.parent=+pa.value; a.rel={}; a.trig=new Set(); delete simV[a.id]; render(); };
+  const chip=(sel,fn)=>document.querySelectorAll(sel).forEach(c=>{ c.onclick=()=>fn(c); c.onkeydown=e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); fn(c); } }; });
+  chip('.cp[data-c]',c=>{ const v=+c.dataset.v, k=+c.dataset.c, arr=a.rel[v]=a.rel[v]||[]; const j=arr.indexOf(k); j>=0?arr.splice(j,1):arr.push(k); simV[a.id]=v; render(); });
+  chip('.cp[data-t]',c=>{ const v=+c.dataset.t; a.trig.has(v)?a.trig.delete(v):a.trig.add(v); render(); });
+  const sm=$('sim'); if(sm) sm.onchange=()=>{ simV[a.id]=+sm.value; render(); };
+}
+function bindListOnly(){
+  document.querySelectorAll('.gi').forEach(el=>{ el.onclick=e=>{ if(e.target.closest('.arw')) return; cur=+el.dataset.id; render(); }; });
+  document.querySelectorAll('[data-up]').forEach(x=>x.onclick=()=>{ const i=+x.dataset.up; tryMove(i,i-1); });
+  document.querySelectorAll('[data-dn]').forEach(x=>x.onclick=()=>{ const i=+x.dataset.dn; tryMove(i,i+1); });
+}
+document.querySelectorAll('input[name=kind]').forEach(r=>r.onchange=()=>{ kind=r.value; render(); });
+render();
+</script>
+</body>
+</html>

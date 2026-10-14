@@ -134,6 +134,38 @@
       .axis{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:12px}
       .axis .an{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--text)}
       .axis .an .pill{font-weight:400}
+      .axis .adisp{margin:0 0 12px}
+      /* 복합형 구성 상품: 연결 상품을 체크해 영역에 넣는다 */
+      .pg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .pgr{display:flex;align-items:center;gap:8px;min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:13px;cursor:pointer}
+      .pgr.on{border-color:var(--accent);background:var(--accent-soft)}
+      .pgr input{flex:none;width:16px;height:16px;margin:0;accent-color:var(--accent)}
+      .pgr .pn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .pgr .pn small{margin-left:4px;font-size:11px;color:var(--muted)}
+      .pgr .chip{flex:none;margin:0}
+      .pgr.dis{opacity:.45;cursor:not-allowed}
+      @media(max-width:900px){.pg{grid-template-columns:minmax(0,1fr)}}
+      /* 복합형 구성 제공 조건 · 미배정 상품 */
+      .cdg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+      .cdc{display:flex;gap:8px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer}
+      .cdc.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 .5px var(--accent)}
+      .cdc.dis{opacity:.45;cursor:not-allowed}
+      .cdc input{flex:none;margin:3px 0 0;accent-color:var(--accent)}
+      .cdc b{display:block;font-size:13px;font-weight:600}
+      .cdc small{display:block;margin-top:2px;font-size:12px;line-height:1.5;color:var(--muted)}
+      .rel{margin-top:12px;padding:16px;border:1px solid #d9d0ff;border-radius:10px;background:var(--bg)}
+      .rel-lb{margin:0 0 8px;font-size:13px;font-weight:600}
+      .rel td{vertical-align:middle}
+      .cp{display:inline-flex;align-items:center;height:30px;padding:0 12px;margin:3px 6px 3px 0;border:1px solid var(--line-strong);border-radius:15px;background:var(--bg);color:var(--text);font-size:12px;cursor:pointer}
+      .cp.on{background:var(--accent);border-color:var(--accent);color:#fff}
+      .cskip{font-size:12px;color:var(--muted)}
+      .fbx{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.6}
+      .fbx.ok,.un.ok{background:var(--ok-soft);color:var(--ok)}
+      .fbx.warn,.un.warn{background:var(--warn-soft);color:var(--warn)}
+      .sim{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--surface);font-size:13px}
+      .sim b{color:var(--accent);font-weight:600}
+      .un{margin-top:10px;padding:12px 14px;border-radius:10px;font-size:12px;line-height:1.6}
+      @media(max-width:900px){.cdg{grid-template-columns:minmax(0,1fr)}}
       .axchips{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
       .axchip{position:relative;display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line-strong);border-radius:16px;background:var(--bg);color:var(--text);font-size:12px;cursor:pointer;user-select:none}
       .axchip:hover{border-color:var(--accent)}
@@ -235,6 +267,10 @@
       .ft-f>input[type=text],.ft-f>.tag-box{flex:1;min-width:0}
       .ft-f>.tag-box{min-height:38px}
       .ft-hint{margin:6px 0 0;padding-left:116px;font-size:11px;color:var(--muted)}
+      /* 오퍼링 문구(CVM): AI 추천 + 문구 개수, 아래로 문구 입력 칸 */
+      .cvm-lines{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+      .cvm-lines input{width:100%}
+      #cvmN{width:120px;flex:none}
       .btn.ai-out{flex:none;width:104px;border-color:var(--accent);color:var(--accent);background:var(--bg)}
       @media(max-width:700px){.ft-row{grid-template-columns:1fr}.ft-l{border-right:0;padding:10px 14px}.ft-hint{padding-left:0}.ft-f{flex-wrap:wrap}}
       /* 검색 키워드: 콤마·Enter로 태그 칩을 만든다 */
@@ -369,6 +405,12 @@
       .ph-sw button{width:36px;height:36px;padding:3px;border:1.5px solid transparent;border-radius:50%;background:none;cursor:pointer}
       .ph-sw button span{display:block;width:100%;height:100%;border-radius:50%;border:1px solid #c9cdd8}
       .ph-sw button.on{border-color:var(--ph-tx)}
+      .ph-imgs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+      .ph-imgs button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;border:0;background:none;color:var(--ph-tx);cursor:pointer;min-width:0}
+      .ph-imgs .ph-imgt{display:grid;place-items:center;width:100%;aspect-ratio:1/1;border:1.5px solid var(--ph-ln);border-radius:10px;background:var(--ph-soft);color:var(--ph-mu)}
+      .ph-imgs .ph-imgt svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6}
+      .ph-imgs button.on .ph-imgt{border-color:var(--ph-tx)}
+      .ph-imgs small{max-width:100%;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ph-opt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;margin-bottom:10px;padding:16px 20px;border:1px solid var(--ph-ln);border-radius:14px;background:var(--ph-bg);color:var(--ph-tx);font:inherit;text-align:left;cursor:pointer}
       .ph-opt b{font-size:13px;font-weight:500}
       .ph-opt.on{border:1.5px solid var(--ph-tx);padding:15.5px 19.5px}
@@ -570,8 +612,12 @@
         <div class="body" id="sb-search"></div>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
+      <div class="step" id="sec-cvm">
+        <header><b>오퍼링 문구(CVM)</b><span class="st"><span class="chip" id="st-cvm"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-cvm"></div>
+      </div>
       <div class="step" id="sec-order">
-        <header><b>주문 구성 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>주문 구성 방식</b><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>
       </div>
     </div>
@@ -585,7 +631,7 @@
     </section>
     <div class="dock-bar" id="dockBar">
       <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="false" aria-controls="dockSheet"><b>연결 상품</b><span class="po" id="poCount">0<small>상품</small></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
-      <span class="dock-acts"><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>저장하기</button></span>
+      <span class="dock-acts"><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>승인요청</button></span>
     </div>
   </div>
 </section>
