@@ -414,7 +414,7 @@ function condHtml(a,i){
  return h+`<div class="rel">${sel}${ps.length?`<div class="cl"><table><thead><tr><th>기준 영역 선택값</th><th>이 영역에 보여줄 후보 (배정된 PO 중)</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}${fb}${sim}</div>`;
 }
 function rAreaList(){
- $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip ${a.cond==='relation'?'acc':''}">${a.cond==='relation'?`${pi}번 선택에 따라`:`조건부 · ${pi}번 기준`}</span>`; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]} · PO ${a.pos.length}</small>${tg?`<div>${tg}</div>`:''}</div>${gripBtn(i,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
+ $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip ${a.cond==='relation'?'acc':''}">${a.cond==='relation'?`${pi}번 선택에 따라`:`${pi}번에서 고르면 노출`}</span>`; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]} · PO ${a.pos.length}</small>${tg?`<div>${tg}</div>`:''}</div>${gripBtn(i,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
  $$('#al .ali[data-a]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.grip')) return; cur=+el.dataset.a; rAreas(); }));
  dndList('#al','a',E.areas,()=>{ rAreas(); refresh(); },areaOrderOk);
  // 어느 영역에도 배정되지 않은 연결 상품
@@ -436,8 +436,9 @@ function rDetail(){
  // 고정형·선택형은 위 소제목이 이미 '○○형 설정'이라 영역 번호 제목은 복합형에서만 쓴다
  const kids=multi?condKids(a):[];
  let h=`${multi?`<div class="sec-h"><b>${i+1}번 구성 영역</b>${kids.length?`<span class="chip">하위 ${kids.length}개가 이 영역을 기준으로 써요</span>`:''}<button type="button" class="btn sm" id="delA" style="margin-left:auto">영역 삭제</button></div>`:''}
- <div class="row"><label class="fl" for="aName">${multi?'구성명':'타이틀'}</label><input type="text" id="aName" value="${esc(a.name)}" placeholder="${multi?'고객에게 보이는 단계 이름':'고객 선택 방식 타이틀'} · 입력하면 미리보기에 노출돼요" style="flex:1;min-width:200px"></div>
- ${multi?`<div class="row"><label class="fl">고객이 고르는 방법</label><span class="srch-radio" id="aMode" role="radiogroup" aria-label="고객이 고르는 방법">${['fixed','list','opt'].map(k=>`<label><input type="radio" name="aMode${a.id}" value="${k}" ${a.mode===k?'checked':''} ${k==='opt'&&sel?'disabled':''}>${MODE[k]}</label>`).join('')}</span></div>`:''}
+ ${multi?`<div class="sub-h"><label for="aName">구성명</label></div><input type="text" id="aName" value="${esc(a.name)}" placeholder="고객에게 보이는 단계 이름 · 입력하면 미리보기에 노출돼요" style="width:100%">
+ <div class="sub-h" id="aModeLb">고객이 고르는 방법</div><span class="srch-radio" id="aMode" role="radiogroup" aria-labelledby="aModeLb">${['fixed','list','opt'].map(k=>`<label><input type="radio" name="aMode${a.id}" value="${k}" ${a.mode===k?'checked':''} ${k==='opt'&&sel?'disabled':''}>${MODE[k]}</label>`).join('')}</span>`
+ :`<div class="row"><label class="fl" for="aName">타이틀</label><input type="text" id="aName" value="${esc(a.name)}" placeholder="고객 선택 방식 타이틀 · 입력하면 미리보기에 노출돼요" style="flex:1;min-width:200px"></div>`}
  ${multi&&sel?ntc('warn',MSG2):''}
  ${multi?`<div class="sub-h">구성에 넣을 상품</div>
  ${a.mode==='fixed'&&sel?ntc('info',MSG1):''}
@@ -452,7 +453,7 @@ function rDetail(){
  // 복합형 목록에서 선택: 최소 선택 수량 + (선택) 최대 선택 수량. '선택하지 않아도 됨'·상품 순서/기본 선택은 쓰지 않는다
  if(a.mode==='list'&&multi){ a.opt0=false; a.def=[]; const r=rng(a);
   lg=guide(`대상 상품 ${a.pos.length}개 중 <b>${r.lo===r.hi?r.lo:r.lo+'~'+r.hi}개를 선택</b>합니다`,'고객이 이 수만큼 골라야 다음으로 넘어갑니다');
-  h+=`<div class="sub-h">최소 선택 수량</div><div class="row"><input type="number" id="qQ" min="1" value="${a.q}" aria-label="최소 선택 수량"><span class="pill">개</span><label class="chkl" style="margin-left:12px"><input type="checkbox" id="qUse" ${a.useMax?'checked':''}>최대 선택 수량</label>${a.useMax?`<input type="number" id="qMx" min="1" value="${a.mx}" aria-label="최대 선택 수량"><span class="pill">개</span>`:''}</div>${lg}`; }
+  h+=`<div class="sub-h">최소 선택 수량</div><div class="row"><input type="number" id="qQ" min="1" value="${a.q}" aria-label="최소 선택 수량"><span class="pill">개</span>${a.useMax?`<span class="pill">~</span><input type="number" id="qMx" min="1" value="${a.mx}" aria-label="최대 선택 수량"><span class="pill">개</span>`:''}<label class="chkl" style="margin-left:12px"><input type="checkbox" id="qUse" ${a.useMax?'checked':''}>최대 선택 수량</label></div>${lg}`; }
  else if(a.mode==='list'){ const r=rng(a), N=a.pos.length;
   const f=a.opt0?`<span class="pill">최대</span><input type="number" id="qMx" min="1" value="${a.useMax?a.mx:a.q}"><span class="pill">개까지</span>`
    :(a.useMax?`<span class="pill">최소</span><input type="number" id="qQ" min="1" value="${a.q}"><span class="pill">~ 최대</span><input type="number" id="qMx" min="1" value="${a.mx}"><span class="pill">개</span>`
@@ -463,7 +464,7 @@ function rDetail(){
   <div class="sub-h">상품 순서/기본 선택</div>
   ${a.pos.map((id,j)=>{ const p=poBy(id); return `<div class="ali fixd"><span class="ix">${j+1}</span><div class="nm"><b>${esc(p.name)}</b><small>${priceTxt(p)}${hasSel(p)?' · 선택 PS 있음':''}</small></div><label class="chkl"><input type="${r.hi===1?'radio':'checkbox'}" name="df${a.id}" data-df="${id}" ${(a.def||[]).includes(id)?'checked':''}>기본</label>${mvBtns('p',j,a.pos.length,esc(p.name))}</div>`; }).join('')||'<div class="empty">연결 상품을 추가하세요</div>'}`; }
  if(a.mode==='opt'){ const c=combos(a), ok=c.filter(k=>a.map[k]&&a.pos.includes(a.map[k])).length, cand=a.pos.filter(id=>!hasSel(poBy(id)));
-  h+=`<div class="sub-h">옵션 구성<small>값을 넣으면 아래 조합이 자동으로 만들어져요</small><button type="button" class="btn sm" id="addO" style="margin-left:auto">+ 옵션 추가</button></div>
+  h+=`<div class="sub-h">옵션 구성<button type="button" class="btn sm" id="addO" style="margin-left:auto">옵션 추가</button></div>
   ${a.opts.map((o,k)=>`<div class="axis"><div class="an"><input type="text" data-on="${k}" value="${esc(o.name)}" placeholder="옵션명 (예: 용량, 색상)" style="flex:1;min-width:140px"><button type="button" class="btn sm" data-ox="${k}">삭제</button></div>
   <div class="adisp"><span class="srch-radio" role="radiogroup" aria-label="${esc(o.name)||'옵션'} 표시 방식">${ODISP.map(([v,t])=>`<label><input type="radio" name="od${a.id}_${k}" data-od="${k}" value="${v}" ${o.disp===v?'checked':''}>${t}</label>`).join('')}</span></div>
   <div class="axchips">${o.vals.map((v,j)=>`<span class="axchip val">${o.disp==='chip'?`<i class="dot" style="background:${COLOR[v]||'#bbb'}"></i>`:''}${esc(v)}<button type="button" data-vx="${k}:${j}" aria-label="${esc(v)} 삭제">×</button></span>`).join('')}<input type="text" data-va="${k}" placeholder="값 입력 후 Enter"></div></div>`).join('')}

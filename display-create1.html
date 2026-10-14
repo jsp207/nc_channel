@@ -40,6 +40,10 @@
       .sec-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
       .sec-h b{font-size:13px;font-weight:600}
       .sub-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:600;margin:18px 0 10px;color:var(--text)}
+      .sub-h label{min-width:0;color:inherit;font:inherit}
+      /* 복합형 구성 영역 상세: 구성명 · 고객이 고르는 방법 · 구성에 넣을 상품 · 구성 제공 조건 사이를 띄운다 */
+      .ae:not(.single) #ad .sub-h{margin-top:32px}
+      .ae:not(.single) #ad>.sec-h+.sub-h{margin-top:20px}
       .sub-h small{font-weight:400;font-size:11px;color:var(--muted)}
       .hinfo{margin:10px 0 0;font-size:12px;color:var(--muted)}
       .hinfo b{color:var(--text);font-weight:600}
@@ -59,7 +63,7 @@
       /* 라디오 (product-create3 전시상태와 같은 모양) */
       .row:has(>.srch-radio){min-height:40px}
       .srch-radio{display:inline-flex;flex-wrap:wrap;gap:20px}
-      .srch-radio label{display:inline-flex;align-items:center;gap:6px;min-width:0;color:var(--text);font-size:13px;font-weight:500;cursor:pointer}
+      .srch-radio label,.row .srch-radio label{display:inline-flex;align-items:center;gap:6px;min-width:0;color:var(--text);font-size:13px;font-weight:500;cursor:pointer}
       .srch-radio input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer}
       .er{font-size:12px;color:var(--bad);margin-top:6px}
       /* 입력 요소: 공용 style.css에 없는 날짜·숫자·여러 줄 입력을 텍스트 입력과 맞춘다 */
