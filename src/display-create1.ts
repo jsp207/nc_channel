@@ -315,7 +315,7 @@ function refresh(){
 
 // ---------- 1. 전시 유형 ----------
 function rKind(){
- const T=[['po','상품 전시'],['ps','상품 개별 전시 (PS)']];
+ const T=[['po','상품 전시'],['ps','[TBD] 상품 개별 전시(PS)']];
  $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
  ${ntc('',E.kind==='po'?'EPC 상품(PO)을 연결해 판매합니다. 고객 선택 방식과 주문 구성을 설정해요.':'PO 안의 서비스(PS) 하나를 소개용으로 전시합니다. 주문은 PS가 속한 PO 전시에서 진행되므로 고객 선택 방식과 주문 구성은 쓰지 않아요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
  $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.areas=k==='po'?[newArea('','fixed')]:[]; E.method='fixed'; cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); renderAll(); }));
@@ -399,12 +399,12 @@ function condHtml(a,i){
  let h=`<div class="sub-h">구성 제공 조건</div><div class="cdg" role="radiogroup" aria-label="구성 제공 조건">${CONDN.map(([k,t,s])=>{ const dis=k!=='always'&&!el.length&&a.cond!==k; return `<label class="cdc ${a.cond===k?'on':''} ${dis?'dis':''}"><input type="radio" name="cd${a.id}" data-cd="${k}" ${a.cond===k?'checked':''} ${dis?'disabled':''}><span><b>${t}</b><small>${dis?why:s}</small></span></label>`; }).join('')}</div>`;
  if(a.cond==='always'||!i) return h;
  const fixedP=p&&!canBase(p), opt=(x,j)=>`<option value="${x.id}" ${p&&p.id===x.id?'selected':''} ${canBase(x)?'':'disabled'}>${j+1}번 ${esc(areaLabel(x))}${canBase(x)?' · '+MODE[x.mode]:' (고정 · 기준 불가)'}</option>`;
- const sel=`<div class="row" style="margin-bottom:12px"><label class="fl" for="cdPa">기준 영역</label><select id="cdPa" style="min-width:220px">${p?'':'<option value="">기준 영역 선택</option>'}${fixedP?`<option value="${p.id}" selected>${E.areas.indexOf(p)+1}번 ${esc(areaLabel(p))} (고정 · 기준 불가)</option>`:''}${E.areas.slice(0,i).map((x,j)=>fixedP&&x.id===p.id?'':opt(x,j)).join('')}</select><span class="cskip">고객이 고르는 영역(${MODE.list}, ${MODE.opt})만 기준이 될 수 있어요</span></div>`;
+ const sel=`<div class="row" style="margin-bottom:12px"><select id="cdPa" aria-label="기준 영역" style="min-width:220px">${p?'':'<option value="">기준 영역 선택</option>'}${fixedP?`<option value="${p.id}" selected>${E.areas.indexOf(p)+1}번 ${esc(areaLabel(p))} (고정 · 기준 불가)</option>`:''}${E.areas.slice(0,i).map((x,j)=>fixedP&&x.id===p.id?'':opt(x,j)).join('')}</select><b class="cond-guide">${a.cond==='only'?`에서 아래 상품을 고르면 ‘${i+1}번 ${esc(areaLabel(a))}’가 나와요.`:`에서 고른 상품에 따라 ‘${i+1}번 ${esc(areaLabel(a))}’ 보여줄 상품을 정해요.`}</b></div>`;
  if(!p) return h+`<div class="rel">${sel}</div>`;
  // 기준 영역이 나중에 고정으로 바뀐 경우: 칩 대신 경고와 해결 방법
  if(fixedP) return h+`<div class="rel">${sel}<div class="fbx warn">${E.areas.indexOf(p)+1}번 ${esc(areaLabel(p))}은 <b>고정</b>이라 고객이 고르지 않아요. 구성 상품이 늘 포함되니 조건이 항상 같아집니다.<br>${el.length?'다른 기준 영역을 고르거나 ':''}<a href="#" id="cdAlways">항상 제공으로 바꾸기</a></div></div>`;
  const ps=p.pos, pl=esc(areaLabel(p));
- if(a.cond==='only') return h+`<div class="rel">${sel}<p class="rel-lb">${E.areas.indexOf(p)+1}번 ${pl}에서 이걸 고르면 이 영역을 보여줘요</p><div>${ps.map(v=>{ const on=a.trig.includes(v); return `<button type="button" class="cp ${on?'on':''}" data-tg="${v}" aria-pressed="${on}">${on?'✓ ':''}${esc(poBy(v).name)}</button>`; }).join('')||'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}</div></div>`;
+ if(a.cond==='only') return h+`<div class="rel">${sel}<div>${ps.map(v=>{ const on=a.trig.includes(v); return `<button type="button" class="cp ${on?'on':''}" data-tg="${v}" aria-pressed="${on}">${on?'✓ ':''}${esc(poBy(v).name)}</button>`; }).join('')||'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}</div></div>`;
  const cs=a.pos, onOf=v=>(a.rel[v]||[]).filter(c=>cs.includes(c));
  const rows=ps.map(v=>{ const on=onOf(v); return `<tr><td style="width:32%"><span class="pill">${pl}</span><br><b>${esc(poBy(v).name)}</b> 고르면</td><td>${cs.map(c=>`<button type="button" class="cp ${on.includes(c)?'on':''}" data-rv="${v}" data-rc="${c}" aria-pressed="${on.includes(c)}">${on.includes(c)?'✓ ':''}${esc(poBy(c).name)}</button>`).join('')||'<span class="cskip">이 영역에 PO를 먼저 배정하세요</span>'}${cs.length&&!on.length?'<span class="cskip">후보 없음 · 이 영역을 건너뛰어요</span>':''}</td></tr>`; }).join('');
  const used=new Set(ps.flatMap(onOf)), unused=cs.filter(c=>!used.has(c)), empty=ps.filter(v=>!onOf(v).length);
@@ -414,7 +414,7 @@ function condHtml(a,i){
  return h+`<div class="rel">${sel}${ps.length?`<div class="cl"><table><thead><tr><th>기준 영역 선택값</th><th>이 영역에 보여줄 후보 (배정된 PO 중)</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}${fb}${sim}</div>`;
 }
 function rAreaList(){
- $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip ${a.cond==='relation'?'acc':''}">${a.cond==='relation'?`${pi}번 선택에 따라`:`${pi}번에서 고르면 노출`}</span>`; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]} · PO ${a.pos.length}</small>${tg?`<div>${tg}</div>`:''}</div>${gripBtn(i,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
+ $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip acc">${a.cond==='relation'?`${pi}선택에 따라`:`${pi}번에서 고르면 노출`}</span>`; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]}</small>${tg?`<div>${tg}</div>`:''}</div>${gripBtn(i,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
  $$('#al .ali[data-a]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.grip')) return; cur=+el.dataset.a; rAreas(); }));
  dndList('#al','a',E.areas,()=>{ rAreas(); refresh(); },areaOrderOk);
  // 어느 영역에도 배정되지 않은 연결 상품
