@@ -22,10 +22,16 @@
       .step>header .fold:hover{background:var(--bg);color:var(--accent)}
       .step>header .fold svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .3s cubic-bezier(.4,0,.2,1)}
       .step>header .st{margin-left:auto}
+      /* '필수' 배지는 오른쪽 상태 배지 바로 왼쪽에 붙인다 */
+      .step>header .req{margin-left:auto}
+      .step>header .req+.st{margin-left:0}
       .step>header .chip{margin:0}
       /* 접힐 때 머리줄 아래 선이 순간적으로 사라지지 않게 색만 서서히 바꾼다 */
       .step>header{transition:border-color .3s}
       .step.closed>header{border-bottom-color:transparent}
+      /* 펼쳐진(활성) 섹션은 테두리를 강조색으로, 접힌 섹션은 기본 테두리 유지 */
+      #v-edit .step{transition:border-color .3s}
+      #v-edit .step:not(.closed){border-color:#3617CE}
       .step.closed>header .fold svg{transform:rotate(-90deg)}
       .step.closed>.body{display:none}
       .step.na>.body{opacity:.6}
@@ -41,8 +47,10 @@
       .sec-h b{font-size:13px;font-weight:600}
       .sub-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:600;margin:18px 0 10px;color:var(--text)}
       .sub-h label{min-width:0;color:inherit;font:inherit}
-      /* 복합형 구성 영역 상세: 구성명 · 고객이 고르는 방법 · 구성에 넣을 상품 · 구성 제공 조건 사이를 띄운다 */
-      .ae:not(.single) #ad .sub-h{margin-top:32px}
+      #sb-method>.sub-h:first-child{margin-top:0}
+      .ae.single #ad>.sub-h:first-child{margin-top:0}
+      /* 구성 영역 상세의 소제목 사이 간격: 고정형·선택형·복합형 모두 같게 띄운다 */
+      #ad .sub-h{margin-top:32px}
       .ae:not(.single) #ad>.sec-h+.sub-h{margin-top:20px}
       .sub-h small{font-weight:400;font-size:11px;color:var(--muted)}
       .hinfo{margin:10px 0 0;font-size:12px;color:var(--muted)}
@@ -274,7 +282,7 @@
       /* 오퍼링 문구(CVM): AI 추천 + 문구 개수, 아래로 문구 입력 칸 */
       .cvm-lines{display:flex;flex-direction:column;gap:8px;margin-top:8px}
       .cvm-lines input{width:100%}
-      #cvmN{width:120px;flex:none}
+      #cvmN{flex:none}
       .btn.ai-out{flex:none;width:104px;border-color:var(--accent);color:var(--accent);background:var(--bg)}
       @media(max-width:700px){.ft-row{grid-template-columns:1fr}.ft-l{border-right:0;padding:10px 14px}.ft-hint{padding-left:0}.ft-f{flex-wrap:wrap}}
       /* 검색 키워드: 콤마·Enter로 태그 칩을 만든다 */
@@ -437,6 +445,8 @@
       .ph-acc summary{padding:14px 16px;font-weight:600;font-size:13px;cursor:pointer}
       .ph-acc div{padding:0 16px 14px;font-size:12px;color:var(--ph-mu);white-space:pre-line;line-height:1.6}
       .pvempty{border:1px dashed var(--line-strong);border-radius:6px;padding:8px 10px;color:var(--muted);font-size:12px;margin-bottom:6px}
+      /* 내용 작성 전 빈 자리는 높이 100으로 가운데 정렬. 선택 개수 안내(.sm)는 한 줄 그대로 */
+      .pvempty:not(.sm){min-height:100px;display:flex;align-items:center;justify-content:center;text-align:center}
       /* 미리보기 카드 (product-create3 슬롯 카드와 동일) */
       .pcs{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
       .pc{position:relative;border:1px solid var(--line-strong);border-radius:14px;padding:16px 16px 12px;background:var(--bg);cursor:pointer;text-align:left}
@@ -491,6 +501,8 @@
       .epc-search .fields{flex:1;min-width:0;display:grid;grid-template-columns:90px minmax(0,240px) minmax(0,300px);gap:12px 16px;align-items:center}
       .epc-search .l{font-size:13px;font-weight:500;color:var(--text)}
       .epc-search select,.epc-search input{width:100%;min-width:0}
+      .epc-search #cmK{grid-column:2/-1;min-width:0}
+      .epc-search .mfil{margin:0}
       .epc-search .acts{display:flex;gap:8px;flex:none}
       .epc-search .acts .btn{min-width:72px}
       .epc-head{display:flex;align-items:baseline;gap:10px;margin:0 0 16px}
@@ -524,6 +536,7 @@
       @media(max-width:900px){.epc-search{flex-direction:column;align-items:stretch}.epc-search .fields{grid-template-columns:80px minmax(0,1fr)}.epc-search #cq{grid-column:2}}
       .mq{width:100%}
       .mfil{margin:10px 0 12px}
+      .tchk{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:0}
       .mi{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:12px}
       .mi:hover{border-color:#b4a8f0}
       .mi.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -546,7 +559,7 @@
       @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{order:1;position:static}.panel>header{position:static}}
       @media(max-width:900px){.ae,.tplg,.poc-body{grid-template-columns:minmax(0,1fr)}.mrow{grid-template-columns:1fr}}
       @media(max-width:560px){.type-tile{width:88px;height:88px}}
-      @media(prefers-reduced-motion:reduce){.step>header .fold svg,.switch span,.switch span::after{transition:none}}
+      @media(prefers-reduced-motion:reduce){#v-edit .step,.step>header .fold svg,.switch span,.switch span::after{transition:none}}
     </style>
   </head>
   <body>
