@@ -748,7 +748,7 @@ function rOrder(){
  <div class="op-need"><b>필요한 주문 항목</b>${fl.map(([,f])=>`<span class="op-tag">${f.name}</span>`).join('')}</div>
  <div class="op-plan">
   <div class="op-plan-tx"><p class="op-lb">사용할 주문 구성안</p><b>${plan?esc(plan.name):'구성안을 선택해 주세요'}</b>${plan?`<p class="op-meta">${plan.id} · ${plan.ver} · ${plan.cat||''}</p>`:''}</div>
-  <div class="op-acts"><button type="button" class="btn" data-op="pick">구성안 선택</button><button type="button" class="btn" data-op="make">구성안 만들기</button></div>
+  <div class="op-acts"><button type="button" class="btn" data-op="pick">구성안 선택</button><button type="button" class="btn" data-op="make">저장하고 구성안 만들기</button></div>
  </div>
  ${plan?'':'<div class="op-err" role="alert">사용할 주문 구성안 하나를 선택해 주세요</div>'}`;
  $$('#sb-order [data-op]').forEach(b=>b.addEventListener('click',()=>b.dataset.op==='pick'?openPlanModal():window.open('/order1-create.html','_blank')));
