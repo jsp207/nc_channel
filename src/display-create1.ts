@@ -11,60 +11,54 @@ requireAuthentication();
 const TODAY=new Date().toISOString().slice(0,10);
 // 전시 시작·종료 일시 비교용 지금 시각 (YYYY-MM-DDTHH:MM, 브라우저 시간대)
 const NOW=(d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16))(new Date());
-const TYPES=['기기서비스','액세서리','요금제','부가서비스','구독서비스'];
+const TYPES=['기기서비스','액세서리','요금제','부가서비스','구독서비스','보험'];
 const ONCE=new Set(['기기서비스','액세서리']);
 function seedNum(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
+// T우주 편의점&카페의 선택 혜택 후보 50개와 추가금
 const PS3_NAMES=['YouTube Premium','디즈니+','Netflix 스탠다드','티빙 스탠다드','웨이브 베이직','쿠팡플레이','밀리의서재','윌라 오디오북','FLO 무제한','멜론 스트리밍','지니뮤직','Google One 100GB','네이버플러스 멤버십','배달의민족 쿠폰팩','요기요 쿠폰팩','파리바게뜨 할인','배스킨라빈스 할인','도미노피자 쿠폰','CGV 예매 할인','메가박스 예매 할인','교보문고 sam','리디셀렉트','클래스101','야놀자 할인','여기어때 할인','카카오T 블루 할인','쏘카 할인','GS25 할인','CU 할인','이마트24 할인'];
 for(let i=PS3_NAMES.length+1;i<=50;i++) PS3_NAMES.push('제휴 쿠폰팩 '+String(i-30).padStart(2,'0'));
 const PS3_ADD=n=>n==='YouTube Premium'||n==='디즈니+'?7900:[0,1000,2000,3900,4900,5900][seedNum(n)%6];
 let EPCN=3370;
 const mk=o=>Object.assign({epc:String(++EPCN).padStart(6,'0'),ver:'v1.0',sale:'판매중',img:[o.id.toLowerCase()+'_main.png']},o);
+// 단말 세트: 용량 × 색상 조합마다 PO 하나
+const devSet=(start,model,file,rows,ver,desc)=>rows.map(([c,k,p],i)=>mk({id:'DEV-'+String(start+i).padStart(3,'0'),name:`${model} ${c} ${k}`,type:'기기서비스',ver,base:p,desc:`${desc} ${c} 모델입니다`,img:[`${file}_${k==='블루'?'blue':'silver'}_front.png`],dt:[{id:'PS1',name:'단말',req:true,desc:`${c} · ${k}`},{id:'PS2',name:'기본 구성품',req:true,desc:'USB-C 케이블 · 유심핀'}]}));
 const PO=[
- mk({id:'SUB-001',name:'T우주 편의점&카페',type:'구독서비스',ver:'v2.0',base:9900,desc:'세븐일레븐·투썸플레이스 할인에 원하는 혜택 1개를 더하는 T우주 구독 상품입니다',dt:[
+ // 갤럭시 Z 플립 세트
+ ...devSet(1,'갤럭시 Z 플립8','flip8',[['256GB','블루',1485000],['256GB','실버',1485000],['512GB','블루',1643000],['512GB','실버',1643000]],'v1.1','반으로 접는 갤럭시 Z 플립8'),
+ // 아이폰 18 프로 세트
+ ...devSet(5,'iPhone 18 Pro','ip18p',[['256GB','실버',1900000],['256GB','블루',1900000],['512GB','실버',2200000],['512GB','블루',2200000]],'v1.0','프로 카메라 시스템을 갖춘 iPhone 18 Pro'),
+ // 베스트 요금제
+ ...[['5GX 플래티넘',125000,'무제한 + 쉐어링 50GB'],['5GX 프라임',89000,'무제한']].map(([n,p,d],i)=>mk({id:'PLN-00'+(i+1),name:n,type:'요금제',base:p,desc:`데이터 ${d}를 쓰는 5G 베스트 요금제입니다`,dt:[{id:'PS1',name:'데이터',req:true,desc:d},{id:'PS2',name:'음성·문자',req:true,desc:'기본 제공'}]})),
+ // 액세서리 2
+ mk({id:'ACC-001',name:'정품 실리콘 케이스',type:'액세서리',base:39000,desc:'갤럭시 Z 플립8 · iPhone 18 Pro 전용 실리콘 케이스입니다',dt:[{id:'PS1',name:'케이스',req:true,desc:'기종별 전용'}]}),
+ mk({id:'ACC-002',name:'25W 충전기',type:'액세서리',base:25000,desc:'USB-C PD 25W 고속 충전기입니다',dt:[{id:'PS1',name:'충전기',req:true,desc:'USB-C PD 25W'}]}),
+ // 부가서비스 2
+ mk({id:'ADD-001',name:'V컬러링',type:'부가서비스',base:3300,desc:'통화 연결음 대신 영상을 보여주는 부가서비스입니다',dt:[{id:'PS1',name:'통화연결음 설정',req:true,desc:'영상 컬러링'}]}),
+ mk({id:'ADD-002',name:'FLO 앤 데이터',type:'부가서비스',base:7900,desc:'FLO 무제한 듣기와 전용 데이터를 함께 주는 부가서비스입니다',dt:[{id:'PS1',name:'FLO 무제한',req:true,desc:'음악 무제한 듣기'},{id:'PS2',name:'전용 데이터',req:true,desc:'FLO 전용 데이터'}]}),
+ // 구독: 유튜브 · 넷플릭스 · 디즈니 · 구글 1개
+ mk({id:'SUB-001',name:'YouTube Premium',type:'구독서비스',base:14900,desc:'광고 없이 영상과 음악을 즐기는 구독 서비스입니다',dt:[{id:'PS1',name:'YouTube Premium 이용',req:true,desc:'광고 없는 재생 · 오프라인 저장'}]}),
+ mk({id:'SUB-002',name:'Netflix 스탠다드',type:'구독서비스',base:13500,desc:'동시 시청 2명, FHD 화질의 넷플릭스 이용권입니다',dt:[{id:'PS1',name:'Netflix 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
+ mk({id:'SUB-003',name:'디즈니+ 스탠다드',type:'구독서비스',base:9900,desc:'디즈니·픽사·마블 콘텐츠를 보는 구독 서비스입니다',dt:[{id:'PS1',name:'디즈니+ 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
+ mk({id:'SUB-004',name:'Google One 100GB',type:'구독서비스',base:2400,desc:'구글 드라이브·포토·지메일에서 함께 쓰는 100GB 저장공간입니다',dt:[{id:'PS1',name:'클라우드 저장공간',req:true,desc:'100GB'}]}),
+ // 보험 1: 상품명 앞에 [보험] 구분자
+ mk({id:'INS-001',name:'[보험] T ALL케어 플러스 파손형',type:'보험',base:7900,desc:'파손 시 수리비를 보상하는 휴대폰 보험입니다',dt:[{id:'PS1',name:'파손 보상',req:true,desc:'자기부담금 25%'}]}),
+ // PS 선택 옵션이 있는 구독 (고객이 혜택을 직접 고름). 기존 상품의 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
+ mk({id:'SUB-005',name:'T우주 편의점&카페',type:'구독서비스',ver:'v2.0',base:9900,desc:'세븐일레븐·투썸플레이스 할인에 원하는 혜택 1개를 더하는 T우주 구독 상품입니다',dt:[
    {id:'PS1',name:'세븐일레븐',req:true,desc:'1천원당 300원 · 1일 1회 · 회당 9천원'},
    {id:'PS2',name:'투썸플레이스',req:true,desc:'최대 30% · 1일 1회 · 회당 9천원'},
    {id:'PS3',name:'선택 혜택',req:false,min:1,max:1,cands:PS3_NAMES.map(n=>({n,add:PS3_ADD(n)}))}]}),
- mk({id:'SUB-002',name:'T 우주패스 DIY',type:'구독서비스',base:9900,desc:'기본 혜택 2개와 추가 혜택 1~2개를 골라 만드는 구독 상품입니다',dt:[
+ mk({id:'SUB-006',name:'T 우주패스 DIY',type:'구독서비스',base:9900,desc:'기본 혜택 2개와 추가 혜택 1~2개를 골라 만드는 구독 상품입니다',dt:[
    {id:'PS1',name:'기본 혜택',req:false,min:2,max:2,cands:['Google One 100GB','세븐일레븐 할인','투썸플레이스 할인','밀리의서재','파리바게뜨 할인','배스킨라빈스 할인','CU 할인','GS25 할인','교보문고 sam','FLO 무제한'].map(n=>({n,add:0}))},
    {id:'PS2',name:'추가 혜택',req:false,min:1,max:2,cands:['YouTube Premium','Netflix 스탠다드','티빙 스탠다드','디즈니+','웨이브 베이직','배달의민족 쿠폰팩','도미노피자 쿠폰','CGV 예매 할인'].map(n=>({n,add:n==='YouTube Premium'?7900:4900}))}]}),
- mk({id:'SUB-003',name:'YouTube Premium',type:'구독서비스',base:14900,desc:'광고 없이 영상과 음악을 즐기는 구독 서비스입니다',dt:[{id:'PS1',name:'YouTube Premium 이용',req:true,desc:'광고 없는 재생 · 오프라인 저장'}]}),
- mk({id:'SUB-004',name:'Netflix 스탠다드',type:'구독서비스',base:13500,desc:'동시 시청 2명, FHD 화질의 넷플릭스 이용권입니다',dt:[{id:'PS1',name:'Netflix 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
- mk({id:'SUB-005',name:'Google One 100GB',type:'구독서비스',base:2400,desc:'구글 드라이브·포토·지메일에서 함께 쓰는 100GB 저장공간입니다',dt:[{id:'PS1',name:'클라우드 저장공간',req:true,desc:'100GB'}]}),
- ...[['256GB','블랙',1698400],['256GB','실버',1698400],['512GB','블랙',1858000],['512GB','실버',1858000]].map(([c,k,p],i)=>mk({id:'DEV-00'+(i+1),name:`갤럭시 S26 울트라 ${c} ${k}`,type:'기기서비스',ver:'v1.2',base:p,desc:'S펜을 내장한 갤럭시 S26 울트라 '+c+' 모델입니다',img:[`s26u_${k==='블랙'?'black':'silver'}_front.png`,`s26u_${k==='블랙'?'black':'silver'}_back.png`],dt:[{id:'PS1',name:'단말',req:true,desc:`${c} · ${k}`},{id:'PS2',name:'기본 구성품',req:true,desc:'USB-C 케이블 · 유심핀'}]})),
- ...[['라이트 79',79000,'250GB'],['라이트 74',74000,'150GB'],['라이트 69',69000,'110GB'],['라이트 59',59000,'24GB'],['라이트 55',55000,'12GB']].map(([n,p,d],i)=>mk({id:'PLN-00'+(i+1),name:n,type:'요금제',base:p,desc:`데이터 ${d}와 음성·문자를 함께 쓰는 5G 요금제입니다`,dt:[{id:'PS1',name:'데이터',req:true,desc:d},{id:'PS2',name:'음성·문자',req:true,desc:'기본 제공'}]})),
- mk({id:'PLN-006',name:'다이렉트: 유튜브 무제한',type:'요금제',base:62000,desc:'데이터 무제한에 YouTube Premium이 포함된 온라인 전용 요금제입니다',dt:[{id:'PS1',name:'데이터',req:true,desc:'무제한'},{id:'PS2',name:'YouTube Premium',req:true,desc:'요금제 포함'}]}),
- mk({id:'ADD-001',name:'V컬러링',type:'부가서비스',base:3300,desc:'통화 연결음 대신 영상을 보여주는 부가서비스입니다',dt:[{id:'PS1',name:'통화연결음 설정',req:true,desc:'영상 컬러링'}]}),
- mk({id:'ADD-002',name:'스마트콜키퍼',type:'부가서비스',base:550,desc:'전화가 꺼져 있을 때 걸려온 전화를 알려줍니다',dt:[{id:'PS1',name:'부재중 알림',req:true,desc:'꺼져 있을 때 걸려온 전화 알림'}]}),
- mk({id:'ADD-003',name:'안심클라우드',type:'부가서비스',base:2200,desc:'사진과 연락처를 자동으로 백업합니다',dt:[{id:'PS1',name:'사진·연락처 백업',req:true,desc:'50GB'}]}),
- mk({id:'ACC-001',name:'실리콘 케이스 블랙',type:'액세서리',base:39000,desc:'갤럭시 S26 울트라 전용 실리콘 케이스입니다',dt:[{id:'PS1',name:'케이스',req:true,desc:'갤럭시 S26 울트라용'}]}),
- mk({id:'ACC-002',name:'실리콘 케이스 화이트',type:'액세서리',base:39000,desc:'갤럭시 S26 울트라 전용 실리콘 케이스입니다',dt:[{id:'PS1',name:'케이스',req:true,desc:'갤럭시 S26 울트라용'}]}),
- mk({id:'ACC-003',name:'45W 충전기',type:'액세서리',base:35000,desc:'USB-C PD 45W 초고속 충전기입니다',dt:[{id:'PS1',name:'충전기',req:true,desc:'USB-C PD 45W'}]}),
- // 추가 샘플: 기존 상품의 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
- ...[['256GB','블랙',2229700],['256GB','실버',2229700],['512GB','블랙',2387000],['512GB','실버',2387000]].map(([c,k,p],i)=>mk({id:'DEV-00'+(i+5),name:`갤럭시 Z 폴드8 ${c} ${k}`,type:'기기서비스',ver:'v1.1',base:p,desc:`펼치면 태블릿이 되는 갤럭시 Z 폴드8 ${c} 모델입니다`,dt:[{id:'PS1',name:'단말',req:true,desc:`${c} · ${k}`},{id:'PS2',name:'기본 구성품',req:true,desc:'USB-C 케이블 · 유심핀'}]})),
- ...['블랙','블루','핑크'].map((k,i)=>mk({id:'DEV-0'+(i+9).toString().padStart(2,'0'),name:`갤럭시 Z 플립8 256GB ${k}`,type:'기기서비스',base:1485000,desc:'반으로 접는 갤럭시 Z 플립8 256GB 모델입니다',dt:[{id:'PS1',name:'단말',req:true,desc:`256GB · ${k}`},{id:'PS2',name:'기본 구성품',req:true,desc:'USB-C 케이블 · 유심핀'}]})),
- ...[['256GB','실버',1900000],['256GB','블루',1900000],['512GB','실버',2200000],['512GB','블루',2200000]].map(([c,k,p],i)=>mk({id:'DEV-0'+(i+12),name:`iPhone 18 Pro ${c} ${k}`,type:'기기서비스',base:p,desc:`프로 카메라 시스템을 갖춘 iPhone 18 Pro ${c} 모델입니다`,dt:[{id:'PS1',name:'단말',req:true,desc:`${c} · ${k}`},{id:'PS2',name:'기본 구성품',req:true,desc:'USB-C 케이블'}]})),
- mk({id:'DEV-016',name:'갤럭시 탭 S11 5G 256GB 그레이',type:'기기서비스',base:1298000,desc:'5G로 어디서나 쓰는 11인치 갤럭시 탭 S11입니다',dt:[{id:'PS1',name:'단말',req:true,desc:'256GB · 그레이'},{id:'PS2',name:'기본 구성품',req:true,desc:'S펜 · USB-C 케이블'}]}),
- mk({id:'DEV-017',name:'갤럭시 워치8 LTE 44mm 실버',type:'기기서비스',base:499400,desc:'전화와 데이터를 단독으로 쓰는 LTE 워치입니다',dt:[{id:'PS1',name:'단말',req:true,desc:'44mm · 실버'},{id:'PS2',name:'기본 구성품',req:true,desc:'무선 충전기 · 스트랩'}]}),
- ...[['5GX 프라임',89000,'무제한'],['5GX 플래티넘',125000,'무제한 + 쉐어링 50GB'],['0 청년 69',69000,'110GB'],['다이렉트 5G 48',48000,'110GB'],['다이렉트 5G 38',38000,'7GB']].map(([n,p,d],i)=>mk({id:'PLN-00'+(i+7),name:n,type:'요금제',base:p,desc:`데이터 ${d}를 쓰는 5G 요금제입니다`,dt:[{id:'PS1',name:'데이터',req:true,desc:d},{id:'PS2',name:'음성·문자',req:true,desc:'기본 제공'}]})),
- mk({id:'PLN-012',name:'데이터 함께쓰기 Basic',type:'요금제',base:11000,desc:'태블릿·워치에서 휴대폰 데이터를 함께 쓰는 요금제입니다',dt:[{id:'PS1',name:'데이터 공유',req:true,desc:'모회선 데이터 공유'}]}),
- mk({id:'PLN-013',name:'T플랜 에센스',type:'요금제',base:69000,desc:'데이터 100GB에 가족 결합 할인을 받을 수 있는 LTE 요금제입니다',dt:[{id:'PS1',name:'데이터',req:true,desc:'100GB'},{id:'PS2',name:'음성·문자',req:true,desc:'기본 제공'}]}),
- mk({id:'ADD-004',name:'T ALL케어 플러스 파손형',type:'부가서비스',base:7900,desc:'파손 시 수리비를 보상하는 휴대폰 보험입니다',dt:[{id:'PS1',name:'파손 보상',req:true,desc:'자기부담금 25%'}]}),
- mk({id:'ADD-005',name:'T ALL케어 플러스 분실파손형',type:'부가서비스',base:10900,desc:'분실·도난과 파손을 함께 보상하는 휴대폰 보험입니다',dt:[{id:'PS1',name:'분실·파손 보상',req:true,desc:'자기부담금 30%'}]}),
- mk({id:'ADD-006',name:'FLO 앤 데이터',type:'부가서비스',base:7900,desc:'FLO 무제한 듣기와 전용 데이터를 함께 주는 부가서비스입니다',dt:[{id:'PS1',name:'FLO 무제한',req:true,desc:'음악 무제한 듣기'},{id:'PS2',name:'전용 데이터',req:true,desc:'FLO 전용 데이터'}]}),
- mk({id:'ADD-007',name:'Wavve 앤 데이터',type:'부가서비스',base:9900,desc:'웨이브 이용권과 전용 데이터를 함께 주는 부가서비스입니다',dt:[{id:'PS1',name:'Wavve 이용권',req:true,desc:'베이직'},{id:'PS2',name:'전용 데이터',req:true,desc:'Wavve 전용 데이터'}]}),
- mk({id:'ADD-008',name:'통화가능통보 플러스',type:'부가서비스',base:770,desc:'상대방이 통화 가능해지면 문자로 알려줍니다',dt:[{id:'PS1',name:'통화 가능 알림',req:true,desc:'문자 알림'}]}),
- mk({id:'ADD-009',name:'baro 로밍 3GB',type:'부가서비스',base:33000,desc:'해외에서 30일 동안 데이터 3GB를 쓰는 로밍 상품입니다',dt:[{id:'PS1',name:'로밍 데이터',req:true,desc:'3GB · 30일'}]}),
- mk({id:'SUB-006',name:'티빙 스탠다드',type:'구독서비스',base:13500,desc:'동시 시청 2명, FHD 화질의 티빙 이용권입니다',dt:[{id:'PS1',name:'티빙 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
- mk({id:'SUB-007',name:'디즈니+ 스탠다드',type:'구독서비스',base:9900,desc:'디즈니·픽사·마블 콘텐츠를 보는 구독 서비스입니다',dt:[{id:'PS1',name:'디즈니+ 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
- mk({id:'SUB-008',name:'T우주 OTT 택1',type:'구독서비스',base:9900,desc:'OTT 서비스 중 하나를 골라 이용하는 T우주 구독 상품입니다',dt:[
-   {id:'PS1',name:'OTT 선택',req:false,min:1,max:1,cands:[{n:'Netflix 스탠다드',add:3600},{n:'티빙 스탠다드',add:3600},{n:'웨이브 베이직',add:0},{n:'디즈니+',add:0},{n:'쿠팡플레이',add:0}]}]}),
- mk({id:'SUB-009',name:'밀리의서재',type:'구독서비스',base:9900,desc:'전자책과 오디오북을 무제한으로 보는 구독 서비스입니다',dt:[{id:'PS1',name:'밀리의서재 이용',req:true,desc:'전자책·오디오북 무제한'}]}),
- mk({id:'SUB-010',name:'배달의민족 쿠폰팩',type:'구독서비스',base:4900,desc:'매달 배달의민족 할인 쿠폰을 받는 구독 상품입니다',dt:[{id:'PS1',name:'할인 쿠폰',req:true,desc:'월 3천원 쿠폰 3장'}]}),
- mk({id:'ACC-004',name:'25W 충전기',type:'액세서리',base:25000,desc:'USB-C PD 25W 고속 충전기입니다',dt:[{id:'PS1',name:'충전기',req:true,desc:'USB-C PD 25W'}]}),
- mk({id:'ACC-005',name:'갤럭시 버즈4 프로',type:'액세서리',base:319000,desc:'노이즈 캔슬링을 지원하는 무선 이어폰입니다',dt:[{id:'PS1',name:'이어폰',req:true,desc:'충전 케이스 포함'}]}),
- mk({id:'ACC-006',name:'강화유리 보호필름',type:'액세서리',base:19000,desc:'갤럭시 S26 울트라 전용 강화유리 필름입니다',dt:[{id:'PS1',name:'보호필름',req:true,desc:'2매 · 부착 키트 포함'}]}),
- mk({id:'ACC-007',name:'무선 충전 패드',type:'액세서리',base:45000,desc:'15W 고속 무선 충전 패드입니다',dt:[{id:'PS1',name:'충전 패드',req:true,desc:'15W · Qi2'}]}),
- mk({id:'ACC-008',name:'S펜 크리에이터 에디션',type:'액세서리',base:69000,desc:'갤럭시 탭·폴드에서 쓰는 S펜입니다',dt:[{id:'PS1',name:'S펜',req:true,desc:'교체 펜촉 포함'}]}),
+ // 베스트 요금제: 기본 포함 혜택 + OTT 1개를 고객이 고른다 (PS 선택 옵션)
+ mk({id:'PLN-004',name:'베스트 Max(Google AI)',type:'요금제',base:115000,desc:'데이터 무제한에 Google AI를 기본으로 주고, OTT 하나를 더 고르는 베스트 요금제입니다',dt:[
+   {id:'PS1',name:'데이터',req:true,desc:'무제한'},
+   {id:'PS2',name:'Google AI',req:true,desc:'Google AI Pro 이용'},
+   {id:'PS3',name:'OTT 택1',req:false,min:1,max:1,cands:['YouTube Premium','Netflix 스탠다드','디즈니+','티빙 스탠다드','웨이브 베이직'].map(n=>({n,add:0}))}]}),
+ mk({id:'PLN-005',name:'베스트 Pro(넷플릭스)',type:'요금제',base:99000,desc:'데이터 무제한에 넷플릭스를 기본으로 주고, OTT 하나를 더 고르는 베스트 요금제입니다',dt:[
+   {id:'PS1',name:'데이터',req:true,desc:'무제한'},
+   {id:'PS2',name:'넷플릭스',req:true,desc:'Netflix 스탠다드 이용'},
+   {id:'PS3',name:'OTT 택1',req:false,min:1,max:1,cands:['YouTube Premium','티빙 스탠다드','디즈니+','웨이브 베이직'].map(n=>({n,add:0}))}]}),
 ];
 const poBy=id=>PO.find(p=>p.id===id);
 const selPS=po=>po.dt.filter(p=>!p.req);
@@ -90,13 +84,13 @@ const TPL=[
 ];
 const tplBy=id=>TPL.find(t=>t.id===id);
 // 상품이 가진 템플릿 (EPC 상품 정보에서 온다고 가정. 프로토타입은 상품 구분별로 정함)
-const TYPE_TPL={기기서비스:['TPL-0001','TPL-0002','TPL-0004'],요금제:['TPL-0003','TPL-0004'],부가서비스:['TPL-0003','TPL-0004'],구독서비스:['TPL-0005','TPL-0004'],액세서리:['TPL-0001','TPL-0004']};
+const TYPE_TPL={기기서비스:['TPL-0001','TPL-0002','TPL-0004'],요금제:['TPL-0003','TPL-0004'],부가서비스:['TPL-0003','TPL-0004'],구독서비스:['TPL-0005','TPL-0004'],액세서리:['TPL-0001','TPL-0004'],보험:['TPL-0002','TPL-0004']};
 const poTpls=p=>TYPE_TPL[p.type]||[];
 
 // 주문 구성 (주문 구성 관리에서 정의된 흐름으로 가정). 연결 상품 유형으로 자동 결정
 const FLOWS={
  dev:{types:['기기서비스'],name:'휴대폰 주문',sub:'이동전화 계약 + 단말 구매',fields:[['join','가입 유형',['신규가입','번호이동','기기변경']],['disc','할인 방법',['공시지원','선택약정']],['pay','단말 결제',['일시불','24개월 할부','36개월 할부']]]},
- mob:{types:['요금제','부가서비스'],name:'요금제/부가서비스 주문',sub:'이동전화 계약 가입·변경',fields:[['pjoin','가입 유형',['신규가입','번호이동','요금제 변경']],['sim','유심',['USIM 배송','eSIM']]]},
+ mob:{types:['요금제','부가서비스','보험'],name:'요금제/부가서비스 주문',sub:'이동전화 계약 가입·변경',fields:[['pjoin','가입 유형',['신규가입','번호이동','요금제 변경']],['sim','유심',['USIM 배송','eSIM']]]},
  sub:{types:['구독서비스'],name:'구독 주문',sub:'T우주 구독 가입',fields:[['cycle','결제 주기',['월간','연간']]]},
  acc:{types:['액세서리'],name:'배송 상품 주문',sub:'액세서리 구매',fields:[['ship','수령 방법',['택배','매장 픽업']]]}
 };
@@ -112,25 +106,31 @@ function orderDefaults(){ const o={}; Object.values(FLOWS).forEach(f=>f.fields.f
 function newDisplay(){ return {id:null,kind:'po',conn:[],method:'fixed',areas:[newArea('','fixed')],name:'',from:TODAY,fromTime:'00:00',to:'',toTime:'23:59',noEnd:true,show:false,channels:[],main:null,mainAlt:'',subs:[],subAlt:'',badges:[],descMode:'image',descImgs:[],descHtml:'',descNote:'',extras:[],search:{on:false,kw:[],title:'',desc:'',og:null},cvm:{on:false,n:CVM_DEF,lines:[]},order:orderDefaults(),orderPlan:null}; }
 // 이미지: n = 파일명, u = 업로드한 이미지 주소(EPC에서 불러온 이미지는 파일명만 있다)
 const img=n=>({n,u:null});
-const PLANS=['PLN-001','PLN-002','PLN-003','PLN-004','PLN-005'];
-const galaxyArea=n=>Object.assign(newArea(n,'opt'),{pos:['DEV-001','DEV-002','DEV-003','DEV-004'],opts:[{name:'용량',vals:['256GB','512GB'],disp:'text'},{name:'색상',vals:['블랙','실버'],disp:'chip'}],map:{'256GB|블랙':'DEV-001','256GB|실버':'DEV-002','512GB|블랙':'DEV-003','512GB|실버':'DEV-004'}});
+const PLANS=['PLN-001','PLN-002','PLN-004','PLN-005'];
+// 단말 옵션 영역: 용량(텍스트) × 색상(컬러칩) → PO 매핑
+const devArea=(n,ids,colors)=>Object.assign(newArea(n,'opt'),{pos:ids,opts:[{name:'용량',vals:['256GB','512GB'],disp:'text'},{name:'색상',vals:colors,disp:'chip'}],map:Object.fromEntries(ids.map((id,i)=>[`${i<2?'256GB':'512GB'}|${colors[i%2]}`,id]))});
+const FLIP=['DEV-001','DEV-002','DEV-003','DEV-004'], IP18=['DEV-005','DEV-006','DEV-007','DEV-008'];
 // 예전 구조(한 줄 소개, images 배열)를 지금 구조로 맞춘다. 전시 여부가 없던 예전 저장본·샘플은 전시(Y)로 본다
-function norm(d){ if(d.images){ d.main=d.images[0]||null; d.subs=d.images.slice(1); delete d.images; } d.main=d.main||null; d.mainAlt=d.mainAlt||''; d.subs=d.subs||[]; d.subAlt=d.subAlt||''; d.fromTime=d.fromTime||'00:00'; d.toTime=d.toTime||'23:59'; d.channels=[...new Set((d.channels||[]).map(c=>({웹:'통합 WEB',앱:'통합 APP',BSS:'BSS(TBD)'}[c]||c)))]; delete d.summary;
+function norm(d){
+ // EPC 샘플에서 지운 상품(예: 0 청년 69)을 가리키면 연결·영역·옵션 매핑에서 뺀다
+ const ok=k=>d.kind==='ps'?!!psBy(k):!!poBy(k);
+ d.conn=(d.conn||[]).filter(ok); (d.areas||[]).forEach(a=>{ a.pos=(a.pos||[]).filter(ok); a.def=(a.def||[]).filter(ok); Object.keys(a.map||{}).forEach(k=>{ if(!ok(a.map[k])) delete a.map[k]; }); });
+ if(d.images){ d.main=d.images[0]||null; d.subs=d.images.slice(1); delete d.images; } d.main=d.main||null; d.mainAlt=d.mainAlt||''; d.subs=d.subs||[]; d.subAlt=d.subAlt||''; d.fromTime=d.fromTime||'00:00'; d.toTime=d.toTime||'23:59'; d.channels=[...new Set((d.channels||[]).map(c=>({웹:'통합 WEB',앱:'통합 APP',BSS:'BSS(TBD)'}[c]||c)))]; delete d.summary;
  if(d.desc!=null){ const t=String(d.desc).trim(); if(t&&!d.descHtml){ const e=x=>x.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); d.descHtml=t.split(/\n{2,}/).map(p=>`<p>${e(p).replace(/\n/g,'<br>')}</p>`).join(''); if(!(d.descImgs&&d.descImgs.length)) d.descMode='html'; } delete d.desc; }
  d.descMode=d.descMode||'image'; d.descImgs=d.descImgs||[]; d.descHtml=d.descHtml||''; d.descNote=d.descNote||''; (d.areas||[]).forEach(a=>{ if(a.name==='고객 선택 방식'||/^구성 영역( d+)?$/.test(a.name)) a.name=''; a.cond=a.cond||'always'; if(a.parent===undefined) a.parent=null; a.trig=a.trig||[]; a.rel=a.rel||{}; }); if(d.orderPlan===undefined) d.orderPlan=null;
  const sr=d.search=Object.assign({on:false,kw:[]},d.search); if(sr.title==null) sr.title=String(sr.line||'').slice(0,25); delete sr.line; sr.desc=sr.desc||''; sr.og=sr.og||null; d.cvm=Object.assign({n:CVM_DEF,lines:[]},d.cvm); d.cvm.n=Math.min(CVM_MAX,Math.max(1,d.cvm.n)); if(d.cvm.on==null) d.cvm.on=d.cvm.lines.some(x=>x&&x.trim()); if(d.noEnd==null) d.noEnd=!d.to; if(d.show==null) d.show=true; return d; }
 // 샘플은 종료일이 있으면 '종료일없음'을 끈다
 const seed=o=>norm(Object.assign(newDisplay(),{show:true,channels:['통합 APP','통합 WEB'],noEnd:!o.to},o));
 const SEEDS=()=>[
- seed({id:1,name:'T우주 편의점&카페',from:'2026-10-01',conn:['SUB-001'],method:'fixed',areas:[Object.assign(newArea('편의점&카페','fixed'),{pos:['SUB-001']})],images:[img('sub-001_main.png')],badges:[{t:'혜택 택1',c:'#4320d4',s:'f'}],desc:'매일 쓰는 편의점과 카페에서 할인받고, OTT·음악·쿠폰 중 원하는 혜택 하나를 더 고르세요.',extras:[{id:1,t:'자주 묻는 질문',mode:'link',src:'TPL-0005',show:true,txt:''},{id:2,t:'판매자 정보',mode:'link',src:'TPL-0004',show:true,txt:''}],search:{on:true,kw:['T우주','편의점','카페'],line:'편의점·카페 할인 + 혜택 택1'}}),
- seed({id:2,name:'갤럭시 S26 울트라',from:'2026-10-01',conn:['DEV-001','DEV-002','DEV-003','DEV-004'],method:'select',areas:[galaxyArea('모델 선택')],images:[img('s26u_black_front.png'),img('s26u_silver_front.png')],badges:[{t:'신규',c:'#d4612a',s:'f'}],desc:'2억 화소 카메라와 S펜을 갖춘 갤럭시 S26 울트라.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''}],search:{on:true,kw:['갤럭시','S26'],line:''}}),
- seed({id:3,name:'갤럭시 S26 울트라 + 요금제 + T우주',from:'2026-10-15',to:'2026-12-31',conn:['DEV-001','DEV-002','DEV-003','DEV-004',...PLANS,'SUB-001'],method:'complex',areas:[galaxyArea('단말'),Object.assign(newArea('요금제','list'),{pos:PLANS,q:1}),Object.assign(newArea('T우주 혜택','fixed'),{pos:['SUB-001']})],images:[img('s26u_black_front.png')],badges:[{t:'온라인 전용',c:'#1f8a5b',s:'l'}],desc:'단말과 요금제, T우주 편의점&카페를 함께 가입하는 온라인 전용 구성입니다.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''},{id:2,t:'이용약관',mode:'link',src:'TPL-0003',show:true,txt:''}],search:{on:true,kw:['갤럭시','요금제'],line:''}}),
- seed({id:4,name:'라이트 요금제',from:'2026-09-01',conn:[...PLANS,'PLN-006'],method:'select',areas:[Object.assign(newArea('요금제를 골라 주세요','list'),{pos:[...PLANS,'PLN-006'],q:1})],search:{on:false,kw:[],line:''}}),
- seed({id:5,name:'T 우주패스 DIY',from:'2026-09-01',to:'2026-09-30',conn:['SUB-002'],method:'fixed',areas:[Object.assign(newArea('우주패스 DIY','fixed'),{pos:['SUB-002']})]}),
- seed({id:6,name:'YouTube Premium 혜택 소개',from:'2026-10-01',kind:'ps',conn:['SUB-001|PS3|0'],method:'fixed',areas:[]}),
+ seed({id:1,name:'YouTube Premium',from:'2026-10-01',conn:['SUB-001'],method:'fixed',areas:[Object.assign(newArea('YouTube Premium','fixed'),{pos:['SUB-001']})],images:[img('sub-001_main.png')],badges:[{t:'광고 없이',c:'#4320d4',s:'f'}],desc:'광고 없이 영상과 음악을 즐기고, 오프라인 저장도 할 수 있어요.',extras:[{id:1,t:'판매자 정보',mode:'link',src:'TPL-0004',show:true,txt:''}],search:{on:true,kw:['유튜브','YouTube','구독'],line:'광고 없는 YouTube'}}),
+ seed({id:2,name:'갤럭시 Z 플립8',from:'2026-10-01',conn:FLIP,method:'select',areas:[devArea('모델 선택',FLIP,['블루','실버'])],images:[img('flip8_blue_front.png'),img('flip8_silver_front.png')],badges:[{t:'신규',c:'#d4612a',s:'f'}],desc:'반으로 접어 주머니에 쏙 들어가는 갤럭시 Z 플립8.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''}],search:{on:true,kw:['갤럭시','플립'],line:''}}),
+ seed({id:3,name:'iPhone 18 Pro + 베스트요금제 + 구독',from:'2026-10-15',to:'2026-12-31',conn:[...IP18,...PLANS,'SUB-001','SUB-002','SUB-003'],method:'complex',areas:[devArea('단말',IP18,['실버','블루']),Object.assign(newArea('요금제','list'),{pos:PLANS,q:1}),Object.assign(newArea('구독 혜택','list'),{pos:['SUB-001','SUB-002','SUB-003'],q:1})],images:[img('ip18p_silver_front.png')],badges:[{t:'온라인 전용',c:'#1f8a5b',s:'l'}],desc:'iPhone 18 Pro와 베스트 요금제, 원하는 구독 하나를 함께 가입하는 온라인 전용 구성입니다.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''},{id:2,t:'이용약관',mode:'link',src:'TPL-0003',show:true,txt:''}],search:{on:true,kw:['아이폰','요금제'],line:''}}),
+ seed({id:4,name:'베스트 요금제',from:'2026-09-01',conn:PLANS,method:'select',areas:[Object.assign(newArea('요금제를 골라 주세요','list'),{pos:PLANS,q:1})],search:{on:false,kw:[],line:''}}),
+ seed({id:5,name:'액세서리 모음',from:'2026-09-01',to:'2026-09-30',conn:['ACC-001','ACC-002'],method:'fixed',areas:[Object.assign(newArea('액세서리','fixed'),{pos:['ACC-001','ACC-002']})]}),
+ seed({id:6,name:'YouTube Premium 혜택 소개',from:'2026-10-01',kind:'ps',conn:['SUB-001|PS1'],method:'fixed',areas:[]}),
 ];
 // 저장한 전시는 이 브라우저에만 남긴다. 저장소를 못 쓰면 샘플로 시작한다
-const STORE_KEY='nova.display-create1';
+const STORE_KEY='nova.display-create1.v2'; // EPC 샘플 상품을 바꾸면서 저장소를 새로 쓴다
 function loadList(){ try { const s=localStorage.getItem(STORE_KEY); if(s){ const l=JSON.parse(s); if(Array.isArray(l)){ l.forEach(norm); SEQ=Math.max(SEQ,...l.flatMap(d=>[...d.areas.map(a=>a.id),...d.extras.map(x=>x.id)])); return l; } } } catch {} return SEEDS(); }
 function saveList(){ try { localStorage.setItem(STORE_KEY,JSON.stringify(DISPLAYS)); return true; } catch { return false; } }
 let DISPLAYS=loadList();
@@ -359,7 +359,7 @@ function rMethod(){
  if(E.kind==='ps'){ box.innerHTML=ntc('','상품 개별 전시(PS)는 판매 단위가 아니라서 고객 선택 방식을 쓰지 않아요.'); return; }
  const M=[['fixed','고정형','연결 상품을 모두 제공'],['select','선택형','연결 상품 중에서 목록·옵션으로 고름'],['complex','복합형','구성 영역 N개를 순서대로 조합']];
  const m=M.find(x=>x[0]===E.method);
- box.innerHTML=`${!E.conn.length?ntc('warn',`먼저 연결 상품을 추가하세요. ${E.method==='complex'?'연결한 상품을 구성 영역에 나눠 담아요':'고정형·선택형은 연결 상품이 그대로 제공 상품·선택지가 돼요'}.`):''}
+ box.innerHTML=`${!E.conn.length?ntc('warn',`먼저 연결 상품을 추가하세요.${E.method==='complex'?' 연결한 상품을 구성 영역에 나눠 담아요.':''}`):''}
  <div class="sub-h">방식</div><div class="type-tiles" role="radiogroup" aria-label="고객 선택 방식">${M.map(([k,t])=>`<button type="button" class="type-tile ${E.method===k?'on':''}" role="radio" aria-checked="${E.method===k}" data-m="${k}">${svg(IC[k])}<span>${t}</span></button>`).join('')}</div>
  <div class="sub-h">${E.method==='complex'?'구성 영역':`${m[1]} 설정`}</div><div id="ae"></div>`;
  $$('#sb-method [data-m]').forEach(b=>b.addEventListener('click',()=>setMethod(b.dataset.m)));
@@ -390,8 +390,6 @@ const condBases=a=>E.areas.slice(0,E.areas.indexOf(a)).filter(canBase);
 function condDepth(a){ let n=0, x=a; while(n<3&&(x=condParent(x))) n++; return n; }
 // 하위 영역은 기준이 되는 상위 영역보다 아래에 있어야 한다
 function areaOrderOk(n){ const bad=n.some((a,i)=>a.cond&&a.cond!=='always'&&n.findIndex(x=>x.id===a.parent)>=i); if(bad) toast('하위 영역은 기준이 되는 상위 영역보다 위로 갈 수 없어요'); return !bad; }
-// 규칙 표의 '고객 흐름 확인'에서 고른 기준 값 (영역 id → PO id)
-const SIM={};
 function condHtml(a,i){
  const p=condParent(a), el=condBases(a);
  // 앞에 고객이 고르는 영역이 없으면 조건을 걸 수 없다 (이미 걸린 조건은 풀 수 있도록 그대로 둔다)
@@ -404,14 +402,12 @@ function condHtml(a,i){
  // 기준 영역이 나중에 고정으로 바뀐 경우: 칩 대신 경고와 해결 방법
  if(fixedP) return h+`<div class="rel">${sel}<div class="fbx warn">${E.areas.indexOf(p)+1}번 ${esc(areaLabel(p))}은 <b>고정</b>이라 고객이 고르지 않아요. 구성 상품이 늘 포함되니 조건이 항상 같아집니다.<br>${el.length?'다른 기준 영역을 고르거나 ':''}<a href="#" id="cdAlways">항상 제공으로 바꾸기</a></div></div>`;
  const ps=p.pos, pl=esc(areaLabel(p));
- if(a.cond==='only') return h+`<div class="rel">${sel}<div>${ps.map(v=>{ const on=a.trig.includes(v); return `<button type="button" class="cp ${on?'on':''}" data-tg="${v}" aria-pressed="${on}">${on?'✓ ':''}${esc(poBy(v).name)}</button>`; }).join('')||'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}</div></div>`;
+ if(a.cond==='only') return h+`<div class="rel">${sel}<div>${ps.map(v=>`<label class="ccb"><input type="checkbox" data-tg="${v}" ${a.trig.includes(v)?'checked':''}>${esc(poBy(v).name)}</label>`).join('')||'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}</div></div>`;
  const cs=a.pos, onOf=v=>(a.rel[v]||[]).filter(c=>cs.includes(c));
- const rows=ps.map(v=>{ const on=onOf(v); return `<tr><td style="width:32%"><span class="pill">${pl}</span><br><b>${esc(poBy(v).name)}</b> 고르면</td><td>${cs.map(c=>`<button type="button" class="cp ${on.includes(c)?'on':''}" data-rv="${v}" data-rc="${c}" aria-pressed="${on.includes(c)}">${on.includes(c)?'✓ ':''}${esc(poBy(c).name)}</button>`).join('')||'<span class="cskip">이 영역에 PO를 먼저 배정하세요</span>'}${cs.length&&!on.length?'<span class="cskip">후보 없음 · 이 영역을 건너뛰어요</span>':''}</td></tr>`; }).join('');
+ const rows=ps.map(v=>{ const on=onOf(v); return `<tr><td style="width:32%"><span class="pill">${pl}</span><br><b>${esc(poBy(v).name)}</b> 고르면</td><td>${cs.map(c=>`<label class="ccb"><input type="checkbox" data-rv="${v}" data-rc="${c}" ${on.includes(c)?'checked':''}>${esc(poBy(c).name)}</label>`).join('')||'<span class="cskip">이 영역에 PO를 먼저 배정하세요</span>'}${cs.length&&!on.length?'<span class="cskip">후보 없음 · 이 영역을 건너뛰어요</span>':''}</td></tr>`; }).join('');
  const used=new Set(ps.flatMap(onOf)), unused=cs.filter(c=>!used.has(c)), empty=ps.filter(v=>!onOf(v).length);
  const fb=!cs.length||!ps.length?'':unused.length?`<div class="fbx warn">어떤 선택에도 안 나오는 후보 ${unused.length}개: ${unused.map(c=>esc(poBy(c).name)).join(', ')}</div>`:`<div class="fbx ok">모든 후보가 규칙에 연결됐어요${empty.length?` · ${empty.map(v=>esc(poBy(v).name)).join(', ')} 선택 시 이 영역은 건너뛰어요`:''}</div>`;
- const sv=ps.includes(SIM[a.id])?SIM[a.id]:ps[0], sl=sv?onOf(sv):[];
- const sim=ps.length&&cs.length?`<div class="sim"><span class="pill">고객 흐름 확인</span><select id="cdSim" aria-label="기준 영역 선택값">${ps.map(v=>`<option value="${v}" ${v===sv?'selected':''}>${pl}: ${esc(poBy(v).name)}</option>`).join('')}</select><span>→ ${esc(areaLabel(a))}</span><b>${sl.length?sl.map(c=>esc(poBy(c).name)).join(', ')+' 중 선택':'건너뜀'}</b></div>`:'';
- return h+`<div class="rel">${sel}${ps.length?`<div class="cl"><table><thead><tr><th>기준 영역 선택값</th><th>이 영역에 보여줄 후보 (배정된 PO 중)</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}${fb}${sim}</div>`;
+ return h+`<div class="rel">${sel}${ps.length?`<div class="cl"><table><thead><tr><th>기준 영역 선택값</th><th>이 영역에 보여줄 후보 (배정된 PO 중)</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}${fb}</div>`;
 }
 function rAreaList(){
  $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip acc">${a.cond==='relation'?`${pi}선택에 따라`:`${pi}번에서 고르면 노출`}</span>`; return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]}</small>${tg?`<div>${tg}</div>`:''}</div>${gripBtn(i,esc(areaLabel(a)))}</div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
@@ -487,10 +483,9 @@ function rDetail(){
  // 조건을 고르면 기준 영역이 없거나 고정일 때 바로 위의 고르는 영역으로 맞춘다
  qa('[data-cd]').forEach(r=>r.addEventListener('change',()=>{ a.cond=r.dataset.cd; if(a.cond!=='always'){ const p=condParent(a); if(!p||!canBase(p)){ const el=condBases(a); a.parent=el.length?el[el.length-1].id:null; a.trig=[]; a.rel={}; } } ch(); }));
  const ca=q('#cdAlways'); if(ca) ca.addEventListener('click',e=>{ e.preventDefault(); Object.assign(a,{cond:'always',parent:null}); ch(); });
- const pa=q('#cdPa'); if(pa) pa.addEventListener('change',()=>{ a.parent=pa.value?+pa.value:null; a.trig=[]; a.rel={}; delete SIM[a.id]; ch(); });
- qa('[data-tg]').forEach(b=>b.addEventListener('click',()=>{ const v=b.dataset.tg; a.trig=a.trig.includes(v)?a.trig.filter(x=>x!==v):[...a.trig,v]; ch(); }));
- qa('[data-rc]').forEach(b=>b.addEventListener('click',()=>{ const v=b.dataset.rv, c=b.dataset.rc, l=a.rel[v]=a.rel[v]||[], j=l.indexOf(c); j>=0?l.splice(j,1):l.push(c); SIM[a.id]=v; ch(); }));
- const sm=q('#cdSim'); if(sm) sm.addEventListener('change',()=>{ SIM[a.id]=sm.value; rDetail(); });
+ const pa=q('#cdPa'); if(pa) pa.addEventListener('change',()=>{ a.parent=pa.value?+pa.value:null; a.trig=[]; a.rel={}; ch(); });
+ qa('[data-tg]').forEach(b=>b.addEventListener('change',()=>{ const v=b.dataset.tg; a.trig=b.checked?[...new Set([...a.trig,v])]:a.trig.filter(x=>x!==v); ch(); }));
+ qa('[data-rc]').forEach(b=>b.addEventListener('change',()=>{ const v=b.dataset.rv, c=b.dataset.rc, l=a.rel[v]=a.rel[v]||[], j=l.indexOf(c); if(b.checked&&j<0) l.push(c); if(!b.checked&&j>=0) l.splice(j,1); ch(); }));
  qa('#aMode input').forEach(r=>r.addEventListener('change',()=>{ a.mode=r.value; if(a.mode==='fixed'&&kids.length) toast(`${kids.map(k=>E.areas.indexOf(k)+1+'번').join(', ')} 영역이 이 영역을 기준으로 써요. 고정으로 바꾸면 기준을 다시 정해야 해요`); ch(); }));
  // 구성 상품 체크: 해제하면 기본 선택·옵션 매핑에서도 뺀다
  qa('[data-pc]').forEach(c=>c.addEventListener('change',()=>{ const id=c.dataset.pc;
@@ -774,7 +769,7 @@ function keepQ(id,set,draw){ $(id).addEventListener('input',e=>{ set(e.target.va
 
 // EPC 상품 조회(연결 상품 추가): 위 조회 조건 → 검색결과 표 → 취소/추가하기
 // 상품 구분·상품유형은 EPC 상품 유형에서 나눈다 (샘플 데이터 기준)
-const EPC_GRP={기기서비스:['기기서비스','휴대폰'],액세서리:['기기서비스','액세서리'],요금제:['이동전화','요금제'],부가서비스:['이동전화','부가서비스'],구독서비스:['플랫폼(T우주)','구독']};
+const EPC_GRP={기기서비스:['기기서비스','휴대폰'],액세서리:['기기서비스','액세서리'],요금제:['이동전화','요금제'],부가서비스:['이동전화','부가서비스'],구독서비스:['플랫폼(T우주)','구독'],보험:['기기서비스','보험']};
 const grpOf=p=>EPC_GRP[p.type]||[p.type,p.type];
 const GRPS=[...new Set(Object.values(EPC_GRP).map(x=>x[0]))];
 const kindsOf=g=>[...new Set(Object.values(EPC_GRP).filter(x=>g==='전체'||x[0]===g).map(x=>x[1]))];
@@ -791,11 +786,11 @@ function drawConn(){
   <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
  </form>
  <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
- <div class="epc-tbl"><table><thead><tr><th class="c"></th><th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>상품 코드</th><th>상품 구분</th><th>상품유형</th><th>전시 상품수</th><th>판매상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
- // 상품 구분 버튼: 고른 버튼만 켜고, 조회 버튼을 눌러야 적용된다 (다른 조건과 같음)
+ <div class="epc-tbl"><table><thead><tr><th class="c"><input type="checkbox" id="cmAll" aria-label="검색결과 전체 선택"></th><th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>상품 코드</th><th>상품 구분</th><th>상품유형</th><th>전시 상품수</th><th>판매상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ // 상품 구분 버튼: 누르는 즉시 검색결과를 거른다 (지금 입력된 상품 조회·검색어 조건과 함께)
  const drawK=()=>{ $('#cmK').innerHTML=filTabs(['전체',...kindsOf(f.g)],f.k); };
  $('#cmG').addEventListener('change',e=>{ f.g=e.target.value; f.k='전체'; drawK(); });
- $('#cmK').addEventListener('click',e=>{ const b=e.target.closest('[data-f]'); if(!b) return; f.k=b.dataset.f; drawK(); });
+ $('#cmK').addEventListener('click',e=>{ const b=e.target.closest('[data-f]'); if(!b) return; f.k=b.dataset.f; drawK(); CM.a={...f,q:f.q.trim()}; drawConnRows(); });
  $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
  $('#cmForm').addEventListener('submit',e=>{ e.preventDefault(); CM.a={...f,q:f.q.trim()}; drawConnRows(); });
  $('#cmReset').addEventListener('click',()=>{ CM.f={g:'전체',k:'전체',q:''}; CM.a={...CM.f}; drawConn(); $('#cq').focus(); });
@@ -812,7 +807,11 @@ function drawConnRows(){
  $('#cmRows').innerHTML=L.map(p=>{ const done=E.conn.includes(p.id), on=CM.sel.has(p.id), [g,k]=grpOf(p);
   return `<tr class="${done?'done':''} ${on?'on':''}" data-row="${p.id}"><td class="c"><input type="checkbox" data-p="${p.id}" ${on||done?'checked':''} ${done?'disabled':''} aria-label="${esc(p.name)} 선택"></td><td>${p.epc}</td><td>${p.ver}</td><td class="nm">${esc(p.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${p.id}</td><td>${g}</td><td>${k}</td><td>${usedIn(p.id)}개</td><td><span class="sale-chip">${p.sale}</span></td></tr>`; }).join('')
   ||'<tr class="empty-row"><td colspan="9">검색 결과가 없어요</td></tr>';
- const sync=()=>{ const n=CM.sel.size, b=$('#mo'); b.disabled=!n; b.textContent=n?`추가하기 (${n})`:'추가하기'; };
+ // 전체 선택: 지금 검색결과 중 이미 연결된 상품을 뺀 나머지를 한 번에 고르거나 푼다
+ const pick=L.filter(p=>!E.conn.includes(p.id)).map(p=>p.id), all=$('#cmAll');
+ const sync=()=>{ const n=CM.sel.size, b=$('#mo'); b.disabled=!n; b.textContent=n?`추가하기 (${n})`:'추가하기';
+  const k=pick.filter(id=>CM.sel.has(id)).length; all.disabled=!pick.length; all.checked=!!pick.length&&k===pick.length; all.indeterminate=k>0&&k<pick.length; };
+ all.onchange=()=>{ const on=all.checked; pick.forEach(id=>{ on?CM.sel.add(id):CM.sel.delete(id); const tr=$(`#cmRows [data-row="${id}"]`); tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
  const toggle=(id,on)=>{ on?CM.sel.add(id):CM.sel.delete(id); const tr=$(`#cmRows [data-row="${id}"]`); tr.classList.toggle('on',on); tr.querySelector('input').checked=on; sync(); };
  $$('#cmRows [data-p]').forEach(c=>c.addEventListener('change',()=>toggle(c.dataset.p,c.checked)));
  $$('#cmRows tr[data-row]:not(.done)').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; const id=tr.dataset.row; toggle(id,!CM.sel.has(id)); }));
