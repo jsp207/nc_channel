@@ -59,6 +59,15 @@ const PO=[
    {id:'PS1',name:'데이터',req:true,desc:'무제한'},
    {id:'PS2',name:'넷플릭스',req:true,desc:'Netflix 스탠다드 이용'},
    {id:'PS3',name:'OTT 택1',req:false,min:1,max:1,cands:['YouTube Premium','티빙 스탠다드','디즈니+','웨이브 베이직'].map(n=>({n,add:0}))}]}),
+ // 태블릿 3 · 웨어러블 3: 상품 구분은 기기서비스, cat = 상품유형
+ ...[['갤럭시 탭 S11 256GB 그레이','gtabs11',1298000,'11인치 AMOLED 화면의 갤럭시 탭 S11 그레이 모델입니다','갤럭시 탭 S11 · 256GB','S펜 · USB-C 케이블'],
+     ['iPad Pro 13 M5 256GB 실버','ipadpro13',2299000,'M5 칩을 탑재한 13인치 iPad Pro 실버 모델입니다','iPad Pro 13 · 256GB','USB-C 케이블'],
+     ['iPad Air 11 M3 128GB 블루','ipadair11',1049000,'가볍게 들고 다니는 11인치 iPad Air 블루 모델입니다','iPad Air 11 · 128GB','USB-C 케이블']]
+  .map(([n,f,p,d,s,c],i)=>mk({id:'DEV-'+String(9+i).padStart(3,'0'),name:n,type:'기기서비스',cat:'태블릿',base:p,desc:d,img:[f+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:s},{id:'PS2',name:'기본 구성품',req:true,desc:c}]})),
+ ...[['갤럭시 워치8 클래식 46mm 블랙','gwatch8c',599000,'회전 베젤을 갖춘 갤럭시 워치8 클래식 블랙 모델입니다','갤럭시 워치8 클래식 · 46mm · LTE','무선 충전기'],
+     ['Apple Watch Series 11 46mm 실버','aws11',749000,'건강 기능을 강화한 Apple Watch Series 11 실버 모델입니다','Apple Watch Series 11 · 46mm · 셀룰러','마그네틱 고속 충전 케이블'],
+     ['Apple Watch Ultra 3 49mm 블랙','awu3',1249000,'아웃도어용 티타늄 케이스의 Apple Watch Ultra 3 블랙 모델입니다','Apple Watch Ultra 3 · 49mm · 셀룰러','마그네틱 고속 충전 케이블']]
+  .map(([n,f,p,d,s,c],i)=>mk({id:'DEV-'+String(12+i).padStart(3,'0'),name:n,type:'기기서비스',cat:'웨어러블',base:p,desc:d,img:[f+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:s},{id:'PS2',name:'기본 구성품',req:true,desc:c}]})),
 ];
 const poBy=id=>PO.find(p=>p.id===id);
 const selPS=po=>po.dt.filter(p=>!p.req);
@@ -769,8 +778,8 @@ function keepQ(id,set,draw){ $(id).addEventListener('input',e=>{ set(e.target.va
 
 // EPC 상품 조회(연결 상품 추가): 위 조회 조건 → 검색결과 표 → 취소/추가하기
 // 상품 구분·상품유형은 EPC 상품 유형에서 나눈다 (샘플 데이터 기준)
-const EPC_GRP={기기서비스:['기기서비스','휴대폰'],액세서리:['기기서비스','액세서리'],요금제:['이동전화','요금제'],부가서비스:['이동전화','부가서비스'],구독서비스:['플랫폼(T우주)','구독'],보험:['기기서비스','보험']};
-const grpOf=p=>EPC_GRP[p.type]||[p.type,p.type];
+const EPC_GRP={기기서비스:['기기서비스','휴대폰'],태블릿:['기기서비스','태블릿'],웨어러블:['기기서비스','웨어러블'],액세서리:['기기서비스','액세서리'],요금제:['이동전화','요금제'],부가서비스:['이동전화','부가서비스'],구독서비스:['플랫폼(T우주)','구독'],보험:['기기서비스','보험']};
+const grpOf=p=>EPC_GRP[p.cat||p.type]||[p.type,p.type];
 const GRPS=[...new Set(Object.values(EPC_GRP).map(x=>x[0]))];
 const kindsOf=g=>[...new Set(Object.values(EPC_GRP).filter(x=>g==='전체'||x[0]===g).map(x=>x[1]))];
 // f: 입력 중인 조건, a: 조회 버튼으로 적용한 조건
