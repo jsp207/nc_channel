@@ -52,10 +52,9 @@
               </div>
               <!-- 템플릿·코너 설정 (주문화면 B안): 템플릿 1~N = 주문 단계 영역, 각 영역 안에서 코너 추가·삭제 -->
               <div class="tpl-sec" id="sec-tpl">
-                <div class="tpl-head"><b>템플릿·코너 설정</b><span class="rq">필수</span><span class="total" id="cnt"></span><span class="stc" id="st-tpl"></span><span class="tpl-tools" id="tpl-tools"><button type="button" class="btn outline sm" id="btn-foldall">모두 접기</button><button type="button" class="btn ghost sm" id="btn-tab">복제하기</button></span></div>
+                <div class="tpl-head"><b>템플릿·코너 설정</b><span class="tpl-tools" id="tpl-tools"><button type="button" class="btn outline sm" id="btn-foldall">모두 접기</button><button type="button" class="btn ghost sm" id="btn-tab">복제하기</button></span></div>
                 <div class="cfg-empty" id="cfg-empty" hidden><span class="ce-ic" aria-hidden="true">+</span><b>아직 구성된 템플릿이 없습니다.</b><span class="ce-t">새로 만들거나, 기존 컨테이너를 복제해서 시작하세요.</span><div class="ce-acts"><button type="button" class="btn outline" id="ce-new">새로 만들기</button><button type="button" class="btn filled" id="ce-copy">복제하기</button></div></div>
                 <div class="cfg-body" id="cfg-body">
-                  <p class="b-guide">템플릿은 주문 단계 순서대로 1번부터 쌓입니다. 머리줄의 ⠿ 를 드래그해 순서를 바꾸고, 템플릿을 펼쳐 코너를 추가·삭제하세요.</p>
                   <div class="acc-list" id="acc"></div>
                   <button class="tpl-add" type="button" id="btn-tadd">+ 템플릿 추가</button>
                 </div>
@@ -63,20 +62,19 @@
             </div>
           </div>
         </div>
-        <div class="sticky-acts" id="d-foot"></div>
+        <!-- 하단 고정 영역: 구성 검증 시트 + 요약/버튼 바 (상품 전시 관리와 같은 dock 구조) -->
+        <div class="dock-dim" id="vf-dim" hidden></div>
+        <div class="dock" id="dock">
+          <section class="dock-sheet" id="vf-sheet" aria-labelledby="vf-ttl" hidden>
+            <div class="vf-h"><i class="dock-handle" aria-hidden="true"></i><b id="vf-ttl">구성 검증</b><span class="stc" id="st-vf"></span><span class="vf-at" id="vf-at"></span><button type="button" class="btn grey sm" id="vf-rerun">다시 검증</button><button type="button" class="x" id="vf-close" aria-label="닫기">✕</button></div>
+            <div class="vf-body" id="vf"></div>
+          </section>
+          <div class="sticky-acts" id="d-foot"></div>
+        </div>
       </section>
 
     </div>
   </main>
-</div>
-
-<!-- 구성 검증 바텀시트 -->
-<div class="vf-dim" id="vf-sheet" hidden>
-  <div class="vf-sheet" role="dialog" aria-modal="true" aria-labelledby="vf-ttl">
-    <span class="vf-grab" aria-hidden="true"></span>
-    <div class="vf-h"><b id="vf-ttl">구성 검증</b><span class="stc" id="st-vf"></span><span class="vf-at" id="vf-at"></span><button type="button" class="btn grey sm" id="vf-rerun">다시 검증</button><button type="button" class="x" id="vf-close" aria-label="닫기">✕</button></div>
-    <div class="vf-body" id="vf"></div>
-  </div>
 </div>
 
 <div id="dlg-root"></div>
