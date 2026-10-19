@@ -254,6 +254,9 @@
       .ali.dragging{opacity:.4}
       .ali.drop-b{box-shadow:0 -3px 0 var(--accent)}
       .ali.drop-a{box-shadow:0 3px 0 var(--accent)}
+      tr.td-r.dragging,tr.gf-r.dragging{opacity:.4}
+      tr.td-r.drop-b td,tr.gf-r.drop-b td{box-shadow:inset 0 3px 0 var(--accent)}
+      tr.td-r.drop-a td,tr.gf-r.drop-a td{box-shadow:inset 0 -3px 0 var(--accent)}
       .bx{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--surface);font-size:12px;line-height:1.8;white-space:pre-line}
       /* 주문 구성 방식: 구성안 카드 · 필요한 주문 항목 · 시나리오 안내 */
       .op-plan{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:24px 28px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface)}
@@ -591,10 +594,6 @@
       .olist .or.off>:not(.switch){opacity:.45}
       .olist .or input[type=text]{width:100%}
       .olist .or input[type=radio]{accent-color:var(--accent);width:16px;height:16px;margin:0}
-      .omore{padding:6px 14px;border-top:1px dashed var(--line-strong);background:#fbfbfe;color:var(--accent);font-size:11px;font-weight:600}
-      .osum{margin:10px 0 0;padding:10px 14px;border-radius:8px;background:var(--surface);font-size:12px;color:var(--muted)}
-      .osum b{color:var(--text);font-weight:600}
-      #sb-inst input[type=number]{width:64px}
       /* 사은품 · 티다팩 목록 */
       .gtbl{max-height:none}
       .gtbl td{white-space:normal;vertical-align:middle}
@@ -704,15 +703,12 @@
         <header><b>고객 선택 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-method"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-method"></div>
       </div>
-      <div class="step" id="sec-basic">
-        <header><b>기본 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-basic"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-basic"></div>
+      <!-- 기본 정보 · 상세 설명: 추가 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
+      <div class="step" id="sec-info">
+        <header><b>전시 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-info"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-info"><div class="ae"><div class="al" id="infoList"></div><div class="ad"><div id="sb-basic"></div><div id="sb-desc" hidden></div></div></div></div>
         <input type="file" id="imgFile" accept="image/*" hidden>
         <input type="file" id="subFile" accept="image/*" multiple hidden>
-      </div>
-      <div class="step" id="sec-desc">
-        <header><b>상세 설명</b><span class="req">필수</span><span class="st"><span class="chip" id="st-desc"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-desc"></div>
         <input type="file" id="descFile" accept="image/*" multiple hidden>
       </div>
       <div class="step" id="sec-extra">
@@ -723,18 +719,11 @@
         <header><b>구매후기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rvOn" aria-label="구매후기 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-review"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
       </div>
-      <div class="step" id="sec-sim">
-        <header><b>유사한 상품 구성하기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="smOn" aria-label="유사한 상품 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-sim"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-sim"></div>
-      </div>
-      <div class="step" id="sec-search">
-        <header><b>검색 노출 설정 (SEO)</b><span class="st"><span class="chip" id="st-search"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-search"></div>
+      <!-- 유사한 상품 · 오퍼링 문구 · 검색 노출 설정: 추가 정보와 같은 목록 + 상세 구성 -->
+      <div class="step" id="sec-more">
+        <header><b>부가 설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-more"><div class="ae"><div class="al" id="moreList"></div><div class="ad"><div id="sb-sim"></div><div id="sb-cvm" hidden></div><div id="sb-search" hidden></div></div></div></div>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
-      </div>
-      <div class="step" id="sec-cvm">
-        <header><b>오퍼링 문구(CVM)</b><span class="st"><span class="chip" id="st-cvm"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-cvm"></div>
       </div>
       <div class="step" id="sec-join">
         <header><b>가입 유형</b><span class="cond">기기 상품 연결 시</span><span class="req">필수</span><span class="st"><span class="chip" id="st-join"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>

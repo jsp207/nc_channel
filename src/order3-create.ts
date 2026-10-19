@@ -86,7 +86,8 @@ var cur=null, mode='view', cs=0, openI=0, sel=null, orig=null;
 function deep(o){return JSON.parse(JSON.stringify(o))}
 function openDetail(id,m){
   mode=m; cs=0; openI=0; sel=null; vfState=null;
-  if(m==='new'){cur={id:null,use:'N',cat:'',name:'',ptype:[],ch:['통합app'],status:'초안',appr:'임시 저장',desc:'',stages:[],mod:'',by:''};}
+  // 새로 만들 때는 빈 안내 대신 '새로 만들기'를 누른 것처럼 빈 템플릿 1개를 펼친 상태로 시작한다
+  if(m==='new'){cur={id:null,use:'N',cat:'',name:'',ptype:[],ch:['통합app'],status:'초안',appr:'임시 저장',desc:'',stages:[{name:'',screen:'',custom:true,corners:[]}],mod:'',by:''};}
   else{cur=deep(DB.filter(function(c){return c.id===id})[0]);}
   orig=deep(cur);
   $('view-detail').hidden=false;$('d-scroll').scrollTop=0;
@@ -310,9 +311,23 @@ function renderCList(){
   if(S){var iss=optIssues().filter(function(x){return x.si===cs}).length,nc=a.filter(function(c){return rulesOf(c).length}).length;
     S.innerHTML=iss?'<div class="un warn"><b>조건 확인 필요 '+iss+'건</b><br>후행 코너 순서나 노출 선택지를 확인하세요</div>':nc?'<div class="un ok">조건을 건 코너 '+nc+'개 · 후행 코너 연결 정상</div>':''}
 }
+/* 상품 전시(display-create2)의 '저장하고 구성안 만들기'로 들어오면 그 전시의 상품 상세를 첫 템플릿 위에 그대로 보여준다.
+   직접 열면 상품 전시 미리보기의 빈 상태와 같은 자리표시를 쓴다 */
+var PD=(function(){var o=null;try{if(/[?&]from=display\b/.test(location.search))o=JSON.parse(localStorage.getItem('nova.order3.product')||'null')}catch(e){}return o||{name:'',model:'',sub:'',img:'',imgs:0,badges:[],review:true}})();
+function pdHtml(empty){
+  var tabs=['상품 주문','상품 정보'].concat(PD.review?['구매 후기']:[]);
+  return '<div class="pd" aria-label="상품 상세">'+
+    '<div class="pd-hero'+(PD.img?' has-img':'')+'">'+(PD.img?'<img src="'+esc(PD.img)+'" alt="대표이미지">':'<div class="pd-noimg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.2"/><path d="M10.5 18.5h3"/></svg><small>대표 이미지를 등록하면 여기에 보인다</small></div>')+
+    (PD.imgs>1?'<div class="pd-dots">'+new Array(PD.imgs).join(',').split(',').map(function(_,i){return '<i class="'+(i?'':'on')+'"></i>'}).join('')+'</div>':'')+'</div>'+
+    '<div class="pd-info"><div class="pd-model">'+esc(PD.model||'모델 코드')+'</div><div class="pd-title'+(PD.name?'':' pd-empty')+'">'+esc(PD.name||'전시명을 입력하세요')+'</div><div class="pd-sub'+(PD.sub?'':' pd-empty')+'">'+esc(PD.sub||'제품명')+'</div>'+
+    (PD.badges.length?'<div class="pd-bdgs">'+PD.badges.map(function(b,i){return '<span class="'+(b.c?'au':i?'':'dk')+'"'+(b.c?' style="background:'+esc(b.c)+'"':'')+'>'+esc(b.t)+'</span>'}).join('')+'</div>':'')+
+    '<div class="pd-note">만 18세 이상 만 34세 미만의 고객님만 가입할 수 있는 상품이에요</div></div>'+
+    '<div class="pd-gap"></div><div class="pd-tabs">'+tabs.map(function(t,i){return '<span class="'+(i?'':'on')+'">'+t+'</span>'}).join('')+'</div>'+
+    (empty?'<div class="pd-wait">코너 구성 시 미리보기가 표시됩니다.</div>':'')+'</div>';
+}
 function renderPreview(anim){
-  var a=cornersOf(),h='';
-  $('pscroll').classList.toggle('pv-empty',!a.length);
+  var a=cornersOf(),top=cs===0,h=top?pdHtml(!a.length):'';
+  $('pscroll').classList.toggle('pv-empty',!a.length&&!top);
   a.forEach(function(c,i){var m=CMAP[c.id];
     h+='<section class="fs cimg'+(c===sel?' sel':'')+'" data-i="'+i+'" aria-label="'+esc(m.n)+'">'+foHtml(m,null);
     if(m.screens&&m.screens.length>1)h+='<div class="pager2" style="margin-top:14px"><button type="button" data-p="-1"'+(c.p===0?' disabled':'')+'>‹</button><span class="ps">'+esc(m.screens[c.p])+' '+(c.p+1)+'/'+m.screens.length+'</span><button type="button" data-p="1"'+(c.p===m.screens.length-1?' disabled':'')+'>›</button></div>';
@@ -593,6 +608,9 @@ function openCopy(){
 }
 function newStage(){ensureEdit();cur.stages.push({name:'',screen:'',custom:true,corners:[]});cs=openI=cur.stages.length-1;sel=null;renderCfg(true);goAcc(cs);var s=$('scr');if(s)s.focus({preventScroll:true})}
 $('ce-new').addEventListener('click',function(){newStage()});
+/* 기본 정보 아코디언: 머리줄을 누르면 접고 펼친다 */
+(function(){var s=$('sec-basic'),h=s.querySelector(':scope>header'),b=h.querySelector('.fold');
+  h.addEventListener('click',function(){var open=s.classList.toggle('closed')===false;b.setAttribute('aria-expanded',String(open));b.setAttribute('aria-label',open?'접기':'펼치기')})})();
 $('ce-copy').addEventListener('click',function(){ensureEdit();openCopy()});
 /* 코너 추가 = 주문 코너 관리에 등록된 BO 코너(코너 ID)를 불러오기
    - 코너 = FO 빈껍데기(SBS-CMP) + BO 입력값 + 노출 조건 + 배치 제약/선·후행 → 코너 관리에서 확정
