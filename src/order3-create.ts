@@ -60,7 +60,11 @@ function uniq(a){return a.filter(function(x,i){return a.indexOf(x)===i})}
 function cvOld(conds){return conds.map(function(x){var r=(OLDK[x.k]||function(v){return [x.k,v]})(x.v);return {conds:[{key:r[0],values:uniq(r[1])}]}}).filter(function(g){return CK[g.conds[0].key]})}
 function boExpose(id){var m=CMAP[id],e=m&&m.expose||{mode:'always',groups:[]};return {mode:e.mode==='cond'?'cond':'always',groups:deep(e.groups||[])}}
 function sameExpose(c){var b=boExpose(c.id);return c.mode===b.mode&&JSON.stringify(c.mode==='cond'?c.groups:[])===JSON.stringify(b.mode==='cond'?b.groups:[])}
-function inst(id,o){o=o||{};var b=boExpose(id),c={id:id,mode:b.mode,groups:b.groups,opts:null,p:0};if(o.mode){c.mode=o.mode;c.groups=o.conds?cvOld(o.conds):(o.groups||[]);if(c.mode==='cond'&&!c.groups.length)c.mode='always'}var m=CMAP[id];c.opts=m&&m.opts?m.opts.slice():null;c.omode='always';c.rules=[];if(o.rules&&c.opts){c.omode='cond';c.rules=o.rules.map(function(r){var to=CMAP[r.target]&&CMAP[r.target].opts||[];return {target:r.target,vals:r.vals,opts:to.map(function(x){return r.only.indexOf(x)>=0})}})}return c}
+function inst(id,o){o=o||{};var b=boExpose(id),c={id:id,mode:b.mode,groups:b.groups,opts:null,p:0};if(o.mode){c.mode=o.mode;c.groups=o.conds?cvOld(o.conds):(o.groups||[]);if(c.mode==='cond'&&!c.groups.length)c.mode='always'}var m=CMAP[id];c.opts=m&&m.opts?m.opts.slice():null;c.omode='always';c.rules=[];if(o.rules&&c.opts)c.fw=o.rules.map(function(r){var to=CMAP[r.target]&&CMAP[r.target].opts||[];return {target:r.target,vals:r.vals,opts:to.map(function(x){return r.only.indexOf(x)>=0})}});return c}
+/* 노출 옵션 규칙 보정: 예전 형태(선행 코너에 {target,vals,opts}) → 후행 코너의 조건 그룹 {conds:[{src,vals}],opts} */
+function migRules(procs){(procs||[]).forEach(function(pc){var all=[];(pc.stages||[]).forEach(function(st){st.corners.forEach(function(c){all.push(c)})});
+  var fw=[];all.forEach(function(c){(c.fw||[]).concat((c.rules||[]).filter(function(r){return r.target})).forEach(function(r){fw.push({src:c.id,r:r})});delete c.fw;c.rules=(c.rules||[]).filter(function(r){return !r.target&&r.conds});if(!c.rules.length)c.omode='always'});
+  fw.forEach(function(x){var t=all.filter(function(c){return c.id===x.r.target})[0];if(!t||!t.opts)return;t.omode='cond';t.rules.push({conds:[{src:x.src,vals:(x.r.vals||[]).slice()}],opts:t.opts.map(function(o,i){return !!x.r.opts[i]})})})});return procs}
 function mkStages(obj){return STAGES.map(function(s){return {name:s,screen:(obj[s]&&obj[s].screen)||s,corners:(obj[s]&&obj[s].corners)||[]}})}
 
 /* 예시 프로세스 = 정책서 v1.22 3.1 템플릿 유형 · 3.3 상품·주문 케이스별 기준 모듈 조합 */
@@ -80,7 +84,8 @@ var SEED=[
   {id:'CT0012',name:"특정 전시상품_단말 기기변경 예외 프로세스",cat:'특정 전시 상품 프로세스',ptype:['단말+회선'],ch:["통합app"],status:'사용중지',appr:'승인 완료',prod:1,stale:false,desc:"특정 전시상품만 중고단말 보상·티다팩 코너를 제외한 예외 여정(예시).",mod:'2026-07-15 13:10:00',by:'김미연',byId:'P123456',stages:mkStages({'주문 상세':{corners:[I('PROD-M01'),I('PROD-M02'),I('PROD-M07',{"opts": ["기기변경"]}),I('CUST-M01'),I('CUST-M03'),I('PROD-M03'),I('PROD-M08'),I('BNFT-M01',{"opts": ["공시지원금", "선택약정"]}),I('PAY-M01',{"opts": ["일시불", "24개월"]}),I('PROD-M04',{"opts": ["USIM", "eSIM"]}),I('FULF-M01',{"mode": "cond", "conds": [{"k": "fulfil", "v": ["배송 필요"]}]}),I('FULF-M02',{"mode": "cond", "conds": [{"k": "fulfil", "v": ["배송 필요"]}]}),I('FULF-M03',{"mode": "cond", "conds": [{"k": "fulfil", "v": ["배송 필요"]}]}),I('FULF-M04',{"mode": "cond", "conds": [{"k": "ship", "v": ["매장수령", "행복배송"]}], "opts": ["매장수령", "행복배송"]}),I('BNFT-M02'),I('PROD-M05'),I('BNFT-M03'),I('BNFT-M04'),I('BNFT-M06'),I('CUST-M02',{"mode": "cond", "conds": [{"k": "rel", "v": ["다른 사람 주문"]}]}),I('CUST-M06',{"mode": "cond", "conds": [{"k": "age", "v": ["일반 미성년자"]}]}),I('SUBS-M06'),I('CUST-M04'),I('SUBS-M04'),I('SUBS-M05'),I('SUBS-M07'),I('PAY-M02'),I('PAY-M03'),I('PAY-M04',{"mode": "cond", "conds": [{"k": "pay", "v": ["선불", "선불+후불 복합"]}]}),I('PAY-M05',{"mode": "cond", "conds": [{"k": "pay", "v": ["선불+후불 복합"]}]}),I('CONS-M04')]},'주문 확인':{corners:[I('ORDR-M01'),I('ORDR-M02'),I('CONS-M01'),I('CONS-M02'),I('CONS-M03',{"mode": "cond", "conds": [{"k": "age", "v": ["일반 미성년자"]}]}),I('CONS-M05')]},'주문 완료':{corners:[I('ORDR-M03'),I('PAY-M06',{"mode": "cond", "conds": [{"k": "pay", "v": ["선불", "선불+후불 복합"]}]}),I('ORDR-M04')]},'사후 관리':{corners:[I('ACTV-M01'),I('ACTV-M02'),I('ACTV-M03'),I('ACTV-M04'),I('AFTR-M01'),I('EVID-M01'),I('EVID-M02'),I('AFTR-M02',{"mode": "cond", "conds": [{"k": "fulfil", "v": ["배송 필요"]}]}),I('AFTR-M03'),I('AFTR-M04'),I('AFTR-M05'),I('AFTR-M06')]}})}
 ];
 
-var DB=load();
+migRules(SEED);
+var DB=migRules(load());
 function load(){try{var s=localStorage.getItem(KEY);if(s){s=s.replace(/컨테이너/g,'프로세스');/* 용어 변경(컨테이너→프로세스) 전에 저장된 데이터 보정 */var o=JSON.parse(s);if(o&&o.length)return o}}catch(e){}return JSON.parse(JSON.stringify(SEED))}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
 function nextId(){var n=DB.reduce(function(m,c){return Math.max(m,parseInt(c.id.slice(2),10)||0)},0)+1;return 'CT'+String(n).padStart(4,'0')}
@@ -207,17 +212,20 @@ function vfCollect(){
   });
   var f=flatC();
   f.forEach(function(x,p){var c=x.c,n=cnm(c.id),sv=svOf(c);if(c.omode!=='cond'||!sv)return;
+    if(!(c.rules||[]).length)E('조건','\''+n+'\' 코너의 조건 그룹이 없습니다. 그룹을 추가하거나 \'항상 노출\'로 변경해주세요.',x.si,c);
     (c.rules||[]).forEach(function(r,ri){var g='\''+n+'\' 코너의 조건 그룹 '+(ri+1);
-      if(!r.target){E('조건',g+'에 후행 코너가 선택되지 않았습니다.',x.si,c);return}
-      var t=byIdC(r.target),tn='\''+cnm(r.target)+'\'';
-      if(!t)E('조건 충돌',g+'의 후행 코너 '+tn+'이(가) 프로세스에 없어 적용할 수 없습니다.',x.si,c);
-      else if(t.p<=p)E('조건 충돌',g+'의 후행 코너 '+tn+'이(가) 이 코너보다 앞에 있어 적용할 수 없습니다. 순서를 바꿔주세요.',x.si,c);
-      if(!r.opts.some(Boolean))E('조건',g+'에 노출할 선택지가 선택되지 않았습니다.',x.si,c);
-      else if(r.opts.length&&r.opts.every(Boolean))W('조건',g+'에 '+tn+'의 모든 선택지가 선택되어 기본 노출과 동일합니다.',x.si,c);
-      if(!r.vals.length)E('조건',g+'에 조건이 될 선택값이 없습니다.',x.si,c);
-      else if(r.vals.length===sv.length)W('조건','\''+n+'\' 코너의 조건 그룹 '+(ri+1)+'에 모든 선택값이 선택되어 항상 노출과 동일합니다.',x.si,c);
-      for(var j=0;j<ri;j++){var a=c.rules[j];if(a.target!==r.target||!a.vals.length||!r.vals.length)continue;
-        if(r.vals.every(function(v){return a.vals.indexOf(v)>=0})){E('조건 충돌',g+'은(는) 같은 후행 코너를 대상으로 한 조건 그룹 '+(j+1)+'에 가려져 어떤 경우에도 적용되지 않습니다.',x.si,c);break}}
+      r.conds.forEach(function(d,di){var k=g+' 조건 '+(di+1);
+        if(!d.src){E('설정 항목',k+'에서 선행 코너가 선택되지 않았습니다.',x.si,c);return}
+        var s=byIdC(d.src),sn='\''+cnm(d.src)+'\'';
+        if(!s){E('선후행 오류',k+'이 참조하는 선행 코너 '+sn+'이(가) 프로세스에 없습니다.',x.si,c);return}
+        if(s.p>=p){E('선후행 오류',k+'이 참조하는 선행 코너 '+sn+'이(가) 뒤에 배치되어 있습니다. 선행 코너는 앞에 있어야 합니다.',x.si,c);return}
+        var tot=(svOf(s.c)||[]).length;
+        if(!d.vals.length)E('설정 항목',k+'에서 '+sn+' 선택값이 선택되지 않았습니다.',x.si,c);
+        else if(d.vals.length===tot)W('조건',k+'에 '+sn+'의 모든 선택값이 선택되어 항상 노출과 동일합니다.',x.si,c);
+      });
+      if(!r.opts.some(Boolean))E('설정 항목',g+'의 노출 선택지가 선택되지 않았습니다.',x.si,c);
+      else if(r.opts.every(Boolean))W('조건',g+'에 모든 선택지가 선택되어 항상 노출과 동일합니다.',x.si,c);
+      for(var q=0;q<ri;q++)if(condOK(r)&&condTxt(r)===condTxt(c.rules[q])){W('조건',g+'은(는) 조건 그룹 '+(q+1)+'과 조건이 같아 적용되지 않습니다.',x.si,c);break}
     });
   });
   return L;
@@ -375,7 +383,7 @@ function renderCList(box){
   var S=q('clSum');
   if(!a.length){L.innerHTML='<div class="cempty">이 컨테이너에 배치된 코너가 없습니다.'+(ro?'':'<br>아래 「코너 추가」로 코너 관리의 코너를 가져오세요.')+'</div>';if(S)S.innerHTML='';return}
   /* 복합형 영역 목록처럼: 후행 코너는 선행 깊이만큼 들여쓰고 「N번 선택에 따라」 칩을 단다 */
-  L.innerHTML=a.map(function(c,i){var m=CMAP[c.id],k=kindOf(c.id),dp=dependents(c),nt=c.omode==='cond'?tgtsOf(c).filter(Boolean).length:0;
+  L.innerHTML=a.map(function(c,i){var m=CMAP[c.id],k=kindOf(c.id),dp=srcsOf(c).map(function(id){return {id:id}}),nt=dependents(c).length;
     return '<div class="crow'+(c===sel?' sel':'')+'" data-i="'+i+'"'+(ro?'':' draggable="true"')+' style="margin-left:'+condDepthC(c)*14+'px">'+(ro?'':'<span class="grip" title="드래그하여 순서 변경">'+GRIP+'</span>')+'<span class="no">'+(i+1)+'</span><div class="mid"><div class="nm"><span class="t">'+esc(m.n)+'</span></div><div class="sub"><span class="kd '+k+'">'+KIND[k]+'</span></div>'+(dp.length||nt?'<div class="tags">'+(dp.length?'<span class="cchip acc">'+dp.map(posLabel).join('·')+' 선택에 따라</span>':'')+(nt?'<span class="cchip">후행 '+nt+'개 기준</span>':'')+'</div>':'')+'</div>'+(ro?'':'<button type="button" class="cdel" data-a="del" title="코너 삭제" aria-label="'+esc(m.n)+' 코너 삭제">✕</button>')+'</div>';
   }).join('');
   // 복합형의 미배정 상태 박스처럼 이 템플릿의 조건 상태를 요약
@@ -433,110 +441,129 @@ function placeRule(c,k,id){
   arr.splice(i+1,0,x);return w?'이동':'추가'}
 function rKind(k){return k==='together'?'같은 탭에 함께 배치':k==='after'?'바로 뒤에 배치':'단독 탭으로 배치'}
 
-/* ---------- 코너 상세 설정 — 옵션 설정(선행 코너 선택값 기반 규칙) ---------- */
-/* ---------- 코너 상세 설정 — 노출 옵션 설정
-   선택한 코너(선행)의 선택값을 조건(IF)으로, 후행 코너의 노출 선택지를 결과(THEN)로 설정
-   rule = {target: 후행 코너 ID, opts:[bool] (후행 코너 선택지별 노출), vals:[이 코너 선택값]} ---------- */
+/* ---------- 코너 상세 설정 — 코너 정보 + 노출 옵션 설정 (ref/1020_order_mokup.html 기준)
+   선택한 코너에 조건 그룹을 건다: 그룹끼리는 OR, 그룹 안의 조건끼리는 AND
+   조건(IF) = 이 코너보다 앞에 있는 선행 코너 + 그 코너의 선택값 / 결과(THEN) = 이 코너에서 노출할 선택지
+   rule = {conds:[{src:선행 코너 ID, vals:[선택값]}], opts:[bool] (이 코너 선택지별 노출)} ---------- */
 function flatC(){var a=[];cur.stages.forEach(function(st,si){st.corners.forEach(function(c){a.push({c:c,si:si})})});return a}
 function posC(c){var f=flatC();for(var i=0;i<f.length;i++)if(f[i].c===c)return i;return -1}
 function byIdC(id){var f=flatC();for(var i=0;i<f.length;i++)if(f[i].c.id===id)return {c:f[i].c,si:f[i].si,p:i};return null}
 function svOf(c){var m=CMAP[c.id];return m&&m.opts?m.opts:null}
 function isNv(c){var m=CMAP[c.id];return m&&m.st==='백그라운드'}
 function rulesOf(c){return c.omode==='cond'?(c.rules||[]):[]}
-/* 이 코너를 결과(THEN)로 쓰는 선행 코너 규칙 */
-function rulesOn(c){var o=[];flatC().forEach(function(x){rulesOf(x.c).forEach(function(r,ri){if(r.target===c.id)o.push({src:x.c,r:r,ri:ri})})});return o}
-/* 삭제 보호: 이 코너를 결과로 쓰는 선행 코너 */
-function dependents(c){var o=[];rulesOn(c).forEach(function(x){if(o.indexOf(x.src)<0)o.push(x.src)});return o}
-function ruleText(c,r){var tn=r.target?cnm(r.target):'',t=r.target&&byIdC(r.target),to=t?(svOf(t.c)||[]):[],on=to.filter(function(o,i){return r.opts[i]});
-  var cond=r.vals.length?'‘'+cnm(c.id)+'’에서 '+r.vals.map(function(v){return '‘'+v+'’'}).join(' 또는 ')+'을(를) 고르면':'';
-  var res=r.target?'‘'+tn+'’에 '+(on.length?on.map(function(v){return '‘'+v+'’'}).join(', ')+'만 노출':'<em>노출 선택지 미선택</em>'):'';
-  return {cond:cond,res:res}}
-/* 옵션 설정 점검 */
+function NC(){return {src:'',vals:[]}}
+function newRule(c){return {conds:[NC()],opts:(svOf(c)||[]).map(function(){return false})}}
+/* 이 코너가 조건으로 쓰는 선행 코너 ID */
+function srcsOf(c){var o=[];rulesOf(c).forEach(function(r){r.conds.forEach(function(d){if(d.src&&o.indexOf(d.src)<0)o.push(d.src)})});return o}
+/* 삭제 보호: 이 코너를 선행 코너로 쓰는 후행 코너 */
+function dependents(c){return flatC().filter(function(x){return x.c!==c&&srcsOf(x.c).indexOf(c.id)>=0}).map(function(x){return x.c})}
+function ruleText(c,r){var sv=svOf(c)||[],on=sv.filter(function(o,i){return r.opts[i]});
+  return {cond:r.conds.map(function(d){return '‘'+cnm(d.src)+'’ = '+(d.vals.length?d.vals.join(' | '):'<미선택>')}).join(' AND '),
+    res:on.length?on.map(function(v){return '‘'+v+'’'}).join(', ')+'만 노출':'<em>노출 선택지 미선택</em>'}}
+function condTxt(r){return JSON.stringify(r.conds.map(function(d){return [d.src,d.vals.slice().sort()]}).sort())}
+/* 옵션 설정 점검 (저장 전) */
 function optIssues(){
   var L=[];flatC().forEach(function(x,p){var c=x.c,tn=cur.stages[x.si].screen||((x.si+1)+'번째 단계');
     rulesOf(c).forEach(function(r,ri){var k='「'+tn+'」 '+cnm(c.id)+' 조건 그룹 '+(ri+1);
-      if(!r.target){L.push({c:c,si:x.si,t:k+' — 노출 선택지를 적용할 후행 코너를 선택하세요.'});return}
-      var t=byIdC(r.target);
-      if(!t)L.push({c:c,si:x.si,t:k+' — 후행 코너 「'+cnm(r.target)+'」이(가) 프로세스에 없습니다.'});
-      else if(t.p<=p)L.push({c:c,si:x.si,t:k+' — 「'+cnm(r.target)+'」이(가) 이 코너보다 앞에 있습니다. 후행 코너는 이 코너 뒤에 있어야 합니다.'});
+      r.conds.forEach(function(d,di){var cn=' 조건 '+(di+1);
+        if(!d.src){L.push({c:c,si:x.si,t:k+cn+' — 선행 코너를 선택하세요.'});return}
+        var s=byIdC(d.src);
+        if(!s)L.push({c:c,si:x.si,t:k+cn+' — 선행 코너 「'+cnm(d.src)+'」이(가) 프로세스에 없습니다.'});
+        else if(s.p>=p)L.push({c:c,si:x.si,t:k+cn+' — 선행 코너 「'+cnm(d.src)+'」이(가) 이 코너보다 뒤에 있습니다. 선행 코너는 이 코너 앞에 있어야 합니다.'});
+        else if(!d.vals.length)L.push({c:c,si:x.si,t:k+cn+' — 「'+cnm(d.src)+'」의 선택값을 1개 이상 선택하세요.'});
+      });
       if(!r.opts.some(Boolean))L.push({c:c,si:x.si,t:k+' — 노출할 선택지를 1개 이상 선택하세요.'});
-      if(!r.vals.length)L.push({c:c,si:x.si,t:k+' — 조건이 될 이 코너의 선택값을 1개 이상 선택하세요.'});
     });
   });return L}
-function orderWarn(){var o=optIssues().filter(function(x){return /앞에 있습니다/.test(x.t)});if(o.length)toast('조건을 설정한 선행 코너가 후행 코너보다 뒤에 있습니다. 순서를 확인하세요.',true)}
+function orderWarn(){var o=optIssues().filter(function(x){return /뒤에 있습니다/.test(x.t)});if(o.length)toast('조건에 쓴 선행 코너가 후행 코너보다 뒤에 있습니다. 순서를 확인하세요.',true)}
 
-/* ---------- 코너 상세 설정 — 상품 전시 복합형의 '구성 영역 상세'와 같은 방식
-   · 노출 옵션은 카드로 고른다: 항상 노출 / 선택에 따라 후행 선택지 바꾸기 (쓸 수 없으면 이유와 함께 비활성)
-   · 후행 코너마다 [이 코너 선택값 × 후행 코너 선택지] 표를 채운다 (A면 B, C면 D) + 결과 피드백
-   · 저장 형태는 기존 rule 그대로 — 선택값 1개당 그룹 1개 {target, vals:[v], opts:[bool]} ---------- */
-var OCARD=[['always','항상 노출','이 코너 선택값과 관계없이 후행 코너의 선택지를 모두 보여줘요'],['cond','선택에 따라 후행 선택지 바꾸기','이 코너에서 고른 값마다 후행 코너에 보여줄 선택지를 정해요 (A면 B, C면 D)']];
-function candsOf(c){var p=posC(c);return flatC().filter(function(x,i){return i>p&&svOf(x.c)&&!isNv(x.c)})}
-function tgtsOf(c){if(!c.tgts)c.tgts=uniq((c.rules||[]).map(function(r){return r.target}).filter(Boolean));return c.tgts}
-function cellOn(c,t,v,i){var g=(c.rules||[]).filter(function(r){return r.target===t&&r.vals.indexOf(v)>=0})[0];return !!(g&&g.opts[i])}
-function setCell(c,t,v,i,on){
-  var sv=svOf(c)||[],tc=byIdC(t),to=tc?(svOf(tc.c)||[]):[];
-  var M=sv.map(function(x){return to.map(function(o,j){return cellOn(c,t,x,j)})}),k=sv.indexOf(v);if(k>=0)M[k][i]=on;
-  c.rules=(c.rules||[]).filter(function(r){return r.target!==t});
-  M.forEach(function(row,j){if(row.some(Boolean))c.rules.push({target:t,vals:[sv[j]],opts:row})});
-}
-function dropTgt(c,t){c.rules=(c.rules||[]).filter(function(r){return r.target!==t})}
 /* 목록 표시: 같은 템플릿이면 'N번', 다른 템플릿이면 '템플릿-N번' / 선행 깊이(최대 3) */
 function posLabel(x){var w=whereIs(x.id);return w?(w.si===cs?(w.i+1)+'번':(w.si+1)+'-'+(w.i+1)+'번'):''}
-function condDepthC(c){var n=0,x=c;while(n<3){var d=dependents(x);if(!d.length)break;x=d[0];n++}return n}
-function relHTML(c,t,k,cands,ro){
-  var p=posC(c),tc=t&&byIdC(t),bad=t&&(!tc||tc.p<=p),sv=svOf(c)||[],nm=esc(cnm(c.id)),used=tgtsOf(c);
-  var opt=function(x){return '<option value="'+x.c.id+'"'+(x.c.id===t?' selected':'')+(x.c.id!==t&&used.indexOf(x.c.id)>=0?' disabled':'')+'>'+(x.si===cs?'':(x.si+1)+'단계 · ')+esc(cnm(x.c.id))+'</option>'};
-  var head='<div class="rel-h"><select class="ctl" data-tg="'+k+'" aria-label="후행 코너"'+(ro?' disabled':'')+'>'+(t?'':'<option value="">후행 코너 선택</option>')+(t&&!cands.some(function(x){return x.c.id===t})?'<option value="'+esc(t)+'" selected>'+esc(cnm(t))+'</option>':'')+cands.map(opt).join('')+'</select><b class="cond-guide">'+(t?'에 보여줄 선택지를 ‘'+nm+'’ 선택값마다 정해요.':'를 고르면 선택값별로 보여줄 선택지를 정할 수 있어요.')+'</b>'+(ro?'':'<button type="button" class="btn outline sm" data-act="deltgt" data-k="'+k+'">삭제</button>')+'</div>';
-  if(!t)return '<div class="rel">'+head+'</div>';
-  if(bad)return '<div class="rel">'+head+'<div class="fbx warn">'+(tc?'‘'+esc(cnm(t))+'’이(가) 이 코너보다 앞에 있어요. 순서를 바꾸거나 다른 후행 코너를 고르세요.':'프로세스에 없는 코너예요. 후행 코너를 다시 고르세요.')+'</div></div>';
-  var to=svOf(tc.c)||[];
-  var rows=sv.map(function(v){var n=to.filter(function(o,i){return cellOn(c,t,v,i)}).length;
-    return '<tr><td class="rv"><span class="pill">'+nm+'</span><b>'+esc(v)+'</b> 고르면</td><td>'+to.map(function(o,i){return '<label class="ccb"><input type="checkbox" data-rt="'+esc(t)+'" data-rv="'+esc(v)+'" data-ri="'+i+'"'+(cellOn(c,t,v,i)?' checked':'')+(ro?' disabled':'')+'>'+esc(o)+'</label>'}).join('')+(n?'':'<span class="cskip">제한 없음 · 모든 선택지 노출</span>')+'</td></tr>'}).join('');
-  var set=sv.filter(function(v){return to.some(function(o,i){return cellOn(c,t,v,i)})});
-  var unused=set.length?to.filter(function(o,i){return !set.some(function(v){return cellOn(c,t,v,i)})}):[];
-  var fb=!set.length?'<div class="fbx warn">아직 정한 조건이 없어요. 체크하지 않으면 모든 선택지가 그대로 노출돼요.</div>'
-    :unused.length?'<div class="fbx warn">조건을 건 선택값 어디에서도 안 나오는 선택지 '+unused.length+'개: '+unused.map(esc).join(', ')+'</div>'
-    :'<div class="fbx ok">모든 선택지가 규칙에 연결됐어요'+(set.length<sv.length?' · 체크하지 않은 선택값은 모든 선택지를 그대로 노출해요':'')+'</div>';
-  return '<div class="rel">'+head+'<div class="rtbl"><table><thead><tr><th>‘'+nm+'’ 선택값</th><th>‘'+esc(cnm(t))+'’에 보여줄 선택지</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+fb+'</div>';
+function condDepthC(c){var n=0,x=c;while(n<3){var s=srcsOf(x),w=s.length&&byIdC(s[0]);if(!w||w.c===x)break;x=w.c;n++}return n}
+/* 조건에 쓸 수 있는 선행 코너 = 이 코너보다 앞에 있고 고객이 고르는 선택값이 있는 코너 */
+function candsOf(c){var p=posC(c);return flatC().filter(function(x,i){return i<p&&svOf(x.c)&&!isNv(x.c)})}
+function condOK(r){return r.conds.every(function(d){return d.src&&d.vals.length})}
+function thenHTML(c,r,ri,ro){
+  var ok=condOK(r),sv=svOf(c)||[];
+  /* 선행 코너·선택값을 정하기 전에는 안내 문구만 보여준다 */
+  var h='<div class="g-then'+(ok?'':' dis')+'"><div class="g-lbl"><b>노출 선택지</b><small>'+(ok?'조건을 만족하면 아래 선택지만 노출합니다.':'')+'</small></div>';
+  if(!ok)return h+'<p class="g-wait">선행 코너와 선택값을 먼저 정하면 노출 선택지를 고를 수 있어요.</p></div>';
+  return h+'<div class="chk">'+sv.map(function(o,i){return '<label><input type="checkbox" data-f="opt" data-r="'+ri+'" data-i="'+i+'"'+(r.opts[i]?' checked':'')+(ro?' disabled':'')+'>'+esc(o)+'</label>'}).join('')+'</div></div>';
 }
+function condCard(c,r,ri,di,p,cands,ro){
+  var d=r.conds[di],n=r.conds.length,used=r.conds.map(function(x){return x.src});
+  var sx=d.src?byIdC(d.src):null,bad=d.src&&(!sx||sx.p>=p);
+  var h='<div class="cc'+(bad?' bad':'')+'"><div class="cc-h"><b>조건 '+(di+1)+'</b>'+(ro?'':'<span class="cc-bt">'+(di===n-1?'<button class="btn outline xs" type="button" data-act="addc" data-r="'+ri+'">추가</button>':'')+'<button class="btn outline xs" type="button" data-act="delc" data-r="'+ri+'" data-ci="'+di+'">삭제</button></span>')+'</div>';
+  h+='<select class="ctl" data-f="src" data-r="'+ri+'" data-ci="'+di+'" aria-label="선행 코너"'+(ro?' disabled':'')+'><option value="">선행 코너 선택</option>';
+  cands.forEach(function(x){h+='<option value="'+x.c.id+'"'+(d.src===x.c.id?' selected':'')+(used.indexOf(x.c.id)>-1&&d.src!==x.c.id?' disabled':'')+'>'+(x.si===cs?'':(x.si+1)+'단계 · ')+esc(cnm(x.c.id))+'</option>'});
+  if(bad)h+='<option value="'+esc(d.src)+'" selected>'+esc(sx?cnm(d.src):'(프로세스에 없는 코너)')+'</option>';
+  h+='</select>';
+  if(bad)h+='<p class="cb-err">'+(sx?'선행 코너가 아닙니다. 현재 코너보다 앞에 있는 코너만 사용할 수 있습니다.':'프로세스에 없는 코너입니다.')+' 조건을 삭제하고 다시 설정해주세요.</p>';
+  else if(sx)h+='<div class="chk cc-v">'+svOf(sx.c).map(function(v){return '<label><input type="checkbox" data-f="val" data-r="'+ri+'" data-ci="'+di+'" data-v="'+esc(v)+'"'+(d.vals.indexOf(v)>-1?' checked':'')+(ro?' disabled':'')+'>'+esc(v)+'</label>'}).join('')+'</div>';
+  return h+'</div>';
+}
+/* 접힌 조건 그룹 (화면 상태라 저장·검증 대상에 넣지 않는다) */
+var gShut=new WeakSet();
+function ruleHTML(c,ri,cands,ro){
+  var r=c.rules[ri],p=posC(c),shut=gShut.has(r);
+  /* 그룹 = 머리줄(번호·접기) + 조건(AND로 연결) + 노출 선택지 */
+  var h='<div class="sbg2'+(shut?' shut':'')+'"><div class="sbg2-h" data-gfold="'+ri+'"><button type="button" class="gfold" aria-expanded="'+!shut+'" aria-label="조건 그룹 '+(ri+1)+(shut?' 펼치기':' 접기')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="gno">'+(ri+1)+'</span><b>조건 그룹 '+(ri+1)+'</b>'+(shut?'<span class="gsum">'+esc(condOK(r)?ruleText(c,r).cond:'조건 설정 중')+'</span>':'')+(ro?'':'<button class="btn outline xs" type="button" data-act="delrule" data-r="'+ri+'">그룹 삭제</button>')+'</div>';
+  if(shut)return h+'</div>';
+  h+='<div class="g-if">';
+  r.conds.forEach(function(d,di){if(di)h+='<div class="cb-and"><span>AND</span></div>';h+=condCard(c,r,ri,di,p,cands,ro)});
+  h+='</div><div class="g-arw" aria-hidden="true">↓</div>'+thenHTML(c,r,ri,ro);
+  return h+'</div>';
+}
+function kvRow(k,v){return '<div class="kv"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'}
 function renderCDetail(){
   var d=$('detail'),ro=!editable();if(!d)return;
-  if(!sel){d.innerHTML='<div class="empty">'+(cornersOf().length?'코너를 선택하세요':'코너를 추가하면 상세 설정이 여기에 표시됩니다')+'</div>';return}
-  var c=sel,m=CMAP[c.id],idx=cornersOf().indexOf(c),sv=svOf(c),cands=candsOf(c),nt=c.omode==='cond'?tgtsOf(c).filter(Boolean).length:0;
-  var h='<div class="sec-h"><span class="ix">'+(idx+1)+'</span><b>'+esc(m.n)+'</b>'+(nt?'<span class="cchip">후행 '+nt+'개가 이 코너 선택값을 기준으로 써요</span>':'')+(ro?'':'<button type="button" class="btn outline sm" data-act="delcorner">코너 삭제</button>')+'</div>';
-  h+='<div class="cinfo"><span><em>코너 ID</em>'+m.id+'</span><span><em>구분</em>'+esc(m.t)+'</span><span><em>유형</em>'+KIND[kindOf(c.id)]+' · '+esc(m.ft)+' · '+esc(m.st)+'</span><span><em>선택값</em>'+(sv?sv.length+'개':'없음')+'</span></div>';
-  var why=isNv(c)?'고객 화면이 없는 비화면 코너예요':!sv?'고객이 고르는 선택값이 없는 코너예요':!cands.length?'뒤에 선택지가 있는 코너가 없어요':'';
-  h+='<div class="sub-h">노출 옵션 설정</div><div class="cdg" role="radiogroup" aria-label="노출 옵션 설정">'+OCARD.map(function(x){var on=(c.omode==='cond')===(x[0]==='cond'),dd=x[0]==='cond'&&!!why&&!on;
-    return '<label class="cdc'+(on?' on':'')+(dd||ro?' dis':'')+'"><input type="radio" name="om" data-om="'+x[0]+'"'+(on?' checked':'')+(dd||ro?' disabled':'')+'><span><b>'+x[1]+'</b><small>'+(dd?why:x[2])+'</small></span></label>'}).join('')+'</div>';
-  if(c.omode==='cond'){
-    var L=tgtsOf(c).slice();if(!L.length)L.push('');
-    L.forEach(function(t,k){h+=relHTML(c,t,k,cands,ro)});
-    if(!ro&&L.every(Boolean)&&cands.some(function(x){return L.indexOf(x.c.id)<0}))h+='<button type="button" class="addbtn" data-act="addtgt">+ 후행 코너 추가</button>';
+  if(!sel){d.innerHTML='<div class="empty">'+(cornersOf().length?'코너를 선택하면<br>상세 설정이 이곳에 표시됩니다.':'코너를 추가하면 상세 설정이 여기에 표시됩니다')+'</div>';return}
+  var c=sel,m=CMAP[c.id],a=cornersOf(),idx=a.indexOf(c),sv=svOf(c),cands=candsOf(c),dp=dependents(c);
+  var h='<div class="sec-h"><span class="ix">'+(idx+1)+'</span><b>'+esc(m.n)+'</b>'+(dp.length?'<span class="cchip">후행 '+dp.length+'개가 이 코너 선택값을 기준으로 써요</span>':'')+(ro?'':'<button type="button" class="btn outline sm" data-act="delcorner">코너 삭제</button>')+'</div>';
+  /* 코너 정보 */
+  h+='<div class="dsec"><h4>코너 정보</h4>'+'<div class="kv kv2"><span><em>코너 ID</em>'+esc(m.id)+'</span><span><em>컨테이너 순서</em>'+(idx+1)+'번째/총 '+a.length+'개</span></div>'+(m.screens?kvRow('연결 화면',m.screens.length+'개'):'')+'</div>';
+  /* 노출 옵션 설정 */
+  var why=isNv(c)?'고객 화면이 없는 비화면 코너입니다.':!sv?'고객이 고르는 선택지가 없는 코너입니다.':'';
+  h+='<div class="dsec" id="optsec"><h4>노출 옵션 설정</h4>';
+  if(why)h+='<p class="hint">옵션 설정 대상이 아닙니다. '+why+'</p>';
+  else{
+    var noC=!cands.length&&c.omode!=='cond';
+    h+='<div class="opts-row om-row" role="radiogroup" aria-label="노출 옵션 설정"><label class="rd"><input type="radio" name="omode" value="always"'+(c.omode!=='cond'?' checked':'')+(ro?' disabled':'')+'><span>항상 노출</span></label><label class="rd'+(noC?' dis':'')+'"><input type="radio" name="omode" value="cond"'+(c.omode==='cond'?' checked':'')+(ro||noC?' disabled':'')+'><span>조건 설정 후 노출</span></label></div>';
+    if(noC&&!ro)h+='<p class="hint sm">앞에 선택값이 있는 코너가 없어 조건을 설정할 수 없습니다.</p>';
+    if(c.omode==='cond'){
+      c.rules.forEach(function(r,ri){if(ri)h+='<div class="cb-or"><span>OR</span></div>';h+=ruleHTML(c,ri,cands,ro)});
+      if(!ro)h+='<div class="addgrp"><button class="btn outline xs" type="button" data-act="addrule">그룹 추가</button></div>';
+    }else h+='<div class="chk alw">'+sv.map(function(o){return '<label><input type="checkbox" checked disabled>'+esc(o)+'</label>'}).join('')+'</div>';
   }
-  /* 이 코너에 적용되는 선행 코너 조건 (조회) */
-  var on=rulesOn(c);
-  if(on.length)h+='<div class="sub-h">적용되는 선행 조건 <small>선행 코너에서 설정 · 조회 전용</small></div><ul class="rulesOn">'+on.map(function(x){var tx=ruleText(x.src,x.r);return '<li><span class="badge b-emp xs">'+esc(cnm(x.src.id))+'</span><span>'+(tx.cond?esc(tx.cond)+' → ':'')+tx.res+'</span><button type="button" class="lnk" data-goto="'+x.src.id+'">설정 보기</button></li>'}).join('')+'</ul>';
-  if(m.screens)h+='<div class="sub-h">연결 화면 <small>코너 관리에서 등록</small></div><div class="ro"><ol>'+m.screens.map(function(s,i){return '<li class="'+(i===c.p?'cur':'')+'">'+esc(s)+'</li>'}).join('')+'</ol></div>';
+  h+='</div>';
+  if(m.screens)h+='<div class="dsec"><h4>연결 화면 <small>코너 관리에서 등록</small></h4><div class="ro"><ol>'+m.screens.map(function(s,i){return '<li class="'+(i===c.p?'cur':'')+'">'+esc(s)+'</li>'}).join('')+'</ol></div></div>';
   d.innerHTML=h;
 }
 function cdRefresh(){renderCList();renderCDetail();if(vfState)renderVf()}
 function detailClick(e){
   var g=e.target.closest('[data-goto]');if(g){var w=whereIs(g.getAttribute('data-goto'));if(w){cs=openI=w.si;sel=w.c;renderCfg(false);pick(w.c);goAcc(w.si)}return}
+  var gf=e.target.closest('[data-gfold]');if(gf&&sel&&!e.target.closest('[data-act]')){var gr=sel.rules[+gf.getAttribute('data-gfold')];if(gr){gShut.has(gr)?gShut.delete(gr):gShut.add(gr);renderCDetail()}return}
   var b=e.target.closest('[data-act]');if(!b||!sel||!editable())return;
-  var a=b.getAttribute('data-act'),c=sel;
-  if(a==='addtgt')tgtsOf(c).push('');
-  else if(a==='deltgt'){var k=+b.getAttribute('data-k'),L=tgtsOf(c),t=L[k];if(k<L.length)L.splice(k,1);if(t)dropTgt(c,t)}
-  else if(a==='delcorner'){var dp=dependents(c);if(dp.length){toast('선행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 후행 코너로 사용 중입니다. 해당 조건을 먼저 지워주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 컨테이너에서 뺍니다.',function(){var arr=cornersOf();arr.splice(arr.indexOf(c),1);sel=null;renderCfg(false)});return}
+  var a=b.getAttribute('data-act'),c=sel,r=c.rules&&c.rules[+b.getAttribute('data-r')];
+  if(a==='addc'){r.conds.push(NC());r.opts=r.opts.map(function(){return false})}
+  else if(a==='delc'){var ci=+b.getAttribute('data-ci');if(r.conds.length>1)r.conds.splice(ci,1);else r.conds[0]=NC()}
+  else if(a==='addrule')c.rules.push(newRule(c));
+  else if(a==='delrule'){c.rules.splice(+b.getAttribute('data-r'),1);if(!c.rules.length)c.omode='always'}
+  else if(a==='delcorner'){var dp=dependents(c);if(dp.length){toast('후행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 선행 코너로 사용 중입니다. 해당 조건을 먼저 지워주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 컨테이너에서 뺍니다.',function(){var arr=cornersOf();arr.splice(arr.indexOf(c),1);sel=null;renderCfg(false)});return}
   else return;
   cdRefresh();
 }
 function detailChange(e){
   var t=e.target,c=sel;if(!c||!editable())return;
-  if(t.hasAttribute('data-om')){var v=t.getAttribute('data-om');
-    if(v==='always'&&(c.rules||[]).length){t.checked=false;confirmDlg('항상 노출로 바꾸시겠습니까?','이 코너에 설정한 후행 코너 조건이 모두 지워집니다.',function(){c.omode='always';c.rules=[];c.tgts=[];cdRefresh()});cdRefresh();return}
-    c.omode=v;c.rules=c.rules||[];c.tgts=v==='cond'?tgtsOf(c):[];cdRefresh();return}
-  if(t.hasAttribute('data-tg')){var k=+t.getAttribute('data-tg'),L=tgtsOf(c),old=L[k];if(old)dropTgt(c,old);L[k]=t.value;cdRefresh();return}
-  if(t.hasAttribute('data-rv')){setCell(c,t.getAttribute('data-rt'),t.getAttribute('data-rv'),+t.getAttribute('data-ri'),t.checked);cdRefresh();return}
+  if(t.name==='omode'){var v=t.value;
+    if(v==='always'&&(c.rules||[]).length){confirmDlg('항상 노출로 바꾸시겠습니까?','이 코너에 설정한 조건 그룹이 모두 지워집니다.',function(){c.omode='always';c.rules=[];cdRefresh()});cdRefresh();return}
+    c.omode=v;c.rules=v==='cond'?((c.rules||[]).length?c.rules:[newRule(c)]):[];cdRefresh();return}
+  var f=t.getAttribute('data-f');if(!f)return;
+  var r=c.rules[+t.getAttribute('data-r')];if(!r)return;
+  if(f==='src'){var d=r.conds[+t.getAttribute('data-ci')];d.src=t.value;d.vals=[];cdRefresh();return}
+  if(f==='val'){var d2=r.conds[+t.getAttribute('data-ci')],v2=t.getAttribute('data-v'),k=d2.vals.indexOf(v2);if(t.checked&&k<0)d2.vals.push(v2);if(!t.checked&&k>-1)d2.vals.splice(k,1);var s=byIdC(d2.src);if(s)d2.vals.sort(function(x,y){return svOf(s.c).indexOf(x)-svOf(s.c).indexOf(y)})}
+  else if(f==='opt')r.opts[+t.getAttribute('data-i')]=t.checked;
+  cdRefresh();
 }
 function pick(c){sel=c;if(openI!==cs){openI=cs;renderAcc()}renderSt();renderCList();var L=$('list'),lr=L&&L.querySelector('.crow.sel');if(lr){var rb=lr.getBoundingClientRect(),lb=L.getBoundingClientRect();if(rb.top<lb.top||rb.bottom>lb.bottom)L.scrollTop+=rb.top-lb.top-8}renderPreview(false);renderCDetail();var el=$('sg').querySelector('.cimg[data-i="'+cornersOf().indexOf(c)+'"]');if(el){var ps=$('pscroll');ps.scrollTo({top:Math.max(0,ps.scrollTop+el.getBoundingClientRect().top-ps.getBoundingClientRect().top-40),behavior:'smooth'})}}
 document.addEventListener('keydown',function(e){if(e.key!=='Escape'||$('dlg-root').innerHTML||ddOpen)return;closeSheet()});
@@ -583,7 +610,7 @@ $('acc').addEventListener('click',function(e){
   if(b){var act=b.getAttribute('data-a');
     if(act==='up'&&i>0){a.splice(i,1);a.splice(i-1,0,c)}
     else if(act==='down'&&i<a.length-1){a.splice(i,1);a.splice(i+1,0,c)}
-    else if(act==='del'){var dp=dependents(c);if(dp.length){toast('선행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 후행 코너로 사용 중입니다. 해당 조건 그룹을 먼저 삭제해주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 컨테이너에서 뺍니다.',function(){a.splice(a.indexOf(c),1);if(sel===c)sel=null;renderCfg(false)});return}
+    else if(act==='del'){var dp=dependents(c);if(dp.length){toast('후행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 선행 코너로 사용 중입니다. 해당 조건 그룹을 먼저 삭제해주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 컨테이너에서 뺍니다.',function(){a.splice(a.indexOf(c),1);if(sel===c)sel=null;renderCfg(false)});return}
     renderCfg(false);orderWarn();return}
   pick(c);
 });
