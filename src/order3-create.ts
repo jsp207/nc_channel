@@ -16,6 +16,18 @@ var KEY='nova.order-process.v0.2.1';
 /* ---------- 마스터 ---------- */
 /* 정책서 v1.22 3.1·3.3 상품·처리유형 */
 var PTYPES=['단말+회선','회선 요금제','회선 부가서비스','구독','커머스','유선','앱 안내'];
+/* 적용 상품 조회용 전시 상품 (ref/1020_order_mokup.html PRODS 기준, 유형은 PTYPES로 맞춤) */
+var PRODS=[
+  ['S26091603xxxx','iPhone 18','단말+회선','전시중'],['S26091602xxxx','iPhone Pro Max 18','단말+회선','예정'],['S26091601xxxx','iPhone Pro 18','단말+회선','전시중'],['S26091403xxxx','iPhone Air 2','단말+회선','전시중'],
+  ['S26091402xxxx','갤럭시 Z 폴드8','단말+회선','전시중'],['S26091401xxxx','갤럭시 Z 플립8','단말+회선','전시중'],['S26091303xxxx','갤럭시 S27 Ultra','단말+회선','전시중'],['S26091202xxxx','갤럭시 S27+','단말+회선','전시중'],['S26091201xxxx','갤럭시 S27','단말+회선','전시중'],
+  ['S26091302xxxx','베스트 Max(Google AI)','회선 요금제','전시중'],['S26091304xxxx','5G 프리미엄','회선 요금제','전시중'],['S26091305xxxx','5G 라이트','회선 요금제','예정'],
+  ['S26091301xxxx','스마트 콜키퍼','회선 부가서비스','예정'],['S26091203xxxx','V 컬러링','회선 부가서비스','전시중'],
+  ['S26091101xxxx','유튜브 프리미엄 구독','구독','전시중'],['S26091102xxxx','넷플릭스 구독팩','구독','전시중'],
+  ['S26091001xxxx','갤럭시 버즈4 Pro','커머스','전시중'],['S26091002xxxx','갤럭시 워치9','커머스','전시중'],
+  ['S26090901xxxx','기가 인터넷 500M','유선','전시중'],['S26090902xxxx','IPTV 베이직','유선','예정'],
+  ['S26090801xxxx','T world 앱','앱 안내','전시중']
+].map(function(a){return {id:a[0],n:a[1],type:a[2],st:a[3]}});
+function prodOf(id){return PRODS.filter(function(p){return p.id===id})[0]}
 var CHANNELS=['통합web','통합app','BSS'];
 var STAGES=['주문 상세','주문 확인','주문 완료','사후 관리'];
 /* 정책서 v1.22 3.3 분기 축·대표 값 (케이스별 실행 변형 조건축) */
@@ -85,10 +97,10 @@ $('crumb-list').addEventListener('click',function(e){e.preventDefault();if(edita
 var cur=null, mode='view', cs=0, openI=0, sel=null, orig=null;
 function deep(o){return JSON.parse(JSON.stringify(o))}
 function openDetail(id,m){
-  mode=m; cs=0; openI=0; sel=null; vfState=null;
+  mode=m; cs=0; openI=0; sel=null; vfState=null; allOpen=false; shutS=[];
   // 새로 만들 때는 빈 안내 대신 '새로 만들기'를 누른 것처럼 빈 템플릿 1개를 펼친 상태로 시작한다
-  if(m==='new'){cur={id:null,use:'N',cat:'',name:'',ptype:[],ch:['통합app'],status:'초안',appr:'임시 저장',desc:'',stages:[{name:'',screen:'',custom:true,corners:[]}],mod:'',by:''};}
-  else{cur=deep(DB.filter(function(c){return c.id===id})[0]);}
+  if(m==='new'){cur={id:null,use:'N',cat:'',name:'',ptype:[PTYPES[0]],tg:[],ch:['통합app'],status:'초안',appr:'임시 저장',desc:'',stages:[{name:'',screen:'',custom:true,corners:[]}],mod:'',by:''};}
+  else{cur=deep(DB.filter(function(c){return c.id===id})[0]);if(!cur.tg)cur.tg=cur.cat==='특정 전시 상품 프로세스'?PRODS.filter(function(p){return p.type===cur.ptype[0]}).slice(0,1).map(function(p){return p.id}):[];}
   orig=deep(cur);
   $('view-detail').hidden=false;$('d-scroll').scrollTop=0;
   renderDetail();
@@ -120,11 +132,12 @@ function renderDetail(){
   $('b-id').value=cur.id||'';$('b-id').placeholder=cur.id?'':'등록 시 자동채번';
   $('b-name').value=cur.name;$('b-name').disabled=ro;
   $('b-desc').value=cur.desc;$('b-desc').disabled=ro;
-  $('b-cat').value=cur.cat||'';$('b-cat').disabled=ro;
-  $('b-ptype').value=cur.ptype[0]||'';$('b-ptype').disabled=ro;
-  var u=cur.use||(cur.status==='사용중지'?'N':'Y');$('b-use-y').checked=u==='Y';$('b-use-n').checked=u==='N';$('b-use-y').disabled=ro;$('b-use-n').disabled=ro;
+  $('b-ptype').value=cur.ptype[0]||PTYPES[0];cur.ptype=[$('b-ptype').value];$('b-ptype').disabled=ro;
+  $('b-tg').hidden=ro;renderTg();
+  // 사용 여부: 등록 시 N 고정, 승인 완료된 프로세스만 Y / N 선택 가능
+  var u=mode==='new'?'N':cur.use||(cur.status==='사용중지'?'N':'Y');cur.use=u;$('b-use-y').checked=u==='Y';$('b-use-n').checked=u==='N';$('b-use-y').disabled=ro||cur.appr!=='승인 완료';$('b-use-n').disabled=ro;
   syncClr();ddAll();
-  ['e-name','e-ptype','e-cat'].forEach(function(i){$(i).hidden=true});$('b-name').classList.remove('err');
+  $('e-name').hidden=true;$('b-name').classList.remove('err');
 
   renderCfg(false);
   // 하단 바
@@ -133,8 +146,39 @@ function renderDetail(){
   else{f.innerHTML='<div class="l"><span class="dock-sum" id="d-sum"></span><button type="button" class="vfchip" data-a="sheet" aria-expanded="false" aria-controls="vf-sheet">구성 검증 <span class="stc" id="d-vf"></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div><div class="r"><button class="btn outline" type="button" data-a="cancel">취소</button>'+'<button class="btn grey" type="button" data-a="verify">전체 구성 검증</button>'+'<button class="btn filled" type="button" data-a="save">저장</button></div>';}
 }
 (function(){PTYPES.forEach(function(p){var o=document.createElement('option');o.textContent=p;$('b-ptype').appendChild(o)})})();
-$('b-ptype').addEventListener('change',function(){cur.ptype=this.value?[this.value]:[];if(this.value)$('e-ptype').hidden=true});
-$('b-cat').addEventListener('change',function(){cur.cat=this.value;if(this.value)$('e-cat').hidden=true});
+/* 유형을 바꾸면 다른 유형의 적용 상품이 남지 않도록 선택한 상품을 비운다 */
+$('b-ptype').addEventListener('change',function(){var s=this,v=s.value,apply=function(){s.value=v;cur.ptype=[v];cur.tg=[];renderTg();ddAll();renderSt()};
+  if(cur.tg.length){s.value=cur.ptype[0];ddAll();confirmDlg('유형을 변경하시겠습니까?','유형을 변경하면 선택한 적용 상품이 초기화됩니다.',apply)}else apply()});
+/* 적용 상품 = 특정 상품 전용으로 쓸 때만 지정. 지정 여부로 프로세스 구분(cat)을 정한다 */
+function catOf(c){return c.tg&&c.tg.length?'특정 전시 상품 프로세스':c.cat==='세부유형 프로세스'?c.cat:'상품 유형 프로세스'}
+function renderTg(){
+  var ro=!editable(),el=$('tg-list');
+  if(!cur.tg.length){el.innerHTML=ro?'<span class="help">지정된 상품 없음</span>':'';return}
+  el.innerHTML='<div class="tg-box"><div class="tg-h"><span>선택한 상품 <b>'+cur.tg.length+'</b>개</span>'+(ro?'':'<button type="button" class="btn outline sm" data-tg="all">전체 삭제</button>')+'</div><div class="tg-chips">'+cur.tg.map(function(id){var p=prodOf(id);return '<span class="tg-chip">'+esc(p?p.n:id)+(ro?'':'<button type="button" data-tg="'+id+'" aria-label="'+esc(p?p.n:id)+' 삭제">×</button>')+'</span>'}).join('')+'</div></div>';
+}
+$('tg-list').addEventListener('click',function(e){var b=e.target.closest('[data-tg]');if(!b)return;var k=b.getAttribute('data-tg');cur.tg=k==='all'?[]:cur.tg.filter(function(x){return x!==k});renderTg();renderSt()});
+$('b-tg').addEventListener('click',openTg);
+/* 상품 조회 — 현재 유형에 해당하는 전시 상품만 조회, 여러 개 선택 */
+function openTg(){
+  var pt=cur.ptype[0],tmp=cur.tg.slice(),q='',kd='',st={'전시중':1,'예정':1};
+  $('dlg-root').innerHTML='<div class="dim" id="dlg"><div class="cp-dlg tg-dlg" role="dialog" aria-label="상품 조회"><div class="cp-head"><div><b>상품 조회</b></div><button type="button" class="x" data-x aria-label="닫기">✕</button></div><div class="cp-body"><div class="filter cp-filter"><div class="frows"><div class="frow"><div class="fg"><span class="flab">운영 상태</span><div class="chks"><label class="ck"><input type="checkbox" id="tg-s0" checked>전체</label><label class="ck"><input type="checkbox" id="tg-s1" checked>전시중</label><label class="ck"><input type="checkbox" id="tg-s2" checked>예정</label></div></div></div><div class="frow"><div class="fg"><label class="flab" for="tg-kd">검색</label><select class="ctl w140" id="tg-kd"><option value="">전체</option><option value="n">상품명</option><option value="i">전시 ID</option></select><input aria-label="검색어" class="ctl" style="width:200px" id="tg-q" placeholder="내용을 입력하세요." maxlength="30"></div></div></div><div class="fbtns"><button type="button" class="btn grey" id="tg-reset">초기화</button><button type="button" class="btn filled" id="tg-go">조회</button></div></div><div class="rhead cp-rhead"><div class="rtitle">검색 결과</div></div><div class="tblwrap cp-tbl"><table><colgroup><col style="width:56px"><col style="width:150px"><col><col style="width:130px"><col style="width:100px"></colgroup><thead><tr><th class="c">선택</th><th class="c">전시 ID</th><th>상품명</th><th class="c">상품 유형</th><th class="c">운영 상태</th></tr></thead><tbody id="tg-rows"></tbody></table></div></div><div class="cp-foot"><button type="button" class="btn outline" data-x>닫기</button><button type="button" class="btn filled" id="tg-ok">적용</button></div></div></div>';
+  var dlg=$('dlg');
+  function list(){
+    var r=PRODS.filter(function(p){if(p.type!==pt||!st[p.st])return false;if(!q)return true;var a=p.n.toLowerCase().indexOf(q)>=0,b=p.id.toLowerCase().indexOf(q)>=0;return kd==='n'?a:kd==='i'?b:a||b});
+    $('tg-rows').innerHTML=r.length?r.map(function(p){var on=tmp.indexOf(p.id)>=0;return '<tr class="'+(on?'on':'')+'" data-id="'+p.id+'"><td class="c"><label class="ck"><input type="checkbox" aria-label="'+esc(p.n)+' 선택"'+(on?' checked':'')+'></label></td><td class="c">'+p.id+'</td><td class="l">'+esc(p.n)+'</td><td class="c">'+esc(p.type)+'</td><td class="c"><span class="badge xs '+(p.st==='전시중'?'b-run':'b-draft')+'">'+p.st+'</span></td></tr>'}).join(''):'<tr class="none"><td colspan="5">조회된 상품이 없습니다.</td></tr>';
+  }
+  function go(){kd=$('tg-kd').value;q=$('tg-q').value.trim().toLowerCase();st={'전시중':$('tg-s1').checked,'예정':$('tg-s2').checked};list()}
+  dlg.addEventListener('change',function(e){var id=e.target.id;if(id==='tg-s0'){$('tg-s1').checked=$('tg-s2').checked=e.target.checked;go()}else if(id==='tg-s1'||id==='tg-s2'){$('tg-s0').checked=$('tg-s1').checked&&$('tg-s2').checked;go()}});
+  dlg.addEventListener('click',function(e){
+    if(e.target.closest('[data-x]')||e.target===dlg){$('dlg-root').innerHTML='';return}
+    if(e.target.id==='tg-go'){go();return}
+    if(e.target.id==='tg-reset'){$('tg-s0').checked=$('tg-s1').checked=$('tg-s2').checked=true;$('tg-kd').value='';$('tg-q').value='';ddAll(dlg);go();return}
+    var tr=e.target.closest('#tg-rows tr[data-id]');if(tr){e.preventDefault();var id=tr.getAttribute('data-id'),k=tmp.indexOf(id);if(k>=0)tmp.splice(k,1);else tmp.push(id);list();return}
+    if(e.target.closest('#tg-ok')){cur.tg=tmp.slice();$('dlg-root').innerHTML='';renderTg();renderSt();toast(cur.tg.length?'적용 상품 '+cur.tg.length+'개를 선택했어요.':'적용 상품을 지정하지 않았어요.')}
+  });
+  $('tg-q').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  list();
+}
 $('b-use').addEventListener('change',function(e){cur.use=e.target.value});
 document.addEventListener('mousedown',function(e){if(e.target.closest&&e.target.closest('.clr-x'))e.preventDefault()},true);
 function syncClr(){[].forEach.call(document.querySelectorAll('.clr-x'),function(b){var i=$(b.getAttribute('data-clr'));b.hidden=!i.value||i.disabled})}
@@ -147,15 +191,14 @@ $('b-desc').addEventListener('input',function(){cur.desc=this.value});
 /* 전체 구성 검증 — 저장 없이 필수값·탭명·코너·노출 조건·선택지·배치 제약을 한 번에 점검 */
 /* 구성 검증 — 검증 전 / 검증 완료 / 재검증 필요 / 검증 실패(오류·경고) */
 var vfState=null; /* null=검증 전 | {items:[{lv:'err'|'warn',cat,t,si,c}],snap,at} */
-function vfSnap(){return JSON.stringify({n:cur.name,cat:cur.cat,pt:cur.ptype,use:cur.use,st:cur.stages.map(function(s){return {sc:s.screen,c:s.corners.map(function(c){return {id:c.id,om:c.omode,r:c.rules}})}})})}
+function vfSnap(){return JSON.stringify({n:cur.name,pt:cur.ptype,tg:cur.tg,use:cur.use,st:cur.stages.map(function(s){return {sc:s.screen,c:s.corners.map(function(c){return {id:c.id,om:c.omode,r:c.rules}})}})})}
 function vfCollect(){
   var L=[],E=function(cat,t,si,c){L.push({lv:'err',cat:cat,t:t,si:si,c:c})},W=function(cat,t,si,c){L.push({lv:'warn',cat:cat,t:t,si:si,c:c})};
   if(!cur.name.trim())E('설정 항목','기본 정보의 프로세스명이 입력되지 않았습니다.');
-  if(!cur.cat)E('설정 항목','기본 정보의 전시 상품유형이 선택되지 않았습니다.');
-  if(!cur.ptype.length)E('설정 항목','기본 정보의 연결 대상 상품 유형이 선택되지 않았습니다.');
+  if(!cur.ptype.length)E('설정 항목','기본 정보의 유형이 선택되지 않았습니다.');
   if(!cur.stages.length)E('설정 항목','구성된 단계가 없습니다. 새로 만들거나 기존 프로세스를 복제해주세요.');
   cur.stages.forEach(function(s,i){var tn=(s.screen||'').trim()||(i+1)+'번째 단계';
-    if(!(s.screen||'').trim())E('설정 항목',(i+1)+'번째 단계의 템플릿명이 입력되지 않았습니다.',i);
+    if(!(s.screen||'').trim())E('설정 항목',(i+1)+'번째 단계의 컨테이너명이 입력되지 않았습니다.',i);
     if(!s.corners.length)E('설정 항목','\''+tn+'\' 단계에 배치된 코너가 없습니다.',i);
     s.corners.forEach(function(c){var m=CMAP[c.id];if(!m)return;
       if(m.status==='사용중지'||m.status==='폐기')E('코너 상태','\''+m.n+'\' 코너가 코너 관리에서 '+m.status+' 상태로 변경되어 더 이상 사용할 수 없습니다.',i,c);
@@ -214,23 +257,21 @@ $('d-foot').addEventListener('click',function(e){
 });
 function doSave(){
   var ok=true;
-  if(!cur.name.trim()){ok=false;$('e-name').hidden=false;$('b-name').classList.add('err')}
-  if(!cur.cat){ok=false;$('e-cat').hidden=false}
-  if(!cur.ptype.length){ok=false;$('e-ptype').hidden=false}
+  if(!cur.name.trim()){ok=false;$('e-name').hidden=false;$('b-name').classList.add('err');var sb=$('sec-basic');if(sb.classList.contains('closed'))sb.classList.add('anim');sb.classList.remove('closed');sb.querySelector('.fold').setAttribute('aria-expanded','true')}
   var oi=optIssues();if(oi.length){ok=false;sel=oi[0].c;cs=openI=oi[0].si;renderCfg(false);toast(oi[0].t,true)}
   var ve=vfCollect().filter(function(x){return x.lv==='err'});if(ok&&ve.length){ok=false;vfState={items:vfCollect(),snap:vfSnap(),at:''};openSheet();toast('구성 검증에서 오류 '+ve.length+'건이 발견되어 저장할 수 없습니다. 구성 검증 결과를 확인하세요.',true);return}
   if(!ok){$('d-scroll').scrollTop=0;return}
-  var et=cur.stages.findIndex(function(s){return !(s.screen||'').trim()});if(et>=0){cs=openI=et;sel=null;renderCfg(false);goAcc(et);$('scr').focus();toast('템플릿명을 입력하세요.',true);return}
+  var et=cur.stages.findIndex(function(s){return !(s.screen||'').trim()});if(et>=0){cs=openI=et;sel=null;renderCfg(false);goAcc(et);$('scr').focus();toast('컨테이너명을 입력하세요.',true);return}
   if(!ccount(cur)){toast('코너를 1개 이상 배치하세요.',true);return}
   var go=function(){commit(mode==='new'?'프로세스를 등록했습니다.':'저장되었습니다.')};
   go();
 }
 function commit(msg){
-  cur.mod=now();cur.by='김미연';cur.byId='P123456';cur.name=cur.name.trim();
+  cur.cat=catOf(cur);cur.mod=now();cur.by='김미연';cur.byId='P123456';cur.name=cur.name.trim();
   if(!cur.id){cur.id=nextId();DB.unshift(deep(cur))}else{var i=DB.findIndex(function(c){return c.id===cur.id});DB[i]=deep(cur)}
   save();mode='view';orig=deep(cur);renderDetail();toast(msg);
 }
-function startCopy(){var c=deep(cur);c.id=null;c.name=cur.name+' (복제)';c.status='초안';c.appr='임시 저장';c.prod=0;c.stale=false;cur=c;mode='new';orig=deep(cur);cs=0;openI=0;sel=null;renderDetail();$('d-scroll').scrollTop=0;toast('구성을 복제했습니다. 프로세스명을 확인해 주세요.')}
+function startCopy(){var c=deep(cur);c.id=null;c.name=cur.name+' (복제)';c.status='초안';c.appr='임시 저장';c.prod=0;c.stale=false;c.tg=[];c.use='N';cur=c;mode='new';orig=deep(cur);cs=0;openI=0;sel=null;renderDetail();$('d-scroll').scrollTop=0;toast('구성을 복제했습니다. 프로세스명을 확인해 주세요.')}
 function backToList(){window.location.href='index.html#order'}
 
 /* ---------- 프로세스 구성 ---------- */
@@ -248,21 +289,33 @@ function sizeCfg(){var v=$('view-detail');if(v.hidden)return;var s=$('d-scroll')
 function fitPhone(){fitZoom()}
 /* ---------- 템플릿 영역으로 이동 · 상태 배지 ---------- */
 // 템플릿 머리줄이 스크롤 영역 위쪽에 오도록 이동
-function goAcc(i){var s=$('acc').querySelector('.acc[data-s="'+i+'"]'),sc=$('d-scroll');if(!s)return;sc.scrollTo({top:sc.scrollTop+s.getBoundingClientRect().top-sc.getBoundingClientRect().top-12,behavior:'smooth'})}
+// accAdj = 위쪽에서 접히는 중인 템플릿 높이. 접힘이 끝난 뒤의 위치로 스크롤하도록 빼 준다
+function goAcc(i){var s=$('acc').querySelector('.acc[data-s="'+i+'"]'),sc=$('d-scroll'),adj=accAdj;accAdj=0;if(!s)return;sc.scrollTo({top:sc.scrollTop+s.getBoundingClientRect().top-sc.getBoundingClientRect().top-12-adj,behavior:'smooth'})}
+/* 템플릿 접기/펼치기 애니메이션: 본문은 펼친 템플릿만 그리므로, 다시 그리기 전 펼쳐져 있던 본문을 복제해 두고
+   다시 그린 뒤 그 복제본은 높이 0으로 접고(삭제), 새로 펼친 본문은 높이 0에서 펼친다. accFx가 켜진 렌더에서만 동작 */
+var accFx=false,accAdj=0,ACC_MS=300,ACC_EASE='cubic-bezier(.4,0,.2,1)';
+function accMotion(){return !(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)&&!!Element.prototype.animate}
+function accGrow(b){var cs0=getComputedStyle(b),h=b.offsetHeight;b.style.overflow='hidden';
+  b.animate([{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0},{height:h+'px',paddingTop:cs0.paddingTop,paddingBottom:cs0.paddingBottom,opacity:1}],{duration:ACC_MS,easing:ACC_EASE}).onfinish=function(){b.style.overflow=''}}
+function accShrink(g){var h=g.offsetHeight,cs0=getComputedStyle(g);g.style.overflow='hidden';
+  g.animate([{height:h+'px',paddingTop:cs0.paddingTop,paddingBottom:cs0.paddingBottom,opacity:1},{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0}],{duration:ACC_MS,easing:ACC_EASE,fill:'forwards'}).onfinish=function(){var s=g.parentNode;g.remove();if(s)s.classList.remove('closing')}}
 var STL={done:['완료','ok'],todo:['미작성',''],warn:['확인 필요','warn'],bad:['오류','bad']};
 function stc(id,k,t){var el=$(id);if(!el)return;el.textContent=t||STL[k][0];el.className='stc '+STL[k][1]}
 function renderSt(){
   if(!cur)return;
-  stc('st-basic',cur.name.trim()&&cur.cat&&cur.ptype.length?'done':'todo');
+  var bn=cur.name.trim();stc('st-basic',bn&&cur.ptype.length?'done':'todo',bn&&cur.ptype.length?'작성완료':'미작성');
   var n=cur.stages.length,nc=ccount(cur);
   if(mode!=='view'){var ne=vfState?vfState.items.filter(function(x){return x.lv==='err'}).length:0,k=!vfState?'todo':vfSnap()!==vfState.snap?'warn':ne?'bad':'done',t=!vfState?'미검증':vfSnap()!==vfState.snap?'재검증 필요':ne?'오류 '+ne+'건':'';stc('st-vf',k,t);stc('d-vf',k,t)}
-  var d=$('d-sum');if(d)d.innerHTML='<b>템플릿</b><span class="po">'+n+'<small>단계</small></span><b>코너</b><span class="po">'+nc+'<small>개</small></span>';
+  var d=$('d-sum');if(d)d.innerHTML='<b>컨테이너</b><span class="po">'+n+'<small>단계</small></span><b>코너</b><span class="po">'+nc+'<small>개</small></span>';
 }
 document.addEventListener('input',function(e){if(e.target.closest&&e.target.closest('#view-detail'))renderSt()});
 document.addEventListener('change',function(e){if(e.target.closest&&e.target.closest('#view-detail'))renderSt()});
 window.addEventListener('resize',sizeCfg);
+/* 로그인 전에는 .app이 display:none이라 첫 렌더 때 미리보기 폭이 0 → 배율 0으로 빈 화면이 된다.
+   스크롤 영역·폰 화면의 크기가 바뀌면(로그인 후 보이게 될 때 포함) 다시 맞춘다 */
+if(window.ResizeObserver){var pvRO=new ResizeObserver(function(){sizeCfg()});pvRO.observe($('d-scroll'));pvRO.observe($('pscroll'))}
 function renderCfg(anim){setTimeout(renderSt,0);if(vfState)setTimeout(renderVf,0);sizeCfg();var n=cur.stages.length,none=!n;$('cfg-empty').hidden=!none;$('cfg-body').hidden=none;$('tpl-tools').hidden=none;
-  if(none){cs=0;openI=-1;sel=null;$('acc').innerHTML='';renderPreview(anim);renderCDetail();return}
+  if(none){cs=0;openI=-1;sel=null;accFx=false;$('acc').innerHTML='';renderPreview(anim);renderCDetail();return}
   if(cs>=n)cs=n-1;if(openI>=n)openI=n-1;if(openI>=0)cs=openI;
   if(sel&&cornersOf().indexOf(sel)<0)sel=null;
   // 복합형처럼 펼친 템플릿에는 늘 선택된 코너가 있다 (없으면 첫 코너)
@@ -273,39 +326,57 @@ var GRIP='<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><pa
 var CHEV='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
 var KIND={prod:'상품 연동',order:'주문',none:'비화면'};
 function kindOf(id){var m=CMAP[id];if(!m)return 'order';if(m.st==='백그라운드')return 'none';return /^(상품|가격)/.test(m.t)?'prod':'order'}
+/* 펼침 상태: 평소에는 openI 하나만 펼친다. 「펼치기」를 누르면 allOpen — 모든 컨테이너를 펼치고(shutS = 그 중 다시 접은 컨테이너),
+   그중 편집 대상(cs)만 id가 붙은 실제 편집 본문을, 나머지는 목록만 보여주는 본문(data-k)을 그린다. 다른 컨테이너를 누르면 그 컨테이너가 편집 대상이 된다 */
+var allOpen=false,shutS=[];
+function isOpen(i){return allOpen?shutS.indexOf(cur.stages[i])<0:i===openI}
+function anyOpen(){return cur.stages.some(function(s,i){return isOpen(i)})}
 function renderAcc(){
   var ro=!editable(),n=cur.stages.length;
+  var fx=accFx&&accMotion(),olds={};accFx=false;
+  if(fx)[].forEach.call($('acc').querySelectorAll('.acc.open'),function(x){var b=x.querySelector(':scope>.acc-b');if(b)olds[x.getAttribute('data-s')]=b});
   $('acc').innerHTML=cur.stages.map(function(s,i){
-    var o=i===openI,nm=s.screen||s.name,gap=!(s.screen||'').trim()||!s.corners.length;
+    var o=isOpen(i),act=o&&i===cs,I=function(k){return (act?' id="'+k+'"':'')+' data-k="'+k+'"'},nm=s.screen||s.name,gap=!(s.screen||'').trim()||!s.corners.length;
     var mini=s.corners.map(function(c){var k=kindOf(c.id);return '<i class="'+k+'" title="'+esc(cnm(c.id))+' · '+KIND[k]+'"></i>'}).join('');
     var h='<section class="acc'+(o?' open':'')+'" data-s="'+i+'"><header class="acc-h" data-acc="'+i+'">'
-      +(ro?'':'<span class="agrip" draggable="true" title="드래그하여 템플릿 순서 변경">'+GRIP+'</span>')
-      +'<span class="stepn">'+(i+1)+'</span><b class="tn">'+(nm?esc(nm):'<span class="tph">템플릿명 입력</span>')+'</b>'
+      +(ro?'':'<span class="agrip" draggable="true" title="드래그하여 컨테이너 순서 변경">'+GRIP+'</span>')
+      +'<span class="stepn">'+(i+1)+'</span><b class="tn">'+(nm?esc(nm):'<span class="tph">컨테이너명 입력</span>')+'</b>'
       +'<span class="mini" aria-hidden="true">'+mini+'</span><span class="tc">코너 '+s.corners.length+'개</span>'
       +(gap?'<span class="stc warn">확인 필요</span>':'')
-      +(ro||n<2?'':'<button type="button" class="adel" data-tdel="'+i+'" title="템플릿 삭제" aria-label="'+(i+1)+'번 템플릿 삭제">✕</button>')
+      +(ro||n<2?'':'<button type="button" class="adel" data-tdel="'+i+'" title="컨테이너 삭제" aria-label="'+(i+1)+'번 컨테이너 삭제">✕</button>')
       +'<button type="button" class="fold" aria-expanded="'+o+'" aria-label="'+(o?'접기':'펼치기')+'">'+CHEV+'</button></header>';
-    if(o)h+='<div class="acc-b"><p class="lbl req">템플릿명</p><div class="scr"><input class="ctl" id="scr" placeholder="템플릿명을 입력하세요" maxlength="40" value="'+esc(s.screen||'')+'"'+(ro?' disabled':'')+'></div>'
+    if(o)h+='<div class="acc-b"><p class="lbl req">컨테이너명</p><div class="scr"><input class="ctl"'+I('scr')+' placeholder="컨테이너명을 입력하세요" maxlength="40" value="'+esc(s.screen||'')+'"'+(ro?' disabled':'')+'></div>'
       /* 상품 전시 복합형의 구성 영역 편집과 같은 구성: 왼쪽 코너 목록 / 오른쪽 선택한 코너 상세 */
-      +'<div class="ce"><div class="ce-l"><p class="lbl req">코너 구성 <small>'+s.corners.length+'개</small></p><div class="clist" id="list"></div>'
-      +'<p class="lhint" id="lhint" hidden>⠿ 를 드래그해 노출 순서를 바꿉니다. 조건을 건 선행 코너는 후행 코너보다 앞에 있어야 합니다.</p>'
-      +(ro?'':'<button class="addbtn" type="button" id="btn-add">+ 코너 추가</button>')+'<div id="clSum"></div></div>'
-      +'<div class="ce-r" id="detail"></div></div></div>';
+      /* 「코너 구성」 제목은 전체 너비, 그 아래 왼쪽 목록 박스와 오른쪽 상세 박스가 같은 줄에서 시작한다 */
+      +'<p class="lbl req">코너 구성 <small>'+s.corners.length+'개</small></p><div class="ce"><div class="ce-l"><div class="clist"'+I('list')+'></div>'
+      +(ro?'':'<button class="addbtn" type="button"'+I('btn-add')+'>+ 코너 추가</button>')+'<div'+I('clSum')+'></div></div>'
+      +'<div class="ce-r"'+I('detail')+'></div></div></div>';
     return h+'</section>';
   }).join('');
+  // 편집 대상이 아닌 펼친 컨테이너: 코너 목록만 채우고 상세는 안내 문구
+  var cs0=cs,sel0=sel;
+  [].forEach.call($('acc').querySelectorAll('.acc.open'),function(x){var i=+x.getAttribute('data-s');if(i===cs0)return;
+    cs=i;sel=null;renderCList(x);var d=x.querySelector('[data-k="detail"]');if(d)d.innerHTML='<div class="empty">'+(cur.stages[i].corners.length?'코너를 선택하면 상세 설정이 여기에 표시됩니다':'코너를 추가하면 상세 설정이 여기에 표시됩니다')+'</div>'});
+  cs=cs0;sel=sel0;
+  if(fx){
+    [].forEach.call($('acc').querySelectorAll('.acc.open'),function(x){if(!olds[x.getAttribute('data-s')])accGrow(x.querySelector(':scope>.acc-b'))});
+    Object.keys(olds).forEach(function(k){var i=+k,ob=olds[k],os=$('acc').querySelector('.acc[data-s="'+i+'"]');if(!os||isOpen(i))return;
+      [].forEach.call(ob.querySelectorAll('[id],[data-k]'),function(x){x.removeAttribute('id');x.removeAttribute('data-k')});ob.setAttribute('inert','');ob.setAttribute('aria-hidden','true');os.classList.add('closing');os.appendChild(ob);if(cs>i)accAdj+=ob.offsetHeight;accShrink(ob)});
+  }
   $('btn-tadd').hidden=ro;
-  $('btn-foldall').textContent=openI>=0?'모두 접기':'펼치기';
+  $('btn-foldall').textContent=anyOpen()?'모두 접기':'펼치기';
   renderCList();
 }
-function renderCList(){
-  var L=$('list');if(!L)return;
-  $('lhint').hidden=!editable()||cornersOf().length<2;
-  var a=cornersOf(),ro=!editable();
-  var S=$('clSum');
-  if(!a.length){L.innerHTML='<div class="cempty">이 템플릿에 배치된 코너가 없습니다.'+(ro?'':'<br>아래 「코너 추가」로 코너 관리의 코너를 가져오세요.')+'</div>';if(S)S.innerHTML='';return}
+/* box = 편집 대상이 아닌 펼친 컨테이너(section). 없으면 편집 대상 컨테이너(id) */
+function renderCList(box){
+  var q=function(k){return box?box.querySelector('[data-k="'+k+'"]'):$(k)};
+  var L=q('list');if(!L)return;
+  var a=cornersOf(),ro=!editable()||!!box;
+  var S=q('clSum');
+  if(!a.length){L.innerHTML='<div class="cempty">이 컨테이너에 배치된 코너가 없습니다.'+(ro?'':'<br>아래 「코너 추가」로 코너 관리의 코너를 가져오세요.')+'</div>';if(S)S.innerHTML='';return}
   /* 복합형 영역 목록처럼: 후행 코너는 선행 깊이만큼 들여쓰고 「N번 선택에 따라」 칩을 단다 */
   L.innerHTML=a.map(function(c,i){var m=CMAP[c.id],k=kindOf(c.id),dp=dependents(c),nt=c.omode==='cond'?tgtsOf(c).filter(Boolean).length:0;
-    return '<div class="crow'+(c===sel?' sel':'')+'" data-i="'+i+'"'+(ro?'':' draggable="true"')+' style="margin-left:'+condDepthC(c)*14+'px">'+(ro?'':'<span class="grip" title="드래그하여 순서 변경">'+GRIP+'</span>')+'<span class="no">'+(i+1)+'</span><div class="mid"><div class="nm"><span class="t">'+esc(m.n)+'</span></div><div class="sub"><span class="kd '+k+'">'+KIND[k]+'</span> <span class="code">'+m.id+'</span></div>'+(dp.length||nt?'<div class="tags">'+(dp.length?'<span class="cchip acc">'+dp.map(posLabel).join('·')+' 선택에 따라</span>':'')+(nt?'<span class="cchip">후행 '+nt+'개 기준</span>':'')+'</div>':'')+'</div>'+(ro?'':'<button type="button" class="cdel" data-a="del" title="코너 삭제" aria-label="'+esc(m.n)+' 코너 삭제">✕</button>')+'</div>';
+    return '<div class="crow'+(c===sel?' sel':'')+'" data-i="'+i+'"'+(ro?'':' draggable="true"')+' style="margin-left:'+condDepthC(c)*14+'px">'+(ro?'':'<span class="grip" title="드래그하여 순서 변경">'+GRIP+'</span>')+'<span class="no">'+(i+1)+'</span><div class="mid"><div class="nm"><span class="t">'+esc(m.n)+'</span></div><div class="sub"><span class="kd '+k+'">'+KIND[k]+'</span></div>'+(dp.length||nt?'<div class="tags">'+(dp.length?'<span class="cchip acc">'+dp.map(posLabel).join('·')+' 선택에 따라</span>':'')+(nt?'<span class="cchip">후행 '+nt+'개 기준</span>':'')+'</div>':'')+'</div>'+(ro?'':'<button type="button" class="cdel" data-a="del" title="코너 삭제" aria-label="'+esc(m.n)+' 코너 삭제">✕</button>')+'</div>';
   }).join('');
   // 복합형의 미배정 상태 박스처럼 이 템플릿의 조건 상태를 요약
   if(S){var iss=optIssues().filter(function(x){return x.si===cs}).length,nc=a.filter(function(c){return rulesOf(c).length}).length;
@@ -336,7 +407,7 @@ function renderPreview(anim){
   $('sg').innerHTML='<div class="pzoom" id="pzoom">'+h+'</div>';fitZoom();renderProg();
   if(anim){var g=$('sg');g.classList.remove('slide');void g.offsetWidth;g.classList.add('slide')}
 }
-function renderProg(){var el=$('pprog');if(!el||!cur)return;var n=cur.stages.length;var pt=$('pv-stage');if(pt){var s0=cur.stages[cs];pt.textContent=n?(cs+1)+'/'+n+' · '+(s0&&(s0.screen||s0.name)||'템플릿명 미입력'):''}el.setAttribute('aria-valuemin',1);el.setAttribute('aria-valuemax',n);el.setAttribute('aria-valuenow',cs+1);if(el.children.length!==n)el.innerHTML=new Array(n+1).join('<i><b></b></i>');syncProg()}
+function renderProg(){var el=$('pprog');if(!el||!cur)return;var n=cur.stages.length;var pt=$('pv-stage');if(pt){var s0=cur.stages[cs];pt.textContent=n?(cs+1)+'/'+n+' · '+(s0&&(s0.screen||s0.name)||'컨테이너명 미입력'):''}el.setAttribute('aria-valuemin',1);el.setAttribute('aria-valuemax',n);el.setAttribute('aria-valuenow',cs+1);if(el.children.length!==n)el.innerHTML=new Array(n+1).join('<i><b></b></i>');syncProg()}
 function syncProg(){var el=$('pprog'),ps=$('pscroll');if(!el||!ps)return;var m=ps.scrollHeight-ps.clientHeight,r=m>4?Math.min(1,ps.scrollTop/m):1;r=Math.max(r,.12);[].forEach.call(el.children,function(x,i){x.firstChild.style.width=(i<cs?100:i===cs?100:0)+'%'})}
 document.addEventListener('scroll',function(e){if(e.target&&e.target.id==='pscroll')syncProg()},true);
 function fitZoom(){var z=$('pzoom'),ps=$('pscroll'),g=$('sg');if(!z||!ps)return;var k=ps.clientWidth/375;['phd','pft'].forEach(function(id){var w=$(id),i=w.firstChild;i.style.transform='scale('+k.toFixed(4)+')';w.style.height=Math.ceil(i.offsetHeight*k)+'px'});z.style.transform='scale('+k.toFixed(4)+')';g.style.height=Math.ceil(z.offsetHeight*k)+'px'}
@@ -455,7 +526,7 @@ function detailClick(e){
   var a=b.getAttribute('data-act'),c=sel;
   if(a==='addtgt')tgtsOf(c).push('');
   else if(a==='deltgt'){var k=+b.getAttribute('data-k'),L=tgtsOf(c),t=L[k];if(k<L.length)L.splice(k,1);if(t)dropTgt(c,t)}
-  else if(a==='delcorner'){var dp=dependents(c);if(dp.length){toast('선행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 후행 코너로 사용 중입니다. 해당 조건을 먼저 지워주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 템플릿에서 뺍니다.',function(){var arr=cornersOf();arr.splice(arr.indexOf(c),1);sel=null;renderCfg(false)});return}
+  else if(a==='delcorner'){var dp=dependents(c);if(dp.length){toast('선행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 후행 코너로 사용 중입니다. 해당 조건을 먼저 지워주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 컨테이너에서 뺍니다.',function(){var arr=cornersOf();arr.splice(arr.indexOf(c),1);sel=null;renderCfg(false)});return}
   else return;
   cdRefresh();
 }
@@ -472,10 +543,14 @@ document.addEventListener('keydown',function(e){if(e.key!=='Escape'||$('dlg-root
 
 /* 템플릿 삭제·이동은 펼친 템플릿/미리보기 대상 템플릿을 객체 기준으로 다시 찾는다 */
 function keepPos(fn){var os=openI>=0?cur.stages[openI]:null,cst=cur.stages[cs];fn();openI=os?cur.stages.indexOf(os):-1;cs=cur.stages.indexOf(cst);if(cs<0)cs=Math.max(0,Math.min(cur.stages.length-1,openI));}
-function delStage(di){var st=cur.stages[di],nm=st.screen||st.name||(di+1)+'번 템플릿';
-  var go=function(){var wasOpen=openI===di;keepPos(function(){cur.stages.splice(di,1)});if(wasOpen&&cur.stages.length)cs=openI=Math.min(di,cur.stages.length-1);sel=null;renderCfg(false);toast('「'+nm+'」 템플릿을 삭제했습니다.')};
-  confirmDlg('「'+nm+'」 템플릿을 삭제하시겠습니까?',st.corners.length?'템플릿에 배치된 코너 '+st.corners.length+'개도 함께 빠집니다.':'삭제한 템플릿은 저장 전까지 취소로 되돌릴 수 있습니다.',go)}
-function toggleAcc(i){if(openI===i){openI=-1;sel=null;renderCfg(false);return}cs=openI=i;sel=null;$('pscroll').scrollTop=0;renderCfg(true);goAcc(i)}
+function delStage(di){var st=cur.stages[di],nm=st.screen||st.name||(di+1)+'번 컨테이너';
+  var go=function(){var wasOpen=openI===di;keepPos(function(){cur.stages.splice(di,1)});if(wasOpen&&cur.stages.length)cs=openI=Math.min(di,cur.stages.length-1);sel=null;renderCfg(false);toast('「'+nm+'」 컨테이너를 삭제했습니다.')};
+  confirmDlg('「'+nm+'」 컨테이너를 삭제하시겠습니까?',st.corners.length?'컨테이너에 배치된 코너 '+st.corners.length+'개도 함께 빠집니다.':'삭제한 컨테이너는 저장 전까지 취소로 되돌릴 수 있습니다.',go)}
+function toggleAcc(i){accFx=true;
+  if(allOpen){var st=cur.stages[i];
+    if(isOpen(i)){shutS.push(st);if(i===cs){var j=cur.stages.findIndex(function(x,k){return isOpen(k)});if(j>=0){cs=openI=j}else{allOpen=false;shutS=[];openI=-1}}sel=null;renderCfg(false);return}
+    shutS=shutS.filter(function(x){return x!==st});cs=openI=i;sel=null;$('pscroll').scrollTop=0;renderCfg(true);goAcc(i);return}
+  if(openI===i){openI=-1;sel=null;renderCfg(false);return}cs=openI=i;sel=null;$('pscroll').scrollTop=0;renderCfg(true);goAcc(i)}
 /* Tab 키 이동은 템플릿 단위: 다른 템플릿으로 포커스가 넘어가면 그 템플릿을 펼치고 나머지는 접는다.
    앞으로(Tab)는 머리줄의 같은 버튼에, 뒤로(Shift+Tab)는 펼친 템플릿의 마지막 입력 요소에 포커스를 둔다 */
 var tabKey=null;
@@ -485,13 +560,20 @@ $('acc').addEventListener('focusin',function(e){
   var dir=tabKey;tabKey=null;if(!dir)return;
   var sec=e.target.closest('.acc');if(!sec)return;var i=+sec.getAttribute('data-s');if(i===openI)return;
   var kind=e.target.classList.contains('adel')?'.adel':'.fold';
-  cs=openI=i;sel=null;$('pscroll').scrollTop=0;renderCfg(true);
+  // 탭으로 다른 컨테이너에 들어오면 그 컨테이너만 펼친다(모두 펼친 상태도 해제)
+  allOpen=false;shutS=[];cs=openI=i;sel=null;$('pscroll').scrollTop=0;accFx=true;renderCfg(true);
   var ns=$('acc').querySelector('.acc[data-s="'+i+'"]');if(!ns)return;
   var t=dir==='back'?[].filter.call(ns.querySelectorAll('button,input,select,textarea,[tabindex]:not([tabindex="-1"])'),function(x){return !x.disabled&&!x.closest('[hidden]')&&x.offsetParent!==null}).pop():ns.querySelector('.acc-h '+kind);
   if(dir==='back'&&t)t.focus();else{(t||ns.querySelector('.acc-h .fold')).focus({preventScroll:true});goAcc(i)}});
-$('btn-foldall').addEventListener('click',function(){if(openI>=0){openI=-1;sel=null;renderCfg(false)}else toggleAcc(cs)});
-$('btn-tadd').addEventListener('click',function(){newStage();toast('템플릿을 추가했습니다. 템플릿명을 입력해 주세요.')});
+/* 모두 접기 ↔ 펼치기(모든 컨테이너 펼침, 기본 정보는 그대로) */
+$('btn-foldall').addEventListener('click',function(){accFx=true;sel=null;if(anyOpen()){allOpen=false;shutS=[];openI=-1}else{allOpen=true;shutS=[];openI=cs}renderCfg(false)});
+$('btn-tadd').addEventListener('click',function(){afterBasicFold(newStage)});
 $('acc').addEventListener('click',function(e){
+  // 모두 펼친 상태에서 편집 대상이 아닌 컨테이너 본문을 누르면 그 컨테이너를 편집 대상으로 바꾼다(누른 코너 선택·입력칸 포커스·코너 추가 이어서)
+  if(allOpen&&!e.target.closest('.acc-h')){var ax=e.target.closest('.acc'),ai=ax?+ax.getAttribute('data-s'):-1;
+    if(ai>=0&&ai!==cs&&e.target.closest('.acc-b')){var ar=e.target.closest('.crow'),wScr=e.target.closest('[data-k="scr"]'),wAdd=e.target.closest('[data-k="btn-add"]');
+      cs=openI=ai;sel=ar?cur.stages[ai].corners[+ar.getAttribute('data-i')]:null;$('pscroll').scrollTop=0;renderCfg(true);
+      if(wScr&&$('scr'))$('scr').focus();if(wAdd){ensureEdit();openAdd()}return}}
   if(e.target.closest('#detail')){detailClick(e);return}
   var d=e.target.closest('[data-tdel]');if(d){if(editable())delStage(+d.getAttribute('data-tdel'));return}
   var h=e.target.closest('.acc-h');if(h){if(e.target.closest('.agrip'))return;toggleAcc(+h.getAttribute('data-acc'));return}
@@ -501,12 +583,12 @@ $('acc').addEventListener('click',function(e){
   if(b){var act=b.getAttribute('data-a');
     if(act==='up'&&i>0){a.splice(i,1);a.splice(i-1,0,c)}
     else if(act==='down'&&i<a.length-1){a.splice(i,1);a.splice(i+1,0,c)}
-    else if(act==='del'){var dp=dependents(c);if(dp.length){toast('선행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 후행 코너로 사용 중입니다. 해당 조건 그룹을 먼저 삭제해주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 템플릿에서 뺍니다.',function(){a.splice(a.indexOf(c),1);if(sel===c)sel=null;renderCfg(false)});return}
+    else if(act==='del'){var dp=dependents(c);if(dp.length){toast('선행 코너 「'+cnm(dp[0].id)+'」의 노출 옵션 설정에서 이 코너를 후행 코너로 사용 중입니다. 해당 조건 그룹을 먼저 삭제해주세요.',true);return}confirmDlg('코너를 삭제하시겠습니까?','「'+cnm(c.id)+'」을(를) 이 컨테이너에서 뺍니다.',function(){a.splice(a.indexOf(c),1);if(sel===c)sel=null;renderCfg(false)});return}
     renderCfg(false);orderWarn();return}
   pick(c);
 });
 $('acc').addEventListener('change',function(e){if(e.target.closest('#detail'))detailChange(e)});
-$('acc').addEventListener('input',function(e){if(e.target.id!=='scr')return;stg().screen=e.target.value;var t=$('acc').querySelector('.acc[data-s="'+cs+'"] .tn');if(t)t.innerHTML=e.target.value?esc(e.target.value):'<span class="tph">템플릿명 입력</span>';renderProg();if(sel)renderCDetail()});
+$('acc').addEventListener('input',function(e){if(e.target.id!=='scr')return;stg().screen=e.target.value;var t=$('acc').querySelector('.acc[data-s="'+cs+'"] .tn');if(t)t.innerHTML=e.target.value?esc(e.target.value):'<span class="tph">컨테이너명 입력</span>';renderProg();if(sel)renderCDetail()});
 /* 드래그: 코너 행(같은 템플릿 안 순서) / 템플릿 머리줄 ⠿ (템플릿 순서) */
 var dragI=null,dragS=null;
 function clrOver(){[].forEach.call($('acc').querySelectorAll('.over'),function(x){x.classList.remove('over')})}
@@ -595,7 +677,7 @@ function stageIsEmpty(){return !ccount(cur)}
 function useOf(c){return c.use||(c.status==='사용중지'?'N':'Y')}
 function openCopy(){
   var pt='',q='',qa='',pt0='',pickId=null;
-  $('dlg-root').innerHTML='<div class="dim" id="dlg"><div class="cp-dlg" role="dialog" aria-label="복제하기"><div class="cp-head"><div><b>복제하기</b><span>복제할 프로세스를 선택하세요.</span></div><button type="button" class="x" data-x aria-label="닫기">✕</button></div><div class="cp-body"><div class="filter cp-filter"><div class="frows"><div class="frow"><div class="fg"><label class="flab" for="cp-pt">검색 조건</label><select class="ctl w180" id="cp-pt"><option value="">상품 유형 전체</option>'+PTYPES.map(function(p){return '<option>'+esc(p)+'</option>'}).join('')+'</select><input aria-label="검색어" class="ctl" style="width:200px" id="cp-q" placeholder="프로세스명 또는 ID 입력" maxlength="30"></div></div></div><div class="fbtns"><button type="button" class="btn grey" id="cp-reset">초기화</button><button type="button" class="btn filled" id="cp-go">조회</button></div></div><div class="rhead cp-rhead"><div class="rtitle">조회 결과 <span class="cnt" id="cp-cnt"></span></div></div><div class="tblwrap cp-tbl"><table><colgroup><col style="width:44px"><col><col style="width:110px"><col style="width:130px"><col style="width:110px"><col style="width:80px"></colgroup><thead><tr><th></th><th>프로세스명</th><th class="c">ID</th><th class="c">상품 유형</th><th class="c">단계/코너</th><th class="c">사용</th></tr></thead><tbody id="cp-rows"></tbody></table></div><ul class="cp-note"><li>단계와 코너 구성만 복제됩니다. 프로세스명·ID·설명 등 기본 정보는 현재 입력값이 유지됩니다.</li><li>연동 상품과 사용 여부는 복제되지 않습니다.</li><li>복제한 구성은 등록 화면에서 자유롭게 수정할 수 있습니다.</li></ul></div><div class="cp-foot"><button type="button" class="btn outline" data-x>취소</button><button type="button" class="btn filled" id="cp-ok" disabled>확인</button></div></div></div>';
+  $('dlg-root').innerHTML='<div class="dim" id="dlg"><div class="cp-dlg tg-dlg" role="dialog" aria-label="복제하기"><div class="cp-head"><div><b>복제하기</b><span>복제할 프로세스를 선택하세요.</span></div><button type="button" class="x" data-x aria-label="닫기">✕</button></div><div class="cp-body"><div class="filter cp-filter"><div class="frows"><div class="frow"><div class="fg"><label class="flab" for="cp-pt">검색 조건</label><select class="ctl w180" id="cp-pt"><option value="">상품 유형 전체</option>'+PTYPES.map(function(p){return '<option>'+esc(p)+'</option>'}).join('')+'</select><input aria-label="검색어" class="ctl" style="width:200px" id="cp-q" placeholder="프로세스명 또는 ID 입력" maxlength="30"></div></div></div><div class="fbtns"><button type="button" class="btn grey" id="cp-reset">초기화</button><button type="button" class="btn filled" id="cp-go">조회</button></div></div><div class="rhead cp-rhead"><div class="rtitle">조회 결과 <span class="cnt" id="cp-cnt"></span></div></div><div class="tblwrap cp-tbl"><table><colgroup><col style="width:44px"><col><col style="width:110px"><col style="width:130px"><col style="width:110px"><col style="width:80px"></colgroup><thead><tr><th></th><th>프로세스명</th><th class="c">ID</th><th class="c">상품 유형</th><th class="c">단계/코너</th><th class="c">사용</th></tr></thead><tbody id="cp-rows"></tbody></table></div><ul class="cp-note"><li>단계와 코너 구성만 복제됩니다. 프로세스명·ID·설명 등 기본 정보는 현재 입력값이 유지됩니다.</li><li>연동 상품과 사용 여부는 복제되지 않습니다.</li><li>복제한 구성은 등록 화면에서 자유롭게 수정할 수 있습니다.</li></ul></div><div class="cp-foot"><button type="button" class="btn outline" data-x>취소</button><button type="button" class="btn filled" id="cp-ok" disabled>확인</button></div></div></div>';
   var dlg=$('dlg');
   function list(){
     var r=DB.filter(function(c){return c.id!==cur.id&&(!pt0||(c.ptype||[]).indexOf(pt0)>=0)&&(!qa||(c.name+' '+c.id).toLowerCase().indexOf(qa.toLowerCase())>=0)});
@@ -619,16 +701,33 @@ function openCopy(){
   $('cp-q').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
   list();
 }
-function newStage(){ensureEdit();cur.stages.push({name:'',screen:'',custom:true,corners:[]});cs=openI=cur.stages.length-1;sel=null;renderCfg(true);goAcc(cs);var s=$('scr');if(s)s.focus({preventScroll:true})}
-$('ce-new').addEventListener('click',function(){newStage()});
+function newStage(){ensureEdit();accFx=true;cur.stages.push({name:'',screen:'',custom:true,corners:[]});cs=openI=cur.stages.length-1;sel=null;renderCfg(true);goAcc(cs);var s=$('scr');if(s)s.focus({preventScroll:true})}
+$('ce-new').addEventListener('click',function(){afterBasicFold(newStage)});
+/* 템플릿 추가 버튼을 누르면 먼저 기본 정보가 접히므로(autoFold), 접힘·스크롤 보정이 끝난 뒤 새 템플릿을 만들고 그 위치로 스크롤한다 */
+var basicFoldEnd=0;
+function afterBasicFold(fn){var w=basicFoldEnd-performance.now();if(w>0)setTimeout(fn,w);else fn()}
 /* 기본 정보 아코디언: 머리줄을 누르면 접고 펼친다. 템플릿·코너 설정 영역에 포커스(클릭·탭 이동)가 들어오면 자동으로 접는다 */
 (function(){var s=$('sec-basic'),h=s.querySelector(':scope>header'),b=h.querySelector('.fold');
-  function set(open){s.classList.toggle('closed',!open);b.setAttribute('aria-expanded',String(open));b.setAttribute('aria-label',open?'접기':'펼치기')}
+  /* anim = 전환 중에만 내용을 잘라내는 표시. 높이 전환이 끝나면 뗀다 */
+  function set(open){s.classList.add('anim');s.classList.toggle('closed',!open);b.setAttribute('aria-expanded',String(open));b.setAttribute('aria-label',open?'접기':'펼치기')}
+  s.querySelector(':scope>.body').addEventListener('transitionend',function(e){if(e.target===this&&e.propertyName==='grid-template-rows')s.classList.remove('anim')});
   h.addEventListener('click',function(){set(s.classList.contains('closed'))});
-  /* 접히면서 아래 내용이 위로 당겨지므로, 스크롤을 같은 만큼 보정해 누르던 위치가 커서 아래에서 움직이지 않게 한다 */
-  function autoFold(){if(s.classList.contains('closed'))return;var t=$('sec-tpl'),sc=$('d-scroll'),y=t.getBoundingClientRect().top;set(false);sc.scrollTop-=y-t.getBoundingClientRect().top}
-  $('sec-tpl').addEventListener('focusin',autoFold);
-  $('sec-tpl').addEventListener('pointerdown',autoFold)})();
+  /* 접히면서 아래 내용이 위로 당겨지므로, 애니메이션 동안 매 프레임 스크롤을 같은 만큼 보정해 누르던 위치가 커서 아래에서 움직이지 않게 한다 */
+  function autoFold(){if(s.classList.contains('closed'))return;var t=$('sec-tpl'),sc=$('d-scroll'),y=t.getBoundingClientRect().top,t0=performance.now();basicFoldEnd=t0+360;set(false);
+    (function keep(){sc.scrollTop-=y-t.getBoundingClientRect().top;if(performance.now()-t0<360)requestAnimationFrame(keep)})()}
+  /* 누르는 순간(pointerdown·그로 인한 focusin) 접으면, 스크롤이 맨 위라 보정할 수 없을 때 버튼이 커서 아래에서 위로 밀려
+     떼는 위치가 달라져 클릭이 사라진다(모두 접기 등이 안 먹던 원인). 마우스는 클릭이 끝난 뒤(click 캡처) 접고, 키보드 포커스 이동만 focusin으로 접는다 */
+  var ptr=false;
+  $('sec-tpl').addEventListener('pointerdown',function(){ptr=true},true);
+  document.addEventListener('pointerup',function(){setTimeout(function(){ptr=false},0)},true);
+  $('sec-tpl').addEventListener('focusin',function(){if(!ptr)autoFold()});
+  $('sec-tpl').addEventListener('click',autoFold,true);
+  /* 탭 키로 기본 정보에 들어오면(Shift+Tab으로 돌아온 경우 포함) 기본 정보를 펼치고 펼쳐진 컨테이너는 모두 접는다 */
+  var kbd=false;
+  document.addEventListener('keydown',function(e){if(e.key==='Tab')kbd=true},true);
+  document.addEventListener('pointerdown',function(){kbd=false},true);
+  s.addEventListener('focusin',function(){if(!kbd)return;if(s.classList.contains('closed'))set(true);
+    if(cur&&cur.stages.length&&anyOpen()){allOpen=false;shutS=[];openI=-1;sel=null;accFx=true;renderCfg(false)}})})();
 $('ce-copy').addEventListener('click',function(){ensureEdit();openCopy()});
 /* 코너 추가 = 주문 코너 관리에 등록된 BO 코너(코너 ID)를 불러오기
    - 코너 = FO 빈껍데기(SBS-CMP) + BO 입력값 + 노출 조건 + 배치 제약/선·후행 → 코너 관리에서 확정
@@ -640,8 +739,9 @@ function openAdd(){
   var rec=stg().custom?[]:CORNERS.filter(function(c){return c.stage===stg().name&&!used[c.id]&&ADDABLE[c.status]});
   pid=(rec[0]||CORNERS.filter(function(c){return !used[c.id]&&ADDABLE[c.status]})[0]||CORNERS[0]).id;
   var areas=[];CORNERS.forEach(function(c){if(areas.indexOf(c.t)<0)areas.push(c.t)});
-  $('dlg-root').innerHTML='<div class="dim" id="dlg"><div class="ca-dlg" role="dialog" aria-label="코너 추가"><div class="ca-head"><b>코너 추가</b><span>주문 코너 관리에 등록된 코너를 불러옵니다. 화면 구성·배치 제약은 코너 관리 값을 따르고, 프로세스에서는 노출 조건과 순서만 바꿀 수 있습니다.</span><button type="button" class="x" data-x aria-label="닫기">✕</button></div><div class="ca-body"><div class="ca-left"><div class="ca-srch"><select class="ctl" id="ca-area"><option value="">업무영역 전체</option>'+areas.map(function(a){return '<option>'+esc(a)+'</option>'}).join('')+'</select><input class="ctl" id="ca-q" placeholder="코너명·코너 ID 검색 (예: 요금제, PAY-M01)"></div><div class="ca-hint">「'+esc(tab)+'」 탭 맨 아래에 추가됩니다 · 운영·검증완료 코너만 추가할 수 있습니다</div><div class="ca-list" id="ca-list"></div></div><div class="ca-right"><div class="ca-scroll" id="ca-view"></div><div class="ca-foot"><label class="chk" id="ca-rel-w"><input type="checkbox" id="ca-rel" checked><span id="ca-rel-t"></span></label><button type="button" class="ca-add" id="ca-add">이 코너로 추가</button></div></div></div></div></div>';
-  function item(c){var u=used[c.id],na=!ADDABLE[c.status],sh=c.bo&&c.bo.shell;return '<button type="button" class="ca-item'+(c.id===pid?' on':'')+(u||na?' used':'')+'" data-id="'+c.id+'"><span class="tx"><span class="r1"><span class="cid">'+c.id+'</span>'+(c.status!=='운영'?sbadge(c.status):'')+(u?'<span class="badge b-draft xs">'+esc(u)+' 배치됨</span>':'')+'</span><b>'+esc(c.n)+'</b><span class="meta">'+esc(c.ft)+' · '+(sh?esc(sh.name):'빈껍데기 미지정')+' · v'+esc(c.ver||'-')+'</span></span></button>'}
+  $('dlg-root').innerHTML='<div class="dim" id="dlg"><div class="ca-dlg" role="dialog" aria-label="코너 추가"><div class="ca-head"><b>코너 추가</b><button type="button" class="x" data-x aria-label="닫기">✕</button></div><div class="ca-body"><div class="ca-left"><div class="ca-srch"><select class="ctl" id="ca-area"><option value="">전체</option>'+areas.map(function(a){return '<option>'+esc(a)+'</option>'}).join('')+'</select><input class="ctl" id="ca-q" aria-label="코너명·코너 ID 검색" placeholder="입력하세요"></div><div class="ca-list" id="ca-list"></div></div><div class="ca-right"><div class="ca-scroll" id="ca-view"></div><div class="ca-foot"><label class="chk" id="ca-rel-w"><input type="checkbox" id="ca-rel" checked><span id="ca-rel-t"></span></label><button type="button" class="ca-add" id="ca-add">이 코너로 추가</button></div></div></div></div></div>';
+  /* 목록은 코너명 + 기능유형·빈껍데기·버전만. 코너 ID·상태는 오른쪽 상세에서 보여준다 */
+  function item(c){var u=used[c.id],na=!ADDABLE[c.status],sh=c.bo&&c.bo.shell;return '<button type="button" class="ca-item'+(c.id===pid?' on':'')+(u||na?' used':'')+'" data-id="'+c.id+'"><span class="tx"><b>'+esc(c.n)+'</b><span class="meta">'+esc(c.ft)+' · '+(sh?esc(sh.name):'빈껍데기 미지정')+' · v'+esc(c.ver||'-')+'</span></span></button>'}
   function list(){
     var ql=q.toLowerCase(),f=CORNERS.filter(function(c){return (!ql||(c.n+c.id+c.scr+c.t).toLowerCase().indexOf(ql)>=0)&&(!area||c.t===area)});
     var h='',r=f.filter(function(c){return rec.indexOf(c)>=0});
@@ -656,10 +756,10 @@ function openAdd(){
     var node=function(id){return '<span class="ca-node"><span class="cid">'+id+'</span>'+esc(cnm(id))+(used[id]?'<em>'+esc(used[id])+'</em>':'')+'</span>'};
     var rules=[];(c.together||[]).forEach(function(id){rules.push('<li><b>같은 탭에 함께 배치</b>'+node(id)+'</li>')});(c.after||[]).forEach(function(id){rules.push('<li><b>바로 뒤에 배치</b>'+node(id)+'</li>')});if(c.solo)rules.push('<li><b>단독 탭으로 배치</b><span class="g">다른 코너와 같은 탭에 둘 수 없음</span></li>');
     var pvd={ftype:b.ft||c.ft,stype:b.st||c.st,title:b.title||c.n,sub:b.sub,ui:b.ui,items:b.items,notice:b.notice,noticeKind:b.noticeKind,skip:b.skip,cta:b.cta,more:b.more,badge:b.badge};
-    $('ca-view').innerHTML='<div class="ca-ttl"><span class="cid lg">'+c.id+'</span><b>'+esc(c.n)+'</b><span class="vtag">v'+esc(c.ver||'-')+'</span>'+sbadge(c.status)+'</div><div class="ca-desc">'+esc(c.t)+' · '+esc(c.ft)+' · '+esc(c.st)+' · 완료 '+esc(c.done)+(c.ch?' · '+esc(c.ch.join('·')):'')+(c.by?' · 최종 수정 '+esc(c.by)+' '+esc(c.at||''):'')+'</div>'
-      +'<div class="ca-panel"><div class="ca-pl"><b>화면 구성</b><span>'+(FOX[c.id]?'FO 빈껍데기에 코너 관리 입력값이 채워진 실제 FO 화면':'FO 빈껍데기에 코너 관리에서 입력한 값이 채워진 상태')+'</span></div><div class="ca-shell">'+(sh?'<span class="shellchip">◫ '+esc(sh.name)+' <span class="cid g">'+sh.id+' v'+sh.ver+'</span></span>':'<span class="shellchip none">FO 빈껍데기 미지정</span>')+'</div>'+(FOX[c.id]?'<div class="ca-fo"><div class="pzoom"><div class="fs">'+foHtml(c,null)+'</div></div></div>':'<div class="bo-pv">'+boPreview(pvd)+'</div>')+'<p class="help" style="margin:10px 0 0">가격·요금제 등 연동값은 주문 시 원천에서 채워집니다. 문구·항목 수정은 코너 관리(ADM-MOD-02)에서 합니다.</p></div>'
-      +'<div class="ca-panel"><div class="ca-pl"><b>기본 노출 조건</b><span>추가 후 이 프로세스에서 변경 가능</span></div><div class="ca-when">'+(e.mode==='cond'?'WHEN <code>'+esc(whenTxt(e.groups))+'</code>':'항상 노출 / 적용')+'</div></div>'
-      +'<div class="ca-panel"><div class="ca-pl"><b>배치 제약</b><span>코너 관리 등록 · 프로세스에서 지켜야 함</span></div>'+(rules.length?'<ul class="ca-rules">'+rules.join('')+'</ul>':'<p class="help" style="margin:0">배치 제약 없음 · 순서를 자유롭게 정할 수 있습니다.</p>')+'</div>'
+    $('ca-view').innerHTML='<div class="ca-ttl"><span class="cid lg">'+c.id+'</span><b>'+esc(c.n)+'</b><span class="vtag">v'+esc(c.ver||'-')+'</span>'+sbadge(c.status)+'</div>'
+      +'<div class="ca-panel"><div class="ca-pl"><b>화면 구성</b></div>'+(FOX[c.id]?'<div class="ca-fo"><div class="pzoom"><div class="fs">'+foHtml(c,null)+'</div></div></div>':'<div class="bo-pv">'+boPreview(pvd)+'</div>')+'</div>'
+      +'<div class="ca-panel"><div class="ca-pl"><b>기본 노출 조건</b></div><div class="ca-when">'+(e.mode==='cond'?'WHEN <code>'+esc(whenTxt(e.groups))+'</code>':'항상 노출 / 적용')+'</div></div>'
+      +'<div class="ca-panel"><div class="ca-pl"><b>배치 제약</b></div>'+(rules.length?'<ul class="ca-rules">'+rules.join('')+'</ul>':'<p class="help" style="margin:0">배치 제약 없음 · 순서를 자유롭게 정할 수 있습니다.</p>')+'</div>'
       +'<div class="ca-panel"><div class="ca-pl"><b>선·후행 흐름</b><span>참고</span></div><div class="ca-flow"><div>'+((c.prev||[]).length?c.prev.map(node).join(''):'<span class="g">선행 없음</span>')+'</div><i>→</i><div><span class="ca-node me"><span class="cid">'+c.id+'</span>'+esc(c.n)+'</span></div><i>→</i><div>'+((c.next||[]).length?c.next.map(node).join(''):'<span class="g">후행 없음</span>')+'</div></div></div>';
     var btn=$('ca-add'),na=!ADDABLE[c.status],rl=relOf(c);
     btn.disabled=!!u||na;btn.textContent=u?'이미 「'+u+'」에 배치된 코너입니다':na?(c.status+' 코너는 추가할 수 없습니다'):'이 코너로 추가';
@@ -751,7 +851,7 @@ function ddEnhance(s){
 function ddShow(b){
   ddClose();var s=b._sel;if(s.disabled)return;
   var l=document.createElement('div');l.className='dd-list';l.setAttribute('role','listbox');
-  l.innerHTML=[].map.call(s.options,function(o,i){return '<div class="dd-opt'+(i===s.selectedIndex?' sel':'')+'" role="option" data-i="'+i+'">'+esc(o.textContent)+'</div>'}).join('');
+  l.innerHTML=[].map.call(s.options,function(o,i){return '<div class="dd-opt'+(i===s.selectedIndex?' sel':'')+'" role="option" aria-selected="'+(i===s.selectedIndex)+'" data-i="'+i+'">'+esc(o.textContent)+'</div>'}).join('');
   document.body.appendChild(l);
   var r=b.getBoundingClientRect(),vh=window.innerHeight;
   l.style.minWidth=r.width+'px';l.style.left=Math.min(r.left,window.innerWidth-l.offsetWidth-8)+'px';
