@@ -21,12 +21,13 @@
     <div class="ws" id="ws">
 
       <section id="view-detail">
-        <nav class="crumb" aria-label="현재 위치"><span>홈</span><span>주문 관리</span><span><a href="index.html#order" class="crumb-link" id="crumb-list">주문 프로세스 관리</a></span><span><b id="d-crumb">프로세스 상세</b></span></nav>
-        <div class="phead">
-          <h1><span id="d-title">프로세스 상세</span><span class="badge" id="d-status" hidden></span></h1>
-          <div class="acts" id="d-acts"></div>
-        </div>
         <div class="ws-scroll" id="d-scroll">
+          <!-- 상품 전시 관리와 같이 위치·제목도 본문과 함께 스크롤된다 -->
+          <nav class="crumb" aria-label="현재 위치"><span>홈</span><span>주문 관리</span><span><a href="index.html#order" class="crumb-link" id="crumb-list">주문 프로세스 관리</a></span><span><b id="d-crumb">프로세스 상세</b></span></nav>
+          <div class="phead">
+            <h1><span id="d-title">프로세스 상세</span><span class="badge" id="d-status" hidden></span></h1>
+            <div class="acts" id="d-acts"></div>
+          </div>
           <div class="alert" id="d-alert" hidden></div>
           <!-- 상품 전시 관리 v0.2.1과 같은 구성: 왼쪽 고정 미리보기 + 오른쪽 접히는 섹션 + 하단 고정 바 -->
           <div class="builder">
@@ -41,10 +42,11 @@
                 <header><b>기본 정보</b><span class="rq">필수</span><span class="st"><span class="stc" id="st-basic"></span></span><button type="button" class="fold" aria-expanded="true" aria-controls="basic" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
                 <div class="body">
                   <div class="frm" id="basic">
-                    <div class="fr"><label class="fl req" for="b-cat">전시 상품유형</label><div class="fv"><select class="ctl" id="b-cat" aria-label="전시 상품유형"><option value="">선택하세요</option><option>상품 유형 프로세스</option><option>세부유형 프로세스</option><option>특정 전시 상품 프로세스</option></select><span class="help err" id="e-cat" hidden>전시 상품유형를 선택하세요.</span></div></div>
-                    <div class="fr"><label class="fl req" for="b-ptype">연결 대상 상품 유형</label><div class="fv"><select class="ctl" id="b-ptype" aria-label="연결 대상 상품 유형"><option value="">선택하세요</option></select><span class="help err" id="e-ptype" hidden>연결 대상 상품 유형을 선택하세요.</span></div></div>
-                    <div class="fr"><label class="fl req" for="b-id">프로세스 ID</label><div class="fv"><input class="ctl" id="b-id" readonly disabled aria-label="프로세스 ID"></div></div>
-                    <div class="fr"><label class="fl req" for="b-name">프로세스명</label><div class="fv"><span class="clr"><input class="ctl" id="b-name" placeholder="프로세스명을 입력하세요." maxlength="60"><button type="button" class="clr-x" data-clr="b-name" aria-label="지우기" hidden></button></span><span class="help err" id="e-name" hidden>프로세스명을 입력하세요.</span></div></div>
+                    <!-- ref/1020_order_mokup.html 기본 정보: 유형 1개 + 적용 상품(선택) — 상품을 지정하면 그 상품 전용 프로세스 -->
+                    <div class="fr full"><label class="fl req" for="b-ptype">유형</label><div class="fv"><select class="ctl w240" id="b-ptype" aria-label="유형"></select></div></div>
+                    <div class="fr full"><span class="fl">적용 상품</span><div class="fv"><div class="tg-top"><button type="button" class="btn outline sm" id="b-tg">상품 조회</button></div><div id="tg-list"></div></div></div>
+                    <div class="fr full"><label class="fl req" for="b-id">프로세스 ID</label><div class="fv"><input class="ctl" id="b-id" readonly disabled aria-label="프로세스 ID"></div></div>
+                    <div class="fr full"><label class="fl req" for="b-name">프로세스명</label><div class="fv"><span class="clr"><input class="ctl" id="b-name" placeholder="프로세스명을 입력하세요." maxlength="60"><button type="button" class="clr-x" data-clr="b-name" aria-label="지우기" hidden></button></span><span class="help err" id="e-name" hidden>프로세스명을 입력하세요.</span></div></div>
                     <div class="fr full"><label class="fl" for="b-desc">설명</label><div class="fv"><span class="clr"><input class="ctl" id="b-desc" placeholder="어떤 상품에 적합한 프로세스 구성인지 입력하세요." maxlength="200"><button type="button" class="clr-x" data-clr="b-desc" aria-label="지우기" hidden></button></span></div></div>
                     <div class="fr full"><span class="fl req">사용 여부</span><div class="fv"><div class="opts-row" id="b-use" role="radiogroup" aria-label="사용 여부"><label class="rd" for="b-use-y"><input type="radio" name="b-use" id="b-use-y" value="Y"><span>Y</span></label><label class="rd" for="b-use-n"><input type="radio" name="b-use" id="b-use-n" value="N"><span>N</span></label></div></div></div>
                   </div>
@@ -52,11 +54,11 @@
               </div>
               <!-- 템플릿·코너 설정 (주문화면 B안): 템플릿 1~N = 주문 단계 영역, 각 영역 안에서 코너 추가·삭제 -->
               <div class="tpl-sec" id="sec-tpl">
-                <div class="tpl-head"><b>템플릿·코너 설정</b><span class="tpl-tools" id="tpl-tools"><button type="button" class="btn outline sm" id="btn-foldall">모두 접기</button><button type="button" class="btn ghost sm" id="btn-tab">복제하기</button></span></div>
-                <div class="cfg-empty" id="cfg-empty" hidden><span class="ce-ic" aria-hidden="true">+</span><b>아직 구성된 템플릿이 없습니다.</b><span class="ce-t">새로 만들거나, 기존 프로세스를 복제해서 시작하세요.</span><div class="ce-acts"><button type="button" class="btn outline" id="ce-new">새로 만들기</button><button type="button" class="btn filled" id="ce-copy">복제하기</button></div></div>
+                <div class="tpl-head"><b>컨테이너 설정</b><span class="tpl-tools" id="tpl-tools"><button type="button" class="btn outline sm" id="btn-foldall">모두 접기</button><button type="button" class="btn ghost sm" id="btn-tab">복제하기</button></span></div>
+                <div class="cfg-empty" id="cfg-empty" hidden><span class="ce-ic" aria-hidden="true">+</span><b>아직 구성된 컨테이너가 없습니다.</b><span class="ce-t">새로 만들거나, 기존 프로세스를 복제해서 시작하세요.</span><div class="ce-acts"><button type="button" class="btn outline" id="ce-new">새로 만들기</button><button type="button" class="btn filled" id="ce-copy">복제하기</button></div></div>
                 <div class="cfg-body" id="cfg-body">
                   <div class="acc-list" id="acc"></div>
-                  <button class="tpl-add" type="button" id="btn-tadd">+ 템플릿 추가</button>
+                  <button class="tpl-add" type="button" id="btn-tadd">+ 컨테이너 추가</button>
                 </div>
               </div>
             </div>

@@ -126,9 +126,11 @@ select.dd-native{display:none!important}
 .dd-btn:disabled svg{stroke:var(--g400)}
 .dd-list{position:fixed;z-index:70;background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(26,26,26,.16),0 0 1px rgba(26,26,26,.12);padding:6px;max-height:252px;overflow-y:auto;display:grid;gap:2px;font-size:13px}
 .dd-list::-webkit-scrollbar{width:4px}.dd-list::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}.dd-list::-webkit-scrollbar-track{background:transparent;margin:6px 0}
-.dd-opt{display:flex;align-items:center;min-height:34px;padding:6px 12px;border-radius:6px;color:var(--g500);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 선택 안 된 옵션도 본문색으로 — 회색 글자는 비활성으로 읽히므로 쓰지 않는다. 선택된 옵션은 강조색 + 체크 표시로 구분 */
+.dd-opt{display:flex;align-items:center;gap:8px;min-height:34px;padding:6px 12px;border-radius:6px;color:var(--g800);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dd-opt.act{background:var(--g100)}
-.dd-opt.sel{color:var(--g900);font-weight:500}
+.dd-opt.sel{color:var(--tblue);font-weight:600;background:var(--tblue-50)}
+.dd-opt.sel::after{content:"";margin-left:auto;flex:none;width:14px;height:14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5L20 7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5L20 7'/%3E%3C/svg%3E") center/contain no-repeat}
 
 /* ===== FO 화면 예시 렌더러 (코너 관리 등록 정의) — em 단위로 팝업·폰 미리보기 공용 ===== */
 .fo{font-size:13px;color:var(--g900);text-align:left;display:grid;gap:.75em}
@@ -729,6 +731,12 @@ td.l{text-align:left!important}
 .cp-tbl input[type=radio]{appearance:none;width:16px;height:16px;border:1.5px solid var(--g300);border-radius:50%;margin:0;background:#fff;vertical-align:middle;cursor:pointer}.cp-tbl input[type=radio]:checked{border:5px solid var(--tblue)}
 .cp-note{margin:4px 0 0;padding:0 0 0 18px;font-size:12px;color:var(--g700);display:grid;gap:4px}
 .cp-foot{display:flex;justify-content:flex-end;gap:8px;padding:8px 28px 24px}.cp-foot .btn{min-width:92px}
+/* 상품 조회 팝업: 상품 전시 관리(display-create2) EPC 상품 조회 모달과 같은 크기 — 폭 1200px, 높이 화면-48px 이내, 결과 표 최대 min(48vh,520px) */
+.cp-dlg.tg-dlg{width:min(1200px,100%);max-height:calc(100vh - 48px)}
+.tg-dlg .cp-head{padding:26px 30px 20px}.tg-dlg .cp-head b{font-size:20px}
+.tg-dlg .cp-body{padding:0 30px 4px}
+.tg-dlg .cp-tbl{max-height:min(48vh,520px)}
+.tg-dlg .cp-foot{padding:20px 30px 26px}.tg-dlg .cp-foot .btn{min-width:96px;min-height:44px;font-size:14px}
 .cp-filter{margin:0;padding:20px 24px}.cp-filter .fbtns{width:auto}.cp-filter .fg{width:auto;flex-wrap:nowrap}.cp-filter .frows{flex:1;min-width:0}.cp-filter .frow{flex-wrap:nowrap;gap:20px}.cp-filter select.w180,.cp-filter .dd.w180{width:170px}.cp-filter .fg .ctl{flex:none}.cp-rhead{margin:4px 0 0}
 
 .lhint{font-size:12px;color:var(--g500);margin:8px 0 0;line-height:1.5}
@@ -809,8 +817,12 @@ td.l{text-align:left!important}
 .step>header .fold:hover{background:#fff;color:var(--tblue)}
 .step>header .fold svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .3s cubic-bezier(.4,0,.2,1)}
 .step.closed>header .fold svg{transform:rotate(-90deg)}
-.step.closed>.body{display:none}
-.step>.body{padding:18px 20px}
+/* 접기/펼치기: 높이(grid row 0fr↔1fr)와 위아래 여백을 함께 전환. 전환 중·접힘 상태에서만 내용을 잘라 드롭다운 메뉴가 가려지지 않게 한다 */
+.step>.body{display:grid;grid-template-rows:1fr;padding:18px 20px;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1),padding .3s cubic-bezier(.4,0,.2,1),opacity .25s ease,visibility 0s}
+.step>.body>*{min-height:0}
+.step.closed>.body{grid-template-rows:0fr;padding-top:0;padding-bottom:0;opacity:0;visibility:hidden;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1),padding .3s cubic-bezier(.4,0,.2,1),opacity .2s ease,visibility 0s .3s}
+.step.closed>.body>*,.step.anim>.body>*{overflow:hidden}
+@media (prefers-reduced-motion:reduce){.step>.body,.step.closed>.body{transition:none}.step.anim:not(.closed)>.body>*{overflow:visible}}
 .rq{font-size:10px;font-weight:600;color:var(--bad);background:var(--bad-soft);border-radius:4px;padding:1px 6px;line-height:1.6;flex:none}
 .stc{display:inline-block;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:1px 6px;border-radius:4px;border:1px solid var(--g200);background:#fff;color:#62718a;font-size:10px;line-height:1.6}
 .stc:empty{display:none}
@@ -823,10 +835,19 @@ td.l{text-align:left!important}
 .fr{display:flex;align-items:flex-start;gap:12px;min-width:0}
 .fr.full{grid-column:1/-1}
 .fr>.fl{flex:0 0 120px;min-height:36px;display:flex;align-items:center;font-size:12px;font-weight:500;color:#4f5e77}
-.frm .req::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--err-txt);align-self:flex-start;margin:12px 0 0 3px}
+/* 기본 정보·템플릿 영역은 필수 표시(빨간 점·별표)를 쓰지 않는다 — 필수 여부는 머리줄 「필수」 배지와 검증 메시지로 안내 */
+.frm .req::after,.acc-b .req::after{content:none}
 .fr>.fv{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .fv .clr{display:block;width:100%}
 .fv .opts-row{min-height:36px}
+/* 기본 정보 머리줄 요약 · 적용 상품 (ref/1020_order_mokup.html) */
+.step>header .acc-sum{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500;color:var(--g600)}
+.tg-top{display:flex;align-items:center;gap:12px;min-height:36px;flex-wrap:wrap}
+.tg-box{margin-top:6px;background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:10px 12px}
+.tg-h{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g700);margin-bottom:8px}.tg-h b{color:var(--tblue)}.tg-h .btn{margin-left:auto}
+.tg-chips{display:flex;flex-wrap:wrap;gap:6px;max-height:96px;overflow:auto}
+.tg-chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 10px;border-radius:999px;background:#fff;border:1px solid var(--g300);font-size:12px;color:var(--g800)}
+.tg-chip button{width:18px;height:18px;margin-right:-4px;border:0;background:none;padding:0;cursor:pointer;color:var(--g500);font-size:14px;line-height:1}.tg-chip button:hover{color:var(--g900)}
 /* 템플릿 설정: 코너가 많아도 코너 상세 설정 섹션이 멀어지지 않게 목록은 최대 높이 안에서 스크롤 */
 .step .cfg-body>.clist{max-height:520px;overflow-y:auto;margin-right:-8px;padding-right:8px}
 #sec-corner .dcard{border:0;border-top:1px solid var(--g150);border-radius:0;padding:20px 0 0;margin:20px 0 0;background:none}
@@ -859,7 +880,8 @@ td.l{text-align:left!important}
 .acc.drag{opacity:.5}.acc.over{box-shadow:0 0 0 2px var(--tblue-200)}
 .acc-h{display:flex;align-items:center;gap:10px;min-height:52px;padding:10px 12px;background:var(--g50);border-radius:10px;cursor:pointer;user-select:none}
 .acc-h:hover{background:var(--g100)}
-.acc.open>.acc-h{border-bottom:1px solid var(--g200);border-radius:10px 10px 0 0}
+.acc.open>.acc-h,.acc.closing>.acc-h{border-bottom:1px solid var(--g200);border-radius:10px 10px 0 0}
+.acc-b[inert]{pointer-events:none}
 .acc-h .agrip{flex:none;display:grid;place-items:center;width:18px;height:24px;color:var(--g500);cursor:grab}
 .acc-h .stepn{flex:none;min-width:26px;height:24px;padding:0 6px;display:grid;place-items:center;border:1px solid var(--g200);border-radius:6px;background:#fff;color:var(--g600);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .acc.open .acc-h .stepn{background:var(--tblue);border-color:var(--tblue);color:#fff}
@@ -905,7 +927,7 @@ td.l{text-align:left!important}
 @media (prefers-reduced-motion:reduce){.dock-sheet,.dock-chev,.acc-h .fold svg{transition:none}}
 
 /* ---------- 코너 구성 (상품 전시 복합형의 구성 영역 편집과 같은 패턴: 왼쪽 목록 / 오른쪽 상세) ---------- */
-.ce{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+.ce{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:stretch}
 .ce-l{min-width:0}
 .ce-l .clist{background:var(--g50);border:1px solid var(--g150);border-radius:10px;padding:8px;gap:6px}
 .ce-l .crow{align-items:flex-start;padding:9px 8px}
@@ -922,6 +944,8 @@ td.l{text-align:left!important}
 .ce .un.warn,.ce .fbx.warn{background:var(--warn-bg);color:var(--warn-txt)}
 .ce-r{border:1px solid var(--g200);border-radius:10px;padding:16px 18px;min-width:0;background:#fff}
 .ce-r .empty{padding:60px 12px}
+/* 왼쪽·오른쪽 박스의 위·아래 줄을 맞춘다: 오른쪽 상세 박스는 행 높이만큼 늘이고, 빈 안내 문구는 가운데 */
+.ce-r:has(>.empty){display:grid;place-items:center}.ce-r>.empty{padding:12px}
 .ce-r .sec-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .ce-r .sec-h .ix{display:grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:6px;background:var(--tblue);color:#fff;font-size:12px;font-weight:700}
 .ce-r .sec-h b{font-size:15px;font-weight:700;color:var(--g900)}
