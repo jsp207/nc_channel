@@ -311,15 +311,86 @@ function methodLabel(d){ if(d.kind==='ps') return '<span class="pill">해당 없
 // ---------- 화면 전환 ----------
 let E=null, cur=null, PV={}, curX=null, badgeEd=null, PVTAB='order';
 function showView(v){ $('#v-list').classList.toggle('on',v==='list'); $('#v-edit').classList.toggle('on',v==='edit'); setDock(false); window.scrollTo(0,0); if(v==='edit') fitPv(); }
-function goList(){ renderList(); showView('list'); history.replaceState(null,'',location.pathname+'?view=list'); }
+function goList(){ fillFilter(); renderList(); showView('list'); history.replaceState(null,'',location.pathname+'?view=list'); }
 $('#goList').addEventListener('click',goList);
 $('#lNew').addEventListener('click',()=>openEdit(null));
 
 // ---------- 전시 목록 ----------
-function renderList(){
- $('#listRows').innerHTML=DISPLAYS.map(d=>{ const [s,c]=status(d); return `<tr><td><b>${esc(nameText(d.name))||'이름 없음'}</b></td><td>${d.kind==='po'?'상품 판매':'상품 개별 전시(PS)'}</td><td>${methodLabel(d)}</td><td>${d.conn.length}개</td><td style="white-space:nowrap">${periodTxt(d)}</td><td style="white-space:nowrap"><span class="status ${c}"></span>${s}</td><td style="text-align:right"><button type="button" class="btn sm" data-e="${d.id}">수정</button></td></tr>`; }).join('')||'<tr><td colspan="7"><div class="empty">등록한 전시가 없어요</div></td></tr>';
- $$('#listRows [data-e]').forEach(b=>b.addEventListener('click',()=>openEdit(+b.dataset.e)));
+// 조회 조건은 [조회]를 눌러야 반영된다(LF). 한 페이지 10건
+const PAGE=10;
+const isoDay=dt=>new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const addDays=(iso,n)=>{ const dt=new Date(iso+'T00:00:00'); dt.setDate(dt.getDate()+n); return isoDay(dt); };
+const nowStamp=()=>{ const dt=new Date(); return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,19).replace('T',' '); };
+const dotD=s=>String(s||'').replace(/-/g,'.');
+// 담당자 이름(사번)은 좁으면 괄호 앞에서 줄을 바꾼다
+const brk=s=>esc(s).replace('(','<wbr>(');
+const firstMore=l=>!l.length?'-':l[0]+(l.length>1?` 외 ${l.length-1}`:'');
+// 담당자 · 담당팀 · 버전 · 최종등록(수정) 정보. 샘플 전시는 번호로 정해 둔다
+const OWNERS=['김담당(P123458)','이담당(P123459)','박담당(P123460)'], TEAMS=['채널상품팀','디바이스상품팀','구독상품팀'];
+const meta=d=>({ver:d.ver||1,owner:d.owner||OWNERS[d.id%3],team:d.team||TEAMS[d.id%3],editor:d.editor||'김등록(P123456)',at:d.updatedAt||`${d.from||TODAY} 09:00:00`});
+const OPST={'전시 예약':['예정','wait'],'전시 중':['전시중','live'],'종료':['종료','off'],'미전시':['미전시','off'],'작성 중':['작성중','off']};
+const opState=d=>OPST[status(d)[0]];
+function epcState(d){ const pos=connPOs(d); if(!pos.length) return null; const s=pos.find(p=>p.sale!=='판매중'); return s?[s.sale,'stop']:['운영','ok']; }
+const chText=d=>d.channels.length&&CHS.every(c=>d.channels.includes(c))?'All 채널':firstMore(d.channels);
+const connNames=d=>d.kind==='po'?d.conn.map(id=>poBy(id).name):d.conn.map(k=>psBy(k).name);
+function methodText(d){ if(d.kind==='ps') return '-'; if(d.method==='complex') return '복합형'; if(d.method==='fixed') return '고정';
+ const a=d.areas[0]; return a&&a.mode==='opt'?`옵션 선택, 대상 ${a.pos.length}개`:'목록 선택'; }
+const listPeriod=d=>d.from?`${dotD(d.from)} ~ ${endAt(d)?dotD(d.to):'기한없음'}`:'-';
+const LF_DEF=()=>({key:'all',q:'',date:'upd',from:addDays(TODAY,-90),to:TODAY.slice(0,4)+'-12-31',ch:'',method:'',st:'',owner:'',team:''});
+let LF=LF_DEF(), LPAGE=1;
+const opts=(l,v)=>['<option value="">전체</option>',...l.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`)].join('');
+function fillFilter(){
+ const f=LF, ms=DISPLAYS.map(meta);
+ $('#lfKey').value=f.key; $('#lfQ').value=f.q; $('#lfDate').value=f.date; $('#lfFrom').value=f.from; $('#lfTo').value=f.to;
+ $('#lfCh').innerHTML=opts(CHS,f.ch); $('#lfMethod').innerHTML=opts(['고정','목록 선택','옵션 선택','복합형'],f.method);
+ $('#lfSt').innerHTML=opts(['예정','전시중','종료','미전시','작성중'],f.st);
+ $('#lfOwner').innerHTML=opts([...new Set(ms.map(m=>m.owner))].sort(),f.owner); $('#lfTeam').innerHTML=opts([...new Set(ms.map(m=>m.team))].sort(),f.team);
 }
+function readFilter(){ LF={key:$('#lfKey').value,q:$('#lfQ').value.trim(),date:$('#lfDate').value,from:$('#lfFrom').value,to:$('#lfTo').value,ch:$('#lfCh').value,method:$('#lfMethod').value,st:$('#lfSt').value,owner:$('#lfOwner').value,team:$('#lfTeam').value}; }
+function listRows(){
+ const f=LF, q=f.q.toLowerCase();
+ return DISPLAYS.filter(d=>{ const m=meta(d), id=String(d.id).padStart(6,'0'), nm=nameText(d.name).toLowerCase();
+  if(q&&!(f.key!=='id'&&nm.includes(q)||f.key!=='name'&&id.includes(q))) return false;
+  if(f.date==='upd'){ const day=m.at.slice(0,10); if(f.from&&day<f.from||f.to&&day>f.to) return false; }
+  else { if(f.to&&d.from&&d.from>f.to) return false; if(f.from&&endAt(d)&&d.to<f.from) return false; }
+  if(f.ch&&!d.channels.includes(f.ch)) return false;
+  if(f.method&&!methodText(d).startsWith(f.method)) return false;
+  if(f.st&&opState(d)[0]!==f.st) return false;
+  if(f.owner&&m.owner!==f.owner||f.team&&m.team!==f.team) return false;
+  return true; });
+}
+const PG_IC={first:'<path d="M7 6v12M17 6l-6 6 6 6"/>',prev:'<path d="m15 6-6 6 6 6"/>',next:'<path d="m9 6 6 6-6 6"/>',last:'<path d="M17 6v12M7 6l6 6-6 6"/>'};
+function pagerHtml(pages){
+ const b=(p,label,inner,dis)=>`<button type="button" data-pg="${p}" aria-label="${label}" ${dis?'disabled':''}>${inner}</button>`;
+ let nums=[]; if(pages<=10) nums=Array.from({length:pages},(_,i)=>i+1);
+ else { const s=Math.max(1,Math.min(LPAGE-4,pages-9)); nums=Array.from({length:9},(_,i)=>s+i); if(s+9<pages) nums.push('…'); nums.push(pages); }
+ return b(1,'첫 페이지',svg(PG_IC.first),LPAGE===1)+b(LPAGE-1,'이전 페이지',svg(PG_IC.prev),LPAGE===1)
+  +nums.map(n=>n==='…'?'<button type="button" disabled aria-hidden="true">…</button>':`<button type="button" data-pg="${n}" ${n===LPAGE?'aria-current="page"':''}>${n}</button>`).join('')
+  +b(LPAGE+1,'다음 페이지',svg(PG_IC.next),LPAGE===pages)+b(pages,'마지막 페이지',svg(PG_IC.last),LPAGE===pages);
+}
+function renderList(){
+ const rows=listRows(), pages=Math.max(1,Math.ceil(rows.length/PAGE)); LPAGE=Math.min(LPAGE,pages);
+ $('#lCount').textContent=rows.length.toLocaleString();
+ $('#listRows').innerHTML=rows.length?rows.slice((LPAGE-1)*PAGE,LPAGE*PAGE).map(d=>{ const m=meta(d), [os,oc]=opState(d), ep=epcState(d), cn=connNames(d), nm=nameText(d.name)||'이름 없음';
+  return `<tr><td><button type="button" class="lid" data-e="${d.id}">${String(d.id).padStart(6,'0')}</button></td><td>V${m.ver}</td><td title="${esc(nm)}">${esc(nm)}</td><td title="${esc(d.channels.join(', '))}">${esc(chText(d))}</td>
+  <td title="${esc(cn.join(', '))}">${esc(firstMore(cn))}</td><td title="${methodText(d)}">${methodText(d)}</td><td class="c"><span class="lb ${oc}">${os}</span></td><td class="c">${ep?`<span class="lb ${ep[1]}">${esc(ep[0])}</span>`:'-'}</td>
+  <td class="c wr">${listPeriod(d)}</td><td class="c wr">${brk(m.owner)}</td><td class="c wr">${brk(m.editor)}</td><td class="c wr">${dotD(m.at)}</td>
+  <td class="c"><button type="button" class="lbtn" data-cp="${d.id}">복사</button></td><td class="c"><button type="button" class="lbtn" data-pvw="${d.id}" ${os==='종료'?'disabled':''}>미리보기</button></td></tr>`; }).join('')
+  :'<tr><td class="empty" colspan="14">조회 조건에 맞는 전시가 없어요</td></tr>';
+ $('#lPager').innerHTML=pagerHtml(pages);
+ $$('#listRows [data-e]').forEach(b=>b.addEventListener('click',()=>openEdit(+b.dataset.e)));
+ $$('#listRows [data-cp]').forEach(b=>b.addEventListener('click',()=>copyDisplay(+b.dataset.cp)));
+ $$('#listRows [data-pvw]').forEach(b=>b.addEventListener('click',()=>alert('준비중입니다.')));
+ $$('#lPager [data-pg]').forEach(b=>b.addEventListener('click',()=>{ LPAGE=+b.dataset.pg; renderList(); }));
+}
+// 복사본은 미전시 · V1로 만들고, 대표 전시 지정은 가져오지 않는다
+function copyDisplay(id){
+ const c=clone(DISPLAYS.find(x=>x.id===id)); c.id=Math.max(0,...DISPLAYS.map(x=>x.id))+1; c.name=nameText(c.name)+' (복사)'; c.show=false; c.rep=[]; c.ver=1; c.updatedAt=nowStamp(); c.editor='김수정(P123457)';
+ DISPLAYS.unshift(c); const stored=saveList(); LPAGE=1; fillFilter(); renderList(); toast(`전시 ${String(c.id).padStart(6,'0')}(으)로 복사했어요`+(stored?'':' (브라우저 저장소를 쓸 수 없어 새로고침하면 사라져요)'));
+}
+$('#lFilter').addEventListener('submit',e=>{ e.preventDefault(); readFilter(); LPAGE=1; renderList(); });
+$('#lFilter').addEventListener('reset',e=>{ e.preventDefault(); LF=LF_DEF(); LPAGE=1; fillFilter(); renderList(); });
+$$('#lFilter [data-qd]').forEach(b=>b.addEventListener('click',()=>{ const n=+b.dataset.qd; $('#lfFrom').value=n<0?addDays(TODAY,n):TODAY; $('#lfTo').value=n>0?addDays(TODAY,n):TODAY; }));
 
 // ---------- 전시 등록/수정 ----------
 function openEdit(id){
@@ -1435,6 +1506,8 @@ $('#dockDim').addEventListener('click',()=>setDock(false));
 // 임시저장은 필수 항목이 비어도 저장되고 목록에 '작성 중'으로 남는다. 승인요청은 필수 섹션을 모두 채워야 보내지고, 비어 있으면 첫 섹션을 펼쳐 보여 준다
 function save(req){
  const d=clone(E); if(!d.id){ d.id=Math.max(0,...DISPLAYS.map(x=>x.id))+1; DISPLAYS.unshift(d); } else DISPLAYS[DISPLAYS.findIndex(x=>x.id===d.id)]=d;
+ // 목록의 버전 · 최종등록(수정) 정보: 새 전시는 V1, 다시 저장할 때마다 버전을 올린다
+ d.ver=E.id?(E.ver||1)+1:1; d.updatedAt=nowStamp(); d.editor='김수정(P123457)'; if(!E.id){ d.owner=OWNERS[0]; d.team=TEAMS[0]; }
  // EPC 상품마다 대표 전시는 1개: 이 전시를 대표로 지정한 상품은 기존 대표 전시에서 일반 전시로 바뀐다
  DISPLAYS.forEach(x=>{ if(x!==d) x.rep=(x.rep||[]).filter(id=>!d.rep.includes(id)); });
  const stored=saveList(), n=blocking(d).length; goList();

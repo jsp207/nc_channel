@@ -1,0 +1,47 @@
+/* 공통 LNB (src/lnb.ts). 페이지마다 .app 그리드 정의가 달라 .app.with-lnb로 덮어씁니다. */
+.app.with-lnb{display:grid;grid-template-columns:248px minmax(0,1fr);gap:0;padding:14px 18px 14px 0;transition:grid-template-columns .2s ease}
+.app.with-lnb.app-nav-collapsed{grid-template-columns:76px minmax(0,1fr)}
+
+.app-nav{position:sticky;top:14px;height:calc(100vh - 28px);display:flex;flex-direction:column;min-width:0;padding:6px 14px 0 16px;color:#20293b;font-size:13.5px;letter-spacing:-.2px}
+.app-nav svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.app-nav a{color:inherit;text-decoration:none}
+.app-nav ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.app-nav :focus-visible{outline:2px solid #4320d4;outline-offset:2px}
+
+.app-nav-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;margin-bottom:22px}
+.app-nav-brand{display:flex;align-items:center;gap:12px;min-width:0;font-size:16px;font-weight:700;letter-spacing:.2px}
+.app-nav-logo-mark{width:40px!important;height:40px!important;stroke:none!important}
+.app-nav-toggle{display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:none;color:#6b7385;cursor:pointer}
+.app-nav-toggle:hover{background:#dfe2ef}
+
+.app-nav-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;margin:0 -6px;padding:0 6px}
+.app-nav-menu{display:grid;gap:22px}
+.app-nav-backup{margin-top:auto;padding:24px 0 14px}
+.app-nav-group{margin:0 0 8px;padding:0 10px;color:#707c91;font-size:12px;font-weight:500;white-space:nowrap}
+.app-nav-item{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 10px;border-radius:10px;color:#2c3548;white-space:nowrap}
+.app-nav-item:hover{background:#dfe2ef}
+.app-nav-item.on{background:#fff;color:#4320d4;font-weight:700;box-shadow:0 1px 4px #29345914}
+.app-nav-text{overflow:hidden;text-overflow:ellipsis}
+
+.app-nav-foot{margin:0 -14px 0 -16px;padding:14px 0 0;border-top:1px solid #dde0ea;color:#707c91;font-size:13px;text-align:center;white-space:nowrap}
+
+/* 접힘: 아이콘만 남기고 그룹 이름은 구분선으로 바꿉니다. */
+.app-nav-collapsed .app-nav{padding:6px 10px 0 12px}
+.app-nav-collapsed .app-nav-text{display:none}
+.app-nav-collapsed .app-nav-head{flex-direction:column;gap:14px;margin-bottom:18px}
+.app-nav-collapsed .app-nav-brand{gap:0}
+.app-nav-collapsed .app-nav-group{height:1px;margin:0 8px 10px;padding:0;overflow:hidden;color:transparent;background:#d5d9e7}
+.app-nav-collapsed .app-nav-menu{gap:12px}
+.app-nav-collapsed .app-nav-item{justify-content:center;padding:0}
+.app-nav-collapsed .app-nav-toggle svg{transform:scaleX(-1)}
+.app-nav-collapsed .app-nav-foot{display:none}
+
+@media(max-width:900px){
+  .app.with-lnb,.app.with-lnb.app-nav-collapsed{grid-template-columns:minmax(0,1fr);padding:0 10px 10px}
+  .app-nav,.app-nav-collapsed .app-nav{position:static;height:auto;padding:8px 4px}
+  .app-nav-head,.app-nav-collapsed .app-nav-head{flex-direction:row;margin-bottom:8px}
+  .app-nav-collapsed .app-nav-text{display:inline}
+  .app-nav-collapsed .app-nav-body,.app-nav-collapsed .app-nav-foot{display:none}
+  .app-nav-collapsed .app-nav-toggle svg{transform:none}
+}
+@media (prefers-reduced-motion: reduce){ .app.with-lnb{transition:none} }
