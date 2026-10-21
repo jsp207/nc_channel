@@ -1,5 +1,7 @@
 // @ts-nocheck
 // 모든 페이지 공통: 서버 세션을 확인하고, 없으면 비밀번호 입력 화면을 띄웁니다.
+// 공통 LNB도 여기서 불러옵니다(모든 화면이 이 파일을 거칩니다).
+import "./lnb";
 export async function requireAuthentication() {
   const response = await fetch('/api/session', { credentials: 'include' });
   const session = response.ok ? await response.json() : { authenticated: false };

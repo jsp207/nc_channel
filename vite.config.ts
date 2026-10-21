@@ -7,6 +7,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: 'index.html',
+        boIntro: 'bo-intro.html',
         policy: 'policy.html',
         bundleCreate: 'bundle-create.html',
         bundleCreate2: 'bundle-create2.html',
