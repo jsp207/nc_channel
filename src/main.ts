@@ -122,6 +122,19 @@ BUNDLES = loadSaved('nova-bundles-v1', BUNDLES);
 BUNDLES = [...loadSaved('nova-bundles-v3', []).filter(b=>!BUNDLES.some(x=>x.id===b.id)), ...BUNDLES];
 
 // ---------- 기준 화면 ----------
+// 기존 정책 / 신규 정책 탭. 고른 탭은 주소(#old)에 남겨 새로고침·공유해도 유지된다.
+(function(){
+  const tabs=[...document.querySelectorAll('.p-tabs [role="tab"]')];
+  if (!tabs.length) return;
+  function showTab(k){
+    tabs.forEach(t=>{ const on=t.dataset.tab===k; t.setAttribute('aria-selected',String(on)); t.tabIndex=on?0:-1; document.getElementById(t.getAttribute('aria-controls')).hidden=!on; });
+  }
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>{ showTab(t.dataset.tab); history.replaceState(null,'',t.dataset.tab==='new'?location.pathname:'#'+t.dataset.tab); });
+    t.addEventListener('keydown',e=>{ if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight') return; const n=tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length]; n.click(); n.focus(); });
+  });
+  showTab(location.hash==='#old'?'old':'new');
+})();
 (function(){
   if (!$('#policyTable')) return;
   const tb=$('#policyTable tbody'); let last='';

@@ -8,6 +8,66 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      /* 정책 탭: 기존 정책 / 신규 정책 */
+      .p-tabs{display:flex;gap:4px;margin:16px 0 8px;border-bottom:1px solid var(--line)}
+      .p-tabs button{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;margin-bottom:-1px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+      .p-tabs button:hover{color:var(--text)}
+      .p-tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+      .p-date{padding:0 6px;border-radius:10px;background:var(--surface);color:var(--muted);font-size:11px;line-height:18px}
+      .p-tabs button[aria-selected="true"] .p-date{background:var(--accent-soft);color:var(--accent)}
+      [role="tabpanel"][hidden]{display:none}
+
+      /* 신규 정책(ref/NOVA_Product_Policy_20261022_v3.html): 좌측 목차 + 본문 */
+      #panel-new{display:grid;grid-template-columns:180px minmax(0,1fr);gap:40px;padding-top:16px;line-height:1.7}
+      #panel-new[hidden]{display:none}
+      .np-toc{position:sticky;top:24px;align-self:start}
+      .np-toc p{font-size:12px;color:var(--muted);margin:0 0 10px;font-weight:600}
+      .np-toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;border-left:1px solid var(--line)}
+      .np-toc a{display:block;padding:4px 0 4px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--muted);text-decoration:none;font-size:13px}
+      .np-toc a:hover,.np-toc a:focus-visible{color:var(--text);border-left-color:var(--accent);outline:none}
+      .np-body{min-width:0}
+      .np-doc{padding-bottom:24px;border-bottom:1px solid var(--line)}
+      .np-eyebrow{font-size:12px;color:var(--accent);margin:0 0 6px}
+      #panel-new .np-title{font-size:20px;font-weight:700;margin:0 0 10px}
+      .np-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted);margin:0}
+      .np-meta b{color:var(--text);font-weight:500}
+      .np-lead{max-width:72ch;font-size:14px;margin:16px 0 0}
+      #panel-new section{padding-top:32px;scroll-margin-top:24px}
+      #panel-new section h2{font-size:16px;font-weight:600;margin:0 0 12px;display:flex;gap:10px;align-items:baseline}
+      #panel-new h2 .np-no{font-size:13px;color:var(--accent);font-weight:500}
+      #panel-new h3{font-size:13px;margin:18px 0 8px}
+      #panel-new section>p,#panel-new section>ul{max-width:76ch;margin:0 0 12px}
+      .np-rules{padding-left:20px;display:grid;gap:5px}
+      .np-rules li::marker{color:var(--muted)}
+      .np-sub{color:var(--muted);font-size:12px}
+      .np-tbl{overflow-x:auto;margin:6px 0 16px;border:1px solid var(--line);border-radius:6px}
+      .np-tbl th{white-space:nowrap}
+      .np-tbl tr:last-child td{border-bottom:0}
+      td.np-k{font-weight:600;white-space:nowrap}
+      .np-pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px;white-space:nowrap}
+      .np-pill.np-ok{background:var(--ok-soft);color:var(--ok)}
+      .np-pill.np-no{background:var(--bad-soft);color:var(--bad)}
+      .np-pill.np-wait{background:var(--warn-soft);color:var(--warn)}
+      .np-tag{font-size:11px;font-weight:600;color:var(--ok);background:var(--ok-soft);border-radius:4px;padding:0 6px;margin-left:4px;white-space:nowrap}
+      .np-trees{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:8px 0 14px}
+      .np-tree{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+      #panel-new .np-tree h3{margin:0 0 10px}
+      .np-node{border-left:2px solid var(--line);padding-left:12px;margin-left:4px;display:grid;gap:6px}
+      .np-n{font-size:13px}
+      .np-n b{font-weight:600}
+      .np-lbl{font-size:12px;color:var(--muted)}
+      .np-n.np-pick{color:var(--accent);font-weight:600}
+      .np-foot{margin:12px 0 0;font-size:12px;color:var(--muted)}
+      .np-group{border:1px solid var(--line);border-radius:6px;padding:4px 18px 8px;margin:0 0 12px}
+      #panel-new .np-group h3{margin:14px 0 6px;color:var(--muted)}
+      .np-group ul{padding-left:18px;margin:0 0 6px;display:grid;gap:5px;font-size:13px}
+      .np-qlist{display:grid;gap:10px;margin:6px 0 16px}
+      .np-q{border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:6px;padding:12px 16px;font-size:13px}
+      .np-q b{color:var(--warn);margin-right:8px}
+      .np-q p{margin:4px 0 0;color:var(--muted)}
+      @media (max-width:860px){#panel-new{grid-template-columns:minmax(0,1fr);gap:16px}.np-toc{position:static}.np-toc ol{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));border-left:0}.np-toc a{padding-left:0;border-left:0}}
+    </style>
   </head>
   <body>
 <div class="app">
@@ -18,6 +78,13 @@
 <section class="view on" id="v-base">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>기준</strong></div>
   <h1>기준</h1>
+  <div class="p-tabs" role="tablist" aria-label="정책 구분">
+    <button type="button" role="tab" id="tab-old" aria-controls="panel-old" data-tab="old">기존 정책</button>
+    <button type="button" role="tab" id="tab-new" aria-controls="panel-new" data-tab="new">신규 정책 <span class="p-date">2026-10-22</span></button>
+  </div>
+
+  <!-- 기존 정책 -->
+  <div role="tabpanel" id="panel-old" aria-labelledby="tab-old" hidden>
   <p class="sub">운영자가 만드는 것은 번들 하나다. 단품은 EPC에서 오는 재료이고, 아래 정책이 번들 화면의 자동 판정 근거다.</p>
   <h2>판매 구성</h2>
   <div class="tw"><table>
@@ -50,6 +117,289 @@
     <thead><tr><th>상품명</th><th>영역</th><th>상품유형</th><th>결합 키</th><th>모델 키</th><th>단독 주문</th><th>자동 번들</th></tr></thead>
     <tbody></tbody>
   </table></div>
+  </div>
+
+  <!-- 신규 정책: ref/NOVA_Product_Policy_20261022_v3.html -->
+  <div role="tabpanel" id="panel-new" aria-labelledby="tab-new">
+    <nav class="np-toc" aria-label="목차">
+      <p>목차</p>
+      <ol>
+        <li><a href="#np-s1">1. 용어</a></li>
+        <li><a href="#np-s2">2. PO 유형</a></li>
+        <li><a href="#np-s3">3. 원천 서비스 형태</a></li>
+        <li><a href="#np-s4">4. 고르는 위치</a></li>
+        <li><a href="#np-s5">5. 전시 기본 규칙</a></li>
+        <li><a href="#np-s6">6. 고객 선택 방식</a></li>
+        <li><a href="#np-s7">7. MP 고정 전시</a></li>
+        <li><a href="#np-s8">8. 남은 미결</a></li>
+        <li><a href="#np-s9">9. 조합 규칙</a></li>
+      </ol>
+    </nav>
+    <div class="np-body">
+
+    <header class="np-doc">
+      <p class="np-eyebrow">상품+주문 · 상품 전시</p>
+      <h2 class="np-title">전시 정책 요약</h2>
+      <p class="np-meta"><span>기준일 <b>2026-10-22</b></span></p>
+      <p class="np-lead">전시는 EPC의 PO를 그대로 가져와 고객이 고르는 방식만 정한다. 고를 수 있는 단위는 PO, 또는 PO에 혜택(MP) 하나를 고정한 카드까지다. 가격과 PO 안 구성품은 EPC가 정하고, 전시는 바꾸지 않는다.</p>
+    </header>
+
+    <section id="np-s1">
+      <h2><span class="np-no">01</span>용어</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>용어</th><th>쉽게 말하면</th><th>예시</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">PO</td><td>고객이 가입하는 상품 하나</td><td>베스트 89 요금제, T우주 편의점&amp;카페</td></tr>
+          <tr><td class="np-k">PS</td><td>PO 안에 들어 있는 구성품</td><td>월정액 89, 세븐일레븐 할인</td></tr>
+          <tr><td class="np-k">필수 PS</td><td>EPC가 정한, 항상 들어가는 PS</td><td>편의점&amp;카페의 세븐일레븐·투썸 할인</td></tr>
+          <tr><td class="np-k">선택 PS</td><td>후보 중 고객이 고르는 PS</td><td>편의점&amp;카페 PS3 후보 약 50개</td></tr>
+          <tr><td class="np-k">MP</td><td>PO에 따로 붙이는 혜택 프로그램</td><td>베스트 89의 넷플릭스 혜택</td></tr>
+          <tr><td class="np-k">Delivery type (DT)</td><td>PO 안 PS 목록, 필수/선택 규칙, 선택 개수(min~max)</td><td>필수 2 + 선택 택1</td></tr>
+          <tr><td class="np-k">Price policy</td><td>PO 기본가 + 선택 PS별 추가금</td><td>9,900원 + YouTube Premium 7,900원</td></tr>
+          <tr><td class="np-k">요금프로그램그룹</td><td>PO의 Policy에 붙는 MP 묶음과 선택 규칙</td><td>OTT 택1, 최소 1·최대 1, MP끼리 배타</td></tr>
+          <tr><td class="np-k">전시ID</td><td>채널 화면에 올라가는 상품 카드 한 장</td><td>DSP-B89-02 베스트 89(넷플릭스)</td></tr>
+          <tr><td class="np-k">전시그룹</td><td>전시ID 여러 개를 묶은 탭</td><td>베스트 89 탭 [T우주][넷플릭스][디즈니+][티빙&amp;웨이브]</td></tr>
+          <tr><td class="np-k">원천 서비스</td><td>제휴 서비스 자체. 상품에 따라 PO, PS, MP로 형태만 바뀜</td><td>넷플릭스, YouTube Premium</td></tr>
+          <tr><td class="np-k">회선</td><td>요금제 1개가 붙는 개통 단위</td><td>폰 USIM 1회선, 워치 USIM 1회선</td></tr>
+          <tr><td class="np-k">다회선 구성</td><td>한 전시에서 회선 2개 이상을 동시에 개통하는 구성</td><td>폰 + 워치 동시 개통</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s2">
+      <h2><span class="np-no">02</span>PO 유형 (1depth, 6종)</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>PO 유형</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">기기서비스</td><td>단말. 모델코드마다 색상 1개·용량 1개</td></tr>
+          <tr><td class="np-k">액세서리</td><td>기기서비스에서 분리</td></tr>
+          <tr><td class="np-k">요금제</td><td>회선마다 1개</td></tr>
+          <tr><td class="np-k">부가서비스</td><td>회선 보유 고객 대상</td></tr>
+          <tr><td class="np-k">구독서비스</td><td>T우주</td></tr>
+          <tr><td class="np-k">제휴서비스</td><td>보장서비스(보험), 로밍 포함 <span class="np-tag">확정 Q10</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s3">
+      <h2><span class="np-no">03</span>같은 원천 서비스가 붙는 세 가지 형태</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>형태</th><th>언제</th><th>예시</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">PO</td><td>혼자 가입하는 상품</td><td>YouTube Premium 단독 구독</td></tr>
+          <tr><td class="np-k">선택 PS</td><td>다른 PO의 DT 안 구성품</td><td>편의점&amp;카페 PS3 후보(YouTube +7,900원)</td></tr>
+          <tr><td class="np-k">MP</td><td>요금제 등의 Policy에 붙는 혜택</td><td>베스트 89 넷플릭스 혜택(89,000원 동일)</td></tr>
+        </tbody>
+      </table></div>
+      <ul class="np-rules">
+        <li>선택 PS인지 MP인지는 EPC가 정의해서 내려준다. 전시는 그 값을 그대로 쓴다. <span class="np-tag">확정 Q2</span></li>
+        <li>원천 서비스 공통 코드가 EPC에 있다. 선택 PS와 MP 사이 중복 가입도 이 코드로 판정한다. <span class="np-tag">확정 Q1</span></li>
+        <li class="np-sub">참고: 보통 고르면 가격이 바뀌는 쪽이 선택 PS, 바뀌지 않는 쪽이 MP다.</li>
+      </ul>
+    </section>
+
+    <section id="np-s4">
+      <h2><span class="np-no">04</span>고객이 고르는 위치 두 가지</h2>
+      <div class="np-trees">
+        <div class="np-tree">
+          <h3>T우주 편의점&amp;카페</h3>
+          <div class="np-n"><b>PO</b></div>
+          <div class="np-node">
+            <div class="np-n"><b>DT</b></div>
+            <div class="np-node">
+              <div class="np-n">PS1 세븐일레븐 <span class="np-lbl">필수</span></div>
+              <div class="np-n">PS2 투썸플레이스 <span class="np-lbl">필수</span></div>
+              <div class="np-n np-pick">PS3 선택 · 후보 약 50개</div>
+            </div>
+          </div>
+          <p class="np-foot">선택이 DT 안에 있다(선택 PS). 고르면 가격이 바뀐다.</p>
+        </div>
+        <div class="np-tree">
+          <h3>베스트 89</h3>
+          <div class="np-n"><b>PO</b></div>
+          <div class="np-node">
+            <div class="np-n"><b>DT</b></div>
+            <div class="np-node"><div class="np-n">PS 월정액 89 <span class="np-lbl">필수</span></div></div>
+            <div class="np-n"><b>Policy</b> <span class="np-lbl">요금프로그램그룹</span></div>
+            <div class="np-node"><div class="np-n np-pick">MP 4개 택1</div></div>
+          </div>
+          <p class="np-foot">선택이 DT 밖에 있다(MP). 가격은 그대로다.</p>
+        </div>
+      </div>
+      <ul class="np-rules">
+        <li>DT 선택 규칙은 택1뿐 아니라 min~max(택N)까지 표현된다. 예) 우주패스 DIY 기본 2 + 추가 1~2 <span class="np-tag">확정 Q4</span></li>
+      </ul>
+    </section>
+
+    <section id="np-s5">
+      <h2><span class="np-no">05</span>전시 기본 규칙</h2>
+      <p>아래 규칙은 모두 확정이다.</p>
+
+      <div class="np-group">
+        <h3>EPC 연결·가격</h3>
+        <ul>
+          <li>EPC에서 PO 단위로 가져온다. DT와 Price policy를 함께 가져온다.</li>
+          <li>EPC가 준 필수 PS는 그대로 제공하고, 선택 PS는 고객이 고른다.</li>
+          <li>선택 PS 후보는 전부 노출한다(50개면 50개). 전시에서 후보를 줄이지 않는다.</li>
+          <li>전시는 가격·추가금을 입력하거나 수정하지 않는다.</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>배정 단위</h3>
+        <ul>
+          <li>선택 항목 단위는 PO 또는 PO + 고정 MP까지다.</li>
+          <li>PO + 고정 MP(전시ID)는 고정형과 상품목록에 배정할 수 있다.</li>
+          <li>전시가 선택 PS를 미리 골라 카드를 나누는 것은 불가. 선택이 MP일 때만 카드 분리 가능. 선택 PS를 하나로 정한 상품이 필요하면 EPC에서 PO를 따로 만든다.</li>
+          <li>선택 PS가 있는 PO(편의점&amp;카페, 우주패스 DIY, 선택 PS가 있는 액세서리 등)는 고정형으로만 노출한다. 선택형·복합형 영역에는 넣지 않는다. 단말 + 요금제 + T우주 동시 판매 구성도 허용하지 않는다. <span class="np-tag">10-16 결정, 10-22 재확인 Q12</span></li>
+          <li>선택 PS가 있는 PO끼리 묶을 때도 고정형만 가능하다.</li>
+          <li>선택 PS가 있는 PO는 옵션 방식 사용 불가.</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>단말</h3>
+        <ul>
+          <li>단말 모델코드 하나에는 색상 1개와 용량 1개가 들어 있다. 기종마다 색상 × 용량 조합 수만큼 PO가 있다. 예) S26 울트라 256GB·512GB × 블랙·실버 = PO 4개 <span class="np-tag">확정 Q3</span></li>
+          <li>고객 화면의 색상·용량 선택은 옵션 방식으로 만들고, 옵션 조합 하나에 모델코드 PO 하나를 매핑한다. EPC에 없는 조합은 판매 안 함으로 표시한다.</li>
+          <li>단말은 약정형이라 요금제 필수. 단말 단독 판매 불가.</li>
+          <li>단말 1대마다 요금제 1개가 필수다. 단말 2대면 회선 2개, 요금제 2개를 함께 구성한다(다회선).</li>
+          <li>단말이 들어간 전시는 복합형만 가능하다. 영역1 옵션(단말 → 모델코드 PO 매핑), 영역2 고정 또는 상품목록(요금제).</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>요금제</h3>
+        <ul>
+          <li>회선 하나에 요금제는 1개다. 같은 회선에 요금제를 2개 이상 넣을 수 없고, 같은 요금제를 중복으로 넣을 수도 없다.</li>
+          <li>요금제 2개를 한 전시에 넣으려면 회선 2개를 동시 개통하는 구성이어야 한다. 예) 폰 USIM + 워치 USIM</li>
+          <li>요금제 단독 전시는 요금제 변경, USIM 가입에 쓴다. 상품목록은 요금제 택1.</li>
+          <li>요금제는 옵션 방식을 쓰지 않는다(요금 단계 조합이 없음).</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>보험 (제휴서비스·보장)</h3>
+        <ul>
+          <li>보험은 단말 구매 시점에만 가입한다. 보험이 들어간 전시에는 단말이 같이 있어야 한다.</li>
+          <li>보험끼리는 배타다. 한 전시에 보험은 1개만.</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>자동 제외 (관계 policy) <span class="np-tag">확정 Q11</span></h3>
+        <ul>
+          <li>같은 원천 서비스 중복은 후보에서 자동으로 뺀다. 요금제 MP, 부가서비스, 구독 사이 모두 적용. 예) 다이렉트 유튜브 요금제 + YouTube Premium 구독, Wavve 앤 데이터 + Wavve 이용권</li>
+          <li>같은 계열 부가서비스(컬러링, 안심데이터 등)는 동시에 고를 수 없다. 하나를 고르면 나머지를 뺀다.</li>
+          <li>앞 영역 요금제에 맞지 않는 종속 부가(데이터 충전 등)는 자동으로 뺀다.</li>
+          <li>액세서리 대상 기종은 단말 및 다른 액세서리와 일치해야 한다. 기종이 다른 액세서리는 자동으로 뺀다.</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>가입 조건 적용 단위</h3>
+        <ul>
+          <li>가입 policy는 영역 단위로 적용한다.</li>
+          <li>부가서비스는 회선 보유 고객만 가입한다. 회선이 없는 고객에게는 부가서비스 영역을 자동으로 뺀다.</li>
+          <li>액세서리는 회선과 무관하게 판매한다.</li>
+        </ul>
+      </div>
+
+      <div class="np-group">
+        <h3>기타</h3>
+        <ul>
+          <li>해지·승계 등 가입 이후 처리 순서는 PO별 Policy가 정한다. 전시는 관여하지 않는다. <span class="np-tag">확정 Q5</span></li>
+          <li>가입유형, 요금제도 상품 전시에서 다룬다. 0원 신청형도 상품으로 처리한다.</li>
+          <li>11번가 혜택, 웰컴기프트는 MP로 분리 예정이다.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="np-s6">
+      <h2><span class="np-no">06</span>고객 선택 방식</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>방식</th><th>구성</th><th>고객 화면</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">고정형</td><td>영역 1개, 배정한 항목 전부 제공</td><td>고를 것 없음. 단, PO 안 선택 PS는 그대로 고른다</td></tr>
+          <tr><td class="np-k">선택형 · 상품목록</td><td>영역 1개, 배정한 항목 중 택N(min~max)</td><td>목록에서 고르기</td></tr>
+          <tr><td class="np-k">선택형 · 옵션</td><td>옵션값 조합마다 PO 1개 매핑</td><td>색상·용량 고르기(조합별 모델코드 PO 매핑)</td></tr>
+          <tr><td class="np-k">복합형</td><td>영역 N개, 영역마다 고정/상품목록/옵션</td><td>순서대로 고르기. 앞 영역 선택에 따라 뒤 영역 후보를 거름</td></tr>
+        </tbody>
+      </table></div>
+      <ul class="np-rules">
+        <li>배정 항목은 PO 또는 PO + 고정 MP다.</li>
+        <li>선택 PS가 있는 PO는 고정형에만 배정한다.</li>
+        <li>옵션 방식은 조합별 PO가 EPC에 따로 있을 때만 쓴다(단말 색상·용량, 색상별 PO가 있는 액세서리).</li>
+      </ul>
+    </section>
+
+    <section id="np-s7">
+      <h2><span class="np-no">07</span>MP 고정 전시 (베스트 89 TO-BE)</h2>
+      <p class="np-sub">2026-10-07 EPC 정기회의 기준</p>
+      <div class="np-tbl"><table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">AS-IS</td><td>요금제 코드 4개(NA00009792~95), 코드마다 OTT 고정. OTT 변경 = 요금제 변경</td></tr>
+          <tr><td class="np-k">TO-BE 구조</td><td>PO 베스트 89 1개 + PS 월정액 89(OTT와 무관) + 요금프로그램그룹 "OTT 택1"(MP 4개: T우주 / 넷플릭스 / 디즈니+ / 티빙&amp;웨이브)</td></tr>
+          <tr><td class="np-k">전시</td><td>전시그룹 1개 + 전시ID 4개(DSP-B89-01~04). 전시ID마다 원천 PO + 고정 MP 1개 [LOCK], 예전 코드와 1:1 매핑</td></tr>
+          <tr><td class="np-k">저장 검증</td><td>고정 MP가 원천 PO의 선택 가능 MP 목록에 있음 / 선택 수 최대 1 / 배타 위반 없음 / MP 유효기간이 전시기간을 포함</td></tr>
+          <tr><td class="np-k">가입 이후 처리</td><td>MP 가입·해지·재선택·승계는 PO별 Policy를 따른다 <span class="np-tag">Q5</span></td></tr>
+          <tr><td class="np-k">오더 판정</td><td>원천 PO가 같으면 혜택 재선택 오더(요금제 변경 아님), 다르면 요금제 변경 오더</td></tr>
+          <tr><td class="np-k">레거시</td><td>혜택 재선택을 요금제 변경이 아닌 MP 변경으로 받는다 <span class="np-tag">확정 Q9</span></td></tr>
+          <tr><td class="np-k">정산 키</td><td>PO + MP. 전시ID는 채널 집계용 속성으로 함께 저장한다 <span class="np-tag">확정 Q7</span></td></tr>
+          <tr><td class="np-k">그룹 중지</td><td>전시그룹을 중지하면 소속 전시ID도 일괄 중지한다 <span class="np-tag">확정 Q8</span></td></tr>
+          <tr><td class="np-k">MP 삭제</td><td>그 MP를 고정한 전시ID만 중지한다. 예) 넷플릭스 MP 삭제 시 DSP-B89-02만 중지, 01·03·04는 유지 <span class="np-tag">확정 Q8</span></td></tr>
+          <tr><td class="np-k">MP 추가</td><td>운영자가 전시ID를 새로 만들어 그룹에 넣는다</td></tr>
+          <tr><td class="np-k">대표 전시ID</td><td>노출용. 오더 유형 판정에 쓰지 않는다</td></tr>
+          <tr><td class="np-k">전시ID 채번</td><td>모든 MP에 전시ID가 채번되는 것은 아니다(전시하지 않는 MP 존재, SK AX 코멘트)</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s8">
+      <h2><span class="np-no">08</span>남은 미결 사항</h2>
+      <div class="np-qlist">
+        <div class="np-q"><b>Q6</b>"기본 할인 RULE"의 정의, 재선택 횟수·기간 제한, 적용 시점(즉시/익월)</div>
+        <div class="np-q"><b>Q9-1</b>기존 NA 코드 가입자를 PO + MP로 전환하는 시점과 방식</div>
+        <div class="np-q"><b>Q13</b>자동 제외로 필수 영역(최소 1 이상)의 후보가 0개가 되면 어떻게 하는가<p>선택지: 전시 미노출 / 영역 건너뛰기 / 안내 후 진행 불가</p></div>
+        <div class="np-q"><b>Q14</b>한 전시에 결제 방식이 섞이는 경우(회선 청구 + 일시불, 일시불 + 정기결제) 주문·결제를 어떻게 처리하는가<p>선택지: 주문 컨테이너 1개에서 결제 코너 복수 / 주문 분리</p></div>
+        <div class="np-q"><b>Q15</b>다회선 구성에서 영역과 회선을 어떻게 연결하는가<p>예: 영역1 폰 단말 → 영역2 폰 요금제, 영역3 워치 단말 → 영역4 워치 요금제처럼 회선 묶음 단위를 둘지</p></div>
+      </div>
+    </section>
+
+    <section id="np-s9">
+      <h2><span class="np-no">09</span>조합 규칙</h2>
+      <p>기준 상품과 함께 묶는 상품의 조합별 규칙이다.</p>
+      <p class="np-sub">판정: <span class="np-pill np-ok">O</span> 확정 규칙으로 가능 &nbsp; <span class="np-pill np-wait">△</span> 미정 규칙 또는 8장 미결에 따라 갈림 &nbsp; <span class="np-pill np-no">X</span> 확정 규칙상 불가</p>
+      <div class="np-tbl"><table>
+        <thead><tr><th>조합</th><th>구성 방식</th><th>규칙</th><th>판정</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">단말 + 단말</td><td>복합형(다회선)</td><td>단말마다 요금제 필수. 단말 2대 = 요금제 2개</td><td><span class="np-pill np-ok">O</span> <span class="np-sub">구성 방식 Q15</span></td></tr>
+          <tr><td class="np-k">단말 + 요금제</td><td>복합형만</td><td>영역1 옵션(단말 → 모델코드 PO) / 영역2 고정 또는 상품목록(요금제, PO 또는 PO + 고정 MP)</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">요금제 단독</td><td>고정형·상품목록</td><td>요금제 변경·USIM 가입. 상품목록은 택1, 옵션 불가. PO + 고정 MP 배정 가능</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">요금제 + 요금제</td><td>복합형(다회선)</td><td>회선 2개 동시 개통일 때만. 예) 폰 USIM + 워치 USIM. 같은 회선 2개 불가</td><td><span class="np-pill np-ok">O</span> <span class="np-sub">구성 방식 Q15</span></td></tr>
+          <tr><td class="np-k">요금제 + 부가서비스</td><td>복합형</td><td>영역1 요금제 / 영역2 부가 상품목록 0~N. 데이터 충전 등은 앞 영역 요금제 기준 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">요금제 + 액세서리</td><td>복합형</td><td>영역1 요금제 / 영역2 액세서리 상품목록 0~N. 회선 청구 + 일시불 혼재</td><td><span class="np-pill np-wait">△</span> <span class="np-sub">Q14</span></td></tr>
+          <tr><td class="np-k">요금제 + 보험</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
+          <tr><td class="np-k">요금제 + 구독</td><td>복합형</td><td>영역1 요금제 / 영역2 구독 상품목록 0~1. 요금제 MP와 같은 원천 서비스는 자동 제외. 선택 PS 있는 구독은 이 영역에 넣지 않음</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">부가서비스 단독 · 부가 + 부가</td><td>고정형·상품목록</td><td>회선 보유 고객 대상. 같은 계열(컬러링, 안심데이터 등) 동시 가입 불가</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">부가서비스 + 액세서리</td><td>복합형</td><td>부가는 회선 보유 고객만, 액세서리는 회선 무관. 회선 없는 고객에게는 부가 영역 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">부가서비스 + 보험</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
+          <tr><td class="np-k">부가서비스 + 구독</td><td>복합형</td><td>같은 원천 서비스 자동 제외(예: Wavve 앤 데이터 + Wavve 이용권). 요금제 MP와 겹쳐도 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">액세서리 단독 · 액세서리 + 액세서리</td><td>고정형·상품목록·옵션</td><td>옵션은 색상별 PO가 있을 때만. 선택 PS 있는 액세서리는 고정형만. 대상 기종 일치 검증, 불일치 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">액세서리 + 보험</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
+          <tr><td class="np-k">액세서리 + 구독</td><td>복합형</td><td>선택 PS 없는 PO 기준. 같은 원천 서비스 자동 제외. 일시불 + 정기결제 혼재</td><td><span class="np-pill np-wait">△</span> <span class="np-sub">Q14</span></td></tr>
+          <tr><td class="np-k">보험 + 단말</td><td>복합형</td><td>단말 구매 시점에만. 단말이 같은 전시에 있어야 함</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">보험 + 보험</td><td>-</td><td>보험끼리 배타</td><td><span class="np-pill np-no">X</span></td></tr>
+          <tr><td class="np-k">보험 + 구독</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
+          <tr><td class="np-k">구독 단독</td><td>고정형·상품목록</td><td>선택 PS 없는 PO는 상품목록 가능. 선택 PS 있는 구독(편의점&amp;카페, 우주패스 DIY)은 고정형만</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">구독 + 구독</td><td>고정형·상품목록</td><td>같은 원천 서비스 자동 제외(Q1). 선택 PS 있는 구독끼리는 고정형만</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">단말 + 부가서비스·구독·액세서리</td><td>복합형</td><td>규칙 미정. 단말 + 요금제 복합형에 영역 추가로 가정</td><td><span class="np-pill np-wait">△</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    </div>
+  </div>
 </section>
 
 </main>
