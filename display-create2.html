@@ -128,7 +128,7 @@
       .ali .nm{flex:1;min-width:0}
       .ali .nm b{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ali .nm small{font-size:11px;color:var(--muted)}
-      /* 전시 정보 · 추가 정보 · 부가 설정: 왼쪽 목록은 감싸는 박스 없이, 선택 항목도 왼쪽 굵은 선 없이 테두리로만 표시 */
+      /* 전시 정보 · 콘텐츠 정보 · 추가설정: 왼쪽 목록은 감싸는 박스 없이, 선택 항목도 왼쪽 굵은 선 없이 테두리로만 표시 */
       :is(#sec-info,#sec-extra,#sec-more) .al{background:none;border:0;border-radius:0;padding:0}
       :is(#sec-info,#sec-extra,#sec-more) .ali.on:not(.drop-a,.drop-b){box-shadow:none}
       .mv{display:flex;flex-direction:column;flex:none}
@@ -248,7 +248,7 @@
       .rte-code{display:block;width:100%;min-height:260px;padding:14px 16px;border:0;resize:vertical;font:12px/1.6 ui-monospace,Consolas,monospace;color:var(--text);background:var(--bg);outline:none}
       [data-rte="note"] .rte-ed,[data-rte="note"] .rte-code{min-height:140px}
       .ph-note-rich{color:var(--ph-mu);font-size:11.5px}
-      /* 추가 정보 */
+      /* 콘텐츠 정보 */
       .src{font-size:10px;padding:1px 6px;border-radius:4px;white-space:nowrap}
       .s-link{background:var(--accent-soft);color:var(--accent)}
       .s-copy{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
@@ -306,31 +306,35 @@
       .status.warn{background:var(--warn)}
       /* 상품 전시 목록: 제목 · 조회 조건 박스 · 조회결과 표 · 페이지 · 등록 */
       .lst-title{margin:0 0 20px;padding-bottom:20px;border-bottom:1px solid var(--line);font-size:22px;font-weight:700}
-      .lst-filter{display:flex;flex-direction:column;gap:14px;margin:0 0 36px;padding:24px 24px;border-radius:12px;background:#fafbfd;box-shadow:0 2px 10px #2934590f}
-      .lf-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px}
-      .lf-l{min-width:58px;font-size:13px;font-weight:500;color:var(--text);white-space:nowrap}
-      .lf-row select{min-width:200px;height:40px;background:#fff}
-      .lf-row input[type=text]{width:220px;height:40px}
-      .lf-range{display:inline-flex;align-items:center;gap:6px}
-      .lf-range input{height:40px;padding:0 12px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;font:inherit;font-size:13px;color:var(--text)}
-      .lf-quick{display:inline-flex;gap:6px}
-      .lf-quick .btn{min-width:50px;height:40px;padding:0 12px;font-size:13px}
+      .lst-filter{display:flex;flex-direction:column;gap:12px;margin:0 0 36px;padding:20px 24px;border-radius:12px;background:#f7f8fa}
+      .lf-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px 0}
+      /* 항목 묶음: 라벨 + 입력. 두 번째 묶음부터 앞에 세로 구분선 */
+      .lf-g{display:inline-flex;align-items:center;gap:8px}
+      .lf-g+.lf-g::before{content:"";width:1px;height:16px;margin:0 16px 0 8px;background:var(--line-strong)}
+      .lf-l{margin-right:12px;font-size:14px;font-weight:500;color:var(--text);white-space:nowrap}
+      .lf-row select{width:200px;height:40px;padding:0 12px;border-radius:6px;background-color:#fff;font-size:13px}
+      .lf-row select.sm{width:130px}
+      .lf-row select:has(option[value=""]:checked){color:var(--muted)}
+      .lf-row input[type=text]{width:200px;height:40px;padding:0 12px;border-radius:6px;font-size:13px}
+      .lf-range{display:inline-flex;align-items:center;gap:4px}
+      .lf-range input{width:132px;height:40px;padding:0 10px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;font:inherit;font-size:13px;color:var(--text)}
       .lf-acts{display:inline-flex;gap:8px;margin-left:auto}
-      .lf-acts .btn{height:40px;min-width:60px;font-size:13px}
+      .lf-acts .btn{height:40px;min-width:64px;padding:0 16px;border-radius:6px;font-size:14px}
       .btn.dark{border-color:#20293b;color:#20293b}
       .lst-count{display:flex;align-items:baseline;gap:12px;margin:0 0 18px;font-size:18px;font-weight:700}
       .lst-count span{font-size:13px;font-weight:400;color:var(--text)}
       .lst-count b{color:var(--accent);font-weight:500}
       .lst-tw{overflow-x:auto;border-top:1px solid var(--line-strong)}
-      /* 표는 본문 폭에 맞춘다(가로 스크롤 없음). 전시명 열이 남는 폭을 쓰고, 넘치는 글자는 … 처리. 전시 기간 · 일시는 좁으면 두 줄로 */
+      /* 전시명 · 전시 채널 · 연결 상품은 넘치는 글자를 … 처리. 상태 배지 · 전시 기간 · 담당자 · 일시 · 버튼은 잘리지 않는 폭으로 한 줄 */
       #listTable{table-layout:fixed;width:100%;font-size:13px}
-      #listTable col.w-id{width:76px}#listTable col.w-ver{width:52px}#listTable col.w-ch{width:96px}#listTable col.w-conn{width:120px}#listTable col.w-mt{width:116px}#listTable col.w-st{width:60px}#listTable col.w-ep{width:64px}#listTable col.w-pd{width:104px}#listTable col.w-ow{width:96px}#listTable col.w-ed{width:96px}#listTable col.w-at{width:96px}#listTable col.w-cp{width:62px}#listTable col.w-pv{width:80px}
+      #listTable col.w-id{width:76px}#listTable col.w-ver{width:52px}#listTable col.w-ch{width:96px}#listTable col.w-conn{width:120px}#listTable col.w-mt{width:116px}#listTable col.w-st{width:72px}#listTable col.w-ep{width:84px}#listTable col.w-pd{width:180px}#listTable col.w-ow{width:124px}#listTable col.w-ed{width:124px}#listTable col.w-at{width:144px}#listTable col.w-cp{width:70px}#listTable col.w-pv{width:92px}
       #listTable th{padding:10px 8px;background:var(--table-head);color:var(--text);font-size:13px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       #listTable td{padding:14px 8px;white-space:nowrap;line-height:1.5;overflow:hidden;text-overflow:ellipsis}
       #listTable .c{text-align:center}
       #listTable td.wr{white-space:normal;word-break:keep-all}
       #listTable th{white-space:normal;word-break:keep-all}
-      @media(max-width:1280px){#listTable{min-width:1160px}}
+      /* 상태 · 기간 · 담당자 · 일시 · 버튼은 한 줄로 다 보여야 하므로, 본문이 좁으면 표를 가로로 스크롤한다 */
+      #listTable{min-width:1480px}
       #listTable .lid{padding:0;border:0;background:none;color:var(--accent);font:inherit;cursor:pointer}
       #listTable .lid:hover{text-decoration:underline}
       #listTable td.empty{padding:48px;text-align:center;color:var(--muted)}
@@ -730,32 +734,33 @@
 <section class="view" id="v-list">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 관리 <span aria-hidden="true">›</span> <strong>상품 전시 목록</strong></div>
   <h1 class="lst-title">상품 전시 목록</h1>
-  <!-- 조회 조건: [조회]를 눌러야 결과에 반영된다. 조회기간 버튼(-7 · -30 · Today · +7 · +30)은 오늘 기준으로 기간을 채운다 -->
+  <!-- 조회 조건: [조회]를 눌러야 결과에 반영된다. 항목(라벨 + 입력)은 세로 구분선으로 나누고, 버튼은 마지막 줄 오른쪽 -->
   <form class="lst-filter" id="lFilter" autocomplete="off">
     <div class="lf-row">
-      <label class="lf-l" for="lfKey">조회조건</label>
-      <select id="lfKey"><option value="all">전체</option><option value="name">전시명</option><option value="id">전시ID</option></select>
-      <input type="text" id="lfQ" placeholder="전시명 또는 전시코드ID 입력" aria-label="검색어">
+      <span class="lf-g">
+        <label class="lf-l" for="lfKey">검색어</label>
+        <select id="lfKey"><option value="all">전체</option><option value="name">전시명</option><option value="id">전시ID</option></select>
+        <input type="text" id="lfQ" placeholder="검색 항목을 선택 후 검색하세요" aria-label="검색어">
+      </span>
+      <span class="lf-g">
+        <label class="lf-l" for="lfDate">조회 기간</label>
+        <select id="lfDate" class="sm"><option value="upd">등록일/수정일</option><option value="run">전시 기간</option></select>
+        <span class="lf-range"><input type="date" id="lfFrom" aria-label="시작일"><span aria-hidden="true">-</span><input type="date" id="lfTo" aria-label="종료일"></span>
+      </span>
+      <span class="lf-g"><label class="lf-l" for="lfSt">운영 상태</label><select id="lfSt"></select></span>
     </div>
     <div class="lf-row">
-      <label class="lf-l" for="lfDate">조회기간</label>
-      <select id="lfDate"><option value="upd">등록일/수정일</option><option value="run">전시 기간</option></select>
-      <span class="lf-range"><input type="date" id="lfFrom" aria-label="시작일"><span aria-hidden="true">-</span><input type="date" id="lfTo" aria-label="종료일"></span>
-      <span class="lf-quick" role="group" aria-label="기간 빠른 선택"><button type="button" class="btn" data-qd="-7">-7</button><button type="button" class="btn" data-qd="-30">-30</button><button type="button" class="btn" data-qd="0">Today</button><button type="button" class="btn" data-qd="7">+7</button><button type="button" class="btn" data-qd="30">+30</button></span>
-    </div>
-    <div class="lf-row">
-      <label class="lf-l" for="lfCh">전시 채널</label><select id="lfCh"></select>
-      <label class="lf-l" for="lfMethod">고객 선택 방식</label><select id="lfMethod"></select>
-      <label class="lf-l" for="lfSt">운영 상태</label><select id="lfSt"></select>
-      <label class="lf-l" for="lfOwner">담당자</label><select id="lfOwner"></select>
-      <label class="lf-l" for="lfTeam">담당팀</label><select id="lfTeam"></select>
+      <span class="lf-g"><label class="lf-l" for="lfCh">전시 채널</label><select id="lfCh"></select></span>
+      <span class="lf-g"><label class="lf-l" for="lfMethod">고객 선택 방식</label><select id="lfMethod"></select></span>
+      <span class="lf-g"><label class="lf-l" for="lfOwner">담당자</label><select id="lfOwner"></select></span>
+      <span class="lf-g"><label class="lf-l" for="lfTeam">담당팀</label><select id="lfTeam"></select></span>
       <span class="lf-acts"><button type="reset" class="btn dark" id="lfReset">초기화</button><button type="submit" class="btn primary">조회</button></span>
     </div>
   </form>
   <h2 class="lst-count">조회결과 <span><b id="lCount">0</b>건</span></h2>
   <div class="lst-tw"><table id="listTable">
     <colgroup><col class="w-id"><col class="w-ver"><col><col class="w-ch"><col class="w-conn"><col class="w-mt"><col class="w-st"><col class="w-ep"><col class="w-pd"><col class="w-ow"><col class="w-ed"><col class="w-at"><col class="w-cp"><col class="w-pv"></colgroup>
-    <thead><tr><th>전시ID</th><th>버전</th><th>전시명</th><th>전시 채널</th><th>연결 상품</th><th>고객 선택 방식</th><th class="c">운영<br>상태</th><th class="c">EPC 상<br>품상태</th><th class="c">전시 기간</th><th class="c">담당자</th><th class="c">최종등록<wbr>(수정)자</th><th class="c">최종등록<wbr>(수정)일시</th><th class="c">복사</th><th class="c">미리보기</th></tr></thead>
+    <thead><tr><th>전시ID</th><th>버전</th><th>전시명</th><th>전시 채널</th><th>연결 상품</th><th>고객 선택 방식</th><th class="c">상태</th><th class="c">EPC 상태</th><th class="c">전시 기간</th><th class="c">담당자</th><th class="c">최종등록<wbr>(수정)자</th><th class="c">최종등록<wbr>(수정)일시</th><th class="c">복사</th><th class="c">미리보기</th></tr></thead>
     <tbody id="listRows"></tbody>
   </table></div>
   <nav class="pager" id="lPager" aria-label="페이지"></nav>
@@ -786,7 +791,12 @@
         <header><b>고객 선택 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-method"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-method"></div>
       </div>
-      <!-- 기본 정보 · 상세 설명: 추가 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
+      <!-- 전시 채널: 어느 채널에 전시할지 + 전시 유형(서비스 구분) -->
+      <div class="step" id="sec-ch">
+        <header><b>전시 채널</b><span class="req">필수</span><span class="st"><span class="chip" id="st-ch"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-ch"></div>
+      </div>
+      <!-- 기본 정보 · 상세 설명: 콘텐츠 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
       <div class="step" id="sec-info">
         <header><b>전시 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-info"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-info"><div class="ae"><div class="al" id="infoList"></div><div class="ad"><div id="sb-basic"></div><div id="sb-desc" hidden></div></div></div></div>
@@ -795,16 +805,21 @@
         <input type="file" id="descFile" accept="image/*" multiple hidden>
       </div>
       <div class="step" id="sec-extra">
-        <header><b>추가 정보</b><span class="st"><span class="chip" id="st-extra"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>콘텐츠 정보</b><span class="st"><span class="chip" id="st-extra"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-extra"></div>
       </div>
       <div class="step" id="sec-review">
         <header><b>구매후기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rvOn" aria-label="구매후기 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-review"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
       </div>
-      <!-- 유사한 상품 · 오퍼링 문구 · 검색 노출 설정: 추가 정보와 같은 목록 + 상세 구성 -->
+      <!-- 연관 상품: 구매후기와 같은 구성(머리줄 스위치로 고객 화면 노출) -->
+      <div class="step" id="sec-rel">
+        <header><b>연관 상품</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rlOn" aria-label="연관 상품 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-rel"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-rel"></div>
+      </div>
+      <!-- 유사한 상품 · 오퍼링 문구 · 검색 노출 설정: 콘텐츠 정보와 같은 목록 + 상세 구성 -->
       <div class="step" id="sec-more">
-        <header><b>부가 설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>추가설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-more"><div class="ae"><div class="al" id="moreList"></div><div class="ad"><div id="sb-sim"></div><div id="sb-cvm" hidden></div><div id="sb-search" hidden></div></div></div></div>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
@@ -817,7 +832,7 @@
         <div class="body" id="sb-inst"></div>
       </div>
       <div class="step" id="sec-gift">
-        <header><b>사은품 · 혜택</b><span class="st"><span class="chip" id="st-gift"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>T기프트</b><span class="cond">기기 상품 연결 시</span><span class="st"><span class="chip" id="st-gift"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-gift"></div>
       </div>
       <div class="step" id="sec-td">
@@ -825,7 +840,7 @@
         <div class="body" id="sb-td"></div>
       </div>
       <div class="step" id="sec-order">
-        <header><b>주문 구성 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>주문 구성 방식</b><label class="switch hsw" title="주문 구성 방식 사용"><input type="checkbox" id="odOn" aria-label="주문 구성 방식 사용"><span aria-hidden="true"></span></label><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- 주문 프로세스 관리 v0.2.2: ref/1023_order_mokup_v9.html 복사본. 목업 자체 LNB는 공통 LNB로 교체. 화면 로직은 아래 인라인 스크립트에 있다. -->
+<!-- 주문 프로세스 관리 v0.2.2: ref/1023_order_mokup_v12.html 복사본(10/26 v9 → v12 갱신). 목업 자체 LNB는 공통 LNB로 교체. 화면 로직은 아래 인라인 스크립트에 있다. -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -1268,6 +1268,37 @@ tr.dis .ck{background:#f1f2f4;border-color:#dce0e5}
 .ltbl td,.ltbl th{overflow:hidden;text-overflow:ellipsis}
 .ltbl td.l,.ltbl th.l{text-align:left;padding-left:12px}
 .ltbl .stat{font-size:12px}
+
+/* v44 */
+#secBasic #fId.ro{width:100% !important;max-width:none}
+.tg-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tg-inl{display:contents}
+.tg-inl .tg-chip{height:30px;padding:0 8px 0 14px;border-radius:15px;border:1px solid #c4c9cf;background:#fff;font-size:13px;color:#1a1a1a}
+.tg-inl .tg-chip button{font-size:16px;color:#6b7280;width:20px;height:20px}
+#tgList{display:none}
+#bFold{height:40px;padding:0 20px;border-radius:8px;border:1px solid #c4c9cf;background:#fff;font-size:14px;font-weight:600;color:#1a1a1a;min-width:0;width:auto}
+#bFold:disabled{color:#b4b8c4;border-color:#e2e4ea}
+#bCopyTop{height:40px !important;padding:0 20px !important;border-radius:8px;font-size:14px}
+.card-h .rt{gap:8px}
+.scrw{margin:0 0 16px}
+.scrw select{height:42px;border-radius:8px;border-color:var(--sbbtn);width:100%}
+.urlro{display:flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border-radius:8px;background:#f1f2f4;color:#4b5159;font-size:13.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.urlro.empty{font-family:inherit;color:#9aa0a6}
+.urlpv2{margin:6px 0 0;font-size:12px;color:#8b9199}
+
+/* v45: 아코디언 펼침 시 강조 라인 제거 (공통 정의) */
+#leftCard .tpl,#leftCard .tpl.on,#leftCard .tpl.open{border-color:var(--sbline) !important;box-shadow:none !important}
+.dcol.dwait{display:flex;align-items:center;justify-content:center;min-height:200px;border:1px solid var(--sbline);border-radius:12px;color:#9aa0a6;font-size:13px;text-align:center;line-height:1.6}
+.domw{margin:0 0 16px}
+.domw .dsel{width:260px;height:42px;border-radius:8px;border-color:var(--sbbtn)}
+.urlro{gap:0;white-space:pre}
+.urlro i{font-style:normal;color:#9aa0a6}
+.urlro b{font-weight:600;color:#1a1a1a}
+
+/* v46: 기본 정보 아코디언 펼침 시 강조 라인 제거 */
+.acc.open{border-color:var(--sbline) !important;box-shadow:none !important}
+.acc-h:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.urlro.pend{font-family:inherit;color:#6b7280}
 /* ===== 화면 스타일: 상품 전시 관리 v0.2.1(display-create2.html · src/style.css)과 맞춘다 =====
    목업 규칙은 그대로 두고, 이 블록이 마지막에 덮어쓴다. 색·글꼴·크기는 display-create2 값을 그대로 쓴다. */
 :root{
@@ -1367,7 +1398,7 @@ select{height:38px;border-color:var(--line-strong);border-radius:8px;font-size:1
 .lay .card-h h3,.card-h h3{font-size:15px;font-weight:700;color:#1d1e2c;letter-spacing:-.3px}
 .lay-r>.card{border:1px solid var(--line);border-radius:10px}
 .acc{border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:border-color .3s}
-.acc.open{border-color:#3617ce;box-shadow:none}
+.acc.open{border-color:var(--line);box-shadow:none}
 .acc-h{height:auto;min-height:56px;padding:15px 20px;border-radius:0;background:var(--surface-2)}
 .acc.open .acc-h{border-bottom:1px solid var(--line)}
 .acc-t{font-size:14px;font-weight:600;color:var(--text)}
@@ -1387,7 +1418,7 @@ body:not(.ro-mode) #accBasic .acc-rt .bdg{display:inline-flex}
 .bt .td{font-size:13px}
 .bt .th.req span::after{background:#c0392b}
 .tpl{border-color:var(--line);border-radius:10px}
-.tpl.on{border-color:#3617ce;box-shadow:none}
+.tpl.on{border-color:var(--line);box-shadow:none}
 .tph .nm{font-size:14px;font-weight:600;color:var(--text)}
 .tph .num{background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600}
 .tpl.on .num{background:var(--accent);color:#fff}
@@ -1460,7 +1491,7 @@ body:not(.ro-mode) #accBasic .acc-rt .bdg{display:inline-flex}
         <div class="lf-row">
           <div class="lf-i"><span class="lt">사용 여부</span><div class="rad"><label><input type="radio" name="luse" value="" checked>전체</label><label><input type="radio" name="luse" value="Y">Y</label><label><input type="radio" name="luse" value="N">N</label></div></div>
           <div class="lf-i"><span class="lt">승인 상태</span><div class="sel" style="width:172px"><select id="lApS"><option value="">전체</option><option>임시 저장</option><option>승인 대기</option><option>승인 완료</option><option>반려</option><option>요청 취소</option></select></div></div>
-          <div class="lf-i"><span class="lt">유형</span><div class="sel" style="width:172px"><select id="lCat"><option value="">전체</option><option>단말</option><option>요금제</option><option>부가서비스</option><option>커머스</option></select></div></div>
+          <div class="lf-i"><span class="lt">전시 유형</span><div class="sel" style="width:172px"><select id="lCat"><option value="">전체</option><option>기기서비스</option><option>이동전화</option><option>부가서비스</option><option>구독서비스</option><option>제휴서비스</option></select></div></div>
           <div class="lf-i"><span class="lt">프로세스 ID</span><div class="tf"><input type="text" id="lId" placeholder="프로세스 ID를 입력하세요" maxlength="30" autocomplete="off"><button class="clr" type="button" data-clr="lId" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
           <div class="lf-i"><span class="lt">프로세스명</span><div class="tf"><input type="text" id="lNm" placeholder="프로세스명을 입력하세요" maxlength="30" autocomplete="off"><button class="clr" type="button" data-clr="lNm" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
         </div>
@@ -1472,7 +1503,7 @@ body:not(.ro-mode) #accBasic .acc-rt .bdg{display:inline-flex}
       </div>
       <div class="rhead"><h2>조회 결과</h2><span class="c">총 <b id="lCnt">0</b>건</span></div>
       <div class="tbl ltbl"><table>
-        <colgroup><col style="width:70px"><col style="width:135px"><col style="width:209px"><col><col style="width:131px"><col style="width:110px"><col style="width:112px"><col style="width:150px"><col style="width:184px"><col style="width:202px"></colgroup><thead><tr><th>No.</th><th class="l">유형</th><th>프로세스 ID</th><th class="l">프로세스명</th><th>연동 상품 수</th><th>승인 상태</th><th>사용 여부</th><th>구성 불러오기</th><th>최종 수정일</th><th class="l">최종 수정자</th></tr></thead>
+        <colgroup><col style="width:70px"><col style="width:135px"><col style="width:209px"><col><col style="width:131px"><col style="width:110px"><col style="width:112px"><col style="width:150px"><col style="width:184px"><col style="width:202px"></colgroup><thead><tr><th>No.</th><th class="l">전시 유형</th><th>프로세스 ID</th><th class="l">프로세스명</th><th>연동 상품 수</th><th>승인 상태</th><th>사용 여부</th><th>구성 불러오기</th><th>최종 수정일</th><th class="l">최종 수정자</th></tr></thead>
         <tbody id="lBody"></tbody></table>
         <div class="emptyrow" id="lEmpty" hidden>조회된 프로세스가 없습니다.</div>
       </div>
@@ -1511,16 +1542,16 @@ body:not(.ro-mode) #accBasic .acc-rt .bdg{display:inline-flex}
             <div class="acc-b">
               <div id="secBasic">
                 <div class="bt">
-                  <div class="th req"><span>유형</span></div>
-                  <div class="td wide"><div class="sel"><select id="fCat"><option selected>단말</option><option>요금제</option><option>부가서비스</option></select></div></div>
+                  <div class="th req"><span>전시 유형</span></div>
+                  <div class="td wide"><div class="sel"><select id="fCat"><option selected>전체</option><option>기기서비스</option><option>이동전화</option><option>부가서비스</option><option>구독서비스</option><option>제휴서비스</option></select></div></div>
 
                   <div class="th"><span>적용 상품</span></div>
-                  <div class="td wide"><div class="tg-wrap"><div class="tg-top"><button class="pillb" id="bTg" type="button">상품 조회</button><span class="hint">특정 상품 전용으로 쓸 때만 선택합니다. 선택한 상품은 상품 선택 코너의 선택지(리스트)로 노출됩니다.</span></div><div id="tgList"></div></div></div>
+                  <div class="td wide"><div class="tg-wrap"><div class="tg-top"><button class="pillb" id="bTg" type="button">상품 조회</button><div id="tgInline" class="tg-inl"></div><span class="hint" id="tgHint">특정 상품 전용으로 쓸 때만 선택합니다. 선택한 상품은 상품 선택 코너의 선택지(리스트)로 노출됩니다.</span></div><div id="tgList"></div></div></div>
 
-                  <div class="th req"><span>프로세스 ID</span></div>
-                  <div class="td"><div class="ro" id="fId">저장 시 자동 채번</div></div>
+                  <div class="th"><span>프로세스 ID</span></div>
+                  <div class="td wide"><div class="ro" id="fId">저장 시 자동 채번</div></div>
                   <div class="th req"><span>프로세스명</span></div>
-                  <div class="td"><div class="tf"><input type="text" id="fName" placeholder="프로세스명을 입력하세요" autocomplete="off"><button class="clr" type="button" data-clr="fName" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
+                  <div class="td wide"><div class="tf w630"><input type="text" id="fName" placeholder="프로세스명을 입력하세요" autocomplete="off"><button class="clr" type="button" data-clr="fName" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
 
                   <div class="th"><span>설명</span></div>
                   <div class="td wide"><div class="tf w630"><input type="text" id="fDesc" placeholder="어떤 내용에 적합한 프로세스 구성인지 입력하세요" autocomplete="off"><button class="clr" type="button" data-clr="fDesc" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
@@ -1588,7 +1619,7 @@ body:not(.ro-mode) #accBasic .acc-rt .bdg{display:inline-flex}
     <p class="cnt2" id="cnt2"></p>
     <div class="tbl">
       <table>
-        <thead><tr><th style="width:64px">선택</th><th>유형</th><th>프로세스 ID</th><th>프로세스 명</th></tr></thead>
+        <thead><tr><th style="width:64px">선택</th><th>전시 유형</th><th>프로세스 ID</th><th>프로세스 명</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <div class="emptyrow" id="emptyMsg" hidden>조회된 프로세스가 없습니다.</div>
@@ -1702,29 +1733,28 @@ function cTerm(){return C('주문 최종 약관','CN-PAY-0020','주문')}
 function cDone(){return C('주문 완료 확인','CN-ORD-0052','주문')}
 function cNv(){return C('로그인 여부 확인','CN-ORD-0090','비화면',{nv:true,opts:['로그인','비로그인']})}
 function mk4(){return [
- {name:'상품상세_기기상품_메인',url:{dom:'shop.tworld.co.kr',path:'/product/device/main'},corners:[cInfo(),cDeliv(),cPre(),cJoin(),cPay(),cPlan(),cCont(),cSim(),cGift(),cTda(),cCmp()]},
- {name:'상품상세_기기상품_선택 상품 선택',url:{dom:'shop.tworld.co.kr',path:'/product/device/select'},corners:[cRew(),cIns(),cAddv(),cCard(),cDisc()]},
- {name:'기기 가입하기',url:{dom:'shop.tworld.co.kr',path:'/order/device/join'},corners:[cOrdInfo(),cShip(),cBill(),cPm(),cPg(),cRcpt(),cTot()]},
- {name:'기기 최종 약관 동의',url:{dom:'shop.tworld.co.kr',path:'/order/device/terms'},corners:[cTerm()]},
- {name:'주문 완료',url:{dom:'www.tworld.co.kr',path:'/myt/order/complete'},corners:[cDone()]}
+ {name:'상품상세_기기상품_메인',scr:'NC-PRD-005-0',corners:[cInfo(),cDeliv(),cPre(),cNv(),cJoin(),cPay(),cPlan(),cCont(),cSim(),cGift(),cTda(),cCmp()]},
+ {name:'상품상세_기기상품_선택 상품 선택',scr:'NC-PRD-030-0',corners:[cRew(),cIns(),cAddv(),cCard(),cDisc()]},
+ {name:'기기 가입하기',scr:'NC-ORD-031-0',corners:[cOrdInfo(),cShip(),cBill(),cPm(),cPg(),cRcpt(),cTot()]},
+ {name:'기기 최종 약관 동의',scr:'NC-PAY-021-0',corners:[cTerm()]},
+ {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}
 ];}
 /* PU01 (코너 추가하기) 후보: FO 코너 + 비화면 + 커머스 전용 */
 var POOL=(function(){
   var a=[]; mk4().forEach(function(p){p.corners.forEach(function(c){a.push(c)})});
-  a.splice(3,0,cNv());
-  a.push(C('커머스 전용 상품 안내','CN-ORD-0111','주문',{only:'커머스'}));
+  a.push(C('커머스 전용 상품 안내','CN-ORD-0111','주문',{only:'제휴서비스'}));
   return a;
 })();
 var mkTab=function(){return [
-   {name:'상품상세_기기상품_메인',corners:[cInfo(),cPlan(),cSim(),cPay()]},
-   {name:'기기 가입하기',corners:[cOrdInfo(),cShip(),cTot()]},
-   {name:'주문 완료',corners:[cDone()]}];};
+   {name:'상품상세_기기상품_메인',scr:'NC-PRD-005-0',corners:[cInfo(),cPlan(),cSim(),cPay()]},
+   {name:'기기 가입하기',scr:'NC-ORD-031-0',corners:[cOrdInfo(),cShip(),cTot()]},
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
 var mkWear=function(){return [
-   {name:'상품상세_기기상품_메인',corners:[cInfo(),cPlan(),cSim()]},
-   {name:'주문 완료',corners:[cDone()]}];};
+   {name:'상품상세_기기상품_메인',scr:'NC-PRD-005-0',corners:[cInfo(),cPlan(),cSim()]},
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
 var mkSim=function(){return [
    {name:'USIM 가입하기',corners:[cSim(),cPlan()]},
-   {name:'주문 완료',corners:[cDone()]}];};
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
 /* PU02 (구성 불러오기) 목록 23건: SB 1페이지 + 나머지 */
 var COPYLIST=[];
 (function(){
@@ -1740,8 +1770,8 @@ function T(id,n,cat,pt,cnt,ap,u,dt,mk,desc){DATA.push({id:id,n:n,cat:cat,pt:pt,t
 var SBROWS=[['010','단말','아이폰 18 pro max 전용 프로세스',45,'승인 완료','Y'],['009','단말','아이폰 18 전용 프로세스',45,'승인 완료','Y'],['008','커머스','커머스 기본 프로세스',125,'승인 완료','Y'],['007','부가서비스','부가서비스 기본 프로세스',125,'승인 완료','Y'],['006','요금제','요금제 기본 프로세스',125,'임시 저장','Y'],['005','단말','단말 기기변경 기본 프로세스',125,'임시 저장','Y'],['004','단말','단말 번호이동 기본 프로세스',125,'임시 저장','Y'],['003','단말','단말 신규가입 기본 프로세스',356,'반려','N'],['002','단말','단말 기본 프로세스',356,'반려','N'],['001','단말','아이폰 18 pro 전용 프로세스',1,'반려','N']];
 function mkDetail(){
   var st=mk4(), c=st[0].corners;
-  var pay=c[4]; pay.omode='cond'; pay.rules=[{groups:[{conds:[{src:'CN-ORD-0003',ex:false,vals:['신규가입']}]}],opts:PAYOPTS.map(function(x){return x==='일시불'})}];
-  var plan=c[5]; plan.omode='cond'; plan.rules=[{groups:[{conds:[{src:'CN-PRD-0005',ex:false,vals:['iPhone Pro Max 18']}]}],opts:plan.opts.map(function(x,i){return i<3}),ord:[2,1,0,3,4,5,6,7]}];
+  var pay=c[5]; pay.omode='cond'; pay.rules=[{groups:[{conds:[{src:'CN-ORD-0003',ex:false,vals:['신규가입']}]}],opts:PAYOPTS.map(function(x){return x==='일시불'})}];
+  var plan=c[6]; plan.omode='cond'; plan.rules=[{groups:[{conds:[{src:'CN-PRD-0005',ex:false,vals:['iPhone Pro Max 18']}]}],opts:plan.opts.map(function(x,i){return i<3}),ord:[2,1,0,3,4,5,6,7]}];
   return st;
 }
 (function(){
@@ -1866,7 +1896,7 @@ function runVerify(){
   renderVerify(true);
 }
 function requiredOk(){
-  if($('fCat').value==='선택'){ showAlert({title:'필수 항목을 입력해주세요.',body:'페이지 유형을 선택해주세요.'}); return false; }
+  if($('fCat').value==='선택'){ showAlert({title:'필수 항목을 입력해주세요.',body:'전시 유형을 선택해주세요.'}); return false; }
   if(!$('fName').value.trim()){ setAcc('accBasic',true); showAlert({title:'필수 항목을 입력해주세요.',body:'프로세스 명을 입력해주세요.'}); $('fName').focus(); return false; }
   return true;
 }
@@ -1955,6 +1985,15 @@ var IP_OPT={colors:[{n:'실버',c:'#d9dce3'},{n:'딥 블루',c:'#2f4a7a'},{n:'�
   caps:[{t:'256G',price:'1,990,000 원'},{t:'512G',price:'2,290,000 원'},{t:'1T',price:'2,690,000 원'}]};
 var GX_OPT={colors:[{n:'그라파이트',c:'#4a4d57'},{n:'실버',c:'#d9dce3'}],
   caps:[{t:'256G',price:'1,684,000 원'},{t:'512G',price:'1,988,000 원'},{t:'1T',price:'2,557,000 원',r:'품절'},{t:'2T',price:'2,985,000 원',r:'일시품절'}]};
+/* 전시 유형: 전체|기기서비스|이동전화|부가서비스|구독서비스|제휴서비스. 예전 유형 값은 아래 표로 바꾼다 */
+var CAT_OLD={'단말':'기기서비스','요금제':'이동전화','부가서비스':'부가서비스','로밍':'부가서비스','구독':'구독서비스','커머스':'제휴서비스'};
+/* 전시 유형 → 상품 조회 탭(EPC 상품 유형). '전체'는 모든 상품 */
+var CAT_TAB={'기기서비스':'단말','이동전화':'요금제/부가서비스','부가서비스':'요금제/부가서비스','구독서비스':'구독','제휴서비스':'커머스'};
+function catOk(cat,p){if(!CAT_TAB[cat]) return true;var tb=CAT_TAB[cat];return tb==='요금제/부가서비스'?(p.type==='요금제'||p.type==='부가서비스'):p.type===tb}
+(function(){
+  function fix(d){if(d&&CAT_OLD[d.cat]){d.cat=CAT_OLD[d.cat];if(d.pt!=null)d.pt=d.cat;if(typeof d.t==='string')d.t=d.cat}if(d&&d.det)fix(d.det)}
+  DATA.forEach(fix);COPYLIST.forEach(fix);
+})();
 var PCNT=0;function mkP(id,n,st,model,opt,tag,type){var tp=type||'단말';PCNT++;return {id:id,n:n,code:(tp==='단말'?'PD'+(100230+PCNT*7):'NA0000'+(8700+PCNT*13)),type:tp,st:st,model:model,tag:tag||n,tags:['장기고객 혜택','인기'],notice:'',colors:opt.colors,caps:opt.caps}}
 var PRODS=[
   mkP('S26091603xxxx','iPhone 18','전시중','IP18_256GS',IP_OPT,'새로운 iPhone 18'),
@@ -1973,7 +2012,7 @@ var PRODS=[
 });
 var SAMPLE_PROD=(function(){var p=JSON.parse(JSON.stringify(PRODS[4]));p.tags=['장기고객 혜택','인기','워치 결합 할인'];p.notice='만 18세 이상 고객님만 구매할 수 있는 상품이에요';p.sample=1;return p})();
 function foldSVG(){return '<svg class="pimg" viewBox="0 0 220 250" width="170" height="195" aria-hidden="true"><defs><linearGradient id="fg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbe3d9"/><stop offset="1" stop-color="#d8c8ea"/></linearGradient></defs><rect x="41" y="52" width="138" height="160" rx="16" fill="#4a4d5f"/><rect x="49" y="60" width="122" height="144" rx="9" fill="url(#fg1)"/><circle cx="110" cy="67" r="2.4" fill="#4a4d5f"/></svg>'}
-var loadedProd=null, epcSel=null, epcMode='pv', tgSel=[], tgTmp=[], tgBase='[]', catPrev='단말';
+var loadedProd=null, epcSel=null, epcMode='pv', tgSel=[], tgTmp=[], tgBase='[]', catPrev='전체';
 function P(){return loadedProd||SAMPLE_PROD}
 function prodOpts(p){return p.colors.map(function(x){return x.n}).concat(p.caps.map(function(x){return x.t}))}
 function syncEpc(){}
@@ -2144,7 +2183,7 @@ function hidCls(key,k){return (k>=MAXV&&!EXP[key])?' hid':''}
 function moreBtn(key,total,hidChk){
   if(total<=MAXV) return '';
   if(EXP[key]) return '<button type="button" class="morebtn" data-act="more" data-k="'+key+'">접기<i class="mc up"></i></button>';
-  return '<button type="button" class="morebtn" data-act="more" data-k="'+key+'">'+(total-MAXV)+'개 더보기'+(hidChk?' <em>· 선택 '+hidChk+'개 포함</em>':'')+'<i class="mc"></i><span class="tbdt">기준 개수 TBD</span></button>';
+  return '<button type="button" class="morebtn" data-act="more" data-k="'+key+'">'+(total-MAXV)+'개 더보기'+(hidChk?' <em>· 선택 '+hidChk+'개 포함</em>':'')+'<i class="mc"></i></button>';
 }
 function olRow(c,oi,k,num,chk,inp,key,drag){
   return '<div class="ol-r'+(chk?'':' off')+hidCls('o'+c.u+key,k)+'" draggable="'+(drag?'true':'false')+'" data-ok="'+key+'" data-k="'+k+'"><span class="ol-g" title="드래그하여 노출 순서 변경">'+(drag?'⠿':'')+'</span><label>'+inp+'<span class="ol-t">'+esc(c.opts[oi])+'</span></label><span class="ol-n">'+(chk?num+'번째':'미노출')+'</span></div>';
@@ -2508,7 +2547,7 @@ function renderEpcRows(){
 function resetEpc(){$('eS0').checked=$('eS1').checked=$('eS2').checked=true;$('eKind').value='';$('eKey').value='';ePage=1}
 function openEpc(){epcMode='pv';$('eNote').hidden=true;resetEpc();epcSel=loadedProd?loadedProd.id:null;renderEpcRows();show('addDim',false);show('copyDim',false);show('epcDim',true)}
 function closeEpc(){show('epcDim',false)}
-function openTg(){epcMode='tg';tgTmp=tgSel.slice();$('eNote').hidden=false;$('eNote').textContent="페이지 유형 '"+$('fCat').value+"'에 해당하는 상품만 조회됩니다. 선택한 상품 전용 프로세스로 사용됩니다.";resetEpc();renderEpcRows();show('addDim',false);show('copyDim',false);show('epcDim',true)}
+function openTg(){epcMode='tg';tgTmp=tgSel.slice();$('eNote').hidden=false;$('eNote').textContent="전시 유형 '"+$('fCat').value+"'에 해당하는 상품만 조회됩니다. 선택한 상품 전용 프로세스로 사용됩니다.";resetEpc();renderEpcRows();show('addDim',false);show('copyDim',false);show('epcDim',true)}
 function prodOf(id){return PRODS.filter(function(x){return x.id===id})[0]}
 function renderTg(){
   var h='';
@@ -2518,7 +2557,7 @@ function renderTg(){
 }
 $('tgList').addEventListener('click',function(e){var b=e.target.closest('[data-tg]'); if(!b) return; var k=b.getAttribute('data-tg'); if(k==='all') tgSel=[]; else tgSel=tgSel.filter(function(x){return x!==k}); renderTg()});
 $('bTg').onclick=openTg;
-function tgOf(t){ if(t.tg) return t.tg.slice(); if(!t.cnt) return []; return PRODS.filter(function(p){return p.type===t.cat}).slice(0,Math.min(t.cnt,3)).map(function(p){return p.id}) }
+function tgOf(t){ if(t.tg) return t.tg.slice(); if(!t.cnt) return []; return PRODS.filter(function(p){return catOk(t.cat,p)}).slice(0,Math.min(t.cnt,3)).map(function(p){return p.id}) }
 $('bEpc').onclick=openEpc; $('epcX').onclick=closeEpc; $('eCancel').onclick=closeEpc;
 $('eBtn').onclick=function(){ePage=1;renderEpcRows()}; $('eReset').onclick=function(){resetEpc();epcSel=null;renderEpcRows()};
 $('eKey').addEventListener('keydown',function(e){if(e.key==='Enter'){ePage=1;renderEpcRows()}});
@@ -2529,8 +2568,8 @@ $('eOk').onclick=function(){
   var p=PRODS.filter(function(x){return x.id===epcSel})[0]; if(!p) return;
   loadedProd=p; closeEpc(); applyProd(); toast(p.n+' 정보를 불러왔어요. 미리보기에만 반영되며 저장되지 않습니다.');
 };
-function applyCat(v){ catPrev=v; tgSel=[]; renderTg(); if(loadedProd&&loadedProd.type!==v){ loadedProd=null; applyProd(); toast('페이지 유형이 변경되어 미리보기 상품을 해제했어요.'); } }
-$('fCat').addEventListener('change',function(){ var v=this.value; if(tgSel.length){ $('fCat').value=catPrev; showAlert({title:'페이지 유형을 변경하시겠습니까?',body:'페이지 유형을 변경하면 선택한 적용 상품이 초기화됩니다.',cancel:true,onOk:function(){$('fCat').value=v;applyCat(v)}}); } else applyCat(v); });
+function applyCat(v){ catPrev=v; tgSel=[]; renderTg(); if(loadedProd&&!catOk(v,loadedProd)){ loadedProd=null; applyProd(); toast('전시 유형이 변경되어 미리보기 상품을 해제했어요.'); } }
+$('fCat').addEventListener('change',function(){ var v=this.value; if(tgSel.length){ $('fCat').value=catPrev; showAlert({title:'전시 유형을 변경하시겠습니까?',body:'전시 유형을 변경하면 선택한 적용 상품이 초기화됩니다.',cancel:true,onOk:function(){$('fCat').value=v;applyCat(v)}}); } else applyCat(v); });
 
 
 /* ===== v20: 조회 / 등록 / 상세 / 수정 ===== */
@@ -2587,7 +2626,7 @@ function openForm(mode,t0,copy){
   $('footForm').hidden=RO;$('footDet').hidden=!RO;$('bEpc').hidden=RO;$('pvprod').hidden=RO;
   $('secMgmt').hidden=!RO;
   if(mode==='reg'){
-    $('fCat').value='단말';tgSel=[];tgBase='[]';$('fName').value='';$('fDesc').value='';$('fId').textContent='저장 시 자동 채번';
+    $('fCat').value='전체';tgSel=[];tgBase='[]';$('fName').value='';$('fDesc').value='';$('fId').textContent='저장 시 자동 채번';
     setUse(false,false,'등록 시 N 고정 · 승인 완료 후 Y 선택 가능');
   }else{
     $('fCat').value=t.cat;tgSel=tgOf(t);tgBase=JSON.stringify(tgSel);$('fName').value=t.n;$('fDesc').value=t.desc||'';$('fId').textContent=t.id;
@@ -2595,7 +2634,7 @@ function openForm(mode,t0,copy){
     setUse(t.u,can,can?'승인 완료된 프로세스는 Y / N 선택 가능':'승인 완료 전에는 N 고정 · 승인 완료 후 Y 선택 가능');
     if(RO){
       var ver=t.ver||(t.ap==='승인 완료'?'V.1':'-');
-      $('dInfo').innerHTML=[['유형',t.cat],['프로세스 ID',t.id],['프로세스 명',esc(t.n)],['설명',esc(t.desc||'-')],['연동 상품 수',t.cnt+'개'],['사용 여부',t.u?'Y':'N'],['승인 상태',t.ap],['버전 정보',ver],['적용 상품',tgSel.length?'<div class="tg-ro">'+tgSel.map(function(id){var q=prodOf(id);return '<span class="tg-chip">'+esc(q?q.n:id)+(q&&q.model?' ('+esc(q.model)+')':'')+'</span>'}).join('')+'</div>':'지정된 상품 없음']].map(function(x,i,a){return '<div class="th"><span>'+x[0]+'</span></div><div class="td'+(i===a.length-1?' wide':'')+'">'+x[1]+'</div>'}).join('');
+      $('dInfo').innerHTML=[['전시 유형',t.cat],['프로세스 ID',t.id],['프로세스 명',esc(t.n)],['설명',esc(t.desc||'-')],['연동 상품 수',t.cnt+'개'],['사용 여부',t.u?'Y':'N'],['승인 상태',t.ap],['버전 정보',ver],['적용 상품',tgSel.length?'<div class="tg-ro">'+tgSel.map(function(id){var q=prodOf(id);return '<span class="tg-chip">'+esc(q?q.n:id)+(q&&q.model?' ('+esc(q.model)+')':'')+'</span>'}).join('')+'</div>':'지정된 상품 없음']].map(function(x,i,a){return '<div class="th"><span>'+x[0]+'</span></div><div class="td'+(i===a.length-1?' wide':'')+'">'+x[1]+'</div>'}).join('');
       var rg=t.reg||'2026.08.28 11:20';
       $('dMgmt').innerHTML=[['등록 일시',rg],['등록자',t.by],['최종 수정 일시',t.dt],['최종 수정자',t.by]].map(function(x){return '<div class="th"><span>'+x[0]+'</span></div><div class="td">'+x[1]+'</div>'}).join('');
     }
@@ -2959,7 +2998,7 @@ $('vRe').onclick=function(){$('bVerify').click()};
 
 /* 상품 조회 : 유형 탭 */
 var PTABS=['단말','요금제/부가서비스','구독','커머스'], ETAB='단말', CTAB='단말';
-function catTab(){var v=$('fCat').value;return (v==='요금제'||v==='부가서비스')?'요금제/부가서비스':(PTABS.indexOf(v)>-1?v:'단말')}
+function catTab(){return CAT_TAB[$('fCat').value]||'단말'}
 function tabOk(p){return ETAB==='요금제/부가서비스'?(p.type==='요금제'||p.type==='부가서비스'):p.type===ETAB}
 function tabsHTML(on){return PTABS.map(function(t){return '<button type="button" class="'+(t===on?'on':'')+'" data-tab="'+t+'">'+t+'</button>'}).join('')}
 function renderETabs(){$('eTabs').innerHTML=tabsHTML(ETAB)}
@@ -3037,6 +3076,188 @@ renderTpl=function(){
 };
 ['lId','lNm'].forEach(function(id){var b=document.querySelector('[data-clr="'+id+'"]');if(b)b.onclick=function(){$(id).value='';$(id).focus()}});
 resetQ(); if(!$('scrList').hidden) renderTpl();
+
+
+/* ======== v44: FO 화면 선택 → URL 읽기 전용 ======== */
+var FOSCR=[
+ {id:'NC-PRD-005-0',n:'상품상세_기기상품_메인',url:'https://shop.tworld.co.kr/product/device/main'},
+ {id:'NC-PRD-030-0',n:'상품상세_기기상품_선택 상품 선택',url:'https://shop.tworld.co.kr/product/device/select'},
+ {id:'NC-ORD-031-0',n:'기기 가입하기',url:'https://shop.tworld.co.kr/order/device/join'},
+ {id:'NC-PAY-021-0',n:'기기 최종 약관 동의',url:'https://shop.tworld.co.kr/order/device/terms'},
+ {id:'NC-ORD-033-0',n:'주문 완료',url:'https://www.tworld.co.kr/myt/order/complete'}
+];
+function scrOf(id){return FOSCR.filter(function(x){return x.id===id})[0]||null}
+urlOf=function(st){var c=scrOf(st.scr);return c?c.url:''};
+urlRow=function(st,i){
+  var c=scrOf(st.scr);
+  if(RO) return '<p class="flbl">FO 화면</p><div class="ro rotn">'+(c?c.id+' '+esc(c.n):'-')+'</div><p class="flbl" style="margin-top:14px">페이지 URL</p><div class="ro rotn">'+(c?esc(c.url):'-')+'</div>';
+  var used={};stages.forEach(function(x,j){if(j!==i&&x.scr)used[x.scr]=1});
+  return '<div class="scrw"><p class="flbl req">FO 화면</p><select class="pscr" data-s="'+i+'"><option value="">FO 화면을 선택하세요</option>'+FOSCR.map(function(x){return '<option value="'+x.id+'"'+(st.scr===x.id?' selected':'')+(used[x.id]?' disabled':'')+'>'+x.id+' '+esc(x.n)+(used[x.id]?' (다른 페이지에서 사용 중)':'')+'</option>'}).join('')+'</select></div>'+
+    '<div class="urlw"><p class="flbl">페이지 URL</p><div class="urlro'+(c?'':' empty')+'">'+(c?esc(c.url):'FO 화면을 선택하면 URL이 자동으로 표시됩니다.')+'</div><p class="urlpv2">URL은 FO 화면에 등록된 값으로 자동 연결되며 수정할 수 없습니다.</p></div>';
+};
+pageChk=function(st){return !st.name||!st.scr||!st.corners.length||st.corners.some(condBad)};
+$('leftCard').addEventListener('change',function(e){
+  var d=e.target.closest('.pscr'); if(!d) return;
+  var i=+d.getAttribute('data-s'), st=stages[i], prev=scrOf(st.scr), nx=scrOf(d.value);
+  if(nx&&(!st.name||(prev&&st.name===prev.n))) st.name=nx.n;
+  st.scr=d.value; dirty(); renderLeft(); renderPreview(false);
+});
+(function(){
+  var rv=runVerify;
+  runVerify=function(){
+    rv();
+    vissues=vissues.filter(function(x){return x.m.indexOf('URL이 입력되지')<0});
+    stages.forEach(function(st,i){if(!st.scr) vissues.unshift({t:'err',m:'[설정 항목] \''+sname(i)+'\' 페이지의 FO 화면이 선택되지 않았습니다.'})});
+    vissues.sort(function(a,b){return a.t===b.t?0:(a.t==='err'?-1:1)});
+    if(vissues.some(function(x){return x.t==='err'})) vstate='fail';
+    renderVerify(true); updVBadge();
+  };
+})();
+/* 적용 상품: 버튼 옆 칩 */
+(function(){
+  var rt=renderTg;
+  renderTg=function(){
+    rt();
+    $('tgInline').innerHTML=tgSel.map(function(id){var p=prodOf(id);return '<span class="tg-chip">'+esc(p?p.n:id)+(p&&p.model?' ('+esc(p.model)+')':'')+'<button type="button" data-tg="'+id+'" aria-label="삭제">×</button></span>'}).join('');
+    $('tgHint').hidden=!!tgSel.length;
+  };
+})();
+$('tgInline').addEventListener('click',function(e){var b=e.target.closest('[data-tg]');if(!b)return;var k=b.getAttribute('data-tg');tgSel=tgSel.filter(function(x){return x!==k});renderTg()});
+/* 유형 '전체' */
+(function(){
+  var ot=openTg;
+  openTg=function(){ot();var v=$('fCat').value;$('eNote').hidden=v!=='전체'?true:true;};
+})();
+renderTg(); all(false);
+
+
+/* ======== v45: URL 자동 생성 + 모두 펼치기/접기 + 페이지 독립 펼침 ======== */
+var DOMS2=['shop.tworld.co.kr','m.shop.tworld.co.kr','www.tworld.co.kr'];
+function initPg(){
+  var mx=0; stages.forEach(function(x){ if(x.key){var n=+x.key.slice(3); if(n>mx) mx=n;} });
+  stages.forEach(function(x){
+    if(!x.key){ mx++; x.key='PG-'+('000'+mx).slice(-4); }
+    if(!x.dom){ var c=x.scr&&scrOf(x.scr); x.dom=c?c.url.split('/')[2]:DOMS2[0]; }
+  });
+}
+function procId(){return (MODE!=='reg'&&curT)?curT.id:''}
+function autoUrl(st,html){
+  var pid=procId();
+  if(!html) return st.dom?('https://'+st.dom+'/order/'+(pid||'{프로세스 ID}')+'/'+st.key):'';
+  if(!st.dom) return '<i>도메인을 선택하면 URL이 자동으로 생성됩니다.</i>';
+  return 'https://<b>'+esc(st.dom)+'</b>/order/'+(pid?'<b>'+pid+'</b>':'<i>{프로세스 ID}</i>')+'/<b>'+st.key+'</b>';
+}
+urlOf=function(st){return autoUrl(st,false)};
+urlRow=function(st,i){
+  if(RO) return '<p class="flbl">페이지 URL</p><div class="ro rotn">'+esc(autoUrl(st,false))+'</div>';
+  var pid=procId();
+  return '<div class="domw"><p class="flbl req">도메인</p><select class="pdom2 dsel" data-s="'+i+'"><option value="">도메인 선택</option>'+DOMS2.map(function(d){return '<option'+(st.dom===d?' selected':'')+'>'+d+'</option>'}).join('')+'</select></div>'+
+    '<div class="urlw"><p class="flbl">페이지 URL</p><div class="urlro">'+autoUrl(st,true)+'</div><p class="urlpv2">'+(pid?'URL은 자동 생성되며 수정할 수 없습니다.':'프로세스 ID는 저장 시 채번되며, 이때 URL이 확정됩니다.')+'</p></div>';
+};
+pageChk=function(st){return !st.name||!st.dom||!st.corners.length||st.corners.some(condBad)};
+$('leftCard').addEventListener('change',function(e){
+  var d=e.target.closest('.pdom2'); if(!d) return;
+  stages[+d.getAttribute('data-s')].dom=d.value; dirty(); renderLeft();
+});
+(function(){
+  var rv=runVerify;
+  runVerify=function(){
+    rv();
+    vissues=vissues.filter(function(x){return x.m.indexOf('FO 화면')<0&&x.m.indexOf('URL이 입력되지')<0});
+    stages.forEach(function(st,i){if(!st.dom) vissues.unshift({t:'err',m:'[설정 항목] \''+sname(i)+'\' 페이지의 도메인이 선택되지 않았습니다.'})});
+    vissues.sort(function(a,b){return a.t===b.t?0:(a.t==='err'?-1:1)});
+    vstate=vissues.some(function(x){return x.t==='err'})?'fail':'ok';
+    renderVerify(true); updVBadge();
+  };
+})();
+
+/* 페이지 아코디언: 각각 독립적으로 펼침/접힘, 모두 펼치기/접기 */
+renderLeft=function(){
+  var y=window.scrollY;
+  $('detailHold').appendChild($('detail'));
+  if(!stages.length&&!RO){stages=[{name:'',corners:[],open:true}];cur=0;sel=null}
+  initPg();
+  if(stages.length&&stages.every(function(x){return x.open===undefined})&&stages[cur]) stages[cur].open=true;
+  stages.forEach(function(x){x.open=!!x.open});
+  if(stages[cur]&&stages[cur].open){var ca=cs(); if(ca.length&&(!sel||ca.indexOf(sel)<0)) sel=ca[0];}
+  var anyOpen=stages.some(function(x){return x.open}), allOpen=stages.length&&stages.every(function(x){return x.open});
+  var fl=anyOpen?'모두 접기':'모두 펼치기';
+  var h='<div class="card-h"><h3>프로세스 설정</h3><span class="rt"><button class="pillb" id="bFold2" type="button" data-m="'+(anyOpen?'fold':'unfold')+'"'+(stages.length?'':' disabled')+' style="height:40px;padding:0 20px;border-radius:8px;border:1px solid #c4c9cf;background:#fff;font-size:14px;font-weight:600;color:#1a1a1a">'+fl+'</button>'+(RO?'':'<button class="sbb pri" id="bCopyTop" type="button" style="height:32px;padding:0 14px">복사하기</button>')+'</span></div>';
+  if(!stages.length){$('leftCard').innerHTML=h+'<p class="hint">구성된 페이지가 없습니다.</p>';return}
+  h+=stages.map(function(st,i){
+    var chk=!RO&&pageChk(st);
+    var o='<div class="tpl'+(i===cur?' on':'')+(st.open?' open':'')+'" data-s="'+i+'"><div class="tph" data-s="'+i+'" draggable="'+(RO?'false':'true')+'">'+(RO?'':'<i class="grip">⠿</i>')+'<span class="num">'+(i+1)+'</span><b class="nm'+(st.name?'':' ph')+'">'+esc(st.name||'페이지명 입력')+'</b><span class="rt"><span class="cn">코너 '+st.corners.length+'개</span>'+(chk?'<span class="bdg-chk">확인 필요</span>':'')+(RO?'':'<button class="tdel2 tdx" data-d="'+i+'" type="button" aria-label="페이지 삭제">'+XSVG+'</button>')+CARET+'</span></div>';
+    if(st.open){
+      o+='<div class="tbody">';
+      if(RO) o+='<p class="flbl">페이지명</p><div class="ro rotn">'+esc(sname(i))+'</div>';
+      else o+='<p class="flbl req">페이지명</p><input type="text" class="sname" data-s="'+i+'" placeholder="페이지명을 입력하세요" value="'+esc(st.name)+'" autocomplete="off">';
+      o+=urlRow(st,i);
+      o+='<div class="tsplit"><div class="tcol"><div class="tcol-h"><p class="flbl'+(RO?'':' req')+'">코너 구성</p><span class="tcol-n">'+st.corners.length+'개</span></div><div class="tcont">'+rowsHTML(i)+'</div>';
+      if(!RO) o+='<button class="addc2" data-add="'+i+'" type="button">+ 코너 불러오기</button>';
+      o+='</div>'+(i===cur?'<div class="dcol" id="dslot"></div>':'<div class="dcol dwait">코너를 선택하면<br>상세 설정이 이곳에 표시됩니다.</div>')+'</div></div>';
+    }
+    return o+'</div>';
+  }).join('');
+  if(!RO) h+='<div class="addt-wrap"><button class="sbb pri" id="tadd" type="button" style="width:96px">페이지 추가</button></div>';
+  $('leftCard').innerHTML=h;
+  var sl=$('dslot'); if(sl) sl.appendChild($('detail'));
+  if(Math.abs(window.scrollY-y)>1) window.scrollTo(0,y);
+  var n=stages.length, cn=stages.reduce(function(a,x){return a+x.corners.length},0);
+  [].forEach.call(document.querySelectorAll('.bbT'),function(e){e.textContent=n});
+  [].forEach.call(document.querySelectorAll('.bbC'),function(e){e.textContent=cn});
+};
+$('leftCard').addEventListener('click',function(e){
+  var t=e.target;
+  var fb=t.closest('#bFold2');
+  if(fb){ e.stopPropagation(); var un=fb.getAttribute('data-m')==='unfold'; stages.forEach(function(x){x.open=un}); renderLeft(); renderDetail(); return; }
+  var th=t.closest('.tph'); if(!th||t.closest('button')) return;
+  e.stopPropagation();
+  var i=+th.getAttribute('data-s'), st=stages[i];
+  if(st.open){ st.open=false; if(i===cur){ var nx=-1; stages.forEach(function(x,j){if(nx<0&&x.open) nx=j}); if(nx>-1){ setCur(nx); } } renderLeft(); renderDetail(); renderPreview(false); }
+  else { st.open=true; var sw=setCur(i); all(sw); }
+},true);
+/* 다른 페이지의 코너 클릭 시 그 페이지로 상세 이동 */
+$('leftCard').addEventListener('click',function(e){
+  var r=e.target.closest('.crow'); if(!r||e.target.closest('button')) return;
+  var si=+r.getAttribute('data-s'); if(si===cur) return;
+  e.stopPropagation(); var sw=setCur(si); var u=r.getAttribute('data-u'); var c=cs().filter(function(x){return String(x.u)===u})[0]; all(sw); if(c) pick(c);
+},true);
+all(false);
+
+
+/* ======== v46: 도메인 삭제 · URL은 저장 시 자동 생성 · 페이지 키 재사용 금지 ======== */
+var URLHOST='shop.tworld.co.kr';
+initPg=function(){
+  var first=stages._seq==null;
+  if(first){ var mx=0; stages.forEach(function(x){ if(x.key){var n=+x.key.slice(3); if(n>mx) mx=n;} }); stages._seq=mx; }
+  stages.forEach(function(x){
+    if(!x.key){ stages._seq++; x.key='PG-'+('000'+stages._seq).slice(-4); if(!(first&&MODE!=='reg')) x.fresh=true; }
+  });
+};
+function pageUrl(st){return 'https://'+URLHOST+'/order/'+procId()+'/'+st.key}
+function hasUrl(st){return MODE!=='reg'&&!st.fresh&&procId()}
+urlOf=function(st){return hasUrl(st)?pageUrl(st):''};
+urlRow=function(st,i){
+  if(RO) return '<p class="flbl">페이지 URL</p><div class="ro rotn">'+esc(pageUrl(st))+'</div>';
+  if(hasUrl(st)) return '<div class="urlw"><p class="flbl">페이지 URL</p><div class="urlro">'+esc(pageUrl(st))+'</div><p class="urlpv2">URL은 자동 생성되며 수정할 수 없습니다.</p></div>';
+  return '<div class="urlw"><p class="flbl">페이지 URL</p><div class="urlro pend">저장 시 자동 생성</div></div>';
+};
+pageChk=function(st){return !st.name||!st.corners.length||st.corners.some(condBad)};
+(function(){
+  var rv=runVerify;
+  runVerify=function(){
+    rv();
+    vissues=vissues.filter(function(x){return x.m.indexOf('도메인')<0});
+    vstate=vissues.some(function(x){return x.t==='err'})?'fail':'ok';
+    renderVerify(true); updVBadge();
+  };
+})();
+/* 구성 불러오기 시 키는 새로 생성 */
+(function(){
+  var ap=typeof applyCopy==='function'?applyCopy:null;
+  if(ap) applyCopy=function(){ap.apply(this,arguments); stages.forEach(function(x){x.fresh=true}); renderLeft();};
+})();
+all(false);
 
 </script>
 <script type="module" src="/src/order4-create.ts"></script>

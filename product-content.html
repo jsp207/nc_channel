@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>상품 콘텐츠 관리 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴"></nav>
+<main>
+
+<!-- 상품 콘텐츠 관리 v0.1: 안내 템플릿 · 컬러 · 용량 · 사이즈 · 기타 옵션 마스터. 스크립트는 src/product-content.ts, 스타일은 src/list.css · src/product-content.css -->
+<!-- 주소: ?tab=tpl|color|cap|size|etc (목록), &id=코드 (상세·수정), &id=new (등록). 탭을 바꾸면 조회 조건은 처음 값으로 돌아간다 -->
+
+<!-- ===== 목록 ===== -->
+<section class="view on" id="v-list">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품관리 <span aria-hidden="true">›</span> <strong>상품 콘텐츠 관리</strong></div>
+  <h1 class="lst-title">상품 콘텐츠 관리</h1>
+  <div class="pc-tabs" role="tablist" aria-label="콘텐츠 구분" id="pcTabs"></div>
+
+  <!-- 조회 조건: 상품 전시 목록 · 일괄 관리와 같은 구성. 항목은 탭마다 다르고 [조회]를 눌러야 반영된다 -->
+  <form class="lst-filter" id="lFilter" autocomplete="off"></form>
+  <h2 class="lst-count">조회결과 <span><b id="lCount">0</b>건</span></h2>
+  <div class="lst-tw"><table class="lst-table" id="lTable"></table></div>
+  <nav class="lst-pager" id="lPager" aria-label="페이지"></nav>
+  <div class="lst-foot"><button type="button" class="btn primary lg" id="lNew">등록</button></div>
+</section>
+
+<!-- ===== 상세 · 등록 ===== -->
+<section class="view" id="v-detail">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품관리 <span aria-hidden="true">›</span> 상품 콘텐츠 관리 <span aria-hidden="true">›</span> <strong id="dCrumb"></strong></div>
+  <h1 class="lst-title" id="dTitle"></h1>
+  <form id="dForm" autocomplete="off" novalidate>
+    <section class="pc-sec">
+      <h2 class="pc-h">기본 정보 <small id="dReqHint"><i class="pc-req" aria-hidden="true">*</i> 필수</small></h2>
+      <table class="pc-form"><tbody id="dFields"></tbody></table>
+    </section>
+    <div id="dUse"></div>
+    <div class="pc-foot">
+      <button type="button" class="btn lg" id="dBack">목록</button>
+      <span class="pc-foot-r">
+        <button type="button" class="btn lg pc-del" id="dDel">삭제</button>
+        <button type="submit" class="btn primary lg" id="dSave">저장</button>
+      </span>
+    </div>
+  </form>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+    <script type="module" src="/src/product-content.ts"></script>
+  </body>
+</html>

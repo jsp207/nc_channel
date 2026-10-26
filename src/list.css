@@ -1,0 +1,54 @@
+/* BO 목록 화면 공통: 제목 · 조회 조건 박스 · 조회결과 건수 · 결과 표 · 페이지 · 하단 버튼 · 상태 배지.
+   display-create2.html 상품 전시 목록과 같은 모양이다(그 화면은 같은 규칙을 페이지 안 <style>에 둔다). */
+.lst-title{margin:0 0 20px;padding-bottom:20px;border-bottom:1px solid var(--line);font-size:22px;font-weight:700}
+
+/* 조회 조건: 항목 묶음(라벨 + 입력)을 세로 구분선으로 나누고, 버튼은 마지막 줄 오른쪽 */
+.lst-filter{display:flex;flex-direction:column;gap:12px;margin:0 0 36px;padding:20px 24px;border-radius:12px;background:#f7f8fa}
+.lf-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px 0}
+.lf-g{display:inline-flex;align-items:center;gap:8px}
+.lf-g+.lf-g::before{content:"";width:1px;height:16px;margin:0 16px 0 8px;background:var(--line-strong)}
+.lf-l{margin-right:12px;font-size:14px;font-weight:500;color:var(--text);white-space:nowrap}
+.lf-row select{width:200px;height:40px;padding:0 12px;border-radius:6px;background-color:#fff;font-size:13px}
+.lf-row select.sm{width:130px}
+.lf-row select:has(option[value=""]:checked){color:var(--muted)}
+.lf-row input[type=text]{width:200px;height:40px;padding:0 12px;border-radius:6px;font-size:13px}
+.lf-range{display:inline-flex;align-items:center;gap:4px}
+.lf-range input{width:132px;height:40px;padding:0 10px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;font:inherit;font-size:13px;color:var(--text)}
+.lf-acts{display:inline-flex;gap:8px;margin-left:auto}
+.lf-acts .btn{height:40px;min-width:64px;padding:0 16px;border-radius:6px;font-size:14px}
+.btn.dark{border-color:#20293b;color:#20293b}
+
+.lst-count{display:flex;align-items:baseline;gap:12px;margin:0 0 18px;font-size:18px;font-weight:700}
+.lst-count span{font-size:13px;font-weight:400;color:var(--text)}
+.lst-count b{color:var(--accent);font-weight:500}
+
+/* 결과 표: 위 테두리 + 회색 머리줄, 행 높이와 글자 크기는 상품 전시 목록과 같다 */
+.lst-tw{overflow-x:auto;border-top:1px solid var(--line-strong)}
+.lst-table{table-layout:fixed;width:100%;font-size:13px}
+.lst-table th{position:static;padding:10px 8px;background:var(--table-head);color:var(--text);font-size:13px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lst-table td{padding:14px 8px;white-space:nowrap;line-height:1.5;overflow:hidden;text-overflow:ellipsis}
+.lst-table .c{text-align:center}
+.lst-table .r{text-align:right}
+.lst-table .lid{padding:0;border:0;background:none;color:var(--accent);font:inherit;cursor:pointer}
+.lst-table .lid:hover{text-decoration:underline}
+.lst-table td.empty{padding:48px;text-align:center;color:var(--muted)}
+
+.lb{display:inline-block;min-width:40px;padding:2px 7px;border-radius:4px;font-size:12px;font-weight:500;text-align:center}
+.lb.wait{background:#fff0c2;color:#b86a00}
+.lb.live{background:#e1efff;color:#1d6fd6}
+.lb.ok{background:#e0f6e9;color:#1f8a5b}
+.lb.chk{background:#ebe8ff;color:#5a3fd8}
+.lb.new{background:#fff0c2;color:#c47a00}
+.lb.stop{background:#ffe5e3;color:#d2382b}
+.lb.off{background:#eceef3;color:#5c6577}
+
+.lst-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin:28px 0 0}
+.lst-pager button{min-width:28px;height:28px;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+.lst-pager button:hover:not(:disabled){background:var(--surface)}
+.lst-pager button[aria-current="page"]{background:var(--accent);color:#fff;font-weight:600}
+.lst-pager button:disabled{color:#c3c8d3;cursor:default}
+.lst-pager svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+
+.lst-foot{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:28px}
+.btn.lg{min-width:96px;min-height:52px;padding:0 20px;border-radius:10px;font-size:15px}
+@media(max-width:900px){.lf-acts{margin-left:0}.lf-row select,.lf-row input[type=text]{min-width:0;flex:1 1 160px}}

@@ -33,6 +33,8 @@ export default defineConfig({
         paymentHistory2: 'payment-history2.html',
         paymentReconciliation2: 'payment-reconciliation2.html',
         productList: 'product-list.html',
+        productDisplayBulk: 'product-display-bulk.html',
+        productContent: 'product-content.html',
         order1: 'order1.html',
         order1Create: 'order1-create.html',
         order2Create: 'order2-create.html',
