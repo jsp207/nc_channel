@@ -28,7 +28,7 @@ const MENU = [
     { label: '정책', icon: 'policy', href: 'policy.html' },
   ] },
   { label: '주문관리', items: [
-    { label: '주문 프로세스 관리', icon: 'process', href: 'order3-create.html' },
+    { label: '주문 프로세스 관리', icon: 'process', href: 'order4-create.html', match: ['order3-create.html'] },
     { label: '정책', icon: 'policy', href: '' },
   ] },
   { label: '결제관리', items: [
