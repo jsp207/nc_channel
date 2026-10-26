@@ -7,6 +7,7 @@ const ICONS = {
   map: '<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 8.5v3a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3"/>',
   search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/>',
   display: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  bulk: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9.5 1.5 1.5L11 8.5M7 15l1.5 1.5L11 14M14 10h4M14 15.5h4"/>',
   content: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.8"/><path d="m21 15-4.5-4.5L6 21"/>',
   policy: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
   process: '<rect x="3" y="4" width="6" height="6" rx="1.5"/><rect x="15" y="14" width="6" height="6" rx="1.5"/><path d="M9 7h5a3 3 0 0 1 3 3v4"/>',
@@ -24,7 +25,8 @@ const MENU = [
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'product-list.html' },
     { label: '상품 전시 관리', icon: 'display', href: 'display-create2.html?view=list', match: ['display-create2.html'] },
-    { label: '상품 콘텐츠 관리', icon: 'content', href: '' },
+    { label: '상품 전시 일괄 관리', icon: 'bulk', href: 'product-display-bulk.html' },
+    { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content.html' },
     { label: '정책', icon: 'policy', href: 'policy.html' },
   ] },
   { label: '주문관리', items: [

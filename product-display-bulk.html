@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>상품 전시 일괄 관리 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴"></nav>
+<main>
+
+<!-- 상품 전시 일괄 관리 v0.2. 데이터는 상품 전시 관리(display-create2.html)와 같은 저장소를 쓴다. 스크립트는 src/product-display-bulk.ts, 스타일은 src/product-display-bulk.css -->
+
+<!-- ===== 1. 메인 목록 ===== -->
+<section class="view on" id="v-list">
+  <div class="breadcrumb" aria-label="현재 위치">상품관리 <span aria-hidden="true">›</span> <strong>상품 전시 일괄 관리</strong></div>
+  <h1 class="lst-title">상품 전시 일괄 관리</h1>
+
+  <!-- 조회 조건: display-create2.html 상품 전시 목록과 같은 구성. [조회]를 눌러야 결과에 반영된다 -->
+  <form class="lst-filter" id="lFilter" autocomplete="off">
+    <div class="lf-row">
+      <span class="lf-g">
+        <label class="lf-l" for="fKey">검색어</label>
+        <select id="fKey"><option value="all">전체</option><option value="name">전시명</option><option value="id">전시ID</option></select>
+        <input type="text" id="fQ" placeholder="검색 항목을 선택 후 검색하세요" aria-label="검색어">
+      </span>
+      <span class="lf-g">
+        <label class="lf-l" for="fDate">조회 기간</label>
+        <select id="fDate" class="sm"><option value="upd">등록일/수정일</option><option value="run">전시 기간</option></select>
+        <span class="lf-range"><input type="date" id="fFrom" aria-label="시작일"><span aria-hidden="true">-</span><input type="date" id="fTo" aria-label="종료일"></span>
+      </span>
+      <span class="lf-g"><label class="lf-l" for="fSale">판매상태</label><select id="fSale"></select></span>
+    </div>
+    <div class="lf-row">
+      <span class="lf-g"><label class="lf-l" for="fDisp">전시여부</label><select id="fDisp"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fArea">전시 유형</label><select id="fArea"><option value="">전체</option></select></span>
+      <span class="lf-g"><label class="lf-l" for="fCh">전시 채널</label><select id="fCh"><option value="">전체</option></select></span>
+      <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
+    </div>
+  </form>
+  <h2 class="lst-count">조회결과 <span><b id="lCount">0</b>건</span></h2>
+
+  <!-- 일괄 작업 툴바: 선택 건이 있을 때만 활성 -->
+  <div class="pb-bulk" id="bulkBar" aria-label="일괄 작업">
+    <span class="pb-bulk-count" id="selCount" aria-live="polite">선택 0건</span>
+    <span class="pb-sep" aria-hidden="true"></span>
+    <button class="btn sm" type="button" data-bulk="sale">판매상태 변경</button>
+    <button class="btn sm" type="button" data-bulk="disp">전시여부 변경</button>
+    <button class="btn sm" type="button" data-bulk="ch">전시 채널 변경</button>
+    <button class="btn sm" type="button" data-bulk="period">전시기간 변경</button>
+    <button class="btn sm" type="button" data-bulk="rank">노출순위 변경</button>
+    <span class="pb-sep" aria-hidden="true"></span>
+    <button class="btn sm pb-danger" type="button" id="bulkDelete">선택 삭제</button>
+    <button class="btn sm pb-ghost" type="button" id="bulkClear">선택 해제</button>
+    <div class="pb-bulk-right">
+      <select id="pageSize" aria-label="페이지당 건수"><option value="10">10개씩</option><option value="20" selected>20개씩</option><option value="50">50개씩</option></select>
+    </div>
+  </div>
+  <p class="pb-selall" id="selAllBar" hidden></p>
+
+  <div class="tw"><table id="grid">
+    <thead><tr>
+      <th class="pb-chk"><input type="checkbox" id="chkAll" aria-label="현재 페이지 전체 선택"></th>
+      <th>관리</th>
+      <th><button type="button" class="pb-sort" data-sort="id">전시ID</button></th>
+      <th><button type="button" class="pb-sort" data-sort="name">전시명</button></th>
+      <th><button type="button" class="pb-sort" data-sort="ch">전시 채널</button></th>
+      <th><button type="button" class="pb-sort" data-sort="sale">판매상태</button></th>
+      <th><button type="button" class="pb-sort" data-sort="disp">전시</button></th>
+      <th><button type="button" class="pb-sort" data-sort="rank">노출순위</button></th>
+      <th><button type="button" class="pb-sort" data-sort="from">전시기간</button></th>
+      <th><button type="button" class="pb-sort" data-sort="upd">최종 수정</button></th>
+    </tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <nav class="pb-pager" id="pager" aria-label="페이지"></nav>
+  <!-- 엑셀 작업: display-create2.html 상품 전시 목록의 [등록]처럼 목록 아래 오른쪽 -->
+  <div class="lst-foot">
+    <button class="btn lg" type="button" id="btnTemplate">엑셀 양식 다운로드</button>
+    <button class="btn lg" type="button" id="btnExport">목록 엑셀 다운로드</button>
+    <button class="btn primary lg" type="button" id="btnUpload">엑셀 일괄 등록·수정</button>
+  </div>
+</section>
+
+<!-- ===== 4. 업로드 결과 화면 ===== -->
+<section class="view" id="v-result">
+  <div class="breadcrumb" aria-label="현재 위치">상품관리 <span aria-hidden="true">›</span> 상품 전시 일괄 관리 <span aria-hidden="true">›</span> <strong>업로드 결과</strong></div>
+  <div class="toolbar">
+    <h1>엑셀 업로드 결과</h1>
+    <div class="pb-head-actions">
+      <button class="btn" type="button" id="rRetry">다시 업로드</button>
+      <button class="btn primary" type="button" id="rBack">목록에서 확인</button>
+    </div>
+  </div>
+  <p class="sub" id="rSub"></p>
+  <div class="pb-result-cards" id="rCards"></div>
+  <div class="pb-rtabs" role="tablist" aria-label="결과 구분" id="rTabs">
+    <button type="button" role="tab" data-r="all" aria-selected="true">전체 <span class="h-cnt" id="rcAll">0</span></button>
+    <button type="button" role="tab" data-r="ok">성공 <span class="h-cnt" id="rcOk">0</span></button>
+    <button type="button" role="tab" data-r="fail">실패 <span class="h-cnt" id="rcFail">0</span></button>
+    <button class="btn sm" type="button" id="rFailDown">실패 항목 다운로드</button>
+  </div>
+  <div class="tw"><table id="rGrid">
+    <thead><tr><th style="width:72px">엑셀 행</th><th style="width:90px">처리</th><th>전시ID</th><th>전시명</th><th style="width:90px">결과</th><th>오류 사유</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+</main>
+</div>
+
+<!-- ===== 2. 일괄 변경 팝업 ===== -->
+<dialog class="pb-dlg" id="dlgBulk" aria-labelledby="bTitle">
+  <form method="dialog" class="pb-dlg-in" id="bForm">
+    <header class="pb-dlg-h"><h2 id="bTitle">일괄 변경</h2><button class="pb-x" type="button" data-close aria-label="닫기">×</button></header>
+    <div class="pb-dlg-b">
+      <div class="note" id="bNote"></div>
+      <div class="pb-field">
+        <label for="bField">변경 항목</label>
+        <select id="bField">
+          <option value="sale">판매상태</option><option value="disp">전시여부</option>
+          <option value="ch">전시 채널</option><option value="period">전시기간</option><option value="rank">노출순위</option>
+        </select>
+      </div>
+      <div class="pb-field">
+        <label id="bValLabel">변경 값</label>
+        <div id="bVal" class="pb-val"></div>
+      </div>
+      <h3 class="pb-h3">변경 미리보기 <span class="pill" id="bSum"></span></h3>
+      <div class="tw pb-preview"><table>
+        <thead><tr><th>전시ID</th><th>전시명</th><th>현재</th><th></th><th>변경 후</th></tr></thead>
+        <tbody id="bPrev"></tbody>
+      </table></div>
+    </div>
+    <footer class="pb-dlg-f">
+      <label class="pb-keep"><input type="checkbox" id="bKeep"> 변경 후 선택 유지</label>
+      <button class="btn" type="button" data-close>취소</button>
+      <button class="btn primary" type="submit" id="bApply">변경</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- 개별 수정 팝업 -->
+<dialog class="pb-dlg" id="dlgEdit" aria-labelledby="eTitle">
+  <form method="dialog" class="pb-dlg-in" id="eForm">
+    <header class="pb-dlg-h"><h2 id="eTitle">전시 수정</h2><button class="pb-x" type="button" data-close aria-label="닫기">×</button></header>
+    <div class="pb-dlg-b pb-grid2">
+      <div class="pb-field pb-span2"><label for="eName">전시명</label><input type="text" id="eName" required></div>
+      <div class="pb-field"><label for="eArea">전시 유형</label><select id="eArea"><option value="">선택 안 함</option></select></div>
+      <div class="pb-field pb-span2" role="group" aria-labelledby="eChL"><span class="pb-flabel" id="eChL">전시 채널</span><div class="pb-cks" id="eCh"></div></div>
+      <div class="pb-field"><label for="eSale">판매상태</label><select id="eSale"></select></div>
+      <div class="pb-field"><label for="eDisp">전시여부</label><select id="eDisp"><option value="Y">전시</option><option value="N">미전시</option></select></div>
+      <div class="pb-field"><label for="eRank">노출순위</label><input type="text" id="eRank" inputmode="numeric"></div>
+      <div class="pb-field"><label for="eFrom">전시 시작일</label><input type="date" id="eFrom"></div>
+      <div class="pb-field"><label for="eTo">전시 종료일 <small>(비우면 상시)</small></label><input type="date" id="eTo"></div>
+      <p class="pb-err pb-span2" id="eErr" aria-live="polite"></p>
+    </div>
+    <footer class="pb-dlg-f">
+      <button class="btn" type="button" data-close>취소</button>
+      <button class="btn primary" type="submit">저장</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ===== 3. 엑셀 업로드 팝업 ===== -->
+<dialog class="pb-dlg" id="dlgUpload" aria-labelledby="uTitle">
+  <div class="pb-dlg-in">
+    <header class="pb-dlg-h"><h2 id="uTitle">엑셀 일괄 등록·수정</h2><button class="pb-x" type="button" data-close aria-label="닫기">×</button></header>
+    <div class="pb-dlg-b">
+      <ol class="pb-steps">
+        <li><b>1</b><span>양식 내려받기</span><button class="btn sm" type="button" id="uTemplate">엑셀 양식 다운로드</button></li>
+        <li><b>2</b><span>양식 작성 · 전시ID가 비어 있으면 <em>신규 등록</em>, 있으면 <em>수정</em>으로 처리</span></li>
+        <li><b>3</b><span>파일 업로드 후 검증 결과 확인</span></li>
+      </ol>
+      <label class="pb-drop" id="uDrop">
+        <input type="file" id="uFile" accept=".csv,text/csv">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <span id="uDropText"><b>파일을 끌어다 놓거나 눌러서 선택</b><small>CSV(.csv) · 최대 1,000행 · Excel에서 ‘CSV UTF-8’ 또는 ‘CSV’로 저장</small></span>
+      </label>
+      <div id="uCheck" hidden>
+        <h3 class="pb-h3">검증 결과</h3>
+        <div class="pb-check" id="uCheckSum"></div>
+      </div>
+    </div>
+    <footer class="pb-dlg-f">
+      <button class="btn" type="button" data-close>취소</button>
+      <button class="btn primary" type="button" id="uApply" disabled>업로드</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- 확인 팝업 (삭제 등) -->
+<dialog class="pb-dlg pb-dlg-sm" id="dlgConfirm" aria-labelledby="cTitle">
+  <form method="dialog" class="pb-dlg-in">
+    <header class="pb-dlg-h"><h2 id="cTitle">확인</h2></header>
+    <div class="pb-dlg-b"><p id="cMsg" class="pb-cmsg"></p></div>
+    <footer class="pb-dlg-f">
+      <button class="btn" value="cancel">취소</button>
+      <button class="btn primary" value="ok" id="cOk">확인</button>
+    </footer>
+  </form>
+</dialog>
+
+<div class="toast pb-toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastUndo" hidden>되돌리기</button></div>
+    <script type="module" src="/src/product-display-bulk.ts"></script>
+  </body>
+</html>

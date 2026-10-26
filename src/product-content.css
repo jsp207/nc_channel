@@ -1,0 +1,51 @@
+/* 상품 콘텐츠 관리 v0.1: 공통 style.css · list.css(목록) 위에 탭 · 상세 입력표 · 사용 전시만 더한다. */
+[hidden]{display:none!important}
+
+/* 콘텐츠 구분 탭: 선택한 탭은 Brand 색상 + 밑줄 */
+/* 좁은 화면에서는 옆으로 밀어서 보되 스크롤바는 숨긴다. 밑줄은 탭 안쪽 아래에 그려 세로로 넘치지 않게 한다 */
+.pc-tabs{display:flex;gap:4px;margin:-4px 0 28px;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.pc-tabs::-webkit-scrollbar{display:none}
+.pc-tabs button{position:relative;flex:none;padding:12px 16px 14px;border:0;background:none;color:#59667d;font:inherit;font-size:16px;font-weight:500;cursor:pointer}
+.pc-tabs button:hover{color:var(--text)}
+.pc-tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
+.pc-tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent)}
+
+/* 목록 칸 */
+.pc-chip{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;box-shadow:inset 0 0 0 1px #0000001a}
+.pc-chip.light{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.pc-mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;letter-spacing:0}
+.pc-dim{color:var(--muted)}
+
+/* 상세: 왼쪽 회색 항목명 칸 + 오른쪽 입력 칸 */
+.pc-sec{margin:0 0 32px}
+.pc-h{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font-size:16px;font-weight:700}
+.pc-h small{font-size:12px;font-weight:400;color:var(--muted)}
+.pc-h b{color:var(--accent);font-weight:500;font-size:14px}
+.pc-req{color:var(--bad);font-style:normal;margin-left:2px}
+.pc-form{table-layout:fixed;border-top:1px solid var(--line-strong)}
+.pc-form th{position:static;width:180px;padding:14px 16px;background:var(--table-head);color:var(--text);font-size:13px;font-weight:600;vertical-align:middle;white-space:normal}
+.pc-form td{padding:10px 16px;vertical-align:middle;line-height:1.5}
+.pc-form tbody tr:hover{background:none}
+.pc-form input[type=text],.pc-form select{width:100%;max-width:420px;height:40px;font-size:13px}
+.pc-form input[readonly],.pc-form textarea[readonly]{background:var(--surface);color:var(--muted)}
+.pc-form textarea[readonly]{resize:none;cursor:default}
+.pc-form textarea{display:block;width:100%;min-height:180px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:8px;font:inherit;font-size:13px;line-height:1.7;resize:vertical}
+.pc-form .pc-help{margin:6px 0 0;color:var(--muted);font-size:12px}
+.pc-form .pc-err{margin:6px 0 0;color:var(--bad);font-size:12px}
+.pc-form .bad input,.pc-form .bad select,.pc-form .bad textarea{border-color:var(--bad)}
+.pc-radios{display:flex;gap:20px}
+.pc-radios label{display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.pc-hex{display:flex;align-items:center;gap:8px;max-width:420px}
+.pc-hex input[type=color]{flex:none;width:40px;height:40px;padding:2px;border:1px solid var(--line-strong);border-radius:8px;background:#fff;cursor:pointer}
+.pc-num{display:flex;align-items:center;gap:8px;max-width:420px}
+.pc-num input{flex:1}
+
+/* 사용 전시 */
+.pc-use .lst-table{min-width:720px}
+.pc-use .pc-note{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.7}
+
+.pc-foot{display:flex;align-items:center;gap:8px;margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
+.pc-foot-r{display:flex;gap:8px;margin-left:auto}
+.btn.pc-del{color:var(--bad);border-color:#f0c4be}
+.btn.pc-del:hover:not(:disabled){background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+@media(max-width:700px){.pc-form th{width:110px;padding:12px}.pc-form td{padding:10px 12px}}
