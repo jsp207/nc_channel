@@ -24,8 +24,8 @@ const MENU = [
   { items: [{ label: '구조도', icon: 'map', href: 'bo-intro.html' }] },
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'product-list.html' },
-    { label: '상품 전시 관리', icon: 'display', href: 'display-create2.html?view=list', match: ['display-create2.html'] },
-    { label: '상품 전시 일괄 관리', icon: 'bulk', href: 'product-display-bulk.html' },
+    // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
+    { label: '상품 전시 관리', icon: 'display', href: 'display-list2.html', match: ['display-create2.html', 'product-display-bulk.html'] },
     { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content.html' },
     { label: '정책', icon: 'policy', href: 'policy.html' },
   ] },
@@ -100,12 +100,18 @@ function renderLnb(nav) {
     btn.setAttribute('aria-label', collapsed ? '메뉴 펼치기' : '메뉴 접기');
   };
   app?.classList.add('with-lnb');
+  // <nav data-auto-collapse="1440">처럼 폭을 주면 그 폭 이하 화면에서 자동으로 접습니다(넓어지면 저장된 상태로 돌아감).
+  // 자동으로 접힌 동안 직접 펼치거나 접은 것은 저장하지 않습니다.
+  const autoW = +nav.dataset.autoCollapse || 0;
+  const narrow = autoW ? matchMedia(`(max-width:${autoW}px)`) : null;
+  const auto = () => mobile.matches || !!narrow?.matches;
   // 모바일은 처음에 접어 두고, 저장된 접힘 상태는 데스크톱에만 적용합니다.
-  set(mobile.matches || readCollapsed());
+  set(auto() || readCollapsed());
+  narrow?.addEventListener('change', () => { if (!mobile.matches) set(narrow.matches || readCollapsed()); });
   btn.addEventListener('click', () => {
     const next = !app.classList.contains('app-nav-collapsed');
     set(next);
-    if (!mobile.matches) saveCollapsed(next);
+    if (!auto()) saveCollapsed(next);
   });
   // Ctrl + ` (~ 키)로도 접기/펼치기
   document.addEventListener('keydown', e => {

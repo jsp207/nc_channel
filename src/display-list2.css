@@ -1,0 +1,55 @@
+/* 상품 전시 목록 v0.3 (display-list2.html): list.css(목록 공통) · product-display-bulk.css(일괄 작업 툴바 · 스위치 · 팝업) 위에 통합 목록 표만 더한다. */
+
+/* 열 폭: 머리줄 · 행 모두 한 줄(넘치면 …, 마우스를 올리면 전체 값). 1800px 넘는 화면은 아래 폭, 1800px 이하는 압축 폭.
+   각 열은 머리줄 글자가 한 줄에 들어가는 폭을 지키고, 전시명이 남는 폭을 쓴다. 전시명이 120px 아래로 줄어들 만큼 좁은 본문만 가로 스크롤이 생긴다.
+   전시 채널 ~ 판매상태(5~9열)는 좌우 여백을 넓혀 간격을 둔다 */
+#listTable{width:100%}
+#listTable col.w-chk{width:32px}#listTable col.w-id{width:62px}#listTable col.w-ver{width:42px}#listTable col.w-ch{width:100px}#listTable col.w-mt{width:112px}
+#listTable col.w-st{width:84px}#listTable col.w-ep{width:84px}#listTable col.w-sale{width:110px}#listTable col.w-disp{width:56px}#listTable col.w-rank{width:64px}
+#listTable col.w-pd{width:166px}#listTable col.w-ow{width:62px}#listTable col.w-at{width:104px}#listTable col.w-mng{width:170px}
+#listTable th,#listTable td{padding-left:6px;padding-right:6px}
+#listTable :is(th,td):nth-child(n+5):nth-child(-n+9){padding-left:10px;padding-right:10px}
+#listTable th{white-space:nowrap}
+#listTable td{vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 스위치 · 입력칸 · 버튼 칸은 … 표시를 하지 않는다 */
+#listTable td:nth-child(10),#listTable td:nth-child(11),#listTable td:nth-child(15){text-overflow:clip}
+#listTable input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--accent);vertical-align:middle}
+#listTable .pb-inline{width:100%}
+#listTable .pb-rank{width:100%;max-width:48px}
+#listTable td.pb-period{font-size:12px}
+#listTable .dl-pd-end{color:var(--muted);text-decoration:line-through}
+#listTable .dl-pd-soon{color:#b7791f}
+
+/* 전시명 + 전시 유형 한 줄 */
+#listTable .dl-name b{font-weight:600}
+#listTable .dl-name small{color:var(--muted);font-size:11px}
+
+/* 관리 버튼: 상품 전시 목록의 둥근 버튼(작게), 한 줄 */
+.dl-mng{display:inline-flex;flex-wrap:nowrap;justify-content:center;gap:4px}
+.lbtn{min-width:0;height:28px;padding:0 9px;border:1px solid var(--line-strong);border-radius:14px;background:#fff;color:#5c6577;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer}
+.lbtn:hover:not(:disabled){border-color:#ada0eb;color:var(--accent)}
+.lbtn:disabled{background:#f1f2f5;border-color:#e6e8ee;color:#b6bcc8;cursor:not-allowed}
+
+/* 선택 · 변경 강조 (일괄 관리와 같다) */
+#listTable tbody tr.sel td{background:#f7f4ff}
+#listTable tbody tr.flash td{animation:pbFlash 1.8s ease-out}
+
+/* 1800px 이하 화면: 글자 · 여백을 줄인다. 전시명 120px를 지키도록 최소 폭을 둔다 */
+@media(max-width:1800px){
+  #listTable{font-size:12px;min-width:1190px}
+  #listTable th{font-size:12px}
+  #listTable th,#listTable td{padding-left:4px;padding-right:4px}
+  #listTable :is(th,td):nth-child(n+5):nth-child(-n+9){padding-left:7px;padding-right:7px}
+  #listTable col.w-chk{width:28px}#listTable col.w-id{width:54px}#listTable col.w-ver{width:34px}#listTable col.w-ch{width:86px}#listTable col.w-mt{width:96px}
+  #listTable col.w-st{width:70px}#listTable col.w-ep{width:68px}#listTable col.w-sale{width:94px}#listTable col.w-disp{width:50px}#listTable col.w-rank{width:56px}
+  #listTable col.w-pd{width:144px}#listTable col.w-ow{width:50px}#listTable col.w-at{width:92px}#listTable col.w-mng{width:146px}
+  #listTable .pb-inline{padding:4px 18px 4px 6px !important;font-size:11px !important;background-position:right 4px center}
+  #listTable .pb-rank{max-width:44px}
+  #listTable td.pb-period{font-size:11px}
+  .lbtn{height:26px;padding:0 6px;font-size:11px}
+}
+
+/* 수정 팝업: 전체 수정 화면으로 가는 링크는 왼쪽 */
+.pb-full{margin-right:auto;font-size:12px}
+
+@media(prefers-reduced-motion:reduce){#listTable tbody tr.flash td{animation:none}}

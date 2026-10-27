@@ -93,14 +93,6 @@
       .switch input:checked+span::after{transform:translateX(16px)}
       .switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
       /* 전시유형·고객 선택 방식: 100×100 정사각형 버튼 */
-      .row.type-row{align-items:flex-start}
-      .row.type-row>label{padding-top:8px}
-      .type-tiles{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 0;min-width:0}
-      .type-tile{width:100px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--text);font-size:12px;line-height:1.35;text-align:center;cursor:pointer}
-      .type-tile svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
-      .type-tile:hover{border-color:var(--accent)}
-      .type-tile.on{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
-      .type-tile.on svg{color:var(--accent)}
       /* 표 */
       .cl{border:1px solid var(--line);border-radius:6px;overflow:auto;max-height:340px}
       .cl table{font-size:12px}
@@ -115,6 +107,8 @@
       /* 구성 영역: 왼쪽 목록 + 오른쪽 상세 */
       .ae{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px}
       .ae.single{grid-template-columns:minmax(0,1fr)}
+      /* 콘텐츠 정보 · 추가설정: 왼쪽 목록을 좁게 (좁은 화면은 아래 900px 규칙대로 한 줄) */
+      @media(min-width:901px){:is(#sec-extra,#sec-more) .ae{grid-template-columns:180px minmax(0,1fr)}}
       .al{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;align-self:start}
       .ali{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);margin-bottom:6px;cursor:pointer}
       .ali:hover{border-color:#b4a8f0}
@@ -304,60 +298,8 @@
       #kwIn{flex:1;min-width:140px;min-height:0;border:0;outline:none;box-shadow:none;padding:4px 2px;background:none}
       /* 목록 상태 점 */
       .status.warn{background:var(--warn)}
-      /* 상품 전시 목록: 제목 · 조회 조건 박스 · 조회결과 표 · 페이지 · 등록 */
-      .lst-title{margin:0 0 20px;padding-bottom:20px;border-bottom:1px solid var(--line);font-size:22px;font-weight:700}
-      .lst-filter{display:flex;flex-direction:column;gap:12px;margin:0 0 36px;padding:20px 24px;border-radius:12px;background:#f7f8fa}
-      .lf-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px 0}
-      /* 항목 묶음: 라벨 + 입력. 두 번째 묶음부터 앞에 세로 구분선 */
-      .lf-g{display:inline-flex;align-items:center;gap:8px}
-      .lf-g+.lf-g::before{content:"";width:1px;height:16px;margin:0 16px 0 8px;background:var(--line-strong)}
-      .lf-l{margin-right:12px;font-size:14px;font-weight:500;color:var(--text);white-space:nowrap}
-      .lf-row select{width:200px;height:40px;padding:0 12px;border-radius:6px;background-color:#fff;font-size:13px}
-      .lf-row select.sm{width:130px}
-      .lf-row select:has(option[value=""]:checked){color:var(--muted)}
-      .lf-row input[type=text]{width:200px;height:40px;padding:0 12px;border-radius:6px;font-size:13px}
-      .lf-range{display:inline-flex;align-items:center;gap:4px}
-      .lf-range input{width:132px;height:40px;padding:0 10px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;font:inherit;font-size:13px;color:var(--text)}
-      .lf-acts{display:inline-flex;gap:8px;margin-left:auto}
-      .lf-acts .btn{height:40px;min-width:64px;padding:0 16px;border-radius:6px;font-size:14px}
+      /* 상품 전시 목록은 display-list2.html로 분리했다. 이 화면에서 쓰는 목록 공통 버튼 스타일만 남긴다 */
       .btn.dark{border-color:#20293b;color:#20293b}
-      .lst-count{display:flex;align-items:baseline;gap:12px;margin:0 0 18px;font-size:18px;font-weight:700}
-      .lst-count span{font-size:13px;font-weight:400;color:var(--text)}
-      .lst-count b{color:var(--accent);font-weight:500}
-      .lst-tw{overflow-x:auto;border-top:1px solid var(--line-strong)}
-      /* 전시명 · 전시 채널 · 연결 상품은 넘치는 글자를 … 처리. 상태 배지 · 전시 기간 · 담당자 · 일시 · 버튼은 잘리지 않는 폭으로 한 줄 */
-      #listTable{table-layout:fixed;width:100%;font-size:13px}
-      #listTable col.w-id{width:76px}#listTable col.w-ver{width:52px}#listTable col.w-ch{width:96px}#listTable col.w-conn{width:120px}#listTable col.w-mt{width:116px}#listTable col.w-st{width:72px}#listTable col.w-ep{width:84px}#listTable col.w-pd{width:180px}#listTable col.w-ow{width:124px}#listTable col.w-ed{width:124px}#listTable col.w-at{width:144px}#listTable col.w-cp{width:70px}#listTable col.w-pv{width:92px}
-      #listTable th{padding:10px 8px;background:var(--table-head);color:var(--text);font-size:13px;font-weight:600;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      #listTable td{padding:14px 8px;white-space:nowrap;line-height:1.5;overflow:hidden;text-overflow:ellipsis}
-      #listTable .c{text-align:center}
-      #listTable td.wr{white-space:normal;word-break:keep-all}
-      #listTable th{white-space:normal;word-break:keep-all}
-      /* 상태 · 기간 · 담당자 · 일시 · 버튼은 한 줄로 다 보여야 하므로, 본문이 좁으면 표를 가로로 스크롤한다 */
-      #listTable{min-width:1480px}
-      #listTable .lid{padding:0;border:0;background:none;color:var(--accent);font:inherit;cursor:pointer}
-      #listTable .lid:hover{text-decoration:underline}
-      #listTable td.empty{padding:48px;text-align:center;color:var(--muted)}
-      .lb{display:inline-block;min-width:40px;padding:2px 7px;border-radius:4px;font-size:12px;font-weight:500;text-align:center}
-      .lb.wait{background:#fff0c2;color:#b86a00}
-      .lb.live{background:#e1efff;color:#1d6fd6}
-      .lb.ok{background:#e0f6e9;color:#1f8a5b}
-      .lb.chk{background:#ebe8ff;color:#5a3fd8}
-      .lb.new{background:#fff0c2;color:#c47a00}
-      .lb.stop{background:#ffe5e3;color:#d2382b}
-      .lb.off{background:#eceef3;color:#5c6577}
-      .lbtn{min-width:46px;height:30px;padding:0 12px;border:1px solid var(--line-strong);border-radius:15px;background:#fff;color:#5c6577;font:inherit;font-size:12px;cursor:pointer}
-      .lbtn:hover:not(:disabled){border-color:#ada0eb;color:var(--accent)}
-      .lbtn:disabled{background:#f1f2f5;border-color:#e6e8ee;color:#b6bcc8;cursor:not-allowed}
-      .pager{display:flex;justify-content:center;align-items:center;gap:6px;margin:28px 0 0}
-      .pager button{min-width:28px;height:28px;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}
-      .pager button:hover:not(:disabled){background:var(--surface)}
-      .pager button[aria-current="page"]{background:var(--accent);color:#fff;font-weight:600}
-      .pager button:disabled{color:#c3c8d3;cursor:default}
-      .pager svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
-      .lst-foot{display:flex;justify-content:flex-end;margin-top:28px}
-      .btn.lg{min-width:96px;min-height:52px;border-radius:10px;font-size:15px}
-      @media(max-width:900px){.lf-acts{margin-left:0}.lf-row select,.lf-row input[type=text]{min-width:0;flex:1 1 160px}}
 
       /* 왼쪽: 미리보기(스크롤). 검사(O/X)·저장 버튼은 하단 고정 라인(.dock) — product-create3과 동일 */
       #v-edit .side{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -623,9 +565,9 @@
       .tplp{background:var(--surface);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column}
       .toast{z-index:70}
       /* 좁은 화면에서는 입력 폼을 먼저, 미리보기를 아래에 */
-      @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{order:1;position:static}.panel>header{position:static}}
+      /* 반응형: 1440px 이하는 LNB를 자동으로 접고(nav data-auto-collapse), 1200px 이하는 미리보기를 숨겨 입력 영역을 넓게 쓴다 */
+      @media(max-width:1200px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{display:none}}
       @media(max-width:900px){.ae,.tplg,.poc-body{grid-template-columns:minmax(0,1fr)}.mrow{grid-template-columns:1fr}}
-      @media(max-width:560px){.type-tile{width:88px;height:88px}}
       @media(prefers-reduced-motion:reduce){#v-edit .step,.step>header .fold svg,.switch span,.switch span::after{transition:none}}
       /* ===== v4-8 반영 (ref/product-admin-prototype-v4-8.html) ===== */
       /* 섹션 머리줄: 조건 배지 · 노출 스위치 */
@@ -637,23 +579,51 @@
       .dock-msg{align-self:center;margin-right:6px;font-size:12px;color:var(--muted);white-space:nowrap}
       .dock-msg b{color:var(--accent);font-weight:700}
       #bSave.pending{background:#a99be8;border-color:#a99be8}
-      /* 연결 상품 · 대표 전시 */
-      .repbar{display:flex;align-items:center;gap:12px;margin:0 0 10px;padding:12px 16px;border:1px solid #ded6ff;border-radius:10px;background:var(--accent-soft)}
-      .repbar>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
-      .repbar b{font-size:13px;color:var(--text)}
-      .repbar em{font-style:normal;font-weight:700;color:var(--accent)}
-      .repbar .rep-now{font-size:15px;font-weight:700;color:var(--text)}
-      .repbar .rep-now small{font-size:11px;font-weight:400;color:var(--muted)}
-      .repc{display:flex;align-items:center;gap:8px}
-      .repn{display:flex;flex-direction:column;max-width:170px;min-width:0}
-      .repn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .repn small,.faint{color:var(--muted);font-size:11px}
-      .rep.me{display:inline-block;padding:1px 8px;border-radius:4px;background:var(--accent);color:#fff;font-size:11px;font-weight:600}
-      tr.me td{background:#f7f5ff}
       .lnk{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer}
-      /* 가입 유형 · 할부: 사용 · 순서 · 항목 · 문구 · 기본 선택 */
+      /* 가입 유형 · 할부 · 배송: 사용 · 순서 · 항목 · 문구(배송은 운영 조건 포함) */
       .olist{border:1px solid var(--line);border-radius:8px;overflow:hidden}
-      .olist .or{display:grid;grid-template-columns:52px 32px 96px minmax(0,1fr) 72px;align-items:center;gap:8px;min-height:48px;padding:6px 14px;border-top:1px solid var(--line);font-size:13px}
+      .olist .or{display:grid;grid-template-columns:52px 32px 96px minmax(0,1fr);align-items:center;gap:8px;min-height:48px;padding:6px 14px;border-top:1px solid var(--line);font-size:13px}
+      .olist .or .oc-c{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+      .osum{margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--surface);font-size:12px;line-height:1.8;color:var(--muted)}
+      .osum b{color:var(--text);font-weight:600}
+      .offnote{display:flex;gap:8px;align-items:center;margin:0 0 12px;padding:8px 12px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:12px}
+      /* 할부 설정: 가입 유형 탭 + 처음 노출 개수 · 설정 복사 */
+      .itabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 12px;border-bottom:1px solid var(--line)}
+      .itabs button{height:38px;margin-bottom:-1px;padding:0 14px;border:0;border-bottom:2px solid transparent;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
+      .itabs button.on{color:var(--accent);font-weight:700;border-bottom-color:var(--accent)}
+      .itabs small{margin-left:4px;font-size:11px;font-weight:600;color:var(--accent)}
+      .itabs small.ok{color:var(--ok)}
+      .itabs small.warn{color:var(--warn)}
+      .olist .or .oc-d{color:var(--text)}
+      .itop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:var(--muted)}
+      .itop input[type=number]{width:64px;text-align:center}
+      .itop .cp{display:inline-flex;gap:6px;align-items:center;margin-left:auto}
+      /* 고객 선택 방식: 상품 유형 카드 (연결 상품 기준 추천 표시) */
+      .ptl{display:flex;gap:8px;flex-wrap:wrap}
+      .ptl label{position:relative;display:flex;flex-direction:column;gap:2px;min-width:128px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);cursor:pointer}
+      .ptl label:has(input:checked){border:2px solid var(--accent);padding:9px 11px;background:var(--accent-soft)}
+      .ptl label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+      .ptl input{position:absolute;opacity:0;pointer-events:none}
+      .ptl b{font-size:13px;font-weight:600}
+      .ptl small{font-size:11px;color:var(--muted)}
+      .ptl .rec{position:absolute;top:-9px;right:8px;padding:0 6px;border-radius:8px;background:var(--accent);color:#fff;font-size:10px;line-height:16px}
+      /* 전시 설정: 채널별로 이 화면에서 더 정하는 항목 */
+      .chl{display:flex;flex-wrap:wrap;margin-top:12px}
+      .chl[hidden]{display:none}
+      .jump{display:inline-flex;align-items:center;gap:6px;height:28px;margin:0 6px 6px 0;padding:0 10px;border:1px solid var(--line-strong);border-radius:14px;background:var(--bg);font:inherit;font-size:12px;color:var(--text);cursor:pointer}
+      .jump i{width:6px;height:6px;border-radius:50%;background:var(--warn)}
+      .jump i.ok{background:var(--ok)}
+      .jump small{font-size:11px;color:var(--muted)}
+      /* 주문 구성 방식 OFF: 대체 버튼 */
+      .acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:1}
+      .acts label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;font-size:13px;cursor:pointer}
+      .acts label:has(input:checked){border:2px solid var(--accent);padding:9px 11px;background:var(--accent-soft)}
+      .acts input{margin-top:3px;accent-color:var(--accent)}
+      .acts small{display:block;font-size:11px;color:var(--muted)}
+      .op-tag.here{border-color:#ded6ff;background:var(--accent-soft);color:var(--accent);cursor:pointer;font:inherit;font-size:12px}
+      .op-warn{margin:12px 0 0}
+      .ord-sw{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}
+      @media(max-width:900px){.acts{grid-template-columns:1fr}}
       .olist .or.hd{min-height:36px;border-top:0;background:var(--surface);font-size:11px;font-weight:600;color:var(--muted)}
       .olist .or .c{justify-self:center}
       .olist .or.off>:not(.switch){opacity:.45}
@@ -721,52 +691,15 @@
       .ph-rvi{padding:10px 0;border-top:1px solid var(--ph-ln);font-size:12px}
       .ph-rvi span{color:#f5a623;font-size:11px}.ph-rvi p{margin:4px 0 0}
       .ph-bdgs span.au{color:#fff}
-      @media(max-width:900px){.olist .or{grid-template-columns:44px 28px 72px minmax(0,1fr) 56px;padding:6px 10px}}
+      @media(max-width:900px){.olist .or{grid-template-columns:44px 28px 72px minmax(0,1fr);padding:6px 10px}}
     </style>
   </head>
   <body>
 <div class="app">
-<nav class="app-nav" aria-label="주 메뉴"></nav>
+<nav class="app-nav" aria-label="주 메뉴" data-auto-collapse="1440"></nav>
 <main>
 
-<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/display-create2.ts -->
-<!-- 전시 목록 -->
-<section class="view" id="v-list">
-  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 관리 <span aria-hidden="true">›</span> <strong>상품 전시 목록</strong></div>
-  <h1 class="lst-title">상품 전시 목록</h1>
-  <!-- 조회 조건: [조회]를 눌러야 결과에 반영된다. 항목(라벨 + 입력)은 세로 구분선으로 나누고, 버튼은 마지막 줄 오른쪽 -->
-  <form class="lst-filter" id="lFilter" autocomplete="off">
-    <div class="lf-row">
-      <span class="lf-g">
-        <label class="lf-l" for="lfKey">검색어</label>
-        <select id="lfKey"><option value="all">전체</option><option value="name">전시명</option><option value="id">전시ID</option></select>
-        <input type="text" id="lfQ" placeholder="검색 항목을 선택 후 검색하세요" aria-label="검색어">
-      </span>
-      <span class="lf-g">
-        <label class="lf-l" for="lfDate">조회 기간</label>
-        <select id="lfDate" class="sm"><option value="upd">등록일/수정일</option><option value="run">전시 기간</option></select>
-        <span class="lf-range"><input type="date" id="lfFrom" aria-label="시작일"><span aria-hidden="true">-</span><input type="date" id="lfTo" aria-label="종료일"></span>
-      </span>
-      <span class="lf-g"><label class="lf-l" for="lfSt">운영 상태</label><select id="lfSt"></select></span>
-    </div>
-    <div class="lf-row">
-      <span class="lf-g"><label class="lf-l" for="lfCh">전시 채널</label><select id="lfCh"></select></span>
-      <span class="lf-g"><label class="lf-l" for="lfMethod">고객 선택 방식</label><select id="lfMethod"></select></span>
-      <span class="lf-g"><label class="lf-l" for="lfOwner">담당자</label><select id="lfOwner"></select></span>
-      <span class="lf-g"><label class="lf-l" for="lfTeam">담당팀</label><select id="lfTeam"></select></span>
-      <span class="lf-acts"><button type="reset" class="btn dark" id="lfReset">초기화</button><button type="submit" class="btn primary">조회</button></span>
-    </div>
-  </form>
-  <h2 class="lst-count">조회결과 <span><b id="lCount">0</b>건</span></h2>
-  <div class="lst-tw"><table id="listTable">
-    <colgroup><col class="w-id"><col class="w-ver"><col><col class="w-ch"><col class="w-conn"><col class="w-mt"><col class="w-st"><col class="w-ep"><col class="w-pd"><col class="w-ow"><col class="w-ed"><col class="w-at"><col class="w-cp"><col class="w-pv"></colgroup>
-    <thead><tr><th>전시ID</th><th>버전</th><th>전시명</th><th>전시 채널</th><th>연결 상품</th><th>고객 선택 방식</th><th class="c">상태</th><th class="c">EPC 상태</th><th class="c">전시 기간</th><th class="c">담당자</th><th class="c">최종등록<wbr>(수정)자</th><th class="c">최종등록<wbr>(수정)일시</th><th class="c">복사</th><th class="c">미리보기</th></tr></thead>
-    <tbody id="listRows"></tbody>
-  </table></div>
-  <nav class="pager" id="lPager" aria-label="페이지"></nav>
-  <div class="lst-foot"><button type="button" class="btn primary lg" id="lNew">등록</button></div>
-</section>
-
+<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/display-create2.ts · 전시 목록은 display-list2.html로 분리했다 -->
 <!-- 전시 등록/수정 -->
 <section class="view on" id="v-edit">
   <div class="toolbar"><h1 id="editTitle">전시등록</h1><button type="button" class="btn" id="goList" style="margin-left:auto">전시 목록 보기</button></div>
@@ -791,15 +724,27 @@
         <header><b>고객 선택 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-method"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-method"></div>
       </div>
-      <!-- 전시 채널: 어느 채널에 전시할지 + 전시 유형(서비스 구분) -->
+      <!-- 전시 설정: 전시 채널 + 채널별로 더 정하는 항목. 통합 APP · WEB을 고르면 상품 유형에 따라 가입 유형 · 할부 · 배송 섹션이 바로 아래에 생긴다 -->
       <div class="step" id="sec-ch">
-        <header><b>전시 채널</b><span class="req">필수</span><span class="st"><span class="chip" id="st-ch"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>전시 설정</b><span class="req">필수</span><span class="st"><span class="chip" id="st-ch"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-ch"></div>
+      </div>
+      <div class="step" id="sec-join">
+        <header><b>가입 유형</b><span class="cond">통합 APP · WEB</span><span class="req">필수</span><span class="st"><span class="chip" id="st-join"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-join"></div>
+      </div>
+      <div class="step" id="sec-inst">
+        <header><b>할부 설정</b><span class="cond">통합 APP · WEB</span><span class="req">필수</span><span class="st"><span class="chip" id="st-inst"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-inst"></div>
+      </div>
+      <div class="step" id="sec-ship">
+        <header><b>배송 유형</b><span class="cond">통합 APP · WEB</span><span class="req">필수</span><span class="st"><span class="chip" id="st-ship"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-ship"></div>
       </div>
       <!-- 기본 정보 · 상세 설명: 콘텐츠 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
       <div class="step" id="sec-info">
         <header><b>전시 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-info"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-info"><div class="ae"><div class="al" id="infoList"></div><div class="ad"><div id="sb-basic"></div><div id="sb-desc" hidden></div></div></div></div>
+        <div class="body" id="sb-info"><div class="itabs" id="infoList" role="tablist" aria-label="전시 정보"></div><div id="sb-basic"></div><div id="sb-desc" hidden></div></div>
         <input type="file" id="imgFile" accept="image/*" hidden>
         <input type="file" id="subFile" accept="image/*" multiple hidden>
         <input type="file" id="descFile" accept="image/*" multiple hidden>
@@ -823,14 +768,6 @@
         <div class="body" id="sb-more"><div class="ae"><div class="al" id="moreList"></div><div class="ad"><div id="sb-sim"></div><div id="sb-cvm" hidden></div><div id="sb-search" hidden></div></div></div></div>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
-      <div class="step" id="sec-join">
-        <header><b>가입 유형</b><span class="cond">기기 상품 연결 시</span><span class="req">필수</span><span class="st"><span class="chip" id="st-join"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-join"></div>
-      </div>
-      <div class="step" id="sec-inst">
-        <header><b>할부 설정</b><span class="cond">기기 상품 연결 시</span><span class="req">필수</span><span class="st"><span class="chip" id="st-inst"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-inst"></div>
-      </div>
       <div class="step" id="sec-gift">
         <header><b>T기프트</b><span class="cond">기기 상품 연결 시</span><span class="st"><span class="chip" id="st-gift"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-gift"></div>
@@ -840,7 +777,7 @@
         <div class="body" id="sb-td"></div>
       </div>
       <div class="step" id="sec-order">
-        <header><b>주문 구성 방식</b><label class="switch hsw" title="주문 구성 방식 사용"><input type="checkbox" id="odOn" aria-label="주문 구성 방식 사용"><span aria-hidden="true"></span></label><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>주문 구성 방식</b><label class="switch hsw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>
       </div>
     </div>
