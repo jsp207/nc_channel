@@ -6,7 +6,7 @@
 export const TODAY=new Date().toISOString().slice(0,10);
 // 전시 시작·종료 일시 비교용 지금 시각 (YYYY-MM-DDTHH:MM, 브라우저 시간대)
 export const NOW=(d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16))(new Date());
-export const TYPES=['기기서비스','액세서리','요금제','부가서비스','구독서비스','보험'];
+export const TYPES=['기기서비스','액세서리','요금제','부가서비스','구독서비스','보험','제휴'];
 export const ONCE=new Set(['기기서비스','액세서리']);
 export function seedNum(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
 // T우주 편의점&카페의 선택 혜택 후보 50개와 추가금
@@ -63,6 +63,8 @@ export const PO=[
      ['Apple Watch Series 11 46mm 실버','aws11',749000,'건강 기능을 강화한 Apple Watch Series 11 실버 모델입니다','Apple Watch Series 11 · 46mm · 셀룰러','마그네틱 고속 충전 케이블'],
      ['Apple Watch Ultra 3 49mm 블랙','awu3',1249000,'아웃도어용 티타늄 케이스의 Apple Watch Ultra 3 블랙 모델입니다','Apple Watch Ultra 3 · 49mm · 셀룰러','마그네틱 고속 충전 케이블']]
   .map(([n,f,p,d,s,c],i)=>mk({id:'DEV-'+String(12+i).padStart(3,'0'),name:n,type:'기기서비스',cat:'웨어러블',base:p,desc:d,img:[f+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:s},{id:'PS2',name:'기본 구성품',req:true,desc:c}]})),
+ // v023 반영: 제휴 상품 1 (상품 유형 제휴서비스). 기존 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
+ mk({id:'PTN-001',name:'넷플릭스 프리미엄 제휴 이용권',type:'제휴',base:17000,desc:'넷플릭스 프리미엄을 SKT 회선 인증으로 이용하는 제휴 이용권입니다',dt:[{id:'PS1',name:'Netflix 프리미엄 이용',req:true,desc:'동시 시청 4명 · UHD'}]}),
 ];
 export const poBy=id=>PO.find(p=>p.id===id);
 export const selPS=po=>po.dt.filter(p=>!p.req);
@@ -142,7 +144,7 @@ export const TPL=CONTENT.tpl;
 export const COLOR=Object.fromEntries(CONTENT.color.filter(c=>c.on).map(c=>[c.n,c.hex]));
 export const tplBy=id=>TPL.find(t=>t.id===id);
 // 상품이 가진 템플릿 (EPC 상품 정보에서 온다고 가정. 프로토타입은 상품 구분별로 정함)
-export const TYPE_TPL={기기서비스:['TPL-0001','TPL-0002','TPL-0004'],요금제:['TPL-0003','TPL-0004'],부가서비스:['TPL-0003','TPL-0004'],구독서비스:['TPL-0005','TPL-0004'],액세서리:['TPL-0001','TPL-0004'],보험:['TPL-0002','TPL-0004']};
+export const TYPE_TPL={기기서비스:['TPL-0001','TPL-0002','TPL-0004'],요금제:['TPL-0003','TPL-0004'],부가서비스:['TPL-0003','TPL-0004'],구독서비스:['TPL-0005','TPL-0004'],액세서리:['TPL-0001','TPL-0004'],보험:['TPL-0002','TPL-0004'],제휴:['TPL-0002','TPL-0004']};
 export const poTpls=p=>TYPE_TPL[p.type]||[];
 
 // 주문 구성 (주문 구성 관리에서 정의된 흐름으로 가정). 연결 상품 유형으로 자동 결정
@@ -168,11 +170,19 @@ export const PTYPES=[
  {k:'이동전화',d:'요금제 단독 가입',kinds:['요금제'],kn:'요금제',need:['join'],ord:'요금제 주문',items:['가입 유형','요금제','본인 인증']},
  {k:'부가서비스',d:'보험 · 컬러링 등',kinds:['부가서비스','보험'],kn:'부가서비스',need:[],ord:'부가서비스 주문',items:['회선 인증','부가서비스']},
  {k:'구독서비스',d:'우주패스 등 정기 구독',kinds:['구독서비스'],kn:'구독',need:[],ord:'구독 주문',items:['구독 상품','결제 수단']},
- {k:'제휴서비스',d:'제휴사 상품 · 이용권',kinds:null,need:[],ord:'제휴 주문',items:['회선 인증','제휴 동의']}
+ {k:'제휴서비스',d:'제휴사 상품 · 이용권',kinds:['제휴'],kn:'제휴',need:[],ord:'제휴 주문',items:['회선 인증','제휴 동의']}
 ];
 export const ptOf=d=>PTYPES.find(p=>p.k===d.svc)||null;
-// 연결 상품 구분으로 추천하는 상품 유형: 기기 → 요금제 → 부가서비스 → 구독 순으로 본다
-export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':''; }
+// 연결 상품 구분으로 추천하는 상품 유형: 기기 → 요금제 → 부가서비스 → 구독 → 제휴 순으로 본다
+export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':h('제휴')?'제휴서비스':''; }
+// ---------- v023 반영: 대표 상품 (display-create-v23.html) ----------
+// 상품 유형은 직접 고르지 않고 대표 상품의 EPC 상품 구분으로 정한다. 전시 값: repPo = 대표 상품 PO id, repAuto = 자동 지정 중인지
+// 구성 우선순위(기기 > 요금제 > 부가 > 구독 > 제휴): 대표 상품을 자동 지정할 때와 '더 앞선 상품이 함께 연결됨' 경고에 쓴다
+export const REP_ORDER=['기기서비스','액세서리','요금제','부가서비스','보험','구독서비스','제휴'];
+export const ptypeOfPo=id=>{ const p=poBy(id); return p&&PTYPES.find(x=>x.kinds.includes(p.type))||null; };
+export const repRank=id=>{ const i=REP_ORDER.indexOf((poBy(id)||{}).type); return i<0?REP_ORDER.length:i; };
+// 연결 상품 중 구성 우선순위가 가장 앞인 상품 (같으면 연결 순서)
+export const recRep=ids=>ids.length?ids.reduce((a,b)=>repRank(b)<repRank(a)?b:a):null;
 // 주문 구성안 이름으로 주문 유형을 정한다 (주문 구성 관리의 분류로 가정)
 export const ordKind=n=>/기기서비스|iPhone|갤럭시|휴대폰|태블릿|워치|악세사리|액세서리/.test(n)?'기기 주문':/요금제|유심|로밍/.test(n)?'요금제 주문':/부가서비스/.test(n)?'부가서비스 주문':/구독|T우주/.test(n)?'구독 주문':'제휴 주문';
 // 가입 유형 · 할부 · 배송은 통합 APP · WEB 주문 단계라서, 이 채널을 고르고 상품 유형이 그 단계를 쓸 때만 정한다

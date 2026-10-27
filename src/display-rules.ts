@@ -1,7 +1,7 @@
 // @ts-nocheck
 // 상품 전시 검사 · 운영 상태 규칙. display-create2.html(상품 전시 등록/수정)과 display-list2.html(상품 전시 목록)이 함께 쓴다.
 // 섹션별 필수 검사(sectionState · blocking)로 '작성 중' 여부를 정하고, 전시 여부 · 기간으로 운영 상태(status)를 정한다.
-import { TODAY, NOW, poBy, hasSel, psBy, MSG2, FLOWS, GIFT, TDP, DISPLAYS, CHS, ptOf, APP_CH, ordKind } from "./display-data";
+import { TODAY, NOW, poBy, hasSel, psBy, MSG2, FLOWS, GIFT, TDP, DISPLAYS, CHS, ptOf, APP_CH, ordKind, PTYPES, ptypeOfPo } from "./display-data";
 
 // 전시 시작·종료 일시. 종료일없음이면 종료는 빈 값
 export const endOf=d=>d.noEnd?'':d.to;
@@ -26,6 +26,15 @@ export const appOn=d=>APP_CH.some(c=>d.channels.includes(c));
 export const needs=(d,k)=>d.kind==='po'&&appOn(d)&&!!ptOf(d)&&ptOf(d).need.includes(k);
 // 상품 유형과 연결 상품이 맞지 않으면 경고 (예: 기기서비스인데 기기 상품이 없음)
 export function ptWarn(d){ const p=ptOf(d); if(!p||!p.kinds||!d.conn.length) return ''; return connPOs(d).some(x=>p.kinds.includes(x.type))?'':`연결 상품에 ${p.kn} 상품이 없어요. 상품 유형을 다시 확인하세요`; }
+// v023 대표 상품(repPo)을 쓰는 전시인지. display-create-v23에서 저장한 전시만 이 값을 가진다
+export const usesRep=d=>d.repPo!==undefined;
+// 대표 상품보다 구성 우선순위가 앞선 상품 유형이 함께 연결돼 있으면 알린다 (승인요청은 막지 않는다)
+export function repWarn(d){
+ const r=d.kind==='po'&&d.repPo&&ptypeOfPo(d.repPo); if(!r) return '';
+ const ri=PTYPES.indexOf(r), up=[...new Set(d.conn.map(ptypeOfPo).filter(p=>p&&PTYPES.indexOf(p)<ri))];
+ if(!up.length) return '';
+ return `${up.map(p=>p.kn).join(', ')} 상품이 함께 연결돼 있지만 대표 상품이 ${r.kn} 상품이라 ${r.k} 기준으로 주문 단계가 잡혀요.${up.some(p=>p.need.length>r.need.length)?` ${up[0].k}의 ${up[0].need.filter(k=>!r.need.includes(k)).map(k=>({join:'가입 유형',inst:'할부',ship:'배송'}[k])).join(' · ')} 단계가 빠지니 의도한 것인지 확인하세요`:''}`;
+}
 // 연결한 주문 구성안이 지금 상품 유형의 주문 유형과 다른지
 export const planMismatch=d=>!!(d.orderPlan&&ptOf(d)&&ordKind(d.orderPlan.name)!==ptOf(d).ord);
 // 받침 유무로 을/를을 고른다
@@ -74,7 +83,7 @@ export function sectionState(d){
  S.kind={st:'done',e:[]};
  S.conn=d.conn.length?{st:'done',e:[]}:{st:'todo',e:['연결 상품을 1개 이상 추가하세요']};
  if(d.kind==='ps') S.method={st:'na',e:[]};
- else { const un=d.method==='complex'?d.conn.filter(id=>!d.areas.some(a=>a.pos.includes(id))):[]; const pw=ptWarn(d); const e=[...(!d.svc?['상품 유형을 고르세요']:pw?[pw]:[]),...d.areas.flatMap((a,i)=>areaIssues(a,d).map(x=>`${d.method==='complex'?(i+1)+'번 ':''}${a.name||'영역'}: ${x}`)),...(un.length?[`구성 영역에 배정되지 않은 연결 상품 ${un.length}개`]:[])]; if(!d.areas.length) e.unshift('구성 영역을 만드세요'); S.method={st:!d.areas.some(a=>a.pos.length)&&!d.svc?'todo':(e.length?'warn':'done'),e}; }
+ else { const un=d.method==='complex'?d.conn.filter(id=>!d.areas.some(a=>a.pos.includes(id))):[]; const pw=ptWarn(d); const e=[...(!d.svc?[usesRep(d)?'대표 상품을 지정하세요':'상품 유형을 고르세요']:pw?[pw]:[]),...d.areas.flatMap((a,i)=>areaIssues(a,d).map(x=>`${d.method==='complex'?(i+1)+'번 ':''}${a.name||'영역'}: ${x}`)),...(un.length?[`구성 영역에 배정되지 않은 연결 상품 ${un.length}개`]:[])]; if(!d.areas.length) e.unshift('구성 영역을 만드세요'); S.method={st:!d.areas.some(a=>a.pos.length)&&!d.svc?'todo':(e.length?'warn':'done'),e}; }
  const be=[]; if(!d.name.trim()) be.push('전시명을 입력하세요'); if(!d.from) be.push('전시 시작일을 입력하세요'); if(!d.noEnd&&!d.to) be.push('종료일을 입력하거나 종료일없음을 선택하세요'); if(endAt(d)&&startAt(d)&&endAt(d)<=startAt(d)) be.push('전시 종료 일시가 시작 일시보다 빨라요');
  S.basic={st:be.length?(d.name||d.main||d.subs.length?'warn':'todo'):'done',e:be};
  S.desc={st:descFilled(d)?'done':'todo',e:descFilled(d)?[]:['상세 설명 본문을 입력하세요']};
