@@ -21,6 +21,7 @@ export default defineConfig({
         productCreate3: 'product-create3.html',
         displayCreate1: 'display-create1.html',
         displayCreate2: 'display-create2.html',
+        displayList2: 'display-list2.html',
         payment1: 'payment1.html',
         payMerchant: 'payment-merchant.html',
         payMerchantProduct: 'payment-merchant-product.html',

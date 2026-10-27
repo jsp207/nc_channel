@@ -1,5 +1,5 @@
 // @ts-nocheck
-// 상품 전시 데이터 · 저장소. display-create2.html(상품 전시 관리)과 product-display-bulk.html(상품 전시 일괄 관리)이 함께 쓴다.
+// 상품 전시 데이터 · 저장소. display-create2.html(상품 전시 등록/수정), display-list2.html(상품 전시 목록 · 일괄 관리 통합), product-display-bulk.html(이전 일괄 관리)이 함께 쓴다.
 // EPC 샘플 상품, 샘플 전시, 브라우저 저장소(STORE_KEY) 읽기·쓰기를 이 파일에 모은다.
 // ---------- EPC 샘플 데이터 (EPC 상품 조회 화면에서 내려오는 값으로 가정) ----------
 // PO: 판매 단위. dt = Delivery type(PS 목록), base = Price policy 기본가, 후보 add = 추가금
@@ -160,10 +160,41 @@ export const CVM_DEF=5, CVM_MAX=5, CVM_LEN=40;
 // 옵션 값 표시 방식
 export const ODISP=[['text','텍스트'],['chip','컬러칩'],['img','이미지']];
 export function newArea(n,mode){return {id:nid(),name:n||'',mode:mode||'fixed',pos:[],q:1,useMax:false,mx:2,opt0:false,opts:[{name:'',vals:[],disp:'text'}],map:{},def:[],cond:'always',parent:null,trig:[]};}
-// ---------- v4-8 반영: 주문 조건(가입 유형·할부) 기본값, 사은품·티다팩 샘플 ----------
-// 가입 유형·할부는 기기 상품을 연결했을 때만 쓴다. 노출 여부·순서·기본 선택을 전시마다 정한다
+// ---------- v022 반영: 상품 유형 · 채널 연동 주문 단계(가입 유형 · 할부 · 배송) 기본값, 사은품·티다팩 샘플 ----------
+// 상품 유형(고객 선택 방식 섹션): 주문 구성안 종류(ord)와 필요한 주문 항목(items), 통합 APP · WEB에서 쓰는 주문 단계(need)를 정한다.
+// kinds = 이 유형에 맞는 EPC 상품 구분(연결 상품에 하나도 없으면 경고), kn = 경고 문구에 쓰는 이름
+export const PTYPES=[
+ {k:'기기서비스',d:'휴대폰 · 태블릿 · 웨어러블',kinds:['기기서비스','액세서리'],kn:'기기',need:['join','inst','ship'],ord:'기기 주문',items:['가입 유형','할부','요금제','배송','본인 인증']},
+ {k:'이동전화',d:'요금제 단독 가입',kinds:['요금제'],kn:'요금제',need:['join'],ord:'요금제 주문',items:['가입 유형','요금제','본인 인증']},
+ {k:'부가서비스',d:'보험 · 컬러링 등',kinds:['부가서비스','보험'],kn:'부가서비스',need:[],ord:'부가서비스 주문',items:['회선 인증','부가서비스']},
+ {k:'구독서비스',d:'우주패스 등 정기 구독',kinds:['구독서비스'],kn:'구독',need:[],ord:'구독 주문',items:['구독 상품','결제 수단']},
+ {k:'제휴서비스',d:'제휴사 상품 · 이용권',kinds:null,need:[],ord:'제휴 주문',items:['회선 인증','제휴 동의']}
+];
+export const ptOf=d=>PTYPES.find(p=>p.k===d.svc)||null;
+// 연결 상품 구분으로 추천하는 상품 유형: 기기 → 요금제 → 부가서비스 → 구독 순으로 본다
+export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':''; }
+// 주문 구성안 이름으로 주문 유형을 정한다 (주문 구성 관리의 분류로 가정)
+export const ordKind=n=>/기기서비스|iPhone|갤럭시|휴대폰|태블릿|워치|악세사리|액세서리/.test(n)?'기기 주문':/요금제|유심|로밍/.test(n)?'요금제 주문':/부가서비스/.test(n)?'부가서비스 주문':/구독|T우주/.test(n)?'구독 주문':'제휴 주문';
+// 가입 유형 · 할부 · 배송은 통합 APP · WEB 주문 단계라서, 이 채널을 고르고 상품 유형이 그 단계를 쓸 때만 정한다
+export const APP_CH=['통합 APP','통합 WEB'];
 export const JOIN_DEF=()=>[{k:'신규가입',d:'SKT에 새로운 번호로 가입해요',on:true},{k:'번호이동',d:'지금 번호 그대로 다른 통신사에서 SKT로 이동해요',on:true},{k:'기기변경',d:'지금 번호 그대로 기기만 바꿔요',on:true}];
-export const INST_DEF=()=>['24개월','30개월','일시불','6개월','12개월','18개월','36개월','48개월'].map(k=>({k,on:true}));
+// 할부는 가입 유형마다 쓸 개월 수 · 순서 · 처음 노출 개수가 다르다 (기본 선택 없음)
+const mkInst=a=>a.map(([k,on])=>({k,on:!!on}));
+export const INST_BY_DEF=()=>({
+ '신규가입':mkInst([['24개월',1],['30개월',1],['일시불',1],['12개월',1],['36개월',1],['48개월',0],['6개월',0],['18개월',0]]),
+ '번호이동':mkInst([['24개월',1],['30개월',1],['36개월',1],['48개월',1],['일시불',1],['12개월',1],['6개월',0],['18개월',0]]),
+ '기기변경':mkInst([['24개월',1],['일시불',1],['36개월',1],['12개월',1],['30개월',0],['48개월',0],['6개월',0],['18개월',0]])
+});
+export const INST_TOP_DEF=()=>({'신규가입':3,'번호이동':4,'기기변경':2});
+// 배송 유형: 운영 조건(c)은 배송 관리 기준이라 읽기 전용, 전시에서는 사용 여부 · 순서 · 고객 문구만 정한다
+export const SHIP_DEF=()=>[
+ {k:'바로도착',d:'오늘 주문하면 3시간 안에 받아요',c:'서울·경기 일부 지역 · 오후 4시 전 주문',on:true},
+ {k:'행복배송',d:'원하는 날짜·장소로 찾아가 개통까지 도와드려요',c:'전국 · 방문 예약 필수',on:true},
+ {k:'일반배송',d:'택배로 1~2일 안에 받아요',c:'전국',on:true},
+ {k:'바로픽업',d:'가까운 매장에서 바로 받아요',c:'픽업 매장 재고 기준',on:false}
+];
+// 주문을 받지 않을 때(주문 구성 방식 OFF) 주문 버튼 대신 보이는 버튼과 버튼 문구
+export const OFF_DEF=()=>({act:'notify',btn:'출시 알림 받기'});
 // 사은품은 사은품·혜택 관리에서 만든다(샘플). cond.model = 연결 상품명 앞부분, cond.pos = 연결 상품 코드, own = 이 전시 전용(직접 연결)
 export const GIFT=[
  {id:'GFT-0101',n:'AirTag 1개',ic:'📍',mode:'고정 지급',cond:{model:'iPhone 18 Pro',join:['번호이동']},from:'2026-10-01',to:'2026-11-30',total:1000,left:412,ship:'개통 후 7일 이내 발송'},
@@ -188,9 +219,9 @@ export const TDP=[
 ];
 export const TD_TOP=3; // 티다팩은 처음 3개만 보이고 나머지는 전체보기 (티다팩 공통 정책)
 export function orderDefaults(){ const o={}; Object.values(FLOWS).forEach(f=>f.fields.forEach(([k,,v])=>o[k]=v.slice())); return o; }
-// 전시 유형(서비스 구분): 전시 채널 섹션의 라디오
-export const SVCS=['기기서비스','이동전화','부가서비스','구독서비스','제휴서비스'];
-export function newDisplay(){ return {id:null,kind:'po',conn:[],method:'fixed',areas:[newArea('','fixed')],name:'',from:TODAY,fromTime:'00:00',to:'',toTime:'23:59',noEnd:true,show:false,channels:[],svc:'',main:null,mainAlt:'',subs:[],subAlt:'',badges:[],related:true,orderOn:true,descMode:'image',descImgs:[],descHtml:'',descNote:'',extras:[],search:{on:false,kw:[],title:'',desc:'',og:null},cvm:{on:false,n:CVM_DEF,lines:[]},order:orderDefaults(),orderPlan:null,rep:[],review:true,sim:{on:true,mode:'def',t:'',s:''},join:JOIN_DEF(),joinDef:'번호이동',inst:INST_DEF(),instDef:'24개월',instTop:3,gifts:[],giftBadge:true,tds:[],tdBadge:true}; }
+// 상품 유형 이름 목록 (예전 '전시 유형(서비스 구분)'과 같은 값)
+export const SVCS=PTYPES.map(p=>p.k);
+export function newDisplay(){ return {id:null,kind:'po',conn:[],method:'fixed',areas:[newArea('','fixed')],name:'',from:TODAY,fromTime:'00:00',to:'',toTime:'23:59',noEnd:true,show:false,channels:[],svc:'',svcAuto:true,main:null,mainAlt:'',subs:[],subAlt:'',badges:[],related:true,orderOn:true,descMode:'image',descImgs:[],descHtml:'',descNote:'',extras:[],search:{on:false,kw:[],title:'',desc:'',og:null},cvm:{on:false,n:CVM_DEF,lines:[]},order:orderDefaults(),orderPlan:null,off:OFF_DEF(),review:true,sim:{on:true,mode:'def',t:'',s:''},join:JOIN_DEF(),instBy:INST_BY_DEF(),instTop:INST_TOP_DEF(),ship:SHIP_DEF(),gifts:[],giftBadge:true,tds:[],tdBadge:true}; }
 // 이미지: n = 파일명, u = 업로드한 이미지 주소(EPC에서 불러온 이미지는 파일명만 있다)
 export const img=n=>({n,u:null});
 export const PLANS=['PLN-001','PLN-002','PLN-004','PLN-005'];
@@ -206,21 +237,24 @@ export function norm(d){
  if(d.desc!=null){ const t=String(d.desc).trim(); if(t&&!d.descHtml){ const e=x=>x.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); d.descHtml=t.split(/\n{2,}/).map(p=>`<p>${e(p).replace(/\n/g,'<br>')}</p>`).join(''); if(!(d.descImgs&&d.descImgs.length)) d.descMode='html'; } delete d.desc; }
  d.descMode=d.descMode||'image'; d.descImgs=d.descImgs||[]; d.descHtml=d.descHtml||''; d.descNote=d.descNote||''; (d.areas||[]).forEach(a=>{ if(a.name==='고객 선택 방식'||/^구성 영역( d+)?$/.test(a.name)) a.name=''; a.cond=a.cond&&a.cond!=='relation'?a.cond:'always'; delete a.rel; if(a.parent===undefined) a.parent=null; a.trig=a.trig||[]; }); if(d.orderPlan===undefined) d.orderPlan=null;
  const sr=d.search=Object.assign({on:false,kw:[]},d.search); if(sr.title==null) sr.title=String(sr.line||'').slice(0,25); delete sr.line; sr.desc=sr.desc||''; sr.og=sr.og||null; d.cvm=Object.assign({n:CVM_DEF,lines:[]},d.cvm); d.cvm.n=Math.min(CVM_MAX,Math.max(1,d.cvm.n)); if(d.cvm.on==null) d.cvm.on=d.cvm.lines.some(x=>x&&x.trim()); if(d.noEnd==null) d.noEnd=!d.to; if(d.show==null) d.show=true;
- d.rep=(d.rep||[]).filter(id=>d.conn.includes(id)); if(d.review==null) d.review=true; if(d.related==null) d.related=true; if(d.orderOn==null) d.orderOn=true; d.sim=Object.assign({on:true,mode:'def',t:'',s:''},d.sim); if(!d.join) d.join=JOIN_DEF(); if(d.joinDef===undefined) d.joinDef='번호이동'; if(!d.inst) d.inst=INST_DEF(); if(d.instDef===undefined) d.instDef='24개월'; d.instTop=d.instTop||3; d.gifts=d.gifts||[]; if(d.giftBadge==null) d.giftBadge=true; d.tds=d.tds||[]; d.tdCut=d.tdCut||[]; if(d.tdBadge==null) d.tdBadge=true; return d; }
+ delete d.rep; if(d.svcAuto==null) d.svcAuto=!d.svc; if(d.review==null) d.review=true; if(d.related==null) d.related=true; if(d.orderOn==null) d.orderOn=true; d.sim=Object.assign({on:true,mode:'def',t:'',s:''},d.sim); if(!d.join) d.join=JOIN_DEF();
+ // 예전 저장본: 할부 한 목록(inst) · 기본 선택(joinDef · instDef) → 가입 유형별 할부(instBy · instTop)
+ { const bd=INST_BY_DEF(), td=INST_TOP_DEF(); d.instBy=Object.assign(bd,d.instBy); d.instTop=Object.assign(td,typeof d.instTop==='object'?d.instTop:{}); delete d.inst; delete d.joinDef; delete d.instDef; }
+ if(!d.ship) d.ship=SHIP_DEF(); d.off=Object.assign(OFF_DEF(),d.off); d.gifts=d.gifts||[]; if(d.giftBadge==null) d.giftBadge=true; d.tds=d.tds||[]; d.tdCut=d.tdCut||[]; if(d.tdBadge==null) d.tdBadge=true; return d; }
 // 샘플은 종료일이 있으면 '종료일없음'을 끈다
 export const seed=o=>norm(Object.assign(newDisplay(),{show:true,channels:['통합 APP','통합 WEB'],noEnd:!o.to},o));
 // 샘플 전시가 쓰는 주문 구성안 (주문 구성안 선택 목록 ORD_TPL과 같은 번호·버전 규칙)
 export const planOf=(i,name)=>{ const h=seedNum(name); return {id:'CTN-ORD-'+String(i).padStart(3,'0'),ver:`v${1+h%2}.${h%4}`,name,cat:'상품 유형 템플릿'}; };
 export const SEEDS=()=>[
- seed({id:1,svc:'구독서비스',name:'YouTube Premium',from:'2026-10-01',conn:['SUB-001'],method:'fixed',areas:[Object.assign(newArea('YouTube Premium','fixed'),{pos:['SUB-001']})],images:[img('sub-001_main.png')],badges:[{t:'광고 없이',c:'#4320d4',s:'f'}],desc:'광고 없이 영상과 음악을 즐기고, 오프라인 저장도 할 수 있어요.',extras:[{id:1,t:'판매자 정보',mode:'link',src:'TPL-0004',show:true,txt:''}],search:{on:true,kw:['유튜브','YouTube','구독'],line:'광고 없는 YouTube'},orderPlan:planOf(6,'구독 기본 템플릿'),rep:['SUB-001']}),
- seed({id:2,svc:'기기서비스',name:'갤럭시 Z 플립8',from:'2026-10-01',conn:FLIP,method:'select',areas:[devArea('모델 선택',FLIP,['블루','실버'])],images:[img('flip8_blue_front.png'),img('flip8_silver_front.png')],badges:[{t:'신규',c:'#d4612a',s:'f'}],desc:'반으로 접어 주머니에 쏙 들어가는 갤럭시 Z 플립8.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''}],search:{on:true,kw:['갤럭시','플립'],line:''},orderPlan:planOf(1,'기기서비스 / 기본'),rep:FLIP}),
- seed({id:3,svc:'기기서비스',name:'iPhone 18 Pro + 베스트요금제 + 구독',from:'2026-10-15',to:'2026-12-31',conn:[...IP18,...PLANS,'SUB-001','SUB-002','SUB-003'],method:'complex',areas:[devArea('단말',IP18,['실버','블루']),Object.assign(newArea('요금제','list'),{pos:PLANS,q:1}),Object.assign(newArea('구독 혜택','list'),{pos:['SUB-001','SUB-002','SUB-003'],q:1})],images:[img('ip18p_silver_front.png')],badges:[{t:'온라인 전용',c:'#1f8a5b',s:'l'}],desc:'iPhone 18 Pro와 베스트 요금제, 원하는 구독 하나를 함께 가입하는 온라인 전용 구성입니다.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''},{id:2,t:'이용약관',mode:'link',src:'TPL-0003',show:true,txt:''}],search:{on:true,kw:['아이폰','요금제'],line:''},orderPlan:planOf(13,'휴대폰 + 요금제 + 구독 / 통합형'),rep:[...IP18,...PLANS]}),
+ seed({id:1,svc:'구독서비스',name:'YouTube Premium',from:'2026-10-01',conn:['SUB-001'],method:'fixed',areas:[Object.assign(newArea('YouTube Premium','fixed'),{pos:['SUB-001']})],images:[img('sub-001_main.png')],badges:[{t:'광고 없이',c:'#4320d4',s:'f'}],desc:'광고 없이 영상과 음악을 즐기고, 오프라인 저장도 할 수 있어요.',extras:[{id:1,t:'판매자 정보',mode:'link',src:'TPL-0004',show:true,txt:''}],search:{on:true,kw:['유튜브','YouTube','구독'],line:'광고 없는 YouTube'},orderPlan:planOf(6,'구독 기본 템플릿')}),
+ seed({id:2,svc:'기기서비스',name:'갤럭시 Z 플립8',from:'2026-10-01',conn:FLIP,method:'select',areas:[devArea('모델 선택',FLIP,['블루','실버'])],images:[img('flip8_blue_front.png'),img('flip8_silver_front.png')],badges:[{t:'신규',c:'#d4612a',s:'f'}],desc:'반으로 접어 주머니에 쏙 들어가는 갤럭시 Z 플립8.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''}],search:{on:true,kw:['갤럭시','플립'],line:''},orderPlan:planOf(1,'기기서비스 / 기본')}),
+ seed({id:3,svc:'기기서비스',name:'iPhone 18 Pro + 베스트요금제 + 구독',from:'2026-10-15',to:'2026-12-31',conn:[...IP18,...PLANS,'SUB-001','SUB-002','SUB-003'],method:'complex',areas:[devArea('단말',IP18,['실버','블루']),Object.assign(newArea('요금제','list'),{pos:PLANS,q:1}),Object.assign(newArea('구독 혜택','list'),{pos:['SUB-001','SUB-002','SUB-003'],q:1})],images:[img('ip18p_silver_front.png')],badges:[{t:'온라인 전용',c:'#1f8a5b',s:'l'}],desc:'iPhone 18 Pro와 베스트 요금제, 원하는 구독 하나를 함께 가입하는 온라인 전용 구성입니다.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''},{id:2,t:'이용약관',mode:'link',src:'TPL-0003',show:true,txt:''}],search:{on:true,kw:['아이폰','요금제'],line:''},orderPlan:planOf(13,'휴대폰 + 요금제 + 구독 / 통합형')}),
  seed({id:4,svc:'이동전화',name:'베스트 요금제',from:'2026-09-01',conn:PLANS,method:'select',areas:[Object.assign(newArea('요금제를 골라 주세요','list'),{pos:PLANS,q:1})],search:{on:false,kw:[],line:''},desc:'데이터 걱정 없는 5G 베스트 요금제를 비교하고 골라 보세요.',orderPlan:planOf(2,'요금제 / 기본')}),
- seed({id:5,svc:'기기서비스',name:'액세서리 모음',from:'2026-09-01',to:'2026-09-30',conn:['ACC-001','ACC-002'],method:'fixed',areas:[Object.assign(newArea('액세서리','fixed'),{pos:['ACC-001','ACC-002']})],desc:'갤럭시 Z 플립8 · iPhone 18 Pro와 함께 쓰기 좋은 정품 액세서리입니다.',orderPlan:planOf(19,'액세서리 / 택배'),rep:['ACC-001','ACC-002']}),
+ seed({id:5,svc:'기기서비스',name:'액세서리 모음',from:'2026-09-01',to:'2026-09-30',conn:['ACC-001','ACC-002'],method:'fixed',areas:[Object.assign(newArea('액세서리','fixed'),{pos:['ACC-001','ACC-002']})],desc:'갤럭시 Z 플립8 · iPhone 18 Pro와 함께 쓰기 좋은 정품 액세서리입니다.',orderPlan:planOf(19,'액세서리 / 택배')}),
  seed({id:6,svc:'구독서비스',name:'YouTube Premium 혜택 소개',from:'2026-10-01',kind:'ps',conn:['SUB-001|PS1'],method:'fixed',areas:[],desc:'YouTube Premium에 포함된 광고 없는 재생 · 오프라인 저장 혜택을 소개합니다.'}),
 ];
 // 저장한 전시는 이 브라우저에만 남긴다. 저장소를 못 쓰면 샘플로 시작한다
-export const STORE_KEY='nova.display-create2.v2'; // v4-8 반영(사은품·티다팩·대표 전시 등 샘플 추가)으로 저장소를 새로 쓴다
+export const STORE_KEY='nova.display-create2.v2'; // v4-8 반영(사은품·티다팩 등 샘플 추가)으로 저장소를 새로 쓴다. 이후 구조 변경은 norm()이 맞춘다
 export function loadList(){ try { const s=localStorage.getItem(STORE_KEY); if(s){ const l=JSON.parse(s); if(Array.isArray(l)){ l.forEach(norm); SEQ=Math.max(SEQ,...l.flatMap(d=>[...d.areas.map(a=>a.id),...d.extras.map(x=>x.id)])); return l; } } } catch {} return SEEDS(); }
 export function saveList(){ try { localStorage.setItem(STORE_KEY,JSON.stringify(DISPLAYS)); return true; } catch { return false; } }
 export const DISPLAYS=loadList();
