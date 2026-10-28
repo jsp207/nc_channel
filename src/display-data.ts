@@ -176,13 +176,8 @@ export const ptOf=d=>PTYPES.find(p=>p.k===d.svc)||null;
 // 연결 상품 구분으로 추천하는 상품 유형: 기기 → 요금제 → 부가서비스 → 구독 → 제휴 순으로 본다
 export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':h('제휴')?'제휴서비스':''; }
 // ---------- v023 반영: 대표 상품 (display-create-v23.html) ----------
-// 상품 유형은 직접 고르지 않고 대표 상품의 EPC 상품 구분으로 정한다. 전시 값: repPo = 대표 상품 PO id, repAuto = 자동 지정 중인지
-// 구성 우선순위(기기 > 요금제 > 부가 > 구독 > 제휴): 대표 상품을 자동 지정할 때와 '더 앞선 상품이 함께 연결됨' 경고에 쓴다
-export const REP_ORDER=['기기서비스','액세서리','요금제','부가서비스','보험','구독서비스','제휴'];
+// 상품 유형은 직접 고르지 않고 대표 상품의 EPC 상품 구분으로 정한다. 전시 값: repPo = 대표 상품 PO id (운영자가 직접 지정, 미지정이면 null)
 export const ptypeOfPo=id=>{ const p=poBy(id); return p&&PTYPES.find(x=>x.kinds.includes(p.type))||null; };
-export const repRank=id=>{ const i=REP_ORDER.indexOf((poBy(id)||{}).type); return i<0?REP_ORDER.length:i; };
-// 연결 상품 중 구성 우선순위가 가장 앞인 상품 (같으면 연결 순서)
-export const recRep=ids=>ids.length?ids.reduce((a,b)=>repRank(b)<repRank(a)?b:a):null;
 // 주문 구성안 이름으로 주문 유형을 정한다 (주문 구성 관리의 분류로 가정)
 export const ordKind=n=>/기기서비스|iPhone|갤럭시|휴대폰|태블릿|워치|악세사리|액세서리/.test(n)?'기기 주문':/요금제|유심|로밍/.test(n)?'요금제 주문':/부가서비스/.test(n)?'부가서비스 주문':/구독|T우주/.test(n)?'구독 주문':'제휴 주문';
 // 가입 유형 · 할부 · 배송은 통합 APP · WEB 주문 단계라서, 이 채널을 고르고 상품 유형이 그 단계를 쓸 때만 정한다

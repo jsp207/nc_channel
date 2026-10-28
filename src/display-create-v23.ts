@@ -8,11 +8,11 @@ import "./style.css";
 import { requireAuthentication } from "./auth";
 // EPC 샘플 상품 · 샘플 전시 · 저장소는 display-data.ts (상품 전시 일괄 관리와 함께 쓴다)
 import {
- TODAY, NOW, TYPES, ONCE, seedNum, PO, poBy, selPS, hasSel, PSLIST, psBy, COLOR, BCOL, MSG1, MSG2, TPL, tplBy, poTpls, nid, CVM_MAX, CVM_LEN, ODISP, newArea, GIFT, TDP, TD_TOP, SVCS, newDisplay, img, saveList, reloadList, DISPLAYS, CHS, nameText, nowStamp, EDITOR, tplUsers, PTYPES, ptOf, ordKind, APP_CH, ptypeOfPo, recRep
+ TODAY, NOW, TYPES, ONCE, seedNum, PO, poBy, selPS, hasSel, PSLIST, psBy, COLOR, BCOL, MSG1, MSG2, TPL, tplBy, poTpls, nid, CVM_MAX, CVM_LEN, ODISP, newArea, GIFT, TDP, TD_TOP, SVCS, newDisplay, img, saveList, reloadList, DISPLAYS, CHS, nameText, nowStamp, EDITOR, tplUsers, PTYPES, ptOf, ordKind, APP_CH, ptypeOfPo
 } from "./display-data";
 // 섹션 검사 · 운영 상태 규칙은 display-rules.ts (상품 전시 목록 display-list2.html과 함께 쓴다)
 import {
- endOf, startAt, endAt, htmlText, htmlHasImg, descFilled, combos, areaHasSel, rng, usedIn, connPOs, eul, areaIssues, hasDev, hasPlan, GM, TDM, condMatch, benefitState, joinWarn, syncList, syncBenefits, visibleGifts, visibleTd, autoBadges, sectionState, SECS, STL, secHidden, blocking, status, methodLabel, OWNERS, TEAMS, appOn, needs, planMismatch, isReq, repWarn
+ endOf, startAt, endAt, htmlText, htmlHasImg, descFilled, combos, areaHasSel, rng, usedIn, connPOs, eul, areaIssues, hasDev, hasPlan, GM, TDM, condMatch, benefitState, joinWarn, syncList, syncBenefits, visibleGifts, visibleTd, autoBadges, sectionState, SECS, STL, secHidden, blocking, status, methodLabel, OWNERS, TEAMS, appOn, needs, planMismatch, isReq
 } from "./display-rules";
 
 requireAuthentication();
@@ -81,8 +81,8 @@ $('#goList').addEventListener('click',()=>goList());
 function openEdit(id){
  const d=id?DISPLAYS.find(x=>x.id===id):null;
  E=d?clone(d):newDisplay();
- // v0.2.1 이전에 저장한 전시는 대표 상품이 없다. 연결 상품 기준으로 자동 지정하고 상품 유형을 다시 맞춘다
- if(E.repPo===undefined){ E.repPo=null; E.repAuto=true; } syncRep();
+ // v0.2.1 이전에 저장한 전시는 대표 상품이 없다. 미지정으로 두고 운영자가 직접 지정한다 (v024: 자동 지정 없음)
+ if(E.repPo===undefined) E.repPo=null; delete E.repAuto; syncRep();
  cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; curM='sim'; instCur='번호이동'; PV={}; badgeEd=null; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=false;
  syncSingle(); syncBenefits(E);
  // 처음 열 때(새로고침 포함)는 모든 섹션을 펼친다. 섹션마다 따로 접고 편다
@@ -184,6 +184,8 @@ function stepChip(k){ const on=E.join.filter(j=>j.on); if(k==='join') return `${
 function rChLink(S){
  const box=$('#chLink'); if(!box) return;
  const ks=STEPS.filter(([k])=>needs(E,k));
+ // 통합 APP · WEB을 골랐지만 대표 상품이 없으면 쓸 단계가 아직 정해지지 않았다고 알린다 (v024)
+ if(E.kind==='po'&&appOn(E)&&!ptOf(E)){ box.hidden=false; box.innerHTML='<p class="rpgd" style="margin:0">고객 선택 방식에서 대표 상품을 지정하면 가입 유형 · 할부 설정 · 배송 유형 중 쓸 영역이 정해져요</p>'; return; }
  box.hidden=!ks.length;
  box.innerHTML=ks.map(([k,l])=>`<button type="button" class="jump" data-jump="${k}"><i class="${S[k].st==='done'?'ok':''}"></i>${l} <small>${stepChip(k)}</small></button>`).join('');
  $$('#chLink [data-jump]').forEach(b=>b.addEventListener('click',()=>goSec(b.dataset.jump)));
@@ -227,12 +229,10 @@ function syncConnTpls(){
  if(add.length||E.extras.length!==n0) rExtra();
  return add.length;
 }
-// 대표 상품: 직접 지정하기 전(또는 지정한 상품이 연결 해제되면)에는 구성 우선순위가 가장 앞인 연결 상품으로 자동 지정한다.
-// 상품 유형(svc)은 늘 대표 상품의 EPC 상품 구분을 따른다
+// 대표 상품은 운영자가 직접 지정한다 (v024: 자동 지정 없음). 지정한 상품이 연결 해제되면 미지정으로 돌아간다.
+// 상품 유형(svc)은 늘 대표 상품의 EPC 상품 구분을 따르고, 대표 상품이 없으면 비어 있다
 function syncRep(){
- if(E.kind!=='po'){ E.repPo=null; E.repAuto=true; return; }
- if(!E.repPo||!E.conn.includes(E.repPo)) E.repAuto=true;
- if(E.repAuto) E.repPo=recRep(E.conn);
+ if(E.kind!=='po'||(E.repPo&&!E.conn.includes(E.repPo))) E.repPo=null;
  const p=E.repPo&&ptypeOfPo(E.repPo); E.svc=p?p.k:''; E.svcAuto=false;
 }
 // 대표 상품을 맨 앞에 둔 연결 PO 목록 (미리보기 모델명 · 검색 노출 기본값 · EPC 소개에 대표 상품 정보를 쓴다)
@@ -253,38 +253,26 @@ function rMethod(){
  <div class="sub-h">${E.method==='complex'?'구성 영역':`${m[1]} 설정`}</div><div id="ae"></div>`;
  // 복합형에서 바꿀 때 확인 창을 취소하면 라디오를 원래 값으로 되돌린다
  $$('#sb-method input[name=dMethod]').forEach(r=>r.addEventListener('change',()=>{ setMethod(r.value); if(E.method!==r.value) rMethod(); }));
- $$('#sb-method input[name=dRep]').forEach(r=>r.addEventListener('change',()=>{ E.repPo=r.value; E.repAuto=false; repChanged(); }));
- const ra=$('#repAuto'); if(ra) ra.addEventListener('click',()=>{ E.repAuto=true; repChanged(); });
+ $$('#sb-method input[name=dRep]').forEach(r=>r.addEventListener('change',()=>{ E.repPo=r.value; repChanged(); }));
  rAreas();
 }
-// ---------- 3-1. 대표 상품 · 상품 유형 (v023) ----------
+// ---------- 3-1. 대표 상품 · 상품 유형 (v023 · v024) ----------
 // 대표 상품 1개를 지정하면 그 상품의 EPC 상품 구분이 이 전시의 상품 유형이 된다(직접 바꿀 수 없음).
-// 상품 유형이 주문 구성안 종류와 통합 APP · WEB 주문 단계(가입 유형 · 할부 · 배송)를 정한다
-const REP_GUIDE={
- fixed:'함께 제공하는 상품 중 이 전시를 대표할 상품을 1개 지정해요. 대표 상품의 상품 유형이 이 전시의 상품 유형이 돼요.',
- select:'고객이 고를 후보 중 대표 상품을 1개 지정해요. 목록 카드 · 검색 결과에 대표 상품 정보가 쓰이고, 상품 유형도 대표 상품을 따라요.',
- complex:'구성 영역마다 상품이 나뉘어요. 대표 상품이 들어 있는 영역이 대표 영역이 되고, 대표 상품의 상품 유형이 이 전시의 상품 유형이 돼요.'};
-const STEP_LB={join:'가입 유형',inst:'할부 설정',ship:'배송 유형'};
+// 상품 유형이 주문 구성안 종류와 통합 APP · WEB 주문 단계(가입 유형 · 할부 · 배송)를 정한다.
+// v024: 자동 지정 · 구성 우선순위 경고를 없앴다. 지정 전에는 상품 유형 · 채널 추가 영역 · 주문 구성안이 정해지지 않는다
 function repRow(id){ const p=poBy(id), on=E.repPo===id, t=ptypeOfPo(id);
- return `<label class="rpr"><input type="radio" name="dRep" value="${id}" ${on?'checked':''}><span class="nm">${esc(p.name)}${on?'<span class="me">대표</span>':''}<small>${p.id} · ${p.type}</small></span><span class="k">→ ${t?t.k:'-'}</span></label>`; }
-// 복합형: 구성 영역 순서대로 묶고, 대표 상품이 든 영역에 '대표 영역'을 붙인다. 아직 영역에 넣지 않은 상품은 맨 아래 '미배정'
+ return `<label class="rpr"><input type="radio" name="dRep" value="${id}" ${on?'checked':''}><span class="nm">${esc(p.name)}<span class="k">${t?t.k:'-'}</span></span>${on?'<span class="me">대표</span>':''}</label>`; }
+// 고정형 · 선택형 · 복합형 모두 연결 상품을 한 목록으로 보여 준다 (복합형도 구성 영역별로 나누지 않는다)
 function repListHtml(){
  if(!E.conn.length) return '<div class="empty">연결 상품을 먼저 추가하세요</div>';
- if(E.method!=='complex') return `<div class="rpl">${E.conn.map(repRow).join('')}</div>`;
- const grp=(head,ids,rep)=>`<div><div class="rpa">${head}<span>· ${ids.length}개</span>${rep?'<span class="chip acc">대표 영역</span>':''}</div>${ids.map(repRow).join('')}</div>`;
- const un=E.conn.filter(id=>!E.areas.some(a=>a.pos.includes(id)));
- return `<div class="rpl">${E.areas.map((a,i)=>{ const ids=a.pos.filter(id=>E.conn.includes(id)); return ids.length?grp(`<b>${i+1}번 구성 영역</b>${esc(areaLabel(a))}`,ids,ids.includes(E.repPo)):''; }).join('')}${un.length?grp('<b>미배정</b>구성 영역에 아직 넣지 않은 상품',un,false):''}</div>
- ${un.includes(E.repPo)?'<div class="er">대표 상품이 아직 구성 영역에 없어요. 구성 영역에 넣어야 대표 영역이 정해져요</div>':''}`;
+ return `<div class="rpl">${E.conn.map(repRow).join('')}</div>`;
 }
+// 대표 상품 · 상품 유형을 한 영역으로 묶는다: 제목 바로 오른쪽에 대표 상품이 정한 상품 유형 배지를 붙인다
 function repHtml(){
- const rp=E.repPo&&poBy(E.repPo), p=ptOf(E), w=repWarn(E);
- const tag=!rp?'':E.repAuto?'<small>자동 지정됨 · 구성 우선순위(기기 › 요금제 › 부가 › 구독 › 제휴) 기준</small>':'<button type="button" class="lnk" id="repAuto">자동 지정으로 되돌리기</button>';
- const res=!rp||!p?'<span class="f">대표 상품을 지정하면 자동으로 정해져요</span>'
-  :`<span class="v">${p.k}</span><span class="f">대표 상품 <b>${esc(rp.name)}</b>의 EPC 상품 구분(${rp.type}) 기준 · 직접 바꿀 수 없어요</span>`;
- return `<div class="sub-h" id="repLb">대표 상품${tag}</div><p class="rpgd">${REP_GUIDE[E.method]}</p>
- <div role="radiogroup" aria-labelledby="repLb">${repListHtml()}</div>${w?`<div class="er">${w}</div>`:''}
- <div class="sub-h">상품 유형</div><div class="ptres">${res}</div>
- ${rp&&p?`<p class="rpgd" style="margin:6px 0 0">주문 구성안 종류: ${p.ord} · 통합 APP · WEB 추가 영역: ${p.need.length?p.need.map(k=>STEP_LB[k]).join(' / '):'없음'}</p>`:''}`;
+ const p=E.repPo&&ptOf(E);
+ const res=p?`<span class="v">${p.k}</span>`:E.conn.length?'':'<span class="f">연결 상품을 추가한 뒤 대표 상품을 지정하세요</span>';
+ return `<div class="sub-h"><span id="repLb">대표 상품</span><span class="ptres">${res}</span></div>
+ <div role="radiogroup" aria-labelledby="repLb">${repListHtml()}</div>`;
 }
 // 대표 상품을 바꾸면 상품 유형과 그에 기대는 섹션(채널 연동 단계 · 주문 구성 · 검색 노출 기본값)을 다시 그린다
 function repChanged(){ const pt0=E.svc; syncRep(); rMethod(); rSearch(); onStepsChange();
