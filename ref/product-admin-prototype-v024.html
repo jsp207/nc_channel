@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="zzangsoo">
+<title>새 상품 전시 만들기 · 프로토타입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f4f8; --card:#ffffff; --sub:#f7f8fb; --line:#e3e5ec; --line2:#cfd3dd;
+  --text:#1d2130; --muted:#6b7183; --faint:#9aa0b0;
+  --acc:#3b2bd6; --acc-soft:#efedfd; --acc-line:#c9c3f6;
+  --ok:#17804f; --ok-soft:#e5f4ec; --warn:#9a6200; --warn-soft:#fff4dc; --bad:#c23b2e; --bad-soft:#fdebe8;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14151b; --card:#1c1e26; --sub:#22252f; --line:#2e313d; --line2:#3d4150;
+  --text:#eceef4; --muted:#a2a7b8; --faint:#757b8d;
+  --acc:#9c90ff; --acc-soft:#2a2650; --acc-line:#4c4590;
+  --ok:#5ccf93; --ok-soft:#173026; --warn:#e6b64a; --warn-soft:#3a2f12; --bad:#f08a7c; --bad-soft:#3a1f1c;
+}}
+:root[data-theme="dark"]{
+  --bg:#14151b; --card:#1c1e26; --sub:#22252f; --line:#2e313d; --line2:#3d4150;
+  --text:#eceef4; --muted:#a2a7b8; --faint:#757b8d;
+  --acc:#9c90ff; --acc-soft:#2a2650; --acc-line:#4c4590;
+  --ok:#5ccf93; --ok-soft:#173026; --warn:#e6b64a; --warn-soft:#3a2f12; --bad:#f08a7c; --bad-soft:#3a1f1c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:120px}
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+a{color:var(--acc)}
+
+/* 상단 */
+.page{max-width:1360px;margin:0 auto;padding:24px 24px 120px}
+.crumb{font-size:12px;color:var(--faint)}
+.crumb span+span::before{content:"›";margin:0 6px}
+h1{font-size:20px;font-weight:700;margin:4px 0 16px}
+.summary{position:sticky;top:0;z-index:20;background:var(--acc-soft);border:1px solid var(--acc-line);border-radius:12px;padding:14px 18px;margin-bottom:18px}
+.summary .t{font-size:15px;font-weight:700;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.summary .t span.sep{color:var(--faint);font-weight:400}
+.summary .t .ph{color:var(--faint);font-weight:500}
+.anc{display:flex;gap:4px 18px;flex-wrap:wrap;margin-top:8px}
+.anc a{font-size:13px;color:var(--muted);text-decoration:none;padding:2px 0;border-bottom:2px solid transparent}
+.anc a.on{color:var(--text);font-weight:500;border-bottom-color:var(--acc)}
+.anc a .d{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warn);margin-left:4px;vertical-align:2px}
+.anc a .d.ok{background:var(--ok)}
+
+.layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:start}
+.layout>main{min-width:0}
+
+/* 미리보기 (자리만) */
+.pv{position:sticky;top:120px;background:var(--sub);border:1px solid var(--line);border-radius:12px;padding:14px}
+.pv .bar{display:flex;gap:6px;justify-content:center;margin-bottom:12px}
+.pv select,.pv .zoom{height:30px;border:1px solid var(--line2);border-radius:6px;background:var(--card);font-size:12px;padding:0 8px;display:inline-flex;align-items:center;gap:6px}
+.phone{width:248px;margin:0 auto;border:3px solid var(--text);border-radius:30px;background:var(--card);padding:10px 12px 14px;min-height:520px;display:flex;flex-direction:column}
+.phone .sb{display:flex;justify-content:space-between;font-size:10px;font-weight:700;margin:0 6px 8px}
+.phone .nv{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin:0 2px 10px}
+.sk{background:var(--line);border-radius:4px;margin-bottom:8px}
+.phone .ft{margin-top:auto}
+.phone .note{font-size:10px;color:var(--acc);margin-bottom:6px}
+.phone .cta{display:flex;align-items:center;gap:10px}
+.phone .cta b{font-size:16px;color:var(--acc)}
+.phone .cta span{flex:1;height:36px;border-radius:10px;background:var(--acc);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.pv .hint{text-align:center;font-size:12px;color:var(--faint);margin-top:12px}
+
+/* 카드 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:16px}
+.card.open{border-color:var(--acc)}
+.card.hide{display:none}
+.ch{display:flex;align-items:center;gap:8px;padding:16px 20px;cursor:pointer}
+.ch h2{font-size:15px;font-weight:700;margin:0}
+.ch .sp{margin-left:auto}
+.pill{font-size:11px;padding:2px 9px;border-radius:12px;white-space:nowrap;font-weight:500}
+.pill.req{background:var(--bad-soft);color:var(--bad)}
+.pill.st{background:var(--sub);color:var(--muted);border:1px solid var(--line)}
+.pill.st.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.st.ng{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.cond{background:var(--acc-soft);color:var(--acc)}
+.chev{width:26px;height:26px;border:0;background:none;color:var(--text);font-size:14px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.card:not(.open) .chev{transform:rotate(180deg)}
+.cb{padding:0 20px 20px}
+.card:not(.open) .cb{display:none}
+
+/* 토글 헤더 카드 (구매후기 · 유사 상품) */
+.tcard{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.tcard .th{display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--sub);border-bottom:1px solid var(--line)}
+.tcard.closed .th{border-bottom:0}
+.tcard .th h2{font-size:14px;font-weight:700;margin:0}
+.tcard .th .sp{margin-left:auto}
+.tcard.closed .tb2{display:none}
+.tcard .tb2{padding:16px 20px}
+.tcard.closed .chev{transform:rotate(180deg)}
+.tcard.off .tb2{display:none}
+.tcard.off .th{border-bottom:0}
+.sw2{position:relative;width:42px;height:24px;border-radius:12px;background:var(--line2);border:0;padding:0;flex:none;cursor:pointer}
+.sw2::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.sw2.on{background:var(--acc)}
+.sw2.on::after{left:21px}
+.sw2:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.dash{border:1px dashed var(--line2);border-radius:8px;background:var(--sub);min-height:220px;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px;text-align:center;line-height:1.7;padding:20px}
+.seg2{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg2 button{border:0;background:var(--card);height:34px;padding:0 16px;font-size:13px;color:var(--muted)}
+.seg2 button+button{border-left:1px solid var(--line2)}
+.seg2 button.on{background:var(--acc);color:#fff;font-weight:500}
+.seg2.soft button.on{background:var(--acc-soft);color:var(--acc)}
+.kv{display:grid;grid-template-columns:80px minmax(0,1fr) 48px;gap:10px;align-items:center;margin-bottom:10px;font-size:13px}
+.kv .c{font-size:12px;color:var(--faint);text-align:right}
+.simpv{border:1px dashed var(--line2);border-radius:8px;background:var(--sub);padding:14px 16px;margin-top:4px}
+.simpv b{display:block;font-size:15px;font-weight:700}
+.simpv span{font-size:13px;color:var(--muted)}
+
+/* 폼 */
+.fr{display:grid;grid-template-columns:130px minmax(0,1fr);border-top:1px solid var(--line)}
+.fr:last-child{border-bottom:1px solid var(--line)}
+.fl{background:var(--sub);padding:12px 14px;font-size:13px;color:var(--muted)}
+.fl .rq{color:var(--bad);margin-left:2px}
+.fc{padding:10px 14px;min-width:0}
+.in,.sel{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;background:var(--card)}
+.in{width:100%}
+textarea.in{height:auto;padding:8px 10px;resize:vertical}
+.in:disabled,.sel:disabled{background:var(--sub);color:var(--faint)}
+.help{font-size:11px;color:var(--faint);margin-top:4px;display:flex;justify-content:space-between;gap:8px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rd,.ck{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}
+.rd input,.ck input{accent-color:var(--acc);width:16px;height:16px;margin:0}
+.btn{height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:8px;background:var(--card);font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--sub)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.ai{height:28px;padding:0 10px;font-size:12px;border-color:var(--acc-line);color:var(--acc);background:var(--acc-soft)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.info{display:flex;gap:10px;align-items:flex-start;background:var(--sub);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6}
+.info .ico{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--acc);color:var(--acc);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;margin-top:1px}
+.info b{color:var(--acc);font-weight:500}
+.empty{color:var(--faint);font-size:13px;padding:16px;text-align:center;border:1px dashed var(--line2);border-radius:10px}
+.er{font-size:12px;color:var(--warn);margin-top:6px}
+
+/* 테이블 */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.tb{width:100%;border-collapse:collapse;font-size:12px;min-width:760px}
+.tb th,.tb td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.tb th{background:var(--sub);color:var(--muted);font-weight:500}
+.tb tr:last-child td{border-bottom:0}
+.sb{font-size:11px;padding:1px 7px;border-radius:4px}
+.sb.on{background:var(--ok-soft);color:var(--ok)}
+.sb.off{background:var(--sub);color:var(--muted);border:1px solid var(--line)}
+
+.lnk{border:0;background:none;padding:0;color:var(--acc);text-decoration:underline;font-size:12px}
+
+/* 대표 상품 */
+.rpl{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.rpa{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--sub);font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.rpa b{color:var(--text);font-weight:500}
+.rpr{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.rpl>.rpr:last-child,.rpl>div:last-child>.rpr:last-child{border-bottom:0}
+.rpr:has(input:checked){background:var(--acc-soft)}
+.rpr input{accent-color:var(--acc);width:16px;height:16px;margin:0}
+.rpr .nm{font-size:13px;min-width:0}
+.rpr .nm small{display:block;font-size:11px;color:var(--faint)}
+.rpr .k{font-size:11px;color:var(--muted);white-space:nowrap}
+.rpr .me{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--acc);color:#fff;margin-left:6px;vertical-align:1px}
+.ptres{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ptres .v{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:15px;background:var(--acc-soft);color:var(--acc);font-weight:700;font-size:13px;border:1px solid var(--acc-line)}
+.ptres .f{font-size:12px;color:var(--muted)}
+
+/* 채널 연동 */
+.chl{margin-top:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.chl .r{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);align-items:start}
+.chl .r:last-child{border-bottom:0}
+.chl .r.off{background:var(--sub)}
+.chl .r.off .nm{color:var(--faint)}
+.chl .nm{font-size:13px;font-weight:500}
+.chl .nm small{display:block;font-size:11px;color:var(--faint);font-weight:400}
+.jump{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--line2);border-radius:14px;font-size:12px;text-decoration:none;color:var(--text);background:var(--card);margin:0 6px 6px 0}
+.jump i{width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.jump i.ok{background:var(--ok)}
+.jump.na{color:var(--faint);border-style:dashed;pointer-events:none}
+.pill.ch2{background:var(--ok-soft);color:var(--ok)}
+.offnote{display:flex;gap:8px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:10px}
+
+/* 가입 유형별 탭 */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px;flex-wrap:wrap}
+.tabs button{border:0;background:none;height:38px;padding:0 14px;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--acc);font-weight:700;border-bottom-color:var(--acc)}
+.tabs button:disabled{color:var(--faint);text-decoration:line-through;cursor:not-allowed}
+.tabs button small{font-size:11px;font-weight:400;margin-left:4px;color:var(--faint)}
+
+/* 주문 OFF */
+.ordoff{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:16px;align-items:start;margin-top:12px}
+.cpv{border:1px dashed var(--line2);border-radius:12px;background:var(--sub);padding:14px}
+.cpv .lb{font-size:11px;color:var(--faint);margin-bottom:8px}
+.cpv .nt{font-size:12px;color:var(--acc);margin-bottom:8px;min-height:18px}
+.cpv .bt{height:40px;border-radius:10px;background:var(--acc);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center}
+.cpv .bt.no{background:var(--line);color:var(--faint)}
+.acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.acts label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line2);border-radius:10px;cursor:pointer;font-size:13px}
+.acts label:has(input:checked){border:1.5px solid var(--acc);padding:9.5px 11.5px;background:var(--acc-soft)}
+.acts input{accent-color:var(--acc);margin-top:3px}
+.acts small{display:block;font-size:11px;color:var(--muted)}
+@media (max-width:900px){ .ordoff{grid-template-columns:1fr} .acts{grid-template-columns:1fr} .chl .r{grid-template-columns:1fr} }
+
+/* 사은품 */
+.gl2{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.gr{display:grid;grid-template-columns:24px 52px minmax(0,1.6fr) minmax(0,1.3fr) 150px 120px 44px;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.gr:last-child{border-bottom:0}
+.gr.hd{background:var(--sub);font-size:12px;color:var(--muted);padding:8px 12px}
+.gr.dim>*:not(.tgw){opacity:.5}
+.gth{width:52px;height:52px;border-radius:8px;background:var(--sub);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px}
+.gr .nm b{font-weight:500;font-size:13px;display:block}
+.gr .nm small,.gr .cd small{font-size:11px;color:var(--faint)}
+.gr .cd{font-size:12px;line-height:1.6}
+.qty{font-size:12px}
+.qty .bar{height:4px;border-radius:2px;background:var(--line);margin-top:4px;overflow:hidden}
+.qty .bar i{display:block;height:100%;background:var(--acc)}
+.qty.low .bar i{background:var(--warn)}
+.qty.out .bar i{background:var(--bad)}
+.gtag{font-size:10px;padding:1px 6px;border-radius:3px;white-space:nowrap;margin-left:4px;vertical-align:1px}
+.gtag.auto{background:var(--sub);color:var(--muted);border:1px solid var(--line)}
+.gtag.own{background:var(--acc-soft);color:var(--acc)}
+.gtag.st{background:var(--warn-soft);color:var(--warn)}
+.gtag.end{background:var(--bad-soft);color:var(--bad)}
+.gtag.wait{background:var(--sub);color:var(--muted);border:1px dashed var(--line2)}
+.gwarn{font-size:11px;color:var(--warn);margin-top:3px}
+.tgw{display:flex;flex-direction:column;align-items:center;gap:4px}
+.tgw .lnk{font-size:11px}
+@media (max-width:1180px){
+  .gr{grid-template-columns:24px 44px minmax(0,1fr) 44px}
+  .gr .tgw{grid-column:4;grid-row:1}
+  .gr .ar{grid-row:1}
+  .gr .gth{grid-row:1}
+  .gr .nm{grid-row:1}
+  .gr .cd,.gr .qw{grid-column:3/5}
+  .gr .pd2 br{display:none}
+  .gr.hd{display:none}
+  .gth{width:44px;height:44px}
+}
+
+/* 티다팩 */
+.tr2{display:grid;grid-template-columns:24px 48px minmax(0,1.5fr) minmax(0,1fr) minmax(0,1.3fr) 150px 44px;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.tr2:last-child{border-bottom:0}
+.tr2.hd{background:var(--sub);font-size:12px;color:var(--muted);padding:8px 12px}
+.tr2.dim>*:not(.tgw){opacity:.5}
+.logo{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;text-align:center;line-height:1.1}
+.tr2 .nm b{font-weight:500;font-size:13px;display:block}
+.tr2 .nm small,.tr2 .cd small{font-size:11px;color:var(--faint)}
+.tr2 .cd{font-size:12px;line-height:1.6}
+.rtag{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--acc-soft);color:var(--acc);margin-right:4px}
+.tdmore{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--acc-soft);color:var(--acc);font-size:12px;border-bottom:1px solid var(--line)}
+@media (max-width:1180px){
+  .tr2{grid-template-columns:24px 44px minmax(0,1fr) 44px}
+  .tr2.hd{display:none}
+  .tr2 .tgw{grid-column:4;grid-row:1}
+  .tr2 .ar,.tr2 .logo,.tr2 .nm{grid-row:1}
+  .tr2 .cd{grid-column:3/5}
+  .logo{width:44px;height:44px}
+}
+
+/* 배지 */
+.bd{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px 0 12px;border-radius:15px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid transparent}
+.bd .x{border:0;background:none;color:inherit;padding:0;font-size:13px;opacity:.8}
+.bd.sel{outline:2px solid var(--acc-line);outline-offset:2px}
+.addb{width:30px;height:30px;border-radius:8px;border:1px solid var(--line2);background:var(--card);color:var(--muted)}
+.bed{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--sub)}
+.sw{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.sw.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--text)}
+
+/* 이미지 */
+.img{width:96px;height:96px;border:1px dashed var(--line2);border-radius:8px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--faint);font-size:24px;position:relative;vertical-align:top}
+.img.has{border-style:solid;background:var(--sub);font-size:12px;color:var(--muted)}
+.img .rm{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;border:0;background:var(--text);color:var(--card);font-size:11px;line-height:1}
+.imgs{display:flex;gap:8px;flex-wrap:wrap}
+
+/* 에디터 */
+.ed{border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.ed .tbar{display:flex;gap:2px;flex-wrap:wrap;padding:6px 8px;background:var(--sub);border-bottom:1px solid var(--line)}
+.ed .tbar button{border:0;background:none;width:28px;height:28px;border-radius:6px;font-size:13px;color:var(--muted)}
+.ed .tbar button:hover{background:var(--card)}
+.ed [contenteditable]{min-height:200px;padding:12px;outline:none}
+.up{border:1px dashed var(--line2);border-radius:8px;padding:28px;text-align:center;color:var(--muted);font-size:13px}
+
+/* 목록-상세 */
+.md{display:grid;grid-template-columns:240px minmax(0,1fr);gap:14px;align-items:start}
+.ml{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--sub)}
+.mi{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;background:var(--card);border:1px solid var(--line);margin-bottom:6px;cursor:pointer}
+.mi:last-child{margin-bottom:0}
+.mi.on{border:1.5px solid var(--acc);padding:9.5px;background:var(--acc-soft)}
+.mi.off b{color:var(--faint);text-decoration:line-through}
+.mi .nm{flex:1;min-width:0}
+.mi b{font-weight:500;font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg{position:relative;width:34px;height:20px;border-radius:10px;background:var(--line2);border:0;padding:0;flex:none}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.tg.on{background:var(--acc)}
+.tg.on::after{left:16px}
+.src{font-size:10px;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.src.b{background:var(--acc-soft);color:var(--acc)}
+.src.d{background:var(--sub);color:var(--muted);border:1px solid var(--line)}
+.src.w{background:var(--warn-soft);color:var(--warn)}
+.mp{border:1px solid var(--line);border-radius:10px;padding:14px}
+.box{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--sub);font-size:13px;line-height:1.7}
+.box.w{background:var(--warn-soft);color:var(--warn);border-color:transparent;display:flex;align-items:center;gap:8px}
+
+/* 주문 조건 공통 행 */
+.ol{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.or{display:grid;grid-template-columns:28px 28px minmax(120px,170px) minmax(0,1fr);gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.or:last-child{border-bottom:0}
+.or.hd{background:var(--sub);font-size:12px;color:var(--muted);padding:8px 12px}
+.or.off .on-only{opacity:.4}
+.or .nm{font-weight:500;font-size:13px}
+.or .sub{font-size:11px;color:var(--faint)}
+.or .in{height:32px;font-size:12px}
+.ar{display:flex;flex-direction:column;align-items:center}
+.ar button{border:0;background:none;color:var(--faint);font-size:10px;padding:0;line-height:1.3}
+.ar button:disabled{opacity:.3;cursor:not-allowed}
+.more{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--acc-soft);color:var(--acc);font-size:12px;border-bottom:1px solid var(--line)}
+.sum{margin-top:10px;font-size:12px;color:var(--muted);background:var(--sub);border-radius:8px;padding:8px 12px;line-height:1.7}
+.sum b{color:var(--text);font-weight:500}
+
+/* 주문 구성 */
+.oc{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--sub);display:flex;align-items:center;gap:12px;margin-top:10px}
+.oc .nm{flex:1;min-width:0}
+.oc .nm small{display:block;font-size:12px;color:var(--muted)}
+.oc .nm b{font-size:15px;font-weight:700;display:block;margin:2px 0}
+.oc .nm .code{font-size:11px;color:var(--acc)}
+.chip{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:13px;border:1px solid var(--line2);font-size:12px;margin-right:6px}
+
+/* 하단 */
+.foot{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:30}
+.foot .in2{max-width:1360px;margin:0 auto;padding:12px 24px;display:flex;gap:8px;align-items:center}
+.foot .msg{font-size:12px;color:var(--muted);margin-left:8px}
+
+/* 모달 */
+.modal{position:fixed;inset:0;background:rgba(20,20,30,.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50}
+.modal[hidden]{display:none}
+.mbox{background:var(--card);border-radius:14px;width:min(860px,100%);max-height:calc(100vh - 48px);display:flex;flex-direction:column;outline:none}
+.mbox>header{display:flex;align-items:flex-start;gap:8px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.mbox>header b{font-size:16px;font-weight:700}
+.mbox>header small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.mbody{padding:16px 20px;overflow:auto;flex:1}
+.mbox>footer{display:flex;align-items:center;gap:8px;padding:12px 20px;border-top:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--text);color:var(--card);padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
+.toast.on{opacity:1}
+
+@media (max-width:1080px){
+  .layout{grid-template-columns:1fr}
+  .pv{position:static}
+}
+@media (max-width:720px){
+  .page{padding:12px 12px 120px}
+  .fr{grid-template-columns:1fr}
+  .md{grid-template-columns:1fr}
+  .or{grid-template-columns:28px 28px minmax(0,1fr)}
+  .or .desc{grid-column:3;grid-row:2}
+  .or.hd .desc{display:none}
+  .foot .msg{display:none}
+  .foot .in2{padding:10px 12px}
+  .summary{position:static}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="crumb"><span>홈</span><span>상품 관리</span><span>새 상품 전시 만들기</span></div>
+  <h1>새 상품 전시 만들기</h1>
+
+  <div class="summary" id="summary">
+    <div class="t" id="sumT"></div>
+    <nav class="anc" id="anc" aria-label="섹션 바로가기"></nav>
+  </div>
+
+  <div class="layout">
+    <aside class="pv" aria-label="고객 화면 미리보기">
+      <div class="bar"><select aria-label="미리보기 채널" id="pvCh"></select><span class="zoom">− 100% +</span></div>
+      <div class="phone" aria-hidden="true">
+        <div class="sb"><span>9:41</span><span>▪▪ ◔</span></div>
+        <div class="nv"><span>‹</span><span>⌂ ☰</span></div>
+        <div class="sk" style="height:180px"></div>
+        <div style="display:flex;gap:6px"><div class="sk" style="height:12px;width:40%"></div><div class="sk" style="height:12px;width:25%"></div></div>
+        <div class="sk" style="height:34px"></div>
+        <div class="sk" style="height:12px;width:30%"></div>
+        <div class="sk" style="height:12px;width:55%"></div>
+        <div class="ft">
+          <div class="note" id="pvNote">● 주문 단계는 주문 구성안을 따라요</div>
+          <div class="cta"><b>T.</b><span id="pvCta">옵션 선택하기</span></div>
+        </div>
+      </div>
+      <div class="hint">미리보기는 자리만 잡아두었어요</div>
+    </aside>
+
+    <main id="main">
+      <!-- 1 전시 유형 -->
+      <section class="card open" id="s-type" data-req="1">
+        <div class="ch"><h2>전시 유형</h2><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="row" style="gap:20px;font-size:13px"><span style="color:var(--muted)">무엇을 전시하나요?</span>
+            <label class="rd"><input type="radio" name="dtype" value="sale" checked>상품 판매</label>
+            <label class="rd"><input type="radio" name="dtype" value="only">상품 개별 전시 (주문 없음)</label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 연결 상품 -->
+      <section class="card open" id="s-prod" data-req="1">
+        <div class="ch"><h2>연결 상품</h2><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="row" style="margin-bottom:10px"><b style="font-weight:700">연결한 상품</b><span style="color:var(--acc);font-size:12px" id="pCnt"></span><button class="btn pri sm" id="pAdd" style="margin-left:auto">상품 추가</button></div>
+
+          <div id="pTable"></div>
+          <div class="help"><span>하나의 전시에 EPC 상품을 1개 이상 연결할 수 있어요</span></div>
+        </div>
+      </section>
+
+      <!-- 3 고객 선택 방식 -->
+      <section class="card open" id="s-sel" data-req="1">
+        <div class="ch"><h2>고객 선택 방식</h2><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="fr"><div class="fl">구성 방식</div><div class="fc"><div class="row" style="gap:20px">
+            <label class="rd"><input type="radio" name="smode" value="fixed" checked>고정형</label>
+            <label class="rd"><input type="radio" name="smode" value="select">선택형</label>
+            <label class="rd"><input type="radio" name="smode" value="composite">복합형</label>
+          </div></div></div>
+          <div class="fr"><div class="fl">대표 상품<span class="rq">*</span></div><div class="fc">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="repGuide"></div>
+            <div id="repList"></div>
+          </div></div>
+          <div class="fr"><div class="fl">상품 유형</div><div class="fc">
+            <div class="ptres" id="ptRes"></div>
+            <div class="help"><span id="ptHelp"></span></div>
+          </div></div>
+          <div class="info" style="margin-top:12px" id="selInfo"></div>
+        </div>
+      </section>
+
+      <!-- 전시 설정 -->
+      <section class="card open" id="s-disp" data-req="1">
+        <div class="ch"><h2>전시 설정</h2><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="fr"><div class="fl">전시 채널<span class="rq">*</span></div><div class="fc">
+            <div class="row" style="gap:16px" id="chs"></div>
+            <div class="help"><span>채널 관리에 새 채널이 등록되면 여기에 자동으로 추가돼요</span></div>
+          </div></div>
+          <div class="chl" id="chLink"></div>
+        </div>
+      </section>
+
+      <!-- 가입 유형 -->
+      <section class="card open" id="s-join" data-req="1" data-app="1">
+        <div class="ch"><h2>가입 유형</h2><span class="sp"></span><span class="pill ch2">통합 App · Web</span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div data-offnote></div>
+          <div class="info" style="margin-bottom:12px"><span class="ico">i</span><span>고객 화면 <b>"어떻게 가입할까요?"</b> 단계의 선택지예요. 쓸 유형을 켜고 노출 순서를 정하세요. 켠 유형마다 <b>할부 설정</b>이 따로 생겨요.</span></div>
+          <div class="ol" id="joinList"></div>
+          <div class="sum" id="joinSum"></div>
+        </div>
+      </section>
+
+      <!-- 할부 설정 -->
+      <section class="card open" id="s-inst" data-req="1" data-app="1">
+        <div class="ch"><h2>할부 설정</h2><span class="sp"></span><span class="pill ch2">통합 App · Web</span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div data-offnote></div>
+          <div class="info" style="margin-bottom:12px"><span class="ico">i</span><span>고객 화면 <b>"단말기는 몇 달 동안 납부할까요?"</b> 단계예요. <b>가입 유형마다</b> 쓸 개월 수와 순서가 달라요. 처음 보일 개수를 넘는 항목은 <b>더보기</b> 안으로 들어가요.</span></div>
+          <div class="tabs" id="instTabs" role="tablist"></div>
+          <div class="row" style="margin-bottom:10px"><span style="font-size:13px;color:var(--muted)">처음 노출</span><input class="in" type="number" id="instTop" min="1" value="3" style="width:70px;text-align:center"><span style="font-size:13px;color:var(--muted)">개, 나머지는 더보기</span><span style="margin-left:auto" class="row"><select class="sel" id="instCopyFrom" aria-label="복사할 가입 유형" style="height:30px;font-size:12px"></select><button class="btn sm" id="instCopy">설정 복사</button></span></div>
+          <div class="ol" id="instList"></div>
+          <div class="sum" id="instSum"></div>
+        </div>
+      </section>
+
+      <!-- 배송 유형 -->
+      <section class="card open" id="s-ship" data-req="1" data-app="1">
+        <div class="ch"><h2>배송 유형</h2><span class="sp"></span><span class="pill ch2">통합 App · Web</span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div data-offnote></div>
+          <div class="info" style="margin-bottom:12px"><span class="ico">i</span><span>고객 화면 <b>"어떻게 받으시겠어요?"</b> 단계예요. 운영 조건(지역·시간·매장 재고)은 배송 관리 기준이고, 여기서는 <b>사용 여부와 순서, 고객 문구</b>만 정해요.</span></div>
+          <div class="ol" id="shipList"></div>
+          <div class="sum" id="shipSum"></div>
+        </div>
+      </section>
+
+      <!-- 4 기본 정보 -->
+      <section class="card open" id="s-basic" data-req="1">
+        <div class="ch"><h2>기본 정보</h2><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="btn sm" id="epcLoad">EPC 상품 정보 가져오기</button></div>
+          <div class="fr"><div class="fl">전시명<span class="rq">*</span></div><div class="fc">
+            <div class="row" style="flex-wrap:nowrap"><button class="btn ai" data-ai="name">AI 추천</button><input class="in" id="dName" maxlength="40" placeholder="예: 아이폰 18 Pro Max"></div>
+            <div class="help"><span>고객에게 노출되는 이름이에요</span><span id="dNameC">0/40</span></div>
+          </div></div>
+          <div class="fr"><div class="fl">전시 상품 배지</div><div class="fc">
+            <div class="row" id="badges"></div>
+            <div id="badgeEd"></div>
+            <div class="help"><span id="bHelp">배지는 최대 3개. 칩을 누르면 문구와 색상을 바꿀 수 있어요</span></div>
+          </div></div>
+          <div class="fr"><div class="fl">대표 이미지<span class="rq">*</span></div><div class="fc">
+            <div class="row" style="align-items:flex-start"><div id="mainImg"></div><button class="btn ai" data-ai="img">AI</button></div>
+            <input class="in" style="margin-top:8px" placeholder="이미지 대체 텍스트 (예: 아이폰 18 Pro Max 화이트 정면)">
+            <div class="help"><span>권장 1:1 · 1000×1000px · JPG, PNG, WEBP</span></div>
+          </div></div>
+          <div class="fr"><div class="fl">추가 이미지<br><small id="subImgC">(0/4)</small></div><div class="fc">
+            <div class="imgs" id="subImgs"></div>
+            <div class="help"><span>최대 4장까지 등록할 수 있어요</span></div>
+          </div></div>
+          <div class="fr"><div class="fl">전시 기간<span class="rq">*</span></div><div class="fc">
+            <div class="row"><input class="in" type="date" id="dFrom" style="width:150px"><input class="in" type="time" id="dFromT" value="00:00" style="width:110px"><span>~</span><input class="in" type="date" id="dTo" style="width:150px"><input class="in" type="time" id="dToT" value="23:59" style="width:110px"><label class="ck"><input type="checkbox" id="dAlways">종료일 없음</label></div>
+            <div class="er" id="dErr" hidden></div>
+          </div></div>
+          <div class="fr"><div class="fl">전시 여부</div><div class="fc"><div class="row" style="gap:20px"><label class="rd"><input type="radio" name="dShow" value="N" checked>N (숨김)</label><label class="rd"><input type="radio" name="dShow" value="Y">Y (노출)</label></div></div></div>
+        </div>
+      </section>
+
+      <!-- 5 상세 설명 -->
+      <section class="card open" id="s-desc" data-req="1">
+        <div class="ch"><h2>상세 설명</h2><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="fr"><div class="fl">작성 방식</div><div class="fc"><div class="row" style="gap:20px">
+            <label class="rd"><input type="radio" name="dMode" value="img">이미지 업로드</label>
+            <label class="rd"><input type="radio" name="dMode" value="html" checked>HTML 작성</label>
+            <label class="rd" style="color:var(--faint)"><input type="radio" name="dMode" value="ai" disabled>AI 초안 작성 (준비 중)</label>
+          </div></div></div>
+          <div class="fr"><div class="fl">본문<span class="rq">*</span></div><div class="fc" id="descBody"></div></div>
+          <div class="fr"><div class="fl">공통 안내 문구</div><div class="fc"><textarea class="in" rows="3" placeholder="모든 상세 페이지 하단에 붙는 안내 문구 (예: 개통 후 14일 이내 철회 가능)"></textarea></div></div>
+        </div>
+      </section>
+
+      <!-- 6 추가 정보 -->
+      <section class="card open" id="s-extra">
+        <div class="ch"><h2>추가 정보</h2><span class="sp"></span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="btn sm" id="tplLoad">템플릿 불러오기</button><button class="btn sm" id="exAdd">직접 입력</button></div>
+          <div class="md"><div class="ml" id="exList"></div><div class="mp" id="exDetail"></div></div>
+        </div>
+      </section>
+
+      <!-- 구매후기 -->
+      <section class="tcard" id="s-review">
+        <div class="th"><h2>구매후기</h2><button class="sw2 on" id="rvSw" role="switch" aria-checked="true" aria-label="구매후기 노출"></button><span class="pill st" data-st style="margin-left:4px"></span><span class="sp"></span><button class="chev" data-tc aria-label="접기">︿</button></div>
+        <div class="tb2"><div class="dash" id="rvBody"></div></div>
+      </section>
+
+      <!-- 유사한 상품 구성하기 -->
+      <section class="tcard" id="s-sim">
+        <div class="th"><h2>유사한 상품 구성하기</h2><button class="sw2 on" id="smSw" role="switch" aria-checked="true" aria-label="유사한 상품 노출"></button><span class="pill st" data-st style="margin-left:4px"></span><span class="sp"></span><button class="chev" data-tc aria-label="접기">︿</button></div>
+        <div class="tb2">
+          <div class="kv"><span style="color:var(--muted)">문구</span><div><span class="seg2" id="smMode"><button data-m="def">기본 문구</button><button data-m="custom">직접 입력</button></span></div><span></span></div>
+          <div class="kv"><label for="smT" style="color:var(--muted)">타이틀</label><input class="in" id="smT" maxlength="30"><span class="c" id="smTC"></span></div>
+          <div class="kv"><label for="smS" style="color:var(--muted)">소타이틀</label><input class="in" id="smS" maxlength="30"><span class="c" id="smSC"></span></div>
+          <div class="simpv" aria-label="고객 화면 문구 미리보기"><b id="smPT"></b><span id="smPS"></span></div>
+        </div>
+      </section>
+
+      <!-- 7 SEO -->
+      <section class="card open" id="s-seo">
+        <div class="ch"><h2>검색 노출 설정 (SEO)</h2><span class="sp"></span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="info" style="margin-bottom:12px"><span class="ico">i</span><span><b>네이버·구글 같은 검색엔진과 AI 검색에서 이 페이지가 어떻게 보일지</b> 정해요. 비워두면 전시명과 대표 이미지를 써요.</span></div>
+          <div class="fr"><div class="fl">사용 여부</div><div class="fc"><div class="row" style="gap:20px"><label class="rd"><input type="radio" name="seo" value="N" checked>N</label><label class="rd"><input type="radio" name="seo" value="Y">Y</label></div></div></div>
+          <div class="fr"><div class="fl">Tag <small id="seoTagC">(0/10)</small></div><div class="fc"><div class="row" style="flex-wrap:nowrap"><button class="btn ai" data-ai="tag" data-seo>AI 추천</button><input class="in" id="seoTag" data-seo placeholder="쉼표로 구분 (예: 아이폰, 아이폰18, 자급제)"></div><div class="help"><span>최대 10개</span></div></div></div>
+          <div class="fr"><div class="fl">Page Title <small id="seoTitleC">(0/25)</small></div><div class="fc"><div class="row" style="flex-wrap:nowrap"><button class="btn ai" data-ai="title" data-seo>AI 추천</button><input class="in" id="seoTitle" maxlength="25" data-seo placeholder="검색 결과에 보이는 제목"></div></div></div>
+          <div class="fr"><div class="fl">Description <small id="seoDescC">(0/80)</small></div><div class="fc"><div class="row" style="flex-wrap:nowrap"><button class="btn ai" data-ai="desc" data-seo>AI 추천</button><input class="in" id="seoDesc" maxlength="80" data-seo placeholder="검색 결과에 보이는 설명"></div></div></div>
+          <div class="fr"><div class="fl">Meta Image</div><div class="fc"><div id="seoImg"></div><div class="help"><span>권장 1200×630px · JPG, PNG</span></div></div></div>
+        </div>
+      </section>
+
+      <!-- 8 CVM -->
+      <section class="card open" id="s-cvm">
+        <div class="ch"><h2>오퍼링 문구 (CVM)</h2><span class="sp"></span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="fr"><div class="fl">사용 여부</div><div class="fc"><div class="row" style="gap:20px"><label class="rd"><input type="radio" name="cvmUse" value="Y">사용 (Y)</label><label class="rd"><input type="radio" name="cvmUse" value="N" checked>미사용 (N)</label></div></div></div>
+          <div class="fr"><div class="fl">오퍼링 문구 설정</div><div class="fc">
+            <div class="row"><button class="btn ai" data-ai="cvm" data-cvm style="height:34px;padding:0 18px">AI 추천</button><span class="seg2 soft" id="cvmSeg"><button data-n="1">1개</button><button data-n="2">2개</button><button data-n="3">3개</button><button data-n="4">4개</button><button data-n="5">5개</button></span></div>
+            <div id="cvmList" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- 사은품·혜택 -->
+      <section class="card open" id="s-gift">
+        <div class="ch"><h2>사은품 · 혜택</h2><span class="sp"></span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="info" style="margin-bottom:12px"><span class="ico">i</span><span>사은품은 <b>사은품·혜택 관리</b>에서 만들어요. 연결 상품과 대상 조건이 맞는 사은품이 자동으로 올라오고, 여기서는 <b>노출 여부와 순서</b>만 정해요.</span></div>
+          <div class="row" style="margin-bottom:10px">
+            <b style="font-weight:700">적용 사은품</b><span style="color:var(--acc);font-size:12px" id="gCnt"></span>
+            <button class="btn sm" id="gLink" style="margin-left:auto">사은품 연결</button>
+            <button class="btn sm" id="gMgr">사은품·혜택 관리 ↗</button>
+          </div>
+          <div id="gList"></div>
+          <div class="fr" style="margin-top:14px"><div class="fl">사은품 증정 배지</div><div class="fc">
+            <div class="row" style="gap:20px"><label class="rd"><input type="radio" name="gBadge" value="Y" checked>자동으로 붙이기</label><label class="rd"><input type="radio" name="gBadge" value="N">붙이지 않기</label><span id="gBadgePv"></span></div>
+            <div class="help"><span id="gBadgeHelp"></span></div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- 티다팩 -->
+      <section class="card open" id="s-td">
+        <div class="ch"><h2>티다팩</h2><span class="sp"></span><span class="pill cond">요금제 연결 시</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb">
+          <div class="info" style="margin-bottom:12px"><span class="ico">i</span><span>티다팩은 대상 요금제를 <b>12개월 약정</b>하면 1년간 매월 받는 제휴 쿠폰이에요. 쿠폰·이용권은 <b>쿠폰 관리 시스템</b>에서 만들고, 여기서는 <b>노출 여부와 순서</b>만 정해요.</span></div>
+          <div class="row" style="margin-bottom:10px">
+            <b style="font-weight:700">적용 티다팩</b><span style="color:var(--acc);font-size:12px" id="tdCnt"></span>
+            <button class="btn sm" id="tdLink" style="margin-left:auto">티다팩 연결</button>
+            <button class="btn sm" id="tdMgr">쿠폰 관리 ↗</button>
+          </div>
+          <div id="tdList"></div>
+          <div class="fr" style="margin-top:14px"><div class="fl">고객 선택</div><div class="fc"><div class="row"><span class="chip">택1</span><span class="chip">선택 안 함 허용</span><span class="chip">처음 3개 노출 · 나머지 전체보기</span></div><div class="help"><span>티다팩 공통 정책이라 이 화면에서 바꾸지 않아요</span></div></div></div>
+          <div class="fr"><div class="fl">티다팩 배지</div><div class="fc">
+            <div class="row" style="gap:20px"><label class="rd"><input type="radio" name="tdBadge" value="Y" checked>자동으로 붙이기</label><label class="rd"><input type="radio" name="tdBadge" value="N">붙이지 않기</label><span id="tdBadgePv"></span></div>
+            <div class="help"><span id="tdBadgeHelp"></span></div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- 주문 구성 방식 -->
+      <section class="card open" id="s-order" data-req="1">
+        <div class="ch"><h2>주문 구성 방식</h2><button class="sw2 on" id="ordSw" role="switch" aria-checked="true" aria-label="주문 받기"></button><span id="ordSwT" style="font-size:12px;color:var(--muted)"></span><span class="sp"></span><span class="pill req">필수</span><span class="pill st" data-st></span><button class="chev" aria-label="접기">︿</button></div>
+        <div class="cb" id="ordBody"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="foot"><div class="in2">
+  <button class="btn" id="fList">목록</button>
+  <span class="msg" id="fMsg"></span>
+  <button class="btn" id="fCancel" style="margin-left:auto">취소</button>
+  <button class="btn" id="fSave">임시저장</button>
+  <button class="btn pri" id="fReq">승인요청</button>
+</div></div>
+
+<div class="modal" id="modal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mT" tabindex="-1">
+  <header><div><b id="mT"></b><small id="mS"></small></div><button class="btn sm" id="mX" style="margin-left:auto">닫기</button></header>
+  <div class="mbody" id="mB"></div>
+  <footer id="mF"></footer>
+</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(()=>t.classList.remove('on'),2200); }
+
+/* ---------- 데이터 ---------- */
+const EPC=[
+ {id:'000101',v:'v1.2',n:'iPhone 18 Pro Max / 256GB / 화이트',code:'EPC-003375',k:'기기',t:'단말',dc:3,on:true},
+ {id:'000102',v:'v1.2',n:'iPhone 18 Pro Max / 256GB / 블랙',code:'EPC-003374',k:'기기',t:'단말',dc:3,on:true},
+ {id:'000103',v:'v1.2',n:'iPhone 18 Pro Max / 256GB / 버건디',code:'EPC-003376',k:'기기',t:'단말',dc:3,on:true},
+ {id:'000104',v:'v1.2',n:'iPhone 18 Pro Max / 512GB / 화이트',code:'EPC-003377',k:'기기',t:'단말',dc:1,on:true},
+ {id:'000201',v:'v2.0',n:'5G 프리미엄',code:'EPC-P0001',k:'요금제',t:'요금제',dc:5,on:true},
+ {id:'000202',v:'v1.0',n:'5G 스탠다드',code:'EPC-P0002',k:'요금제',t:'요금제',dc:4,on:true},
+ {id:'000301',v:'v1.1',n:'T 올케어+6 스위치 i파손',code:'EPC-A0101',k:'부가서비스',t:'보험',dc:2,on:true},
+ {id:'000401',v:'v1.0',n:'T 우주패스 올인원',code:'EPC-S0001',k:'구독',t:'구독',dc:2,on:false},
+ {id:'000501',v:'v1.0',n:'넷플릭스 프리미엄 제휴 이용권',code:'EPC-C0001',k:'제휴',t:'제휴',dc:1,on:true}
+];
+const S={
+  dtype:'sale', prods:[0,1,2,4], smode:'fixed',
+  badges:[{t:'장기고객혜택',c:'#3b2bd6',s:'f'}], bCur:-1,
+  ptype:'기기서비스', rep:0,
+  mainImg:false, subImgs:0, chs:new Set(['통합 App','통합 Web']),
+  descMode:'html',
+  extra:[
+    {id:1,t:'디바이스 정보',mode:'bind',src:'EPC',sv:'v2.0',body:'모델 A3105 · 256GB · 5G · eSIM 지원',show:true},
+    {id:2,t:'연관 상품',mode:'bind',src:'EPC',sv:'v2.0',body:'함께 가입 가능: T 올케어+6, V 컬러링',show:true},
+    {id:3,t:'유의사항',mode:'bind',src:'템플릿',sv:'v3',body:'개통 후 14일 이내 단순 변심 철회가 가능해요. 약정 할인 반환금이 발생할 수 있어요.',show:true,stale:true},
+    {id:4,t:'마케팅 정보',mode:'direct',body:'',show:false},
+    {id:5,t:'판매자 정보',mode:'bind',src:'템플릿',sv:'v1',body:'상호 SK텔레콤(주) · 사업자등록번호 104-81-37225',show:true},
+    {id:6,t:'약관',mode:'bind',src:'템플릿',sv:'v5',body:'이동전화 서비스 이용약관 전문',show:true}
+  ], exCur:3, exSeq:7,
+  join:[
+    {k:'신규가입',d:'SKT에 새로운 번호로 가입해요',on:true},
+    {k:'번호이동',d:'지금 번호 그대로 다른 통신사에서 SKT로 이동해요',on:true},
+    {k:'기기변경',d:'지금 번호 그대로 기기만 바꿔요',on:true}
+  ],
+  ship:[
+    {k:'바로도착',d:'오늘 주문하면 3시간 안에 받아요',c:'서울·경기 일부 지역 · 오후 4시 전 주문',on:true},
+    {k:'행복배송',d:'원하는 날짜·장소로 찾아가 개통까지 도와드려요',c:'전국 · 방문 예약 필수',on:true},
+    {k:'일반배송',d:'택배로 1~2일 안에 받아요',c:'전국',on:true},
+    {k:'바로픽업',d:'가까운 매장에서 바로 받아요',c:'픽업 매장 재고 기준',on:false}
+  ],
+  order:{on:true,conn:null,act:'notify',btn:'출시 알림 받기',note:'',auto:false,autoAt:'',go:'DSP-0005'}
+};
+// 가입 유형별 할부 설정 (기본 선택 없음)
+const mkInst=a=>a.map(([k,on])=>({k,on}));
+S.instBy={
+  '신규가입':mkInst([['24개월',1],['30개월',1],['일시불',1],['12개월',1],['36개월',1],['48개월',0],['6개월',0],['18개월',0]]),
+  '번호이동':mkInst([['24개월',1],['30개월',1],['36개월',1],['48개월',1],['일시불',1],['12개월',1],['6개월',0],['18개월',0]]),
+  '기기변경':mkInst([['24개월',1],['일시불',1],['36개월',1],['12개월',1],['30개월',0],['48개월',0],['6개월',0],['18개월',0]])
+};
+S.instTop={'신규가입':3,'번호이동':4,'기기변경':2};
+S.instCur='번호이동';
+const DSP_POOL=[
+ {code:'DSP-0005',n:'아이폰 18 Pro Max 모아보기'},
+ {code:'DSP-0011',n:'가을 프로모션 기획전'},
+ {code:'DSP-0014',n:'5G 요금제 모아보기'}
+];
+const CH=['전체','통합 App','통합 Web','T-Gate','스마트플래너','BSS'];
+const APP_CH=['통합 App','통합 Web'];
+const PTYPES=[
+ {k:'기기서비스',d:'휴대폰 · 태블릿 · 웨어러블',kind:'기기',need:['join','inst','ship'],ord:'기기 주문',items:['가입 유형','할부','요금제','배송','본인 인증']},
+ {k:'이동전화',d:'요금제 단독 가입',kind:'요금제',need:['join'],ord:'요금제 주문',items:['가입 유형','요금제','본인 인증']},
+ {k:'부가서비스',d:'보험 · 컬러링 등',kind:'부가서비스',need:[],ord:'부가서비스 주문',items:['회선 인증','부가서비스']},
+ {k:'구독서비스',d:'우주패스 등 정기 구독',kind:'구독',need:[],ord:'구독 주문',items:['구독 상품','결제 수단']},
+ {k:'제휴서비스',d:'제휴사 상품 · 이용권',kind:'제휴',need:[],ord:'제휴 주문',items:['회선 인증','제휴 동의']}
+];
+const PT=()=>PTYPES.find(p=>p.k===S.ptype)||{k:null,need:[],ord:null,items:[]};
+const KIND_ORDER=['기기','요금제','부가서비스','구독','제휴'];
+const AREA_NM={'기기':'기기 선택','요금제':'요금제 선택','부가서비스':'부가서비스 선택','구독':'구독 상품 선택','제휴':'제휴 혜택 선택'};
+const typeOf=i=>(PTYPES.find(p=>p.kind===EPC[i].k)||{}).k;
+const COLORS=['#3b2bd6','#185FA5','#0F6E56','#D85A30','#c23b2e','#993556','#2C2C2A'];
+const SEL_INFO={
+  fixed:'연결 상품을 <b>고객이 따로 고르지 않고 모두 함께 제공</b>해요.',
+  select:'고객이 연결 상품 중에서 <b>한 단계로</b> 골라요. 목록에서 선택 또는 옵션 선택으로 설정해요.',
+  composite:'요금제 → 부가서비스처럼 <b>여러 단계로</b> 나눠 고르고, 앞 선택에 따라 다음 단계를 바꿀 수 있어요.'
+};
+const SECTIONS=[['s-type','전시 유형'],['s-prod','연결 상품'],['s-sel','고객 선택 방식'],['s-disp','전시 설정'],['s-join','가입 유형'],['s-inst','할부 설정'],['s-ship','배송 유형'],['s-basic','기본 정보'],['s-desc','상세 설명'],['s-extra','추가 정보'],['s-review','구매후기'],['s-sim','유사 상품'],['s-seo','검색 설정'],['s-cvm','오퍼링 문구'],['s-gift','사은품·혜택'],['s-td','티다팩'],['s-order','주문 구성']];
+
+/* ---------- 계산 ---------- */
+const linked=()=>S.prods.map(i=>EPC[i]);
+const isSale=()=>S.dtype==='sale';
+const appOn=()=>APP_CH.some(c=>S.chs.has(c));
+const NEED={'s-join':'join','s-inst':'inst','s-ship':'ship'};
+const needs=id=>PT().need.includes(NEED[id]);
+function sectionActive(id){
+  const el=$(id);
+  if(!isSale()&&['s-sel','s-join','s-inst','s-ship','s-order','s-td'].includes(id)) return false;
+  if(el.dataset.app&&!(appOn()&&needs(id))) return false;
+  return true;
+}
+// 주문 구성이 꺼져 있으면 채널 연동 영역은 필수에서 빠짐
+const isReq=id=>!!$(id).dataset.req&&!($(id).dataset.app&&!S.order.on);
+const joinOn=()=>S.join.filter(j=>j.on);
+// 대표 상품은 운영자가 직접 지정. 연결 해제되면 미지정으로 돌아감
+function syncRep(){ if(S.rep!=null&&!S.prods.includes(S.rep)) S.rep=null; S.ptype=S.rep==null?null:typeOf(S.rep); }
+function status(id){
+  switch(id){
+    case 's-type': return 'ok';
+    case 's-prod': return S.prods.length?'ok':'ng';
+    case 's-sel': return S.rep==null?'ng':'ok';
+    case 's-disp': return S.chs.size?'ok':'ng';
+    case 's-ship': return S.ship.some(x=>x.on)?'ok':'ng';
+    case 's-basic': { const okDate=$('dFrom').value&&($('dAlways').checked||$('dTo').value); return $('dName').value.trim()&&S.mainImg&&okDate?'ok':'ng'; }
+    case 's-desc': return descFilled()?'ok':'ng';
+    case 's-extra': return S.extra.some(e=>e.show&&(e.mode==='bind'||e.body.trim()))?(S.extra.some(e=>e.stale)?'ng':'ok'):'none';
+    case 's-seo': return document.querySelector('input[name=seo]:checked').value==='N'?'none':($('seoTitle').value.trim()?'ok':'ng');
+    case 's-cvm': return !cvmOn()?'none':([...document.querySelectorAll('#cvmList input')].some(i=>i.value.trim())?'ok':'ng');
+    case 's-review': return S.review?'on':'off';
+    case 's-sim': return !S.sim.on?'off':(S.sim.mode==='def'||(S.sim.t.trim()&&S.sim.s.trim())?'on':'ng');
+    case 's-join': return S.join.some(j=>j.on)?'ok':'ng';
+    case 's-inst': return joinOn().every(j=>S.instBy[j.k].some(x=>x.on))?'ok':'ng';
+    case 's-order': { const o=S.order; if(o.on) return o.conn?'ok':'ng'; if(o.auto&&!(o.conn&&o.autoAt)) return 'ng'; return o.act==='none'||o.btn.trim()?'ok':'ng'; }
+    case 's-td': return !S.tds.length?'none':(visibleTd().length?'ok':'none');
+    case 's-gift': { const v=visibleGifts(); return !S.gifts.length?'none':(S.gifts.some(g=>g.show&&joinWarn(GM(g.id)))?'ng':(v.length?'ok':'none')); }
+  }
+  return 'none';
+}
+function descFilled(){ if(S.descMode==='img') return !!S.descImg; const e=document.querySelector('#descBody [contenteditable]'); return e&&e.textContent.trim().length>0; }
+
+/* ---------- 공통 렌더 ---------- */
+function refreshStatus(){
+  SECTIONS.forEach(([id])=>{
+    const el=$(id), act=sectionActive(id);
+    el.classList.toggle('hide',!act);
+    const st=el.querySelector('[data-st]'); if(!st) return;
+    const s=status(id), rq=isReq(id);
+    const rp=el.querySelector('.pill.req'); if(rp) rp.style.display=rq?'':'none';
+    st.className='pill st'+(s==='ok'?' ok':s==='ng'&&rq?' ng':'');
+    st.textContent=s==='ok'?'작성 완료':s==='on'?'노출':s==='off'?'미노출':s==='ng'&&rq?'입력 필요':s==='ng'?'확인 필요':'미작성';
+    if(s==='on') st.className='pill st ok';
+  });
+  document.querySelectorAll('[data-offnote]').forEach(n=>n.innerHTML=S.order.on?'':'<div class="offnote">⏸ 주문 구성 방식이 꺼져 있어 이 단계는 고객 화면에 나오지 않아요. 설정은 그대로 남아 있다가 주문을 켜면 다시 쓰여요</div>');
+  renderChLink();
+  $('anc').innerHTML=SECTIONS.filter(([id])=>sectionActive(id)).map(([id,l])=>{ const s=status(id), r=isReq(id); return `<a href="#${id}" data-a="${id}">${l}${r?`<span class="d ${s==='ok'?'ok':''}" aria-label="${s==='ok'?'완료':'입력 필요'}"></span>`:''}</a>`; }).join('');
+  const p=linked(), rp=S.rep!=null?EPC[S.rep]:p[0], nm=p.length?(p.length>1?`${esc(rp.n.split(' / ')[0])} 외 ${p.length-1}개`:esc(rp.n)):'<span class="ph">연결 상품명</span>';
+  const sm=isSale()?`${S.ptype||'상품 유형 미정'} · ${({fixed:'고정형',select:'선택형',composite:'복합형'}[S.smode])}${S.order.on?'':' · 주문 OFF'}`:'주문 없음';
+  $('sumT').innerHTML=`${nm}<span class="sep">|</span>${sm}<span class="sep">|</span><span class="ph">상품 전시 코드 (등록 후 발급)</span>`;
+  const done=SECTIONS.filter(([id])=>sectionActive(id)&&isReq(id)), ok=done.filter(([id])=>status(id)==='ok').length;
+  $('fMsg').textContent=`필수 ${ok}/${done.length} 완료`;
+  spy();
+}
+let spyObs;
+function spy(){
+  if(spyObs) spyObs.disconnect();
+  spyObs=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ document.querySelectorAll('#anc a').forEach(a=>a.classList.toggle('on',a.dataset.a===e.target.id)); } }); },{rootMargin:'-130px 0px -65% 0px'});
+  SECTIONS.forEach(([id])=>spyObs.observe($(id)));
+}
+document.querySelectorAll('.card .ch').forEach(h=>h.addEventListener('click',e=>{ if(e.target.closest('input,select,a,.sw2')) return; const c=h.parentElement; c.classList.toggle('open'); h.querySelector('.chev').setAttribute('aria-label',c.classList.contains('open')?'접기':'펼치기'); }));
+
+/* ---------- 전시 유형 ---------- */
+document.querySelectorAll('input[name=dtype]').forEach(r=>r.onchange=()=>{ S.dtype=r.value; refreshStatus(); toast(isSale()?'주문 관련 섹션이 다시 열렸어요':'주문이 없는 전시라 고객 선택 방식과 주문 섹션을 숨겼어요'); });
+
+/* ---------- 연결 상품 ---------- */
+function renderProds(){
+  $('pCnt').textContent=`${S.prods.length}건`;
+  $('pTable').innerHTML=S.prods.length?`<div class="tw"><table class="tb" style="min-width:620px"><thead><tr><th>EPC 상품명 / 상품 코드</th><th>상품 구분</th><th>판매 상태</th><th>관리</th></tr></thead><tbody>${S.prods.map(i=>{ const p=EPC[i];
+    return `<tr><td><b style="font-weight:500">${esc(p.n)}</b><br><small style="color:var(--faint)">${p.code} · ID ${p.id} · ${p.v}</small></td><td>${p.k}</td><td><span class="sb ${p.on?'on':'off'}">${p.on?'판매중':'판매중지'}</span></td><td><div class="row" style="flex-wrap:nowrap;gap:4px"><button class="btn sm" data-pv="${i}">상세</button><button class="btn sm" data-pd="${i}">연결 해제</button></div></td></tr>`; }).join('')}</tbody></table></div>`:'<div class="empty">상품 추가를 눌러 EPC 상품을 연결하세요</div>';
+  document.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>toast(`${EPC[+b.dataset.pv].n} EPC 상세 (예시)`));
+  document.querySelectorAll('[data-pd]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.pd; S.prods=S.prods.filter(x=>x!==i); prodsChanged(); toast('연결을 해제했어요'); });
+}
+function prodsChanged(){ renderProds(); repChanged(); }
+function repChanged(){ const before=S.ptype; syncRep(); renderSel(); renderJoin(); renderOrder(); renderGifts(); renderTd(); refreshStatus(); return before!==S.ptype; }
+$('pAdd').onclick=()=>{
+  let q='', pick=new Set();
+  const draw=()=>{
+    const L=EPC.map((p,i)=>({p,i})).filter(({p})=>!q||p.n.includes(q)||p.code.includes(q.toUpperCase()));
+    $('mB').innerHTML=`<input class="in" id="pq" placeholder="상품명 · 상품 코드 검색" value="${esc(q)}"><div class="tw" style="margin-top:10px"><table class="tb" style="min-width:600px"><thead><tr><th></th><th>EPC 상품명</th><th>상품 코드</th><th>상품 구분</th><th>버전</th><th>판매 상태</th></tr></thead><tbody>${L.map(({p,i})=>{ const has=S.prods.includes(i); return `<tr><td><input type="checkbox" data-pk="${i}" ${has||pick.has(i)?'checked':''} ${has?'disabled':''} aria-label="${esc(p.n)}"></td><td>${esc(p.n)}${has?' <span class="sb off">연결됨</span>':''}</td><td>${p.code}</td><td>${p.k}</td><td>${p.v}</td><td><span class="sb ${p.on?'on':'off'}">${p.on?'판매중':'판매중지'}</span></td></tr>`; }).join('')}</tbody></table></div>`;
+    $('mF').innerHTML=`<span style="font-size:12px;color:var(--muted)">선택 ${pick.size}개</span><button class="btn" id="mc" style="margin-left:auto">취소</button><button class="btn pri" id="mo" ${pick.size?'':'disabled'}>${pick.size}개 연결</button>`;
+    const pq=$('pq'); pq.oninput=e=>{ q=e.target.value.trim(); draw(); const n=$('pq'); n.focus(); n.setSelectionRange(n.value.length,n.value.length); };
+    document.querySelectorAll('[data-pk]').forEach(c=>c.onchange=()=>{ const i=+c.dataset.pk; c.checked?pick.add(i):pick.delete(i); draw(); });
+    $('mc').onclick=closeModal;
+    $('mo').onclick=()=>{ S.prods.push(...pick); closeModal(); prodsChanged(); toast(`상품 ${pick.size}개를 연결했어요`); };
+  };
+  openModal('EPC 상품 조회','전시에 연결할 상품을 고르세요'); draw();
+};
+
+/* ---------- 고객 선택 방식 ---------- */
+function repRow(i){ const p=EPC[i], on=S.rep===i; return `<label class="rpr"><input type="radio" name="rep" value="${i}" ${on?'checked':''}><span class="nm">${esc(p.n)}${on?'<span class="me">대표</span>':''}<small>${p.code} · ${p.k}</small></span><span class="k">→ ${typeOf(i)}</span></label>`; }
+function renderRep(){
+  const guide={fixed:'함께 제공하는 상품 중 이 전시를 대표할 상품을 1개 지정해요. 대표 상품의 상품 유형이 이 전시의 상품 유형이 돼요.',
+    select:'고객이 고를 후보 중 대표 상품을 1개 지정해요. 목록 카드 · 검색 결과에 대표 상품 정보가 쓰이고, 상품 유형도 대표 상품을 따라요.',
+    composite:'구성 영역마다 상품이 나뉘어요. 대표 상품이 들어 있는 영역이 대표 영역이 되고, 대표 상품의 상품 유형이 이 전시의 상품 유형이 돼요.'}[S.smode];
+  $('repGuide').innerHTML=guide;
+  if(!S.prods.length){ $('repList').innerHTML='<div class="empty">연결 상품을 먼저 추가하세요</div>'; }
+  else if(S.smode==='composite'){
+    const kinds=KIND_ORDER.filter(k=>S.prods.some(i=>EPC[i].k===k));
+    $('repList').innerHTML=`<div class="rpl">${kinds.map((k,n)=>{ const ids=S.prods.filter(i=>EPC[i].k===k), isRepArea=ids.includes(S.rep); return `<div><div class="rpa"><b>구성 영역 ${n+1}</b> ${AREA_NM[k]} · ${ids.length}개${isRepArea?' <span class="gtag own" style="margin:0">대표 영역</span>':''}</div>${ids.map(repRow).join('')}</div>`; }).join('')}</div><div class="help"><span>영역은 상품 구분 기준으로 미리 나눠 보여줘요. 영역 구성 · 제공 조건은 복합형 상세 화면에서 정해요 (이 프로토타입에서는 생략)</span></div>`;
+  } else $('repList').innerHTML=`<div class="rpl">${S.prods.map(repRow).join('')}</div>`;
+  document.querySelectorAll('input[name=rep]').forEach(r=>r.onchange=()=>{ S.rep=+r.value; const ch=repChanged(); toast(ch?`상품 유형이 ${S.ptype}(으)로 바뀌었어요. 주문 단계와 채널 추가 영역도 함께 바뀌어요`:`대표 상품을 바꿨어요 (상품 유형 ${S.ptype} 유지)`); });
+  if(S.rep==null){ $('ptRes').innerHTML=`<span class="f">${S.prods.length?'대표 상품을 지정하면 자동으로 정해져요':'연결 상품을 추가한 뒤 대표 상품을 지정하세요'}</span>`; $('ptHelp').textContent=''; return; }
+  const n=PT().need, lb={join:'가입 유형',inst:'할부 설정',ship:'배송 유형'};
+  $('ptRes').innerHTML=`<span class="v">${S.ptype}</span><span class="f">대표 상품 <b style="color:var(--text);font-weight:500">${esc(EPC[S.rep].n)}</b>의 EPC 상품 구분(${EPC[S.rep].k}) 기준 · 직접 바꿀 수 없어요</span>`;
+  $('ptHelp').textContent=`주문 구성안 종류: ${PT().ord} · 통합 App · Web 추가 영역: ${n.length?n.map(x=>lb[x]).join(' / '):'없음'}`;
+}
+function renderSel(){ renderRep(); $('selInfo').innerHTML=`<span class="ico">i</span><span>${SEL_INFO[S.smode]}<br><span style="color:var(--muted);font-size:12px">세부 설정은 고객 선택 방식 화면에서 정해요 (이 프로토타입에서는 생략)</span></span>`; }
+document.querySelectorAll('input[name=smode]').forEach(r=>r.onchange=()=>{ S.smode=r.value; renderSel(); refreshStatus(); toast('구성 방식이 바뀌어도 대표 상품은 그대로 유지돼요'); });
+
+/* ---------- 기본 정보 ---------- */
+$('dName').oninput=e=>{ $('dNameC').textContent=`${e.target.value.length}/40`; refreshStatus(); };
+function renderBadges(){
+  const AB=autoBadges(), maxB=3-AB.length;
+  const st=b=>b.s==='f'?`background:${b.c};color:#fff;border-color:${b.c}`:`background:transparent;color:${b.c};border-color:${b.c}`;
+  $('badges').innerHTML=AB.map(b=>`<span class="bd" style="background:${b.c};color:#fff;border-color:${b.c};cursor:default;padding:0 12px" title="${b.from} 섹션 설정으로 자동 표시">${b.t} <small style="opacity:.8;font-weight:400">자동</small></span>`).join('')+S.badges.map((b,i)=>`<span class="bd ${i===S.bCur?'sel':''}" data-b="${i}" style="${st(b)}" role="button" tabindex="0">${esc(b.t)}<button class="x" data-bx="${i}" aria-label="${esc(b.t)} 삭제">×</button></span>`).join('')+(S.badges.length<maxB?'<button class="addb" id="bAdd" aria-label="배지 추가">+</button>':'');
+  document.querySelectorAll('[data-b]').forEach(e=>e.onclick=ev=>{ if(ev.target.closest('[data-bx]')) return; S.bCur=+e.dataset.b; S.bDraft={...S.badges[S.bCur]}; renderBadges(); });
+  document.querySelectorAll('[data-bx]').forEach(e=>e.onclick=()=>{ S.badges.splice(+e.dataset.bx,1); S.bCur=-1; renderGifts(); });
+  const a=$('bAdd'); if(a) a.onclick=()=>{ S.bCur=S.badges.length; S.bDraft={t:'',c:COLORS[S.badges.length%COLORS.length],s:'f'}; renderBadges(); $('bT').focus(); };
+  if(S.bCur<0){ $('badgeEd').innerHTML=''; return; }
+  const d=S.bDraft, isNew=S.bCur>=S.badges.length;
+  $('badgeEd').innerHTML=`<div class="bed"><div class="row" style="margin-bottom:10px"><span style="width:44px;font-size:12px;color:var(--muted)">문구</span><input class="in" id="bT" maxlength="10" value="${esc(d.t)}" placeholder="장기고객혜택" style="flex:1"><span style="font-size:11px;color:var(--faint)">${d.t.length}/10</span></div>
+  <div class="row" style="margin-bottom:10px"><span style="width:44px;font-size:12px;color:var(--muted)">색상</span>${COLORS.map(c=>`<span class="sw ${d.c===c?'on':''}" data-c="${c}" style="background:${c}" role="button" tabindex="0" aria-label="색상 ${c}">${d.c===c?'✓':''}</span>`).join('')}</div>
+  <div class="row" style="margin-bottom:10px"><span style="width:44px;font-size:12px;color:var(--muted)">스타일</span><label class="rd"><input type="radio" name="bs" value="f" ${d.s==='f'?'checked':''}>채움</label><label class="rd"><input type="radio" name="bs" value="l" ${d.s==='l'?'checked':''}>라인</label><span style="margin-left:12px" class="bd" style="cursor:default"></span><span id="bPv"></span></div>
+  <div class="er" id="bErr" hidden></div>
+  <div class="row" style="justify-content:flex-end"><button class="btn sm" id="bC">취소</button><button class="btn sm pri" id="bO">${isNew?'추가':'적용'}</button></div></div>`;
+  const pv=()=>{ $('bPv').innerHTML=`<span class="bd" style="${st(d)};cursor:default;padding:0 12px">${esc(d.t||'배지 문구')}</span>`; };
+  pv();
+  $('bT').oninput=e=>{ d.t=e.target.value; e.target.nextElementSibling.textContent=`${d.t.length}/10`; $('bErr').hidden=true; pv(); };
+  document.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{ d.c=s.dataset.c; document.querySelectorAll('.sw').forEach(x=>{ x.classList.toggle('on',x===s); x.textContent=x===s?'✓':''; }); pv(); });
+  document.querySelectorAll('input[name=bs]').forEach(r=>r.onchange=()=>{ d.s=r.value; pv(); });
+  $('bC').onclick=()=>{ S.bCur=-1; renderBadges(); };
+  $('bO').onclick=()=>{ const t=d.t.trim(); const e=$('bErr'); if(!t){ e.textContent='배지 문구를 입력하세요'; e.hidden=false; return; } if(S.badges.some((b,i)=>b.t===t&&i!==S.bCur)){ e.textContent='같은 문구의 배지가 이미 있어요'; e.hidden=false; return; } d.t=t; if(isNew) S.badges.push({...d}); else S.badges[S.bCur]={...d}; S.bCur=-1; renderGifts(); };
+}
+function imgBox(has,label,onAdd,onRm,size){ return {has,label,onAdd,onRm,size}; }
+function renderImgs(){
+  $('mainImg').innerHTML=S.mainImg?`<span class="img has" style="width:120px;height:120px">대표 이미지<button class="rm" id="miRm" aria-label="삭제">×</button></span>`:`<button class="img" id="miAdd" style="width:120px;height:120px" aria-label="대표 이미지 등록">+</button>`;
+  if($('miAdd')) $('miAdd').onclick=()=>{ S.mainImg=true; renderImgs(); refreshStatus(); };
+  if($('miRm')) $('miRm').onclick=()=>{ S.mainImg=false; renderImgs(); refreshStatus(); };
+  let h=''; for(let i=0;i<S.subImgs;i++) h+=`<span class="img has">이미지 ${i+1}<button class="rm" data-sr="${i}" aria-label="삭제">×</button></span>`;
+  if(S.subImgs<4) h+=`<button class="img" id="siAdd" aria-label="추가 이미지 등록">+</button>`;
+  $('subImgs').innerHTML=h; $('subImgC').textContent=`(${S.subImgs}/4)`;
+  if($('siAdd')) $('siAdd').onclick=()=>{ S.subImgs++; renderImgs(); };
+  document.querySelectorAll('[data-sr]').forEach(b=>b.onclick=()=>{ S.subImgs--; renderImgs(); });
+  $('seoImg').innerHTML=S.seoImg?`<span class="img has">메타 이미지<button class="rm" id="seoRm" aria-label="삭제">×</button></span>`:`<button class="img" id="seoAdd" aria-label="메타 이미지 등록" ${seoOn()?'':'disabled'}>+</button>`;
+  if($('seoAdd')) $('seoAdd').onclick=()=>{ S.seoImg=true; renderImgs(); };
+  if($('seoRm')) $('seoRm').onclick=()=>{ S.seoImg=false; renderImgs(); };
+}
+function renderChs(){
+  $('chs').innerHTML=CH.map(c=>{ const all=c==='전체', on=all?S.chs.size===CH.length-1:S.chs.has(c); return `<label class="ck"><input type="checkbox" data-ch="${c}" ${on?'checked':''}>${c}</label>`; }).join('');
+  document.querySelectorAll('[data-ch]').forEach(c=>c.onchange=()=>{
+    const k=c.dataset.ch, before=appOn();
+    if(k==='전체'){ S.chs=c.checked?new Set(CH.slice(1)):new Set(); } else c.checked?S.chs.add(k):S.chs.delete(k);
+    renderChs(); renderGifts(); refreshStatus();
+    const lb=PT().need.map(x=>({join:'가입 유형',inst:'할부 설정',ship:'배송 유형'}[x])).join(' · ');
+    if(!before&&appOn()&&lb) toast(`${lb} 영역이 전시 설정 아래에 생겼어요`);
+    if(before&&!appOn()&&lb) toast(`통합 App · Web이 빠져서 ${lb} 영역을 숨겼어요. 설정 값은 남아 있어요`);
+  });
+  const cur=$('pvCh').value;
+  $('pvCh').innerHTML=[...S.chs].map(c=>`<option ${c===cur?'selected':''}>${c} 화면</option>`).join('')||'<option>채널 미선택</option>';
+}
+const CH_LB={join:['s-join','가입 유형'],inst:['s-inst','할부 설정'],ship:['s-ship','배송 유형']};
+function chipText(k){
+  if(k==='join'){ const o=joinOn(); return `${o.length}개`; }
+  if(k==='inst') return joinOn().map(j=>`${({'신규가입':'신규','번호이동':'번이','기기변경':'기변'})[j.k]||j.k} ${S.instBy[j.k].filter(x=>x.on).length}`).join(' · ');
+  if(k==='ship') return `${S.ship.filter(x=>x.on).length}개`;
+}
+function chNotes(p){ if(!S.ptype) return ['고객 선택 방식에서 대표 상품을 지정하면 추가 영역이 정해져요']; const n=[], miss=['join','inst','ship'].filter(k=>!p.need.includes(k)); if(p.need.includes('inst')) n.push('할부는 가입 유형마다 따로 정해요'); if(miss.length) n.push(`${S.ptype}는 ${miss.map(k=>CH_LB[k][1]).join(' · ')} 단계가 없어요`); if(!S.order.on) n.push('주문 구성 OFF라 고객 화면에는 나오지 않아요'); return n; }
+function renderChLink(){
+  const p=PT(), app=appOn(), sel=APP_CH.filter(c=>S.chs.has(c));
+  const etc=CH.slice(1).filter(c=>!APP_CH.includes(c));
+  const etcSel=etc.filter(c=>S.chs.has(c));
+  let r1;
+  if(!isSale()) r1='<span style="font-size:12px;color:var(--faint)">주문 없는 전시라 추가 영역이 없어요</span>';
+  else if(!app) r1='<span style="font-size:12px;color:var(--muted)">통합 App이나 통합 Web을 고르면 <b style="font-weight:500">가입 유형 · 할부 설정 · 배송 유형</b> 영역이 바로 아래에 생겨요</span>';
+  else if(!S.ptype) r1='<span style="font-size:12px;color:var(--muted)">고객 선택 방식에서 대표 상품을 지정하면 가입 유형 · 할부 설정 · 배송 유형 중 쓸 영역이 정해져요</span>';
+  else r1=['join','inst','ship'].map(k=>{ const [id,l]=CH_LB[k]; if(!p.need.includes(k)) return `<span class="jump na">${l} · 해당 없음</span>`; const ok=status(id)==='ok'; return `<a class="jump" href="#${id}"><i class="${ok?'ok':''}"></i>${l} <small style="color:var(--muted)">${chipText(k)}</small></a>`; }).join('')+
+    `<div style="font-size:12px;color:var(--muted)">${chNotes(p).join(' · ')}</div>`;
+  $('chLink').innerHTML=`<div class="r ${app?'':'off'}"><div class="nm">${sel.length?sel.join(' · '):'통합 App · Web'}<small>${app?'주문 단계 설정 연결됨':'선택 안 함'}</small></div><div>${r1}</div></div>
+  <div class="r ${etcSel.length?'':'off'}"><div class="nm">${etcSel.length?etcSel.join(' · '):etc.join(' · ')}<small>${etcSel.length?'상품 정보 · 혜택 전달':'선택 안 함'}</small></div><div style="font-size:12px;color:var(--muted)">가입 · 할부 · 배송은 각 채널의 상담 · 판매 화면 기준을 따라서 이 화면에서 추가로 정할 항목이 없어요</div></div>`;
+}
+function checkDates(){
+  const e=$('dErr'), al=$('dAlways').checked;
+  $('dTo').disabled=$('dToT').disabled=al;
+  const f=$('dFrom').value+'T'+$('dFromT').value, t=$('dTo').value+'T'+$('dToT').value;
+  if(!al&&$('dFrom').value&&$('dTo').value&&t<=f){ e.textContent='종료일시는 시작일시보다 뒤여야 해요'; e.hidden=false; } else e.hidden=true;
+  refreshStatus();
+}
+['dFrom','dFromT','dTo','dToT','dAlways'].forEach(id=>$(id).addEventListener('change',checkDates));
+$('epcLoad').onclick=()=>{
+  const P=linked(); if(!P.length){ toast('먼저 상품을 연결하세요'); return; }
+  let pick={name:'keep'};
+  const draw=()=>{
+    $('mB').innerHTML=`<div style="font-size:13px;font-weight:500;margin-bottom:8px">전시명 <small style="color:var(--faint);font-weight:400">EPC 상품명</small></div>
+    <label class="rd box" style="display:flex;margin-bottom:6px;${pick.name==='keep'?'border-color:var(--acc)':''}"><input type="radio" name="en" value="keep" ${pick.name==='keep'?'checked':''}><span style="width:110px;color:var(--muted);font-size:12px">지금 값 유지</span><span>${esc($('dName').value)||'<span style="color:var(--faint)">미입력</span>'}</span></label>
+    ${P.map((p,i)=>`<label class="rd box" style="display:flex;margin-bottom:6px;${pick.name===String(i)?'border-color:var(--acc)':''}"><input type="radio" name="en" value="${i}" ${pick.name===String(i)?'checked':''}><span style="width:110px;color:var(--muted);font-size:12px">${p.code}</span><span>${esc(p.n.split(' / ')[0])}</span></label>`).join('')}
+    <div class="help"><span>대표 이미지·공통 설명도 같은 방식으로 불러와요 (이 프로토타입에서는 전시명만)</span></div>`;
+    $('mF').innerHTML=`<button class="btn" id="mc" style="margin-left:auto">취소</button><button class="btn pri" id="mo" ${pick.name==='keep'?'disabled':''}>적용</button>`;
+    document.querySelectorAll('input[name=en]').forEach(r=>r.onchange=()=>{ pick.name=r.value; draw(); });
+    $('mc').onclick=closeModal;
+    $('mo').onclick=()=>{ $('dName').value=P[+pick.name].n.split(' / ')[0]; $('dName').dispatchEvent(new Event('input')); closeModal(); toast('전시명을 EPC 값으로 바꿨어요'); };
+  };
+  openModal('EPC 상품 정보 가져오기','항목마다 쓸 값을 고르세요'); draw();
+};
+
+/* ---------- 상세 설명 ---------- */
+function renderDesc(){
+  if(S.descMode==='img'){
+    $('descBody').innerHTML=S.descImg?`<div class="row"><span class="img has" style="width:160px;height:200px">상세 이미지<button class="rm" id="diRm" aria-label="삭제">×</button></span></div>`:`<button class="up" id="diAdd" style="width:100%;background:var(--card)">+ 상세 이미지 올리기<br><small>가로 860px 권장 · 여러 장 가능</small></button>`;
+    if($('diAdd')) $('diAdd').onclick=()=>{ S.descImg=true; renderDesc(); refreshStatus(); };
+    if($('diRm')) $('diRm').onclick=()=>{ S.descImg=false; renderDesc(); refreshStatus(); };
+  } else {
+    $('descBody').innerHTML=`<div class="ed"><div class="tbar">${['B','I','U','A','≡','☰','•','“','🔗','▣','☺','⟲','⟳'].map(x=>`<button type="button" aria-label="${x}">${x}</button>`).join('')}</div><div contenteditable="true" aria-label="상세 설명 본문"></div></div>`;
+    document.querySelector('#descBody [contenteditable]').addEventListener('input',refreshStatus);
+  }
+}
+document.querySelectorAll('input[name=dMode]').forEach(r=>r.onchange=()=>{ S.descMode=r.value; renderDesc(); refreshStatus(); });
+
+/* ---------- 추가 정보 ---------- */
+function exBadge(e){ if(e.mode==='bind') return e.stale?'<span class="src w">원본 변경됨</span>':`<span class="src b">${e.src} 연결</span>`; return e.body.trim()?'<span class="src d">직접 입력</span>':'<span class="src w">미입력</span>'; }
+function renderExtra(){
+  $('exList').innerHTML=S.extra.map((e,i)=>`<div class="mi ${e.id===S.exCur?'on':''} ${e.show?'':'off'}" data-e="${e.id}"><div class="ar"><button data-eu="${i}" ${i===0?'disabled':''} aria-label="위로">▲</button><button data-ed="${i}" ${i===S.extra.length-1?'disabled':''} aria-label="아래로">▼</button></div><div class="nm"><b>${esc(e.t)||'제목 없음'}</b>${exBadge(e)}</div><button class="tg ${e.show?'on':''}" data-et="${e.id}" aria-label="${esc(e.t)} 노출" aria-pressed="${e.show}"></button></div>`).join('')||'<div class="empty">콘텐츠를 추가하세요</div>';
+  document.querySelectorAll('[data-e]').forEach(el=>el.onclick=ev=>{ if(ev.target.closest('.ar,.tg')) return; S.exCur=+el.dataset.e; renderExtra(); });
+  document.querySelectorAll('[data-et]').forEach(b=>b.onclick=()=>{ const e=S.extra.find(x=>x.id===+b.dataset.et); e.show=!e.show; renderExtra(); refreshStatus(); });
+  document.querySelectorAll('[data-eu]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.eu; [S.extra[i-1],S.extra[i]]=[S.extra[i],S.extra[i-1]]; renderExtra(); });
+  document.querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.ed; [S.extra[i+1],S.extra[i]]=[S.extra[i],S.extra[i+1]]; renderExtra(); });
+  const e=S.extra.find(x=>x.id===S.exCur);
+  if(!e){ $('exDetail').innerHTML='<div class="empty">왼쪽에서 콘텐츠를 고르세요</div>'; return; }
+  let body;
+  if(e.mode==='bind') body=`${e.stale?`<div class="box w" style="margin-bottom:10px">원본이 새 버전으로 바뀌었어요. 반영하면 고객 화면도 바뀌어요<button class="btn sm" id="exSync" style="margin-left:auto">최신으로 반영</button></div>`:''}
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">연결된 원본 <span class="src b">${e.src}</span> ${e.sv}</div><div class="box">${esc(e.body)}</div>
+    <div class="help"><span>원본에서만 고칠 수 있어요. 이 전시에서만 다르게 쓰려면 <a href="#" id="exDetach">연결 끊고 직접 입력</a></span></div>`;
+  else body=`<textarea class="in" id="exTx" rows="5" placeholder="고객에게 보여줄 내용을 입력하세요">${esc(e.body)}</textarea>${e.body.trim()?'':'<div class="er">내용이 비어 있으면 노출을 켜도 고객 화면에 나오지 않아요</div>'}`;
+  $('exDetail').innerHTML=`<div class="row" style="margin-bottom:12px;flex-wrap:nowrap"><input class="in" id="exT" value="${esc(e.t)}" placeholder="콘텐츠 제목" style="font-weight:500"><button class="btn sm" id="exDel">삭제</button></div>${body}`;
+  $('exT').oninput=ev=>{ e.t=ev.target.value; $('exList').querySelector(`[data-e="${e.id}"] b`).textContent=e.t||'제목 없음'; };
+  $('exDel').onclick=()=>{ const i=S.extra.indexOf(e); S.extra.splice(i,1); S.exCur=(S.extra[i]||S.extra[i-1]||{}).id; renderExtra(); refreshStatus(); };
+  if($('exSync')) $('exSync').onclick=()=>{ e.stale=false; renderExtra(); refreshStatus(); toast('최신 내용을 반영했어요'); };
+  if($('exDetach')) $('exDetach').onclick=ev=>{ ev.preventDefault(); e.mode='direct'; delete e.stale; renderExtra(); refreshStatus(); };
+  if($('exTx')){ $('exTx').oninput=ev=>{ e.body=ev.target.value; }; $('exTx').onchange=()=>{ renderExtra(); refreshStatus(); }; }
+}
+$('exAdd').onclick=()=>{ const e={id:S.exSeq++,t:'',mode:'direct',body:'',show:true}; S.extra.push(e); S.exCur=e.id; renderExtra(); $('exT').focus(); };
+$('tplLoad').onclick=()=>{
+  const T=[['TPL-0001','휴대폰 이용안내','이용안내','v1','상품 수령 후 구성품과 외관을 확인해 주세요'],['TPL-0002','구매 전 유의사항','유의사항','v1','개통 후 14일 이내 철회 가능'],['TPL-0005','요금제 FAQ','자주 묻는 질문','v2','Q. 요금제 변경은 언제 반영되나요?']];
+  let sel=new Set(), mode='bind';
+  const draw=()=>{
+    $('mB').innerHTML=`${T.map(t=>`<label class="box" style="display:flex;gap:10px;align-items:flex-start;margin-bottom:6px;cursor:pointer;${sel.has(t[0])?'border-color:var(--acc)':''}"><input type="checkbox" data-tp="${t[0]}" ${sel.has(t[0])?'checked':''} style="accent-color:var(--acc);margin-top:3px"><span style="flex:1"><b style="font-weight:500">${t[1]}</b> <span class="src d">${t[2]}</span><br><small style="color:var(--muted)">${t[0]} · ${t[3]} · ${t[4]}</small></span></label>`).join('')}
+    <div style="font-size:12px;color:var(--muted);margin:12px 0 6px">가져오는 방식</div><div class="row" style="gap:16px"><label class="rd"><input type="radio" name="tm" value="bind" ${mode==='bind'?'checked':''}>연결해서 사용 (템플릿 변경 시 같이 바뀜)</label><label class="rd"><input type="radio" name="tm" value="copy" ${mode==='copy'?'checked':''}>복사해서 사용 (이 전시에서 고쳐 씀)</label></div>`;
+    $('mF').innerHTML=`<span style="font-size:12px;color:var(--muted)">선택 ${sel.size}개 · 추가 정보 목록 끝에 붙어요</span><button class="btn" id="mc" style="margin-left:auto">취소</button><button class="btn pri" id="mo" ${sel.size?'':'disabled'}>${sel.size}개 추가</button>`;
+    document.querySelectorAll('[data-tp]').forEach(c=>c.onchange=()=>{ c.checked?sel.add(c.dataset.tp):sel.delete(c.dataset.tp); draw(); });
+    document.querySelectorAll('input[name=tm]').forEach(r=>r.onchange=()=>{ mode=r.value; });
+    $('mc').onclick=closeModal;
+    $('mo').onclick=()=>{ T.filter(t=>sel.has(t[0])).forEach(t=>S.extra.push({id:S.exSeq++,t:t[2],mode:mode==='bind'?'bind':'direct',src:'템플릿',sv:t[3],body:t[4],show:true})); S.exCur=S.extra[S.extra.length-1].id; closeModal(); renderExtra(); refreshStatus(); toast(`템플릿 ${sel.size}개를 추가했어요`); };
+  };
+  openModal('템플릿 불러오기','추가 정보에 넣을 템플릿을 고르세요'); draw();
+};
+
+/* ---------- 구매후기 · 유사 상품 ---------- */
+S.review=true;
+S.sim={on:true,mode:'custom',t:'방금 보신 상품과 유사한 상품',s:'동일한 조건으로 비교한 다른 기기도 확인해보세요'};
+const SIM_DEF={t:'이런 상품은 어떠세요?',s:'비슷한 조건의 상품을 모아봤어요'};
+function setSw(btn,on){ btn.classList.toggle('on',on); btn.setAttribute('aria-checked',on); }
+function renderReview(){
+  setSw($('rvSw'),S.review); $('s-review').classList.toggle('off',!S.review);
+  $('rvBody').innerHTML='<div>연결 상품의 구매후기가 이 영역에 자동으로 노출돼요<br><small>평점 · 후기 수 · 최근 후기 순 (데이터는 리뷰 시스템 기준)</small></div>';
+  refreshStatus();
+}
+function renderSim(){
+  const m=S.sim;
+  setSw($('smSw'),m.on); $('s-sim').classList.toggle('off',!m.on);
+  $('smMode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===m.mode));
+  const t=m.mode==='def'?SIM_DEF.t:m.t, sb=m.mode==='def'?SIM_DEF.s:m.s;
+  $('smT').value=t; $('smS').value=sb; $('smT').disabled=$('smS').disabled=m.mode==='def';
+  $('smTC').textContent=`${t.length}/30`; $('smSC').textContent=`${sb.length}/30`;
+  $('smPT').textContent=t||'타이틀을 입력하세요'; $('smPS').textContent=sb||'소타이틀을 입력하세요';
+  refreshStatus();
+}
+$('rvSw').onclick=()=>{ S.review=!S.review; renderReview(); toast(S.review?'구매후기를 노출해요':'구매후기를 숨겼어요'); };
+$('smSw').onclick=()=>{ S.sim.on=!S.sim.on; renderSim(); toast(S.sim.on?'유사한 상품을 노출해요':'유사한 상품을 숨겼어요'); };
+$('smMode').querySelectorAll('button').forEach(b=>b.onclick=()=>{ S.sim.mode=b.dataset.m; renderSim(); if(S.sim.mode==='custom') $('smT').focus(); });
+$('smT').oninput=e=>{ S.sim.t=e.target.value; $('smTC').textContent=`${S.sim.t.length}/30`; $('smPT').textContent=S.sim.t||'타이틀을 입력하세요'; refreshStatus(); };
+$('smS').oninput=e=>{ S.sim.s=e.target.value; $('smSC').textContent=`${S.sim.s.length}/30`; $('smPS').textContent=S.sim.s||'소타이틀을 입력하세요'; refreshStatus(); };
+document.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{ const c=b.closest('.tcard'); c.classList.toggle('closed'); b.setAttribute('aria-label',c.classList.contains('closed')?'펼치기':'접기'); });
+
+/* ---------- SEO ---------- */
+const seoOn=()=>document.querySelector('input[name=seo]:checked').value==='Y';
+function renderSeo(){ document.querySelectorAll('[data-seo]').forEach(x=>x.disabled=!seoOn()); renderImgs(); refreshStatus(); }
+document.querySelectorAll('input[name=seo]').forEach(r=>r.onchange=renderSeo);
+$('seoTag').oninput=e=>{ const n=e.target.value.split(',').map(x=>x.trim()).filter(Boolean).length; $('seoTagC').textContent=`(${n}/10)`; $('seoTagC').style.color=n>10?'var(--bad)':''; };
+$('seoTitle').oninput=e=>{ $('seoTitleC').textContent=`(${e.target.value.length}/25)`; refreshStatus(); };
+$('seoDesc').oninput=e=>{ $('seoDescC').textContent=`(${e.target.value.length}/80)`; };
+
+/* ---------- CVM ---------- */
+S.cvmN=5;
+const cvmOn=()=>document.querySelector('input[name=cvmUse]:checked').value==='Y';
+function renderCvm(){
+  const old=[...document.querySelectorAll('#cvmList input')].map(i=>i.value);
+  $('cvmSeg').querySelectorAll('button').forEach(b=>{ b.classList.toggle('on',+b.dataset.n===S.cvmN); b.disabled=!cvmOn(); });
+  document.querySelectorAll('[data-cvm]').forEach(b=>b.disabled=!cvmOn());
+  $('cvmList').innerHTML=Array.from({length:S.cvmN},(_,i)=>`<input class="in" data-cv="${i}" value="${esc(old[i]||'')}" placeholder="제안 문구 노출 영역 ${i+1}" ${cvmOn()?'':'disabled'}>`).join('');
+  document.querySelectorAll('[data-cv]').forEach(i=>i.oninput=refreshStatus);
+  refreshStatus();
+}
+$('cvmSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{ S.cvmN=+b.dataset.n; renderCvm(); });
+document.querySelectorAll('input[name=cvmUse]').forEach(r=>r.onchange=renderCvm);
+
+/* ---------- AI 추천 (예시 값) ---------- */
+document.querySelectorAll('[data-ai]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.ai, nm=(linked()[0]||{n:'상품'}).n.split(' / ')[0];
+  if(k==='name'){ $('dName').value=nm; $('dName').dispatchEvent(new Event('input')); }
+  if(k==='img'){ S.mainImg=true; renderImgs(); }
+  if(k==='tag'){ $('seoTag').value=`${nm}, 아이폰, 5G, 자급제, T다이렉트샵`; $('seoTag').dispatchEvent(new Event('input')); }
+  if(k==='title'){ $('seoTitle').value=`${nm} 구매 · T다이렉트샵`.slice(0,25); $('seoTitle').dispatchEvent(new Event('input')); }
+  if(k==='desc'){ $('seoDesc').value=`${nm} 지금 T다이렉트샵에서 할부·배송 조건을 비교하고 주문하세요`.slice(0,80); $('seoDesc').dispatchEvent(new Event('input')); }
+  if(k==='cvm'){ const ex=['T 우주 혜택 최대 50% 할인','장기고객 전용 추가 할인','오늘 주문하면 내일 도착','24개월 무이자 할부','개통 후 14일 무료 반품']; document.querySelectorAll('#cvmList input').forEach((i,n)=>i.value=ex[n%ex.length]); refreshStatus(); }
+  toast('AI 추천 값을 넣었어요 (예시)');
+});
+
+/* ---------- 채널 연동: 가입 유형 / 할부 / 배송 ---------- */
+function orderList(box,list,opt){
+  const el=$(box);
+  let h=`<div class="or hd"><span>사용</span><span>순서</span><span>항목</span><span class="desc">${opt.desc?'고객 화면 문구':'상태'}${opt.cond?' · 운영 조건':''}</span></div>`;
+  list.forEach((x,i)=>{
+    if(opt.top&&i===opt.top) h+=`<div class="more">⌄ 여기부터 더보기 안에 들어가요</div>`;
+    h+=`<div class="or ${x.on?'':'off'}"><input type="checkbox" data-on="${i}" ${x.on?'checked':''} aria-label="${x.k} 사용" style="accent-color:var(--acc);width:16px;height:16px"><div class="ar on-only"><button data-u="${i}" ${i===0?'disabled':''} aria-label="위로">▲</button><button data-d="${i}" ${i===list.length-1?'disabled':''} aria-label="아래로">▼</button></div><div class="on-only"><div class="nm">${x.k}</div></div><div class="desc on-only">${opt.desc?`<input class="in" data-ds="${i}" value="${esc(x.d)}" ${x.on?'':'disabled'} aria-label="${x.k} 고객 문구">`:`<span class="sub">${x.on?'노출':'사용 안 함'}</span>`}${opt.cond?`<div class="sub" style="margin-top:3px">조건: ${esc(x.c)}</div>`:''}</div></div>`;
+  });
+  el.innerHTML=h;
+  el.querySelectorAll('[data-on]').forEach(c=>c.onchange=()=>{ const x=list[+c.dataset.on]; if(!c.checked&&list.filter(y=>y.on).length===1){ c.checked=true; toast('최소 1개는 사용해야 해요'); return; } x.on=c.checked; opt.render(); refreshStatus(); });
+  el.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.u; [list[i-1],list[i]]=[list[i],list[i-1]]; opt.render(); refreshStatus(); });
+  el.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.d; [list[i+1],list[i]]=[list[i],list[i+1]]; opt.render(); refreshStatus(); });
+  el.querySelectorAll('[data-ds]').forEach(t=>t.oninput=()=>{ list[+t.dataset.ds].d=t.value; });
+}
+function renderJoin(){
+  if(S.gifts&&$('gList')&&S.gifts.length) setTimeout(renderGifts);
+  orderList('joinList',S.join,{desc:true,render:()=>{ renderJoin(); renderInst(); }});
+  const on=joinOn();
+  $('joinSum').innerHTML=`고객 화면: <b>${on.map(x=>x.k).join(' / ')}</b> 순서로 ${on.length}개 노출${needs('s-inst')?' · 할부 설정 탭도 이 순서를 따라요':''}`;
+  renderInst();
+}
+function instCut(list,top){ let cnt=0, cut=0; list.forEach((x,i)=>{ if(x.on){ cnt++; if(cnt===top+1&&!cut) cut=i; } }); return cut; }
+function renderInst(){
+  const on=joinOn();
+  if(!on.some(j=>j.k===S.instCur)) S.instCur=(on[0]||{}).k;
+  const cur=S.instCur, list=S.instBy[cur];
+  $('instTabs').innerHTML=S.join.map(j=>`<button role="tab" data-it="${j.k}" class="${j.k===cur?'on':''}" aria-selected="${j.k===cur}" ${j.on?'':'disabled title="가입 유형에서 꺼져 있어요"'}>${j.k}<small>${j.on?S.instBy[j.k].filter(x=>x.on).length+'개':'사용 안 함'}</small></button>`).join('');
+  document.querySelectorAll('[data-it]').forEach(b=>b.onclick=()=>{ S.instCur=b.dataset.it; renderInst(); });
+  $('instTop').value=S.instTop[cur];
+  const others=on.filter(j=>j.k!==cur);
+  $('instCopyFrom').innerHTML=others.map(j=>`<option value="${j.k}">${j.k}에서</option>`).join('')||'<option>복사할 유형 없음</option>';
+  $('instCopyFrom').disabled=$('instCopy').disabled=!others.length;
+  const top=S.instTop[cur], onL=list.filter(x=>x.on);
+  orderList('instList',list,{top:onL.length>top?instCut(list,top):0,render:renderInst});
+  $('instSum').innerHTML=on.map(j=>{ const L=S.instBy[j.k].filter(x=>x.on).map(x=>x.k), t=S.instTop[j.k], f=L.slice(0,t), r=L.slice(t); return `<div>${j.k===cur?'▸ ':''}<b>${j.k}</b> : ${f.join(', ')}${r.length?` → 더보기 → ${r.join(', ')}`:''}</div>`; }).join('');
+}
+$('instTop').onchange=()=>{ S.instTop[S.instCur]=Math.max(1,parseInt($('instTop').value)||3); renderInst(); };
+$('instCopy').onclick=()=>{ const from=$('instCopyFrom').value; if(!S.instBy[from]) return; S.instBy[S.instCur]=S.instBy[from].map(x=>({...x})); S.instTop[S.instCur]=S.instTop[from]; renderInst(); refreshStatus(); toast(`${from} 할부 설정을 ${S.instCur}에 복사했어요`); };
+function renderShip(){
+  orderList('shipList',S.ship,{desc:true,cond:true,render:renderShip});
+  const on=S.ship.filter(x=>x.on);
+  $('shipSum').innerHTML=`고객 화면: <b>${on.map(x=>x.k).join(' / ')}</b> 순서로 ${on.length}개 노출 · 조건이 안 맞는 고객에게는 해당 배송 유형이 비활성으로 보여요`;
+}
+
+/* ---------- 사은품·혜택 ---------- */
+const TODAY='2026-10-16';
+const GIFT=[
+ {id:'GFT-0101',n:'AirTag 1개',ic:'📍',mode:'고정 지급',own:false,cond:{model:'iPhone 18 Pro Max',join:['번호이동']},from:'2026-10-01',to:'2026-11-30',total:1000,left:412,ship:'개통 후 7일 이내 발송'},
+ {id:'GFT-0102',n:'맥세이프 케이스 · 충전기 중 택1',ic:'🔌',mode:'고객 택1',own:false,cond:{model:'iPhone 18 Pro Max'},from:'2026-10-10',to:'2026-10-31',total:500,left:38,ship:'개통 시 동봉'},
+ {id:'GFT-0103',n:'T 우주 3개월 이용권',ic:'🎟',mode:'고정 지급',own:false,cond:{code:'EPC-P0001'},from:'2026-10-01',to:'2026-12-31',total:null,left:null,ship:'개통 다음 날 쿠폰 발급'},
+ {id:'GFT-0104',n:'스타벅스 아메리카노 기프티콘',ic:'☕',mode:'고정 지급',own:false,cond:{model:'iPhone 18 Pro Max'},from:'2026-09-01',to:'2026-10-31',total:300,left:0,ship:'개통 다음 날 문자 발송'},
+ {id:'GFT-0105',n:'갤럭시 버즈3',ic:'🎧',mode:'고정 지급',own:false,cond:{model:'갤럭시 Z 플립8'},from:'2026-10-01',to:'2026-11-30',total:800,left:640,ship:'개통 후 7일 이내 발송'},
+ {id:'GFT-0201',n:'가을 기획전 한정 무선충전 거치대',ic:'🍂',mode:'고정 지급',own:true,cond:{note:'기획전 전용'},from:'2026-10-15',to:'2026-11-15',total:300,left:300,ship:'개통 시 동봉'},
+ {id:'GFT-0202',n:'사전예약 감사 굿즈 세트',ic:'🎁',mode:'고객 택1',own:true,cond:{note:'기획전 전용'},from:'2026-11-01',to:'2026-11-10',total:200,left:200,ship:'개통 후 14일 이내 발송'},
+ {id:'GFT-0203',n:'신세계 상품권 1만원',ic:'💳',mode:'고정 지급',own:true,cond:{note:'기획전 전용'},from:'2026-08-01',to:'2026-09-30',total:500,left:120,ship:'개통 다음 달 발송'}
+];
+const GM=id=>GIFT.find(g=>g.id===id);
+S.gifts=[]; S.giftBadge=true;
+const modelOf=p=>p.n.split(' / ')[0];
+function matches(g){ if(g.own) return false; const L=linked(); if(g.cond.model) return L.some(p=>modelOf(p)===g.cond.model); if(g.cond.code) return L.some(p=>p.code===g.cond.code); return false; }
+function giftState(g){
+  if(g.left===0) return {k:'out',t:'소진',auto:true};
+  if(g.to<TODAY) return {k:'end',t:'기간 종료',auto:true};
+  if(g.from>TODAY) return {k:'wait',t:`${g.from.slice(5).replace('-','/')} 시작`,auto:false};
+  const low=g.total&&g.left/g.total<0.1, soon=(new Date(g.to)-new Date(TODAY))/864e5<=14;
+  return {k:'on',t:'진행 중',warn:low?'남은 수량 10% 미만':soon?'종료 2주 이내':''};
+}
+function joinWarn(g){ if(!g.cond.join||!sectionActive('s-join')) return ''; const on=S.join.filter(j=>j.on).map(j=>j.k); const miss=g.cond.join.filter(j=>!on.includes(j)); return miss.length===g.cond.join.length?`대상 가입 유형(${g.cond.join.join(', ')})이 이 전시에서 꺼져 있어 고객에게 나오지 않아요`:''; }
+function condText(g){ if(g.own) return '<span class="gtag own">전시 전용</span> 이 전시에만 적용'; const c=[]; if(g.cond.model) c.push(g.cond.model); if(g.cond.code){ const p=EPC.find(x=>x.code===g.cond.code); c.push(p?p.n:g.cond.code); } if(g.cond.join) c.push(g.cond.join.join('·')); return c.join(' · '); }
+function syncGifts(){
+  const keep=S.gifts.filter(x=>x.src==='own'||matches(GM(x.id)));
+  const removed=S.gifts.length-keep.length;
+  GIFT.filter(g=>matches(g)&&!keep.some(x=>x.id===g.id)).forEach(g=>{ const st=giftState(g); keep.push({id:g.id,src:'auto',show:!st.auto}); });
+  S.gifts=keep; return removed;
+}
+const visibleGifts=()=>S.gifts.filter(x=>{ const g=GM(x.id), st=giftState(g); return x.show&&!st.auto&&!joinWarn(g); });
+function autoBadges(){ const a=[]; if(S.giftBadge&&visibleGifts().length) a.push({k:'gift',t:'🎁 사은품 증정',c:'#0F6E56',from:'사은품·혜택'}); if(S.tdBadge&&typeof visibleTd==='function'&&visibleTd().length) a.push({k:'td',t:'티다팩 혜택',c:'#D85A30',from:'티다팩'}); return a.slice(0,Math.max(0,3-S.badges.length)); }
+const giftBadgeOn=()=>autoBadges().some(b=>b.k==='gift');
+function renderGifts(){
+  syncGifts();
+  $('gCnt').textContent=`${S.gifts.length}개 · 노출 ${visibleGifts().length}개`;
+  if(!S.gifts.length){ $('gList').innerHTML=`<div class="empty">연결 상품에 맞는 사은품이 없어요.<br><small>기획전 전용 사은품은 <b>사은품 연결</b>로 붙일 수 있어요</small></div>`; }
+  else {
+    $('gList').innerHTML=`<div class="gl2"><div class="gr hd"><span>순서</span><span></span><span>사은품</span><span>대상 조건</span><span>기간</span><span>남은 수량 · 지급</span><span style="text-align:center">노출</span></div>${S.gifts.map((x,i)=>{
+      const g=GM(x.id), st=giftState(g), jw=joinWarn(g), dim=!x.show||st.auto;
+      const qty=g.total==null?`<div class="qty">제한 없음</div>`:`<div class="qty ${g.left===0?'out':st.warn==='남은 수량 10% 미만'?'low':''}">${g.left.toLocaleString()} / ${g.total.toLocaleString()}개<div class="bar"><i style="width:${Math.round(g.left/g.total*100)}%"></i></div></div>`;
+      const stTag=st.k==='out'?'<span class="gtag end">소진 · 자동 미노출</span>':st.k==='end'?'<span class="gtag end">기간 종료 · 자동 미노출</span>':st.k==='wait'?`<span class="gtag wait">${st.t}</span>`:st.warn?`<span class="gtag st">${st.warn}</span>`:'';
+      return `<div class="gr ${dim?'dim':''}"><div class="ar"><button data-gu="${i}" ${i===0?'disabled':''} aria-label="위로">▲</button><button data-gd="${i}" ${i===S.gifts.length-1?'disabled':''} aria-label="아래로">▼</button></div>
+        <span class="gth" aria-hidden="true">${g.ic}</span>
+        <div class="nm"><b>${esc(g.n)}${x.src==='own'?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</b><small>${g.id} · ${g.mode}</small>${stTag?'<div>'+stTag+'</div>':''}${jw?`<div class="gwarn">${jw}</div>`:''}</div>
+        <div class="cd">${condText(g)}</div>
+        <div class="cd pd2">${g.from.replace(/-/g,'.')} ~<br>${g.to.replace(/-/g,'.')}</div>
+        <div class="qw">${qty}<small style="font-size:11px;color:var(--faint)">${esc(g.ship)}</small></div>
+        <div class="tgw"><button class="tg ${x.show&&!st.auto?'on':''}" data-gt="${i}" aria-label="${esc(g.n)} 노출" aria-pressed="${x.show&&!st.auto}" ${st.auto?'disabled title="소진·종료된 사은품은 켤 수 없어요"':''}></button>${x.src==='own'?`<button class="lnk" data-gx="${i}">연결 해제</button>`:''}</div></div>`;
+    }).join('')}</div>
+    <div class="help"><span>소진·기간 종료된 사은품은 자동으로 미노출돼요. 시작 전 사은품은 노출을 켜두면 시작일에 자동으로 나와요</span></div>`;
+  }
+  document.querySelectorAll('[data-gu]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.gu; [S.gifts[i-1],S.gifts[i]]=[S.gifts[i],S.gifts[i-1]]; renderGifts(); });
+  document.querySelectorAll('[data-gd]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.gd; [S.gifts[i+1],S.gifts[i]]=[S.gifts[i],S.gifts[i+1]]; renderGifts(); });
+  document.querySelectorAll('[data-gt]').forEach(b=>b.onclick=()=>{ const x=S.gifts[+b.dataset.gt]; x.show=!x.show; renderGifts(); });
+  document.querySelectorAll('[data-gx]').forEach(b=>b.onclick=()=>{ const x=S.gifts[+b.dataset.gx]; S.gifts.splice(+b.dataset.gx,1); renderGifts(); toast(`${GM(x.id).n} 연결을 해제했어요`); });
+  const n=visibleGifts().length, full=!giftBadgeOn();
+  $('gBadgePv').innerHTML=S.giftBadge?'<span class="bd" style="background:#0F6E56;color:#fff;border-color:#0F6E56;cursor:default;padding:0 12px">🎁 사은품 증정</span>':'';
+  $('gBadgeHelp').innerHTML=!S.giftBadge?'배지를 붙이지 않아요':!n?'노출 중인 사은품이 없어 지금은 배지가 붙지 않아요':full?'<span style="color:var(--warn)">배지 3개 한도가 차서 자동 배지가 붙지 않아요. 기본 정보에서 배지 1개를 지우세요</span>':'노출 중인 사은품이 있을 때만 붙어요. 기본 정보의 배지 3개 한도에 포함돼요';
+  if(typeof renderBadges==='function'&&$('badges')) renderBadges();
+  if(typeof renderTdBadge==='function') renderTdBadge();
+  refreshStatus();
+}
+document.querySelectorAll('input[name=gBadge]').forEach(r=>r.onchange=()=>{ S.giftBadge=r.value==='Y'; renderGifts(); });
+$('gMgr').onclick=()=>toast('사은품·혜택 관리 화면으로 이동 (예시)');
+$('gLink').onclick=()=>{
+  let q='', pick=new Set();
+  const draw=()=>{
+    const L=GIFT.filter(g=>!q||g.n.includes(q)||g.id.includes(q.toUpperCase()));
+    $('mB').innerHTML=`<input class="in" id="gq" placeholder="사은품명 · 코드 검색" value="${esc(q)}"><div class="tw" style="margin-top:10px"><table class="tb" style="min-width:640px"><thead><tr><th></th><th>사은품</th><th>구분</th><th>지급 방식</th><th>기간</th><th>남은 수량</th></tr></thead><tbody>${L.map(g=>{ const has=S.gifts.some(x=>x.id===g.id), st=giftState(g), dis=has||st.auto; return `<tr><td><input type="checkbox" data-gp="${g.id}" ${has||pick.has(g.id)?'checked':''} ${dis?'disabled':''} aria-label="${esc(g.n)}"></td><td>${g.ic} ${esc(g.n)}<br><small style="color:var(--faint)">${g.id}</small>${has?' <span class="sb off">적용 중</span>':''}</td><td>${g.own?'<span class="gtag own" style="margin:0">전시 전용</span>':'<span class="gtag auto" style="margin:0">조건 매칭</span>'}</td><td>${g.mode}</td><td>${g.from.slice(5)} ~ ${g.to.slice(5)}${st.auto?` <span class="gtag end" style="margin:0">${st.t}</span>`:st.k==='wait'?` <span class="gtag wait" style="margin:0">시작 전</span>`:''}</td><td>${g.total==null?'제한 없음':g.left.toLocaleString()+'개'}</td></tr>`; }).join('')}</tbody></table></div>
+    <div class="help"><span>사은품은 사은품·혜택 관리에서 만든 것만 고를 수 있어요. 조건 매칭 사은품은 대상 상품을 연결하면 자동으로 들어와요</span></div>`;
+    $('mF').innerHTML=`<span style="font-size:12px;color:var(--muted)">선택 ${pick.size}개</span><button class="btn" id="mc" style="margin-left:auto">취소</button><button class="btn pri" id="mo" ${pick.size?'':'disabled'}>${pick.size}개 연결</button>`;
+    $('gq').oninput=e=>{ q=e.target.value.trim(); draw(); const n=$('gq'); n.focus(); n.setSelectionRange(n.value.length,n.value.length); };
+    document.querySelectorAll('[data-gp]').forEach(c=>c.onchange=()=>{ c.checked?pick.add(c.dataset.gp):pick.delete(c.dataset.gp); draw(); });
+    $('mc').onclick=closeModal;
+    $('mo').onclick=()=>{ pick.forEach(id=>S.gifts.push({id,src:'own',show:true})); closeModal(); renderGifts(); toast(`사은품 ${pick.size}개를 연결했어요`); };
+  };
+  openModal('사은품 연결','이 전시에 붙일 사은품을 기준정보에서 고르세요'); draw();
+};
+
+/* ---------- 티다팩 ---------- */
+const TD=[
+ {id:'TDP-0001',brand:'다이소',logo:'daiso',lc:'#e60012',benefit:'매월 10,000원 할인 쿠폰',tag:'AI PICK',cycle:'매월 1회 · 12회',valid:'발급일부터 30일',use:'1만원 이상 결제 시',issue:'T 멤버십 앱 쿠폰함',cond:{code:'EPC-P0001',term:12},from:'2026-10-01',to:'2026-12-31',cap:5000,left:3120,own:false},
+ {id:'TDP-0002',brand:'무신사 머니',logo:'MUSINSA',lc:'#000000',benefit:'매월 10,000원 적립',tag:'추천',cycle:'매월 1회 · 12회',valid:'적립일부터 60일',use:'무신사 앱 결제 시',issue:'무신사 계정 연동',cond:{code:'EPC-P0001',term:12},from:'2026-10-01',to:'2027-03-31',cap:null,left:null,own:false},
+ {id:'TDP-0003',brand:'올리브영',logo:'O',lc:'#8dc63f',benefit:'매월 10,000원 할인 쿠폰',tag:'추천',cycle:'매월 1회 · 12회',valid:'발급일부터 30일',use:'2만원 이상 결제 시',issue:'CJ ONE 앱 쿠폰함',cond:{code:'EPC-P0001',term:12},from:'2026-10-01',to:'2026-12-31',cap:3000,left:240,own:false},
+ {id:'TDP-0004',brand:'CGV',logo:'CGV',lc:'#c4161c',benefit:'매월 영화 1편 관람권',tag:'',cycle:'매월 1회 · 12회',valid:'발급일부터 30일',use:'2D 일반관 한정',issue:'문자 발송',cond:{code:'EPC-P0001',term:12},from:'2026-11-01',to:'2027-04-30',cap:2000,left:2000,own:false},
+ {id:'TDP-0005',brand:'배달의민족',logo:'배민',lc:'#2ac1bc',benefit:'매월 5,000원 할인 쿠폰',tag:'',cycle:'매월 1회 · 12회',valid:'발급일부터 14일',use:'1.5만원 이상 주문 시',issue:'배민 앱 쿠폰함',cond:{code:'EPC-P0001',term:12},from:'2026-04-01',to:'2026-09-30',cap:4000,left:900,own:false},
+ {id:'TDP-0006',brand:'투썸플레이스',logo:'TWOSOME',lc:'#c8102e',benefit:'매월 음료 1잔',tag:'',cycle:'매월 1회 · 12회',valid:'발급일부터 30일',use:'아메리카노 R 기준',issue:'문자 발송',cond:{code:'EPC-P0002',term:12},from:'2026-10-01',to:'2026-12-31',cap:null,left:null,own:false},
+ {id:'TDP-0101',brand:'GS25',logo:'GS25',lc:'#0a8fd6',benefit:'기획전 한정 매월 3,000원 쿠폰',tag:'',cycle:'매월 1회 · 12회',valid:'발급일부터 30일',use:'5천원 이상 결제 시',issue:'우리동네GS 앱',cond:{note:'기획전 전용'},from:'2026-10-15',to:'2026-11-30',cap:1000,left:1000,own:true}
+];
+const TM=id=>TD.find(t=>t.id===id);
+S.tds=[]; S.tdBadge=true;
+function tdMatch(t){ if(t.own) return false; return linked().some(p=>p.code===t.cond.code); }
+function syncTd(){ const keep=S.tds.filter(x=>x.src==='own'||tdMatch(TM(x.id))); TD.filter(t=>tdMatch(t)&&!keep.some(x=>x.id===t.id)).forEach(t=>keep.push({id:t.id,src:'auto',show:!giftState({left:t.left,to:t.to,from:t.from,total:t.cap}).auto})); S.tds=keep; }
+const tdState=t=>giftState({left:t.left,to:t.to,from:t.from,total:t.cap});
+const visibleTd=()=>S.tds.filter(x=>x.show&&!tdState(TM(x.id)).auto);
+function renderTdBadge(){
+  const n=visibleTd().length, on=autoBadges().some(b=>b.k==='td');
+  $('tdBadgePv').innerHTML=S.tdBadge?'<span class="bd" style="background:#D85A30;color:#fff;border-color:#D85A30;cursor:default;padding:0 12px">티다팩 혜택</span>':'';
+  $('tdBadgeHelp').innerHTML=!S.tdBadge?'배지를 붙이지 않아요':!n?'노출 중인 티다팩이 없어 지금은 배지가 붙지 않아요':!on?'<span style="color:var(--warn)">배지 3개 한도가 차서 자동 배지가 붙지 않아요. 기본 정보에서 배지를 정리하세요</span>':'노출 중인 티다팩이 있을 때만 붙어요. 배지 3개 한도에 포함돼요';
+}
+function renderTd(){
+  syncTd();
+  const vis=visibleTd();
+  $('tdCnt').textContent=`${S.tds.length}개 · 노출 ${vis.length}개`;
+  if(!S.tds.length){ $('tdList').innerHTML=`<div class="empty">연결 상품에 티다팩 대상 요금제가 없어요.<br><small>대상 요금제를 연결하면 자동으로 올라와요. 기획전 전용 쿠폰은 <b>티다팩 연결</b>로 붙일 수 있어요</small></div>`; }
+  else {
+    let shown=0, cut=-1;
+    S.tds.forEach((x,i)=>{ if(x.show&&!tdState(TM(x.id)).auto){ shown++; if(shown===4&&cut<0) cut=i; } });
+    $('tdList').innerHTML=`<div class="gl2"><div class="tr2 hd"><span>순서</span><span></span><span>쿠폰</span><span>대상 조건</span><span>발급 · 사용 조건</span><span>제공 기간 · 발급 한도</span><span style="text-align:center">노출</span></div>${S.tds.map((x,i)=>{
+      const t=TM(x.id), st=tdState(t), dim=!x.show||st.auto;
+      const lim=t.cap==null?'한도 없음':`잔여 ${t.left.toLocaleString()} / ${t.cap.toLocaleString()}명`;
+      const stTag=st.k==='out'?'<span class="gtag end" style="margin:0">한도 소진 · 자동 미노출</span>':st.k==='end'?'<span class="gtag end" style="margin:0">제휴 종료 · 자동 미노출</span>':st.k==='wait'?`<span class="gtag wait" style="margin:0">${st.t}</span>`:st.warn?`<span class="gtag st" style="margin:0">${st.warn.replace('남은 수량','발급 한도')}</span>`:'';
+      const plan=EPC.find(p=>p.code===t.cond.code);
+      return `${i===cut?'<div class="tdmore">⌄ 여기부터 고객 화면 전체보기 안에 들어가요</div>':''}<div class="tr2 ${dim?'dim':''}"><div class="ar"><button data-tu="${i}" ${i===0?'disabled':''} aria-label="위로">▲</button><button data-tdn="${i}" ${i===S.tds.length-1?'disabled':''} aria-label="아래로">▼</button></div>
+        <span class="logo" style="background:${t.lc}" aria-hidden="true">${esc(t.logo)}</span>
+        <div class="nm"><b>${t.tag?`<span class="rtag">${t.tag}</span>`:''}${esc(t.brand)}${x.src==='own'?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</b><small>${esc(t.benefit)} · ${t.id}</small>${stTag?'<div>'+stTag+'</div>':''}</div>
+        <div class="cd">${t.own?'<span class="gtag own" style="margin:0">전시 전용</span> 이 전시에만 적용':`${esc(plan?plan.n:t.cond.code)}<br><small>${t.cond.term}개월 약정</small>`}</div>
+        <div class="cd">${esc(t.cycle)}<br><small>유효 ${esc(t.valid)} · ${esc(t.use)} · ${esc(t.issue)}</small></div>
+        <div class="cd">${t.from.replace(/-/g,'.')} ~ ${t.to.replace(/-/g,'.')}<br><small>${lim}</small></div>
+        <div class="tgw"><button class="tg ${x.show&&!st.auto?'on':''}" data-tt="${i}" aria-label="${esc(t.brand)} 노출" aria-pressed="${x.show&&!st.auto}" ${st.auto?'disabled title="종료·소진된 쿠폰은 켤 수 없어요"':''}></button>${x.src==='own'?`<button class="lnk" data-tx="${i}">연결 해제</button>`:''}</div></div>`;
+    }).join('')}<div style="padding:10px 12px;color:var(--muted);font-size:12px;background:var(--sub)">고객 화면 맨 아래에 <b style="color:var(--text);font-weight:500">"티다팩 없이 주문 진행"</b>이 항상 붙어요</div></div>
+    <div class="help"><span>추천 태그(AI PICK·추천)는 쿠폰 관리 시스템 값이에요. 제휴가 끝나거나 발급 한도가 소진되면 자동으로 미노출돼요</span></div>`;
+  }
+  document.querySelectorAll('[data-tu]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.tu; [S.tds[i-1],S.tds[i]]=[S.tds[i],S.tds[i-1]]; renderTd(); });
+  document.querySelectorAll('[data-tdn]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.tdn; [S.tds[i+1],S.tds[i]]=[S.tds[i],S.tds[i+1]]; renderTd(); });
+  document.querySelectorAll('[data-tt]').forEach(b=>b.onclick=()=>{ const x=S.tds[+b.dataset.tt]; x.show=!x.show; renderTd(); });
+  document.querySelectorAll('[data-tx]').forEach(b=>b.onclick=()=>{ const x=S.tds[+b.dataset.tx]; S.tds.splice(+b.dataset.tx,1); renderTd(); toast(`${TM(x.id).brand} 연결을 해제했어요`); });
+  renderTdBadge();
+  if($('badges')) renderBadges();
+  if(typeof renderGifts==='function'&&$('gBadgeHelp')){ const n=visibleGifts().length, full=!giftBadgeOn(); $('gBadgeHelp').innerHTML=!S.giftBadge?'배지를 붙이지 않아요':!n?'노출 중인 사은품이 없어 지금은 배지가 붙지 않아요':full?'<span style="color:var(--warn)">배지 3개 한도가 차서 자동 배지가 붙지 않아요. 기본 정보에서 배지 1개를 지우세요</span>':'노출 중인 사은품이 있을 때만 붙어요. 기본 정보의 배지 3개 한도에 포함돼요'; }
+  refreshStatus();
+}
+document.querySelectorAll('input[name=tdBadge]').forEach(r=>r.onchange=()=>{ S.tdBadge=r.value==='Y'; renderTd(); });
+$('tdMgr').onclick=()=>toast('쿠폰 관리 시스템으로 이동 (예시)');
+$('tdLink').onclick=()=>{
+  let q='', pick=new Set();
+  const draw=()=>{
+    const L=TD.filter(t=>!q||t.brand.includes(q)||t.id.includes(q.toUpperCase()));
+    $('mB').innerHTML=`<input class="in" id="tq" placeholder="제휴사 · 쿠폰 코드 검색" value="${esc(q)}"><div class="tw" style="margin-top:10px"><table class="tb" style="min-width:640px"><thead><tr><th></th><th>쿠폰</th><th>구분</th><th>대상</th><th>제공 기간</th><th>발급 한도</th></tr></thead><tbody>${L.map(t=>{ const has=S.tds.some(x=>x.id===t.id), st=tdState(t), dis=has||st.auto; const plan=EPC.find(p=>p.code===t.cond.code); return `<tr><td><input type="checkbox" data-tp2="${t.id}" ${has||pick.has(t.id)?'checked':''} ${dis?'disabled':''} aria-label="${esc(t.brand)}"></td><td><b style="font-weight:500">${esc(t.brand)}</b> · ${esc(t.benefit)}<br><small style="color:var(--faint)">${t.id}</small>${has?' <span class="sb off">적용 중</span>':''}</td><td>${t.own?'<span class="gtag own" style="margin:0">전시 전용</span>':'<span class="gtag auto" style="margin:0">조건 매칭</span>'}</td><td>${t.own?'기획전':esc(plan?plan.n:t.cond.code)+' · '+t.cond.term+'개월'}</td><td>${t.from.slice(5)} ~ ${t.to.slice(2)}${st.auto?` <span class="gtag end" style="margin:0">${st.k==='end'?'종료':'소진'}</span>`:st.k==='wait'?' <span class="gtag wait" style="margin:0">시작 전</span>':''}</td><td>${t.cap==null?'없음':t.left.toLocaleString()+'명'}</td></tr>`; }).join('')}</tbody></table></div>
+    <div class="help"><span>쿠폰 관리 시스템에 등록된 티다팩만 고를 수 있어요. 조건 매칭 쿠폰은 대상 요금제를 연결하면 자동으로 들어와요</span></div>`;
+    $('mF').innerHTML=`<span style="font-size:12px;color:var(--muted)">선택 ${pick.size}개</span><button class="btn" id="mc" style="margin-left:auto">취소</button><button class="btn pri" id="mo" ${pick.size?'':'disabled'}>${pick.size}개 연결</button>`;
+    $('tq').oninput=e=>{ q=e.target.value.trim(); draw(); const n=$('tq'); n.focus(); n.setSelectionRange(n.value.length,n.value.length); };
+    document.querySelectorAll('[data-tp2]').forEach(c=>c.onchange=()=>{ c.checked?pick.add(c.dataset.tp2):pick.delete(c.dataset.tp2); draw(); });
+    $('mc').onclick=closeModal;
+    $('mo').onclick=()=>{ pick.forEach(id=>S.tds.push({id,src:'own',show:true})); closeModal(); renderTd(); toast(`티다팩 ${pick.size}개를 연결했어요`); };
+  };
+  openModal('티다팩 연결','이 전시에 붙일 쿠폰을 쿠폰 관리 시스템에서 고르세요'); draw();
+};
+
+/* ---------- 주문 구성 ---------- */
+const OFF_ACT=[
+ {k:'notify',t:'출시 · 입고 알림 신청',d:'신청자에게 주문 시작 시 문자를 보내요',btn:'출시 알림 받기'},
+ {k:'consult',t:'상담 신청',d:'상담 예약 화면으로 연결해요',btn:'상담 신청하기'},
+ {k:'link',t:'다른 전시로 이동',d:'고른 전시 상품으로 보내요',btn:'다른 상품 보러가기'},
+ {k:'none',t:'버튼 없음',d:'안내 문구만 보여요',btn:''}
+];
+function connBox(kind){
+  const c=S.order.conn;
+  return `<div class="oc"><div class="nm"><small>사용할 주문 구성안 <span style="color:var(--bad)">*</span></small><b>${c?esc(c.n):'<span style="color:var(--faint);font-weight:500">연결된 구성안이 없습니다</span>'}</b>${c?`<span class="code">${c.code} · ${c.v} · ${kind}</span>`:'<small>사용할 주문 구성안을 선택해 주세요</small>'}</div><button class="btn sm" id="ocPick">구성안 선택</button><button class="btn sm" id="ocNew">구성안 만들기</button>${c?'<button class="btn sm" id="ocRm">해제</button>':''}</div>`;
+}
+function bindConn(kind){
+  $('ocPick').onclick=()=>{
+    const L=kind==='기기 주문'?[{n:'휴대폰 / 기기 단계형',code:'CTN-ORD-001',v:'v2.1'},{n:'휴대폰 / 간편 주문형',code:'CTN-ORD-004',v:'v1.0'}]:kind==='요금제 주문'?[{n:'요금제 / 단계형',code:'CTN-ORD-002',v:'v1.3'}]:kind==='구독 주문'?[{n:'구독 / 간편 결제형',code:'CTN-ORD-006',v:'v1.0'}]:[{n:'부가서비스 / 단계형',code:'CTN-ORD-003',v:'v1.0'}];
+    let p=0;
+    const draw=()=>{ $('mB').innerHTML=L.map((x,i)=>`<label class="box" style="display:flex;gap:10px;margin-bottom:6px;cursor:pointer;${p===i?'border-color:var(--acc)':''}"><input type="radio" name="oc" ${p===i?'checked':''} data-oc="${i}" style="accent-color:var(--acc)"><span><b style="font-weight:500">${x.n}</b><br><small style="color:var(--muted)">${x.code} · ${x.v} · ${kind}</small></span></label>`).join('');
+      $('mF').innerHTML=`<button class="btn" id="mc" style="margin-left:auto">취소</button><button class="btn pri" id="mo">연결</button>`;
+      document.querySelectorAll('[data-oc]').forEach(r=>r.onchange=()=>{ p=+r.dataset.oc; draw(); });
+      $('mc').onclick=closeModal; $('mo').onclick=()=>{ S.order.conn=L[p]; closeModal(); renderOrder(); refreshStatus(); toast('주문 구성안을 연결했어요'); }; };
+    openModal('주문 구성안 선택',`${kind}에 쓸 수 있는 구성안이에요`); draw();
+  };
+  $('ocNew').onclick=()=>toast('주문 구성 관리 화면으로 이동 (예시)');
+  if($('ocRm')) $('ocRm').onclick=()=>{ S.order.conn=null; renderOrder(); refreshStatus(); };
+}
+function renderOrder(){
+  const o=S.order, p=PT(), kind=p.ord;
+  setSw($('ordSw'),o.on); $('ordSw').setAttribute('aria-label',o.on?'주문 받기 켜짐':'주문 받기 꺼짐');
+  $('ordSwT').textContent=o.on?'주문 받는 중':'주문 받지 않음';
+  const here={'가입 유형':'s-join','할부':'s-inst','배송':'s-ship'};
+  const items=p.items.map(x=>here[x]&&sectionActive(here[x])?`<a class="chip" href="#${here[x]}" style="text-decoration:none;color:var(--acc);border-color:var(--acc-line)">${x} · 이 화면에서 설정</a>`:`<span class="chip">${x}</span>`).join('');
+  if(o.on&&!S.ptype){
+    $('ordBody').innerHTML=`<div class="info"><span class="ico">i</span><span>고객 선택 방식에서 <a href="#s-sel">대표 상품</a>을 지정하면 상품 유형과 주문 구성안 종류가 정해져요.</span></div>`;
+    $('pvNote').textContent='● 주문 단계는 주문 구성안을 따라요'; $('pvCta').textContent='옵션 선택하기'; $('pvCta').style.opacity=1;
+    return;
+  }
+  if(o.on){
+    $('ordBody').innerHTML=`<div class="info"><span class="ico">i</span><span><b>${kind}</b> · 상품 유형 ${S.ptype} 기준<br>주문 구성 수와 필수 항목이 상품 유형으로 정해져요. 주문 구성안을 연결해야 승인 요청을 할 수 있어요.</span></div>
+    <div class="row" style="margin-top:12px"><span style="font-size:13px;color:var(--muted)">필요한 주문 항목</span>${items}</div>${connBox(kind)}`;
+    bindConn(kind);
+    $('pvNote').textContent='● 주문 단계는 주문 구성안을 따라요'; $('pvCta').textContent='옵션 선택하기'; $('pvCta').style.opacity=1;
+    return;
+  }
+  const A=OFF_ACT.find(x=>x.k===o.act);
+  $('ordBody').innerHTML=`<div class="info"><span class="ico">i</span><span>주문을 받지 않는 동안 고객 화면의 <b>주문 버튼이 아래 버튼으로 바뀌어요.</b> 출시 전 사전 안내, 일시 품절, 판매 재개 대기 같은 경우에 써요. 전시 자체를 숨기려면 기본 정보의 <b>전시 여부</b>를 N으로 바꾸세요.</span></div>
+  <div class="ordoff"><div>
+    <div class="fr"><div class="fl">대체 버튼</div><div class="fc"><div class="acts">${OFF_ACT.map(x=>`<label><input type="radio" name="oact" value="${x.k}" ${o.act===x.k?'checked':''}><span>${x.t}<small>${x.d}</small></span></label>`).join('')}</div></div></div>
+    ${o.act!=='none'?`<div class="fr"><div class="fl">버튼 문구<span class="rq">*</span></div><div class="fc"><input class="in" id="oBtn" maxlength="14" value="${esc(o.btn)}" placeholder="${esc(A.btn)}"><div class="help"><span></span><span id="oBtnC">${o.btn.length}/14</span></div></div></div>`:''}
+    ${o.act==='link'?`<div class="fr"><div class="fl">이동할 전시</div><div class="fc"><select class="sel" id="oGo" style="width:100%">${DSP_POOL.map(d=>`<option value="${d.code}" ${o.go===d.code?'selected':''}>${esc(d.n)} · ${d.code}</option>`).join('')}</select></div></div>`:''}
+    <div class="fr"><div class="fl">안내 문구</div><div class="fc"><input class="in" id="oNote" maxlength="30" value="${esc(o.note)}" placeholder="예: 10월 31일 오전 10시 주문 시작"><div class="help"><span>버튼 위에 작게 보여요</span><span id="oNoteC">${o.note.length}/30</span></div></div></div>
+    <div class="fr"><div class="fl">주문 자동 시작</div><div class="fc"><div class="row"><label class="ck"><input type="checkbox" id="oAuto" ${o.auto?'checked':''}>정한 시각에 주문을 켜요</label><input class="in" type="datetime-local" id="oAt" value="${o.autoAt}" style="width:220px" ${o.auto?'':'disabled'}></div>
+      ${o.auto?(kind?`<div class="help"><span>자동으로 켜지려면 주문 구성안을 미리 연결해 두어야 해요</span></div>${connBox(kind)}`:'<div class="help"><span>대표 상품을 먼저 지정해야 주문 구성안을 연결할 수 있어요</span></div>'):''}</div></div>
+  </div>
+  <div class="cpv" aria-label="고객 화면 하단 미리보기"><div class="lb">고객 화면 하단</div><div class="nt" id="cpvN"></div><div class="bt" id="cpvB"></div><div class="lb" style="margin:10px 0 0">가입 유형 · 할부 · 배송 단계는 나오지 않아요</div></div></div>`;
+  const pv=()=>{ const t=o.act==='none'?'':(o.btn||A.btn); $('cpvN').textContent=o.note?'● '+o.note:''; $('cpvB').textContent=o.act==='none'?'버튼 없음':t; $('cpvB').className='bt'+(o.act==='none'?' no':''); $('pvNote').textContent=o.note?'● '+o.note:'● 지금은 주문을 받지 않아요'; $('pvCta').textContent=o.act==='none'?'버튼 없음':t; $('pvCta').style.opacity=o.act==='none'?.4:1; };
+  pv();
+  document.querySelectorAll('input[name=oact]').forEach(r=>r.onchange=()=>{ const prev=OFF_ACT.find(x=>x.k===o.act); o.act=r.value; if(!o.btn||o.btn===prev.btn) o.btn=OFF_ACT.find(x=>x.k===o.act).btn; renderOrder(); refreshStatus(); });
+  if($('oBtn')) $('oBtn').oninput=e=>{ o.btn=e.target.value; $('oBtnC').textContent=`${o.btn.length}/14`; pv(); refreshStatus(); };
+  if($('oGo')) $('oGo').onchange=e=>{ o.go=e.target.value; };
+  $('oNote').oninput=e=>{ o.note=e.target.value; $('oNoteC').textContent=`${o.note.length}/30`; pv(); };
+  $('oAuto').onchange=e=>{ o.auto=e.target.checked; renderOrder(); refreshStatus(); };
+  $('oAt').onchange=e=>{ o.autoAt=e.target.value; refreshStatus(); };
+  if(o.auto&&kind) bindConn(kind);
+}
+$('ordSw').onclick=()=>{ S.order.on=!S.order.on; const c=$('s-order'); c.classList.add('open'); renderOrder(); refreshStatus(); toast(S.order.on?'주문을 다시 받아요. 가입 유형 · 할부 · 배송 설정이 고객 화면에 나와요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); };
+
+/* ---------- 모달 ---------- */
+let lastFocus;
+function openModal(t,s){ $('mT').textContent=t; $('mS').textContent=s||''; lastFocus=document.activeElement; $('modal').hidden=false; document.querySelector('.mbox').focus(); }
+function closeModal(){ $('modal').hidden=true; if(lastFocus) lastFocus.focus({preventScroll:true}); }
+$('mX').onclick=closeModal;
+$('modal').onclick=e=>{ if(e.target.id==='modal') closeModal(); };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('modal').hidden) closeModal(); });
+
+/* ---------- 하단 버튼 ---------- */
+$('fSave').onclick=()=>toast('임시저장했어요. 반영본은 바뀌지 않아요');
+$('fCancel').onclick=()=>toast('작성 중인 내용을 버리고 목록으로 이동 (예시)');
+$('fList').onclick=()=>toast('전시 상품 목록으로 이동 (예시)');
+$('fReq').onclick=()=>{
+  const miss=SECTIONS.filter(([id])=>sectionActive(id)&&$(id).dataset.req&&status(id)!=='ok');
+  if(miss.length){ const [id,l]=miss[0]; const c=$(id); c.classList.add('open'); c.scrollIntoView({behavior:'smooth',block:'start'}); toast(`${l} 외 ${miss.length-1}개 항목을 채워야 승인 요청할 수 있어요`.replace(' 외 0개 항목','')); return; }
+  toast('승인 요청을 보냈어요');
+};
+
+/* ---------- 초기화 ---------- */
+(function(){ const d=new Date(); const f=x=>x.toISOString().slice(0,10); $('dFrom').value=f(d); d.setMonth(d.getMonth()+1); $('dTo').value=f(d); })();
+syncRep(); renderProds(); renderSel(); renderBadges(); renderImgs(); renderChs(); renderDesc(); renderExtra(); renderSeo(); renderCvm(); renderReview(); renderSim(); renderJoin(); renderShip(); renderGifts(); renderTd(); renderOrder(); checkDates(); refreshStatus();
+</script>
+</body>
+</html>

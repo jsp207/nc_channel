@@ -26,6 +26,8 @@ export const appOn=d=>APP_CH.some(c=>d.channels.includes(c));
 export const needs=(d,k)=>d.kind==='po'&&appOn(d)&&!!ptOf(d)&&ptOf(d).need.includes(k);
 // 상품 유형과 연결 상품이 맞지 않으면 경고 (예: 기기서비스인데 기기 상품이 없음)
 export function ptWarn(d){ const p=ptOf(d); if(!p||!p.kinds||!d.conn.length) return ''; return connPOs(d).some(x=>p.kinds.includes(x.type))?'':`연결 상품에 ${p.kn} 상품이 없어요. 상품 유형을 다시 확인하세요`; }
+// v023 대표 상품(repPo)을 쓰는 전시인지. display-create-v23에서 저장한 전시만 이 값을 가진다
+export const usesRep=d=>d.repPo!==undefined;
 // 연결한 주문 구성안이 지금 상품 유형의 주문 유형과 다른지
 export const planMismatch=d=>!!(d.orderPlan&&ptOf(d)&&ordKind(d.orderPlan.name)!==ptOf(d).ord);
 // 받침 유무로 을/를을 고른다
@@ -74,7 +76,7 @@ export function sectionState(d){
  S.kind={st:'done',e:[]};
  S.conn=d.conn.length?{st:'done',e:[]}:{st:'todo',e:['연결 상품을 1개 이상 추가하세요']};
  if(d.kind==='ps') S.method={st:'na',e:[]};
- else { const un=d.method==='complex'?d.conn.filter(id=>!d.areas.some(a=>a.pos.includes(id))):[]; const pw=ptWarn(d); const e=[...(!d.svc?['상품 유형을 고르세요']:pw?[pw]:[]),...d.areas.flatMap((a,i)=>areaIssues(a,d).map(x=>`${d.method==='complex'?(i+1)+'번 ':''}${a.name||'영역'}: ${x}`)),...(un.length?[`구성 영역에 배정되지 않은 연결 상품 ${un.length}개`]:[])]; if(!d.areas.length) e.unshift('구성 영역을 만드세요'); S.method={st:!d.areas.some(a=>a.pos.length)&&!d.svc?'todo':(e.length?'warn':'done'),e}; }
+ else { const un=d.method==='complex'?d.conn.filter(id=>!d.areas.some(a=>a.pos.includes(id))):[]; const pw=ptWarn(d); const e=[...(!d.svc?[usesRep(d)?'대표 상품을 지정하세요':'상품 유형을 고르세요']:pw?[pw]:[]),...d.areas.flatMap((a,i)=>areaIssues(a,d).map(x=>`${d.method==='complex'?(i+1)+'번 ':''}${a.name||'영역'}: ${x}`)),...(un.length?[`구성 영역에 배정되지 않은 연결 상품 ${un.length}개`]:[])]; if(!d.areas.length) e.unshift('구성 영역을 만드세요'); S.method={st:!d.areas.some(a=>a.pos.length)&&!d.svc?'todo':(e.length?'warn':'done'),e}; }
  const be=[]; if(!d.name.trim()) be.push('전시명을 입력하세요'); if(!d.from) be.push('전시 시작일을 입력하세요'); if(!d.noEnd&&!d.to) be.push('종료일을 입력하거나 종료일없음을 선택하세요'); if(endAt(d)&&startAt(d)&&endAt(d)<=startAt(d)) be.push('전시 종료 일시가 시작 일시보다 빨라요');
  S.basic={st:be.length?(d.name||d.main||d.subs.length?'warn':'todo'):'done',e:be};
  S.desc={st:descFilled(d)?'done':'todo',e:descFilled(d)?[]:['상세 설명 본문을 입력하세요']};
