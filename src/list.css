@@ -1,5 +1,5 @@
 /* BO 목록 화면 공통: 제목 · 조회 조건 박스 · 조회결과 건수 · 결과 표 · 페이지 · 하단 버튼 · 상태 배지.
-   display-create2.html 상품 전시 목록과 같은 모양이다(그 화면은 같은 규칙을 페이지 안 <style>에 둔다). */
+   product-v021.html 상품 전시 목록과 같은 모양이다(그 화면은 같은 규칙을 페이지 안 <style>에 둔다). */
 .lst-title{margin:0 0 20px;padding-bottom:20px;border-bottom:1px solid var(--line);font-size:22px;font-weight:700}
 
 /* 조회 조건: 항목 묶음(라벨 + 입력)을 세로 구분선으로 나누고, 버튼은 마지막 줄 오른쪽 */

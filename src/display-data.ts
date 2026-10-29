@@ -1,5 +1,5 @@
 // @ts-nocheck
-// 상품 전시 데이터 · 저장소. display-create2.html(상품 전시 등록/수정), display-list2.html(상품 전시 목록 · 일괄 관리 통합), product-display-bulk.html(이전 일괄 관리)이 함께 쓴다.
+// 상품 전시 데이터 · 저장소. product-v021.html(상품 전시 등록/수정), display-list2.html(상품 전시 목록 · 일괄 관리 통합), product-display-bulk.html(이전 일괄 관리)이 함께 쓴다.
 // EPC 샘플 상품, 샘플 전시, 브라우저 저장소(STORE_KEY) 읽기·쓰기를 이 파일에 모은다.
 // ---------- EPC 샘플 데이터 (EPC 상품 조회 화면에서 내려오는 값으로 가정) ----------
 // PO: 판매 단위. dt = Delivery type(PS 목록), base = Price policy 기본가, 후보 add = 추가금
@@ -175,7 +175,7 @@ export const PTYPES=[
 export const ptOf=d=>PTYPES.find(p=>p.k===d.svc)||null;
 // 연결 상품 구분으로 추천하는 상품 유형: 기기 → 요금제 → 부가서비스 → 구독 → 제휴 순으로 본다
 export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':h('제휴')?'제휴서비스':''; }
-// ---------- v023 반영: 대표 상품 (display-create-v23.html) ----------
+// ---------- v023 반영: 대표 상품 (product-v022.html) ----------
 // 상품 유형은 직접 고르지 않고 대표 상품의 EPC 상품 구분으로 정한다. 전시 값: repPo = 대표 상품 PO id (운영자가 직접 지정, 미지정이면 null)
 export const ptypeOfPo=id=>{ const p=poBy(id); return p&&PTYPES.find(x=>x.kinds.includes(p.type))||null; };
 // 주문 구성안 이름으로 주문 유형을 정한다 (주문 구성 관리의 분류로 가정)

@@ -25,7 +25,7 @@ const MENU = [
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'product-list.html' },
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
-    { label: '상품 전시 관리', icon: 'display', href: 'display-list2.html', match: ['display-create2.html', 'display-create-v23.html', 'product-display-bulk.html'] },
+    { label: '상품 전시 관리', icon: 'display', href: 'display-list2.html', match: ['product-v021.html', 'product-v022.html', 'product-display-bulk.html'] },
     { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content.html' },
     { label: '정책', icon: 'policy', href: 'policy.html' },
   ] },

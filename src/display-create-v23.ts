@@ -1,5 +1,5 @@
 // @ts-nocheck
-// 상품 전시 관리 v0.2.3 (display-create2.ts v0.2.1 복사본). ref/product-admin-prototype-v023.html 반영:
+// 상품 전시 관리 v0.2.2 (display-create2.ts v0.2.1 복사본). ref/product-admin-prototype-v023.html 반영:
 // 고객 선택 방식에서 상품 유형을 직접 고르지 않고 대표 상품 1개를 지정한다. 상품 유형은 대표 상품의 EPC 상품 구분으로 정해지고(읽기 전용),
 // 주문 구성안 종류 · 통합 APP · WEB 주문 단계(가입 유형 · 할부 · 배송)가 그에 따라 바뀐다. 복합형은 구성 영역별로 묶어 보여 주고 대표 상품이 든 영역을 대표 영역으로 표시한다.
 // 원본 v0.2: ref/display-admin-prototype-v3.html의 전시 등록 흐름(전시 유형 → 연결 상품 → 고객 선택 방식 → 기본 정보 → 상세 설명 → 콘텐츠 정보 → 검색 노출 → 주문 구성)을
@@ -81,6 +81,8 @@ $('#goList').addEventListener('click',()=>goList());
 function openEdit(id){
  const d=id?DISPLAYS.find(x=>x.id===id):null;
  E=d?clone(d):newDisplay();
+ // v0.2.2: 새 전시는 주문 구성 방식(주문 받기)을 꺼 둔 채로 시작한다. 저장된 전시는 저장 값을 따른다
+ if(!d) E.orderOn=false;
  // v0.2.1 이전에 저장한 전시는 대표 상품이 없다. 미지정으로 두고 운영자가 직접 지정한다 (v024: 자동 지정 없음)
  if(E.repPo===undefined) E.repPo=null; delete E.repAuto; syncRep();
  cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; curM='sim'; instCur='번호이동'; PV={}; badgeEd=null; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=false;
