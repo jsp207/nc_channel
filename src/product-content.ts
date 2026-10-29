@@ -2,7 +2,7 @@
 // 상품 콘텐츠 관리 v0.1 (product-content.html)
 // 안내 템플릿 · 컬러 · 용량 · 사이즈 · 기타 옵션 마스터의 목록과 상세(등록·수정) 화면.
 // 데이터는 display-data.ts의 CONTENT(브라우저 저장소)를 쓰고, 사용 전시 수는 상품 전시(DISPLAYS)에서 센다.
-// 목록 · 조회 조건 모양은 display-create2.html 상품 전시 목록 · product-display-bulk.html 일괄 관리와 같다.
+// 목록 · 조회 조건 모양은 product-v021.html 상품 전시 목록 · product-display-bulk.html 일괄 관리와 같다.
 import "./style.css";
 import "./list.css";
 import "./product-content.css";
@@ -229,7 +229,7 @@ function fieldHtml(f, r, used) {
 function useHtml(k, list) {
   const T = TABS[k];
   const note = k === 'tpl' ? '완전 매핑은 이 템플릿을 연결해 쓰는 전시로, 템플릿 내용이 바뀌면 함께 바뀌어요. 1회 매핑은 복사해 간 전시라 바뀌지 않아요.' : `이 ${T.noun}을(를) 옵션 값으로 쓰는 전시예요. 사용 중이면 ${T.nameLabel}을(를) 바꾸거나 삭제할 수 없어요.`;
-  const rows = list.map(({ d, kind }) => `<tr><td><a class="lid" href="display-create2.html?id=${d.id}">${dispId(d.id)}</a></td><td title="${esc(nameText(d.name))}">${esc(nameText(d.name)) || '이름 없음'}</td>${k === 'tpl' ? `<td class="c">${kind}</td>` : ''}
+  const rows = list.map(({ d, kind }) => `<tr><td><a class="lid" href="product-v021.html?id=${d.id}">${dispId(d.id)}</a></td><td title="${esc(nameText(d.name))}">${esc(nameText(d.name)) || '이름 없음'}</td>${k === 'tpl' ? `<td class="c">${kind}</td>` : ''}
     <td title="${esc(d.channels.join(', '))}">${esc(d.channels.length && CHS.every(c => d.channels.includes(c)) ? 'All 채널' : d.channels[0] ? d.channels[0] + (d.channels.length > 1 ? ` 외 ${d.channels.length - 1}` : '') : '-')}</td>
     <td class="c">${d.from ? `${dotD(d.from)} ~ ${d.noEnd || !d.to ? '기한없음' : dotD(d.to)}` : '-'}</td><td class="c">${d.show ? '<span class="lb live">전시</span>' : '<span class="lb off">미전시</span>'}</td></tr>`).join('');
   return `<section class="pc-sec pc-use"><h2 class="pc-h">사용 전시 <b>${list.length}건</b></h2><p class="pc-note">${note}</p>

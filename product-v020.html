@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#eaecf5" />
-    <title>상품 전시 관리 v0.2.3 | NC-Channel Product Admin</title>
+    <title>상품 전시 관리 v0.2 - 개발리뷰 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-      /* 상품 전시 관리 v0.2.3 (display-create2.html v0.2.1 복사본 · ref/product-admin-prototype-v023.html 대표 상품 반영) · 화면 스타일은 product-create3.html과 맞춘다 */
+      /* 상품전시관리 4차 (ref/display-admin-prototype-v3.html) · 화면 스타일은 product-v013.html과 맞춘다 */
       [hidden]{display:none!important}
       #v-edit .builder{grid-template-columns:340px minmax(0,1fr);border-top:0;padding-top:0}
       #v-edit>.toolbar{margin-bottom:24px}
@@ -93,6 +93,14 @@
       .switch input:checked+span::after{transform:translateX(16px)}
       .switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
       /* 전시유형·고객 선택 방식: 100×100 정사각형 버튼 */
+      .row.type-row{align-items:flex-start}
+      .row.type-row>label{padding-top:8px}
+      .type-tiles{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 0;min-width:0}
+      .type-tile{width:100px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px;border:1px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--text);font-size:12px;line-height:1.35;text-align:center;cursor:pointer}
+      .type-tile svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
+      .type-tile:hover{border-color:var(--accent)}
+      .type-tile.on{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .type-tile.on svg{color:var(--accent)}
       /* 표 */
       .cl{border:1px solid var(--line);border-radius:6px;overflow:auto;max-height:340px}
       .cl table{font-size:12px}
@@ -107,24 +115,17 @@
       /* 구성 영역: 왼쪽 목록 + 오른쪽 상세 */
       .ae{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px}
       .ae.single{grid-template-columns:minmax(0,1fr)}
-      /* 콘텐츠 정보 · 추가설정: 왼쪽 목록을 좁게 (좁은 화면은 아래 900px 규칙대로 한 줄) */
-      @media(min-width:901px){:is(#sec-extra,#sec-more) .ae{grid-template-columns:180px minmax(0,1fr)}}
       .al{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;align-self:start}
       .ali{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);margin-bottom:6px;cursor:pointer}
       .ali:hover{border-color:#b4a8f0}
       .ali.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
       .ali.fixd{cursor:default}
       .ali.fixd:hover{border-color:var(--line)}
-      /* 노출 OFF: 취소선 없이 흐리게(비활성)만 */
-      .ali.off .nm{opacity:.5}
-      .ali.off .nm b{color:var(--muted)}
+      .ali.off .nm b{color:var(--muted);text-decoration:line-through}
       .ali .ix{width:16px;flex:none;color:var(--muted);font-size:11px;text-align:center}
       .ali .nm{flex:1;min-width:0}
       .ali .nm b{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ali .nm small{font-size:11px;color:var(--muted)}
-      /* 전시 정보 · 콘텐츠 정보 · 추가설정: 왼쪽 목록은 감싸는 박스 없이, 선택 항목도 왼쪽 굵은 선 없이 테두리로만 표시 */
-      :is(#sec-info,#sec-extra,#sec-more) .al{background:none;border:0;border-radius:0;padding:0}
-      :is(#sec-info,#sec-extra,#sec-more) .ali.on:not(.drop-a,.drop-b){box-shadow:none}
       .mv{display:flex;flex-direction:column;flex:none}
       .mv button{border:0;background:none;padding:0;width:20px;height:16px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
       .mv button:hover:not(:disabled){color:var(--accent)}
@@ -242,7 +243,7 @@
       .rte-code{display:block;width:100%;min-height:260px;padding:14px 16px;border:0;resize:vertical;font:12px/1.6 ui-monospace,Consolas,monospace;color:var(--text);background:var(--bg);outline:none}
       [data-rte="note"] .rte-ed,[data-rte="note"] .rte-code{min-height:140px}
       .ph-note-rich{color:var(--ph-mu);font-size:11.5px}
-      /* 콘텐츠 정보 */
+      /* 추가 정보 */
       .src{font-size:10px;padding:1px 6px;border-radius:4px;white-space:nowrap}
       .s-link{background:var(--accent-soft);color:var(--accent)}
       .s-copy{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
@@ -253,9 +254,6 @@
       .ali.dragging{opacity:.4}
       .ali.drop-b{box-shadow:0 -3px 0 var(--accent)}
       .ali.drop-a{box-shadow:0 3px 0 var(--accent)}
-      tr.td-r.dragging,tr.gf-r.dragging{opacity:.4}
-      tr.td-r.drop-b td,tr.gf-r.drop-b td{box-shadow:inset 0 3px 0 var(--accent)}
-      tr.td-r.drop-a td,tr.gf-r.drop-a td{box-shadow:inset 0 -3px 0 var(--accent)}
       .bx{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--surface);font-size:12px;line-height:1.8;white-space:pre-line}
       /* 주문 구성 방식: 구성안 카드 · 필요한 주문 항목 · 시나리오 안내 */
       .op-plan{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:24px 28px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface)}
@@ -298,8 +296,7 @@
       #kwIn{flex:1;min-width:140px;min-height:0;border:0;outline:none;box-shadow:none;padding:4px 2px;background:none}
       /* 목록 상태 점 */
       .status.warn{background:var(--warn)}
-      /* 상품 전시 목록은 display-list2.html로 분리했다. 이 화면에서 쓰는 목록 공통 버튼 스타일만 남긴다 */
-      .btn.dark{border-color:#20293b;color:#20293b}
+      #listTable td:first-child b{color:var(--accent);font-weight:600}
 
       /* 왼쪽: 미리보기(스크롤). 검사(O/X)·저장 버튼은 하단 고정 라인(.dock) — product-create3과 동일 */
       #v-edit .side{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -322,17 +319,9 @@
       #v-edit .pv-panel>header b{font-size:15px;font-weight:700;color:#1d1e2c;letter-spacing:-.3px}
       #v-edit .pv-panel .pvbox{padding:2px 8px 18px;border-bottom:0}
       #v-edit .pv-panel .pv{border:0;border-radius:14px}
-      /* 하단 고정 1라인 + 바텀시트: 브라우저가 아닌 본문(main) 카드 하단에 붙는다.
-         main 안쪽 여백만큼 음수 여백을 줘서 카드 좌우 끝까지 채우고, 스크롤 중에는 화면 아래에 걸린다 */
-      #v-edit{--dock-h:68px;--main-px:32px;--main-pb:48px}
-      /* 내용이 짧아도 하단 바가 본문 카드 맨 아래에 붙도록: 본문(main)을 세로 flex로 두고 등록 화면이 남는 높이를 채운다 */
-      main:has(>#v-edit.on){display:flex;flex-direction:column}
-      #v-edit.on{flex:1;display:flex;flex-direction:column}
-      #v-edit>.builder{margin-bottom:20px}
-      .dock{position:sticky;bottom:0;z-index:40;display:flex;flex-direction:column;margin:auto calc(var(--main-px)*-1) calc(var(--main-pb)*-1);border-radius:16px 16px 19px 19px;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 24px #2934591a}
-      @media(max-width:1100px){#v-edit{--main-px:24px;--main-pb:24px}}
-      @media(max-width:900px){#v-edit{--main-px:18px;--main-pb:22px}}
-      @media(max-width:560px){#v-edit{--main-px:14px;--main-pb:18px}}
+      /* 하단 고정 1라인 + 바텀시트 */
+      #v-edit{--dock-h:68px;padding-bottom:var(--dock-h)}
+      .dock{position:fixed;left:88px;right:18px;bottom:0;z-index:40;display:flex;flex-direction:column;border-radius:16px 16px 0 0;background:#fff;border:1px solid var(--line);border-bottom:0;box-shadow:0 -6px 24px #2934591a}
       .dock-bar{display:flex;align-items:center;gap:12px;height:var(--dock-h);padding:0 16px 0 20px;cursor:pointer}
       .dock-toggle{display:flex;align-items:center;gap:10px;flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}
       .dock-toggle>b{font-size:13px;font-weight:600}
@@ -350,6 +339,7 @@
       .dock-sheet .rules{flex:1;min-height:0;overflow:auto;padding:0 0 8px}
       .dock-dim{position:fixed;inset:0;z-index:39;background:rgba(20,20,30,.32)}
       @media(prefers-reduced-motion:reduce){.dock-chev{transition:none}}
+      @media(max-width:900px){.dock{left:10px;right:10px}}
       @media(max-width:560px){.dock-bar{gap:8px;padding:0 10px 0 14px}.dock-toggle>b,.dock-chev{display:none}.dock-acts .btn{padding-left:10px;padding-right:10px}}
 
       /* 미리보기: 모바일 상품 상세 화면 (product-create3과 동일) */
@@ -565,146 +555,28 @@
       .tplp{background:var(--surface);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column}
       .toast{z-index:70}
       /* 좁은 화면에서는 입력 폼을 먼저, 미리보기를 아래에 */
-      /* 반응형: 1440px 이하는 LNB를 자동으로 접고(nav data-auto-collapse), 1200px 이하는 미리보기를 숨겨 입력 영역을 넓게 쓴다 */
-      @media(max-width:1200px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{display:none}}
+      @media(max-width:1100px){#v-edit .builder{grid-template-columns:minmax(0,1fr)}#v-edit .builder>.side{order:1;position:static}.panel>header{position:static}}
       @media(max-width:900px){.ae,.tplg,.poc-body{grid-template-columns:minmax(0,1fr)}.mrow{grid-template-columns:1fr}}
+      @media(max-width:560px){.type-tile{width:88px;height:88px}}
       @media(prefers-reduced-motion:reduce){#v-edit .step,.step>header .fold svg,.switch span,.switch span::after{transition:none}}
-      /* ===== v4-8 반영 (ref/product-admin-prototype-v4-8.html) ===== */
-      /* 섹션 머리줄: 조건 배지 · 노출 스위치 */
-      .step>header .cond{margin-left:auto;font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 6px;line-height:1.6;white-space:nowrap}
-      .step>header .cond~.req,.step>header .cond~.st{margin-left:0}
-      .step>header .hsw{margin-left:6px}
-      .step.off>.body{opacity:.55}
-      /* 하단 바: 필수 완료 수, 승인요청은 비어 있어도 눌러서 채울 섹션으로 이동 */
-      .dock-msg{align-self:center;margin-right:6px;font-size:12px;color:var(--muted);white-space:nowrap}
-      .dock-msg b{color:var(--accent);font-weight:700}
-      #bSave.pending{background:#a99be8;border-color:#a99be8}
-      .lnk{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer}
-      /* 가입 유형 · 할부 · 배송: 사용 · 순서 · 항목 · 문구(배송은 운영 조건 포함) */
-      .olist{border:1px solid var(--line);border-radius:8px;overflow:hidden}
-      .olist .or{display:grid;grid-template-columns:52px 32px 96px minmax(0,1fr);align-items:center;gap:8px;min-height:48px;padding:6px 14px;border-top:1px solid var(--line);font-size:13px}
-      .olist .or .oc-c{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
-      .osum{margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--surface);font-size:12px;line-height:1.8;color:var(--muted)}
-      .osum b{color:var(--text);font-weight:600}
-      .offnote{display:flex;gap:8px;align-items:center;margin:0 0 12px;padding:8px 12px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:12px}
-      /* 할부 설정: 가입 유형 탭 + 처음 노출 개수 · 설정 복사 */
-      .itabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 12px;border-bottom:1px solid var(--line)}
-      .itabs button{height:38px;margin-bottom:-1px;padding:0 14px;border:0;border-bottom:2px solid transparent;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
-      .itabs button.on{color:var(--accent);font-weight:700;border-bottom-color:var(--accent)}
-      .itabs small{margin-left:4px;font-size:11px;font-weight:600;color:var(--accent)}
-      .itabs small.ok{color:var(--ok)}
-      .itabs small.warn{color:var(--warn)}
-      .olist .or .oc-d{color:var(--text)}
-      .itop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:var(--muted)}
-      .itop input[type=number]{width:64px;text-align:center}
-      .itop .cp{display:inline-flex;gap:6px;align-items:center;margin-left:auto}
-      /* 고객 선택 방식: 대표 상품 목록 (구성 방식과 관계없이 한 목록) · 제목 옆 상품 유형 배지 */
-      .rpgd{margin:0 0 8px;font-size:12px;color:var(--muted)}
-      .rpl{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
-      .rpr{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer}
-      .rpl>.rpr:last-child{border-bottom:0}
-      .rpr:hover{background:var(--surface)}
-      .rpr:has(input:checked){background:var(--accent-soft)}
-      .rpr input{accent-color:var(--accent);width:16px;height:16px;margin:0}
-      .rpr .nm{font-size:13px;min-width:0}
-      .rpr .k{margin-left:8px;font-size:11px;color:var(--muted);white-space:nowrap}
-      .rpr .me{padding:1px 6px;border-radius:3px;background:var(--accent);color:#fff;font-size:10px;vertical-align:1px}
-      .ptres{display:inline-flex;align-items:center;font-size:12px;font-weight:400;color:var(--muted)}
-      .ptres .v{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:12px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600}
-      .ptres .f{font-size:12px;color:var(--muted)}
-      /* 전시 설정: 채널별로 이 화면에서 더 정하는 항목 */
-      .chl{display:flex;flex-wrap:wrap;margin-top:12px}
-      .chl[hidden]{display:none}
-      .jump{display:inline-flex;align-items:center;gap:6px;height:28px;margin:0 6px 6px 0;padding:0 10px;border:1px solid var(--line-strong);border-radius:14px;background:var(--bg);font:inherit;font-size:12px;color:var(--text);cursor:pointer}
-      .jump i{width:6px;height:6px;border-radius:50%;background:var(--warn)}
-      .jump i.ok{background:var(--ok)}
-      .jump small{font-size:11px;color:var(--muted)}
-      /* 주문 구성 방식 OFF: 대체 버튼 */
-      .acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:1}
-      .acts label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;font-size:13px;cursor:pointer}
-      .acts label:has(input:checked){border:2px solid var(--accent);padding:9px 11px;background:var(--accent-soft)}
-      .acts input{margin-top:3px;accent-color:var(--accent)}
-      .acts small{display:block;font-size:11px;color:var(--muted)}
-      .op-tag.here{border-color:#ded6ff;background:var(--accent-soft);color:var(--accent);cursor:pointer;font:inherit;font-size:12px}
-      .op-warn{margin:12px 0 0}
-      .ord-sw{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}
-      @media(max-width:900px){.acts{grid-template-columns:1fr}}
-      .olist .or.hd{min-height:36px;border-top:0;background:var(--surface);font-size:11px;font-weight:600;color:var(--muted)}
-      .olist .or .c{justify-self:center}
-      .olist .or.off>:not(.switch){opacity:.45}
-      .olist .or input[type=text]{width:100%}
-      .olist .or.dragging{opacity:.4}
-      .olist .or.drop-b{box-shadow:inset 0 3px 0 var(--accent)}
-      .olist .or.drop-a{box-shadow:inset 0 -3px 0 var(--accent)}
-      .olist .or input[type=radio]{accent-color:var(--accent);width:16px;height:16px;margin:0}
-      /* 사은품 · 티다팩 목록 */
-      .gtbl{max-height:none}
-      .gtbl td{white-space:normal;vertical-align:middle}
-      .gtbl tr.dim td{background:#fafafc;color:var(--muted)}
-      .gtbl tr.dim .gnm b{color:var(--muted)}
-      .gtbl tr.sep td{padding:6px 10px;background:#fbfbfe;color:var(--accent);font-size:11px;font-weight:600;border-top:1px dashed var(--line-strong)}
-      .gtbl tr.foot td{background:var(--surface);color:var(--muted);font-size:12px}
-      .gtbl .c{text-align:center}
-      .gnm{display:flex;gap:10px;align-items:center;min-width:200px}
-      .gnm>div{display:flex;flex-direction:column;gap:2px;min-width:0}
-      .gnm b{font-size:13px;font-weight:600}
-      .gnm small{color:var(--muted);font-size:11px}
-      .gic{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:8px;background:var(--surface);font-size:18px}
-      .tlogo{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:8px;color:#fff;font-size:8px;font-weight:800;letter-spacing:-.2px;overflow:hidden}
-      .rtag{margin-right:4px;padding:0 5px;border-radius:3px;background:var(--text);color:#fff;font-size:9px;font-weight:700;vertical-align:1px}
-      .gtag{display:inline-block;margin:0 0 0 6px;padding:0 6px;border-radius:4px;font-size:10px;font-weight:600;line-height:1.7;vertical-align:1px;white-space:nowrap}
-      .gtag.auto{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
-      .gtag.own{background:var(--accent-soft);color:var(--accent)}
-      .gtag.end{margin:2px 0 0;background:var(--bad-soft);color:var(--bad)}
-      .gtag.wait{margin:2px 0 0;background:#e6efff;color:#2e6bd8}
-      .gtag.st{margin:2px 0 0;background:var(--warn-soft);color:var(--warn)}
-      .gwarn{margin-top:4px;font-size:11px;color:var(--bad)}
-      .qty{font-size:12px;font-weight:600}
-      .qty.low{color:var(--warn)}.qty.out{color:var(--bad)}
-      .qty .bar{display:block;width:96px;height:4px;margin:4px 0 2px;border-radius:2px;background:var(--line);overflow:hidden}
-      .qty .bar b{display:block;height:100%;background:var(--accent)}
-      .qty.low .bar b{background:var(--warn)}.qty.out .bar b{background:var(--bad)}
-      .tgw{display:flex;flex-direction:column;align-items:center;gap:4px}
-      .bd.auto{cursor:default;padding:0 12px}
-      .bd.auto small{font-size:10px;font-weight:400;opacity:.85}
-      /* 유사한 상품: 고객 화면 문구 미리보기 */
-      .simpv{display:flex;flex-direction:column;gap:2px;margin-top:12px;padding:14px 16px;border:1px dashed var(--line-strong);border-radius:10px;background:var(--surface)}
-      .simpv b{font-size:14px;font-weight:700}
-      .simpv span{font-size:12px;color:var(--muted)}
-      /* 미리보기: 주문 단계 선택지 · 사은품 · 티다팩 · 유사 상품 · 구매 후기 */
-      .ph-ops{display:flex;flex-direction:column;gap:8px}
-      .ph-op{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--ph-ln);border-radius:12px}
-      .ph-op b{font-size:13px}.ph-op small{font-size:11px;color:var(--ph-mu)}
-      .ph-op.on{border:1.5px solid var(--ph-tx)}
-      .ph-chips{display:flex;flex-wrap:wrap;gap:6px}
-      .ph-chips span{padding:8px 14px;border:1px solid var(--ph-ln);border-radius:999px;font-size:12px}
-      .ph-chips span.on{border-color:var(--ph-tx);background:var(--ph-tx);color:#fff;font-weight:600}
-      .ph-more{margin-top:10px;font-size:12px;color:var(--ph-mu);text-align:center}
-      .ph-gift,.ph-td{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--ph-ln);border-radius:12px;margin-bottom:6px}
-      .ph-gift>span{font-size:20px}
-      .ph-gift>div,.ph-td>div{display:flex;flex-direction:column;min-width:0}
-      .ph-gift b,.ph-td b{font-size:12px}.ph-gift small,.ph-td small{font-size:11px;color:var(--ph-mu)}
-      .ph-td em{font-style:normal;font-size:9px;font-weight:700;color:var(--ph-cta)}
-      .ph-td .tlogo{width:30px;height:30px}
-      .ph-td.none{justify-content:center;color:var(--ph-mu);font-size:12px;border-style:dashed}
-      .ph-sim{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-      .ph-sim>div{display:flex;flex-direction:column;gap:6px;font-size:11px}
-      .ph-sim i{display:block;aspect-ratio:1;border-radius:12px;background:var(--ph-soft)}
-      .ph-sim b{font-weight:500;color:var(--ph-mu)}
-      .ph-rv{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
-      .ph-rv b{font-size:18px}.ph-rv span{font-size:11px;color:var(--ph-mu)}
-      .ph-rvi{padding:10px 0;border-top:1px solid var(--ph-ln);font-size:12px}
-      .ph-rvi span{color:#f5a623;font-size:11px}.ph-rvi p{margin:4px 0 0}
-      .ph-bdgs span.au{color:#fff}
-      @media(max-width:900px){.olist .or{grid-template-columns:44px 28px 72px minmax(0,1fr);padding:6px 10px}}
     </style>
   </head>
   <body>
 <div class="app">
-<nav class="app-nav" aria-label="주 메뉴" data-auto-collapse="1440"></nav>
+<nav class="app-nav" aria-label="주 메뉴"></nav>
 <main>
 
-<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/display-create-v23.ts · 전시 목록은 display-list2.html로 분리했다 -->
+<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/display-create1.ts -->
+<!-- 전시 목록 -->
+<section class="view" id="v-list">
+  <div class="toolbar"><h1>전시 목록</h1><button type="button" class="btn primary" id="lNew" style="margin-left:auto">+ 전시 등록</button></div>
+  <p class="sub">EPC 상품 조회에서 가져온 상품(PO)을 묶어 고객에게 보여주는 단위입니다. DT와 가격은 EPC 값을 그대로 씁니다.</p>
+  <div class="tw"><table id="listTable">
+    <thead><tr><th>전시명</th><th>전시 유형</th><th>고객 선택 방식</th><th>연결 상품</th><th>노출 기간</th><th>상태</th><th></th></tr></thead>
+    <tbody id="listRows"></tbody>
+  </table></div>
+</section>
+
 <!-- 전시 등록/수정 -->
 <section class="view on" id="v-edit">
   <div class="toolbar"><h1 id="editTitle">전시등록</h1><button type="button" class="btn" id="goList" style="margin-left:auto">전시 목록 보기</button></div>
@@ -729,60 +601,32 @@
         <header><b>고객 선택 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-method"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-method"></div>
       </div>
-      <!-- 전시 설정: 전시 채널 + 채널별로 더 정하는 항목. 통합 APP · WEB을 고르면 상품 유형에 따라 가입 유형 · 할부 · 배송 섹션이 바로 아래에 생긴다 -->
-      <div class="step" id="sec-ch">
-        <header><b>전시 설정</b><span class="req">필수</span><span class="st"><span class="chip" id="st-ch"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-ch"></div>
-      </div>
-      <div class="step" id="sec-join">
-        <header><b>가입 유형</b><span class="cond">통합 APP · WEB</span><span class="req">필수</span><span class="st"><span class="chip" id="st-join"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-join"></div>
-      </div>
-      <div class="step" id="sec-inst">
-        <header><b>할부 설정</b><span class="cond">통합 APP · WEB</span><span class="req">필수</span><span class="st"><span class="chip" id="st-inst"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-inst"></div>
-      </div>
-      <div class="step" id="sec-ship">
-        <header><b>배송 유형</b><span class="cond">통합 APP · WEB</span><span class="req">필수</span><span class="st"><span class="chip" id="st-ship"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-ship"></div>
-      </div>
-      <!-- 기본 정보 · 상세 설명: 콘텐츠 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
-      <div class="step" id="sec-info">
-        <header><b>전시 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-info"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-info"><div class="itabs" id="infoList" role="tablist" aria-label="전시 정보"></div><div id="sb-basic"></div><div id="sb-desc" hidden></div></div>
+      <div class="step" id="sec-basic">
+        <header><b>기본 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-basic"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-basic"></div>
         <input type="file" id="imgFile" accept="image/*" hidden>
         <input type="file" id="subFile" accept="image/*" multiple hidden>
+      </div>
+      <div class="step" id="sec-desc">
+        <header><b>상세 설명</b><span class="st"><span class="chip" id="st-desc"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-desc"></div>
         <input type="file" id="descFile" accept="image/*" multiple hidden>
       </div>
       <div class="step" id="sec-extra">
-        <header><b>콘텐츠 정보</b><span class="st"><span class="chip" id="st-extra"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>추가 정보</b><span class="st"><span class="chip" id="st-extra"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-extra"></div>
       </div>
-      <div class="step" id="sec-review">
-        <header><b>구매후기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rvOn" aria-label="구매후기 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-review"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-review"></div>
-      </div>
-      <!-- 연관 상품: 구매후기와 같은 구성(머리줄 스위치로 고객 화면 노출) -->
-      <div class="step" id="sec-rel">
-        <header><b>연관 상품</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rlOn" aria-label="연관 상품 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-rel"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-rel"></div>
-      </div>
-      <!-- 유사한 상품 · 오퍼링 문구 · 검색 노출 설정: 콘텐츠 정보와 같은 목록 + 상세 구성 -->
-      <div class="step" id="sec-more">
-        <header><b>추가설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-more"><div class="ae"><div class="al" id="moreList"></div><div class="ad"><div id="sb-sim"></div><div id="sb-cvm" hidden></div><div id="sb-search" hidden></div></div></div></div>
+      <div class="step" id="sec-search">
+        <header><b>검색 노출 설정 (SEO)</b><span class="st"><span class="chip" id="st-search"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-search"></div>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
-      <div class="step" id="sec-gift">
-        <header><b>T기프트</b><span class="cond">기기 상품 연결 시</span><span class="st"><span class="chip" id="st-gift"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-gift"></div>
-      </div>
-      <div class="step" id="sec-td">
-        <header><b>티다팩</b><span class="cond">요금제 연결 시</span><span class="st"><span class="chip" id="st-td"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-td"></div>
+      <div class="step" id="sec-cvm">
+        <header><b>오퍼링 문구(CVM)</b><span class="st"><span class="chip" id="st-cvm"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-cvm"></div>
       </div>
       <div class="step" id="sec-order">
-        <header><b>주문 구성 방식</b><label class="switch hsw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>주문 구성 방식</b><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>
       </div>
     </div>
@@ -796,7 +640,7 @@
     </section>
     <div class="dock-bar" id="dockBar">
       <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="false" aria-controls="dockSheet"><b>연결 상품</b><span class="po" id="poCount">0<small>상품</small></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
-      <span class="dock-acts"><span class="dock-msg" id="dockMsg"></span><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>승인요청</button></span>
+      <span class="dock-acts"><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>승인요청</button></span>
     </div>
   </div>
 </section>
@@ -809,6 +653,6 @@
   <footer id="mFoot"></footer>
 </div></div>
 <div class="toast" id="toast"></div>
-    <script type="module" src="/src/display-create-v23.ts"></script>
+    <script type="module" src="/src/display-create1.ts"></script>
   </body>
 </html>

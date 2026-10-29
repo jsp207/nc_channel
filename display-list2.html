@@ -14,8 +14,8 @@
 <nav class="app-nav" aria-label="주 메뉴"></nav>
 <main>
 
-<!-- 상품 전시 목록 v0.3: 상품 전시 관리 목록(display-create2.html?view=list)과 상품 전시 일괄 관리(product-display-bulk.html)를 한 화면으로 합쳤다.
-     등록/수정은 display-create2.html, 스크립트는 src/display-list2.ts, 스타일은 src/display-list2.css(일괄 작업 · 팝업은 src/product-display-bulk.css를 함께 쓴다) -->
+<!-- 상품 전시 목록 v0.3: 상품 전시 관리 목록(product-v021.html?view=list)과 상품 전시 일괄 관리(product-display-bulk.html)를 한 화면으로 합쳤다.
+     등록/수정은 product-v021.html, 스크립트는 src/display-list2.ts, 스타일은 src/display-list2.css(일괄 작업 · 팝업은 src/product-display-bulk.css를 함께 쓴다) -->
 
 <!-- ===== 1. 메인 목록 ===== -->
 <section class="view on" id="v-list">
@@ -70,7 +70,7 @@
   </div>
   <p class="pb-selall" id="selAllBar" hidden></p>
 
-  <!-- 전시ID를 누르면 등록/수정 화면(display-create2.html), [수정]은 목록에서 바로 고치는 팝업. 열 폭은 가로 스크롤 없이 본문 폭에 맞춘다(src/display-list2.css) -->
+  <!-- 전시ID를 누르면 등록/수정 화면(product-v021.html), [수정]은 목록에서 바로 고치는 팝업. 열 폭은 가로 스크롤 없이 본문 폭에 맞춘다(src/display-list2.css) -->
   <div class="lst-tw"><table class="lst-table" id="listTable">
     <colgroup><col class="w-chk"><col class="w-id"><col class="w-ver"><col class="w-nm"><col class="w-ch"><col class="w-mt"><col class="w-st"><col class="w-ep"><col class="w-sale"><col class="w-disp"><col class="w-rank"><col class="w-pd"><col class="w-ow"><col class="w-at"><col class="w-mng"></colgroup>
     <thead><tr>

@@ -17,6 +17,13 @@
       .h-cnt{min-width:20px;padding:0 6px;border-radius:10px;background:var(--surface);color:var(--muted);font-size:11px;line-height:18px;text-align:center}
       .h-tabs button[aria-selected="true"] .h-cnt{background:var(--accent-soft);color:var(--accent)}
       [role="tabpanel"][hidden]{display:none}
+      /* 상품 탭: 목록 / 상세 / 정책 구분 버튼 */
+      .h-seg{margin:0 0 12px}
+      .h-seg button{display:inline-flex;align-items:center;gap:6px}
+      .h-seg button.on .h-cnt{background:rgba(255,255,255,.2);color:#fff}
+      tr[hidden]{display:none}
+      /* 첫 열: data-latest 행에 Latest 표시 */
+      .h-latest{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600}
     </style>
   </head>
   <body>
@@ -31,37 +38,43 @@
   <p class="sub">그동안 작업한 화면을 최근 생성일 순으로 정리했습니다. 기준·정책은 <a href="policy.html">policy.html</a>에서 확인하세요.</p>
   <!-- 탭마다 tbody 맨 위에 한 줄씩 추가하세요(최근 날짜순) -->
   <div class="h-tabs" role="tablist" aria-label="히스토리 구분">
-    <button type="button" role="tab" id="tab-prod" aria-controls="panel-prod" data-tab="prod">상품 <span class="h-cnt">17</span></button>
+    <button type="button" role="tab" id="tab-prod" aria-controls="panel-prod" data-tab="prod">상품 <span class="h-cnt">16</span></button>
     <button type="button" role="tab" id="tab-order" aria-controls="panel-order" data-tab="order">주문 <span class="h-cnt">7</span></button>
     <button type="button" role="tab" id="tab-pay" aria-controls="panel-pay" data-tab="pay">결제 <span class="h-cnt">11</span></button>
   </div>
   <div role="tabpanel" id="panel-prod" aria-labelledby="tab-prod">
+    <!-- 화면 구분 버튼: 각 행의 data-k(list | detail | policy)로 걸러 보여 준다. 상세 제목은 '화면명 vX.Y.Z' 형식 -->
+    <!-- data-latest: 첫 열에 Latest를 붙일 행 (지금 쓰는 버전만) -->
+    <div class="seg h-seg" role="group" aria-label="상품 화면 구분">
+      <button type="button" data-k="list">목록 <span class="h-cnt"></span></button>
+      <button type="button" data-k="detail">상세 <span class="h-cnt"></span></button>
+      <button type="button" data-k="policy">정책 <span class="h-cnt"></span></button>
+    </div>
     <div class="tw"><table id="historyProd">
-      <thead><tr><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
+      <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
       <tbody>
-        <tr><td>2026-10-27</td><td><a href="display-create-v23.html">상품 전시 관리 v0.2.3 (대표 상품 · 상품 유형 자동 결정)</a></td><td>display-create-v23.html</td></tr>
-        <tr><td>2026-10-27</td><td><a href="display-list2.html">상품 전시 목록 v0.3 (전시 관리 + 일괄 관리 통합)</a></td><td>display-list2.html</td></tr>
-        <tr><td>2026-10-26</td><td><a href="product-display-bulk.html">상품 전시 일괄 관리 v0.1</a></td><td>product-display-bulk.html</td></tr>
-        <tr><td>2026-10-17</td><td><a href="display-create2.html">상품 전시 관리 v0.2.1</a></td><td>display-create2.html</td></tr>
-        <tr><td>2026-10-10</td><td><a href="display-create1.html">상품 전시 관리 v0.2 - 개발리뷰</a></td><td>display-create1.html</td></tr>
-        <tr><td>2026-10-03</td><td><a href="product-create3.html">상품 전시 관리 3차</a></td><td>product-create3.html</td></tr>
-        <tr><td>2026-10-02</td><td><a href="product-create2.html">상품 전시 관리 2차</a></td><td>product-create2.html</td></tr>
-        <tr><td>2026-09-29</td><td><a href="product-create.html">상품 전시 관리 1차</a></td><td>product-create.html</td></tr>
-        <tr><td>2026-09-29</td><td><a href="product-list.html">상품목록</a></td><td>product-list.html</td></tr>
-        <tr><td>2026-09-29</td><td><a href="bundle-create4.html">번들생성 4차</a></td><td>bundle-create4.html</td></tr>
-        <tr><td>2026-09-28</td><td><a href="bundle-create3.html">번들생성 3차</a></td><td>bundle-create3.html</td></tr>
-        <tr><td>2026-09-27</td><td><a href="bundle-create2.html">번들생성 2차</a></td><td>bundle-create2.html</td></tr>
-        <tr><td>2026-09-27</td><td><a href="bundle-create.html">번들생성 1차</a></td><td>bundle-create.html</td></tr>
-        <tr><td>2026-09-27</td><td><a href="bundle-list.html">번들목록</a></td><td>bundle-list.html</td></tr>
-        <tr><td>2026-09-27</td><td><a href="display-create.html">전시생성</a></td><td>display-create.html</td></tr>
-        <tr><td>2026-09-27</td><td><a href="display-list.html">전시목록</a></td><td>display-list.html</td></tr>
-        <tr><td>2026-09-23</td><td><a href="policy.html">기준·정책</a></td><td>policy.html</td></tr>
+        <tr data-k="detail" data-latest><td>2026-10-27</td><td><a href="product-v022.html">상품 전시 관리 v0.2.2</a></td><td>product-v022.html</td></tr>
+        <tr data-k="list" data-latest><td>2026-10-27</td><td><a href="display-list2.html">상품 전시 목록 v0.2</a></td><td>display-list2.html</td></tr>
+        <tr data-k="list"><td>2026-10-26</td><td><a href="product-display-bulk.html">상품 전시 일괄 목록 v0.1</a></td><td>product-display-bulk.html</td></tr>
+        <tr data-k="detail"><td>2026-10-17</td><td><a href="product-v021.html">상품 전시 관리 v0.2.1</a></td><td>product-v021.html</td></tr>
+        <tr data-k="detail"><td>2026-10-10</td><td><a href="product-v020.html">상품 전시 관리 v0.2 (1차 개발리뷰)</a></td><td>product-v020.html</td></tr>
+        <tr data-k="detail"><td>2026-10-03</td><td><a href="product-v013.html">상품 전시 관리 v0.1.3</a></td><td>product-v013.html</td></tr>
+        <tr data-k="detail"><td>2026-10-02</td><td><a href="product-v012.html">상품 전시 관리 v0.1.2</a></td><td>product-v012.html</td></tr>
+        <tr data-k="detail"><td>2026-09-29</td><td><a href="product-v011.html">상품 전시 관리 v0.1.1</a></td><td>product-v011.html</td></tr>
+        <tr data-k="list"><td>2026-09-29</td><td><a href="product-list.html">상품목록</a></td><td>product-list.html</td></tr>
+        <tr data-k="detail"><td>2026-09-29</td><td><a href="bundle-create4.html">번들 관리 v0.1.4</a></td><td>bundle-create4.html</td></tr>
+        <tr data-k="detail"><td>2026-09-28</td><td><a href="bundle-create3.html">번들 관리 v0.1.3</a></td><td>bundle-create3.html</td></tr>
+        <tr data-k="detail"><td>2026-09-27</td><td><a href="bundle-create2.html">번들 관리 v0.1.2</a></td><td>bundle-create2.html</td></tr>
+        <tr data-k="detail"><td>2026-09-27</td><td><a href="bundle-create.html">번들 관리 v0.1.1</a></td><td>bundle-create.html</td></tr>
+        <tr data-k="list"><td>2026-09-27</td><td><a href="bundle-list.html">번들목록</a></td><td>bundle-list.html</td></tr>
+        <tr data-k="list"><td>2026-09-27</td><td><a href="display-list.html">전시목록</a></td><td>display-list.html</td></tr>
+        <tr data-k="policy"><td>2026-09-23</td><td><a href="policy.html">기준·정책</a></td><td>policy.html</td></tr>
       </tbody>
     </table></div>
   </div>
   <div role="tabpanel" id="panel-order" aria-labelledby="tab-order" hidden>
     <div class="tw"><table id="historyOrder">
-      <thead><tr><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
+      <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
       <tbody>
         <tr><td>2026-10-26</td><td><a href="order4-create.html">주문 프로세스 관리 v0.2.2</a></td><td>order4-create.html</td></tr>
         <tr><td>2026-10-20</td><td><a href="order-corner-create.html">주문 코너 등록</a></td><td>order-corner-create.html</td></tr>
@@ -75,7 +88,7 @@
   </div>
   <div role="tabpanel" id="panel-pay" aria-labelledby="tab-pay" hidden>
     <div class="tw"><table id="historyPay">
-      <thead><tr><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
+      <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
       <tbody>
         <tr><td>2026-10-13</td><td><a href="payment-method2.html">결제수단 기준정보 관리 (목록)</a></td><td>payment-method2.html</td></tr>
         <tr><td>2026-10-13</td><td><a href="payment-method2-create.html">결제수단 기준정보 관리 (생성)</a></td><td>payment-method2-create.html</td></tr>

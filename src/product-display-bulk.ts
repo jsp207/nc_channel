@@ -1,7 +1,7 @@
 // @ts-nocheck
 // 상품 전시 일괄 관리 v0.2 (product-display-bulk.html)
 // 네이버 스마트스토어의 Multi Select + Bulk Action, 카페24의 일괄 변경·엑셀 대량 관리를 참고한 프로토타입.
-// 데이터는 display-create2.html 상품 전시 목록과 같은 저장소(display-data.ts)를 쓴다. 여기서 바꾸면 상품 전시 목록에도 그대로 보인다.
+// 데이터는 product-v021.html 상품 전시 목록과 같은 저장소(display-data.ts)를 쓴다. 여기서 바꾸면 상품 전시 목록에도 그대로 보인다.
 // 엑셀은 Excel에서 바로 열리는 CSV로 주고받는다.
 import "./style.css";
 import "./list.css";
@@ -86,7 +86,7 @@ fill($('#eArea'), SVCS); fill($('#eSale'), SALE_KEYS, k => SALE[k]);
 const chBoxes = (name, cur) => CHS.map(c => `<label class="pb-ck"><input type="checkbox" name="${name}" value="${esc(c)}" ${cur.includes(c) ? 'checked' : ''}> ${esc(c)}</label>`).join('');
 const checkedCh = name => $$(`input[name="${name}"]:checked`).map(x => x.value);
 
-// 조회 조건은 display-create2.html 목록처럼 [조회]를 눌러야 반영된다.
+// 조회 조건은 product-v021.html 목록처럼 [조회]를 눌러야 반영된다.
 const FILTERS = { fKey: 'key', fQ: 'q', fDate: 'dateType', fFrom: 'from', fTo: 'to', fSale: 'sale', fDisp: 'disp', fArea: 'area', fCh: 'ch' };
 function applyFilter() {
   Object.entries(FILTERS).forEach(([id, k]) => st[k] = $('#' + id).value.trim());

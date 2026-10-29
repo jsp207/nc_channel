@@ -1,5 +1,5 @@
 // @ts-nocheck
-// 상품 전시 검사 · 운영 상태 규칙. display-create2.html(상품 전시 등록/수정)과 display-list2.html(상품 전시 목록)이 함께 쓴다.
+// 상품 전시 검사 · 운영 상태 규칙. product-v021.html(상품 전시 등록/수정)과 display-list2.html(상품 전시 목록)이 함께 쓴다.
 // 섹션별 필수 검사(sectionState · blocking)로 '작성 중' 여부를 정하고, 전시 여부 · 기간으로 운영 상태(status)를 정한다.
 import { TODAY, NOW, poBy, hasSel, psBy, MSG2, FLOWS, GIFT, TDP, DISPLAYS, CHS, ptOf, APP_CH, ordKind } from "./display-data";
 
@@ -26,7 +26,7 @@ export const appOn=d=>APP_CH.some(c=>d.channels.includes(c));
 export const needs=(d,k)=>d.kind==='po'&&appOn(d)&&!!ptOf(d)&&ptOf(d).need.includes(k);
 // 상품 유형과 연결 상품이 맞지 않으면 경고 (예: 기기서비스인데 기기 상품이 없음)
 export function ptWarn(d){ const p=ptOf(d); if(!p||!p.kinds||!d.conn.length) return ''; return connPOs(d).some(x=>p.kinds.includes(x.type))?'':`연결 상품에 ${p.kn} 상품이 없어요. 상품 유형을 다시 확인하세요`; }
-// v023 대표 상품(repPo)을 쓰는 전시인지. display-create-v23에서 저장한 전시만 이 값을 가진다
+// v023 대표 상품(repPo)을 쓰는 전시인지. product-v022에서 저장한 전시만 이 값을 가진다
 export const usesRep=d=>d.repPo!==undefined;
 // 연결한 주문 구성안이 지금 상품 유형의 주문 유형과 다른지
 export const planMismatch=d=>!!(d.orderPlan&&ptOf(d)&&ordKind(d.orderPlan.name)!==ptOf(d).ord);
