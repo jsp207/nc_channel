@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J45JDGG545"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-J45JDGG545');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>EPC 상품 조회 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴"></nav>
+<main>
+
+<!-- EPC 상품 조회 목록. 스크립트는 src/epc-list.ts, 스타일은 src/epc-list.css(목록 공통은 src/list.css) -->
+<section class="view on" id="v-list">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 관리 <span aria-hidden="true">›</span> <strong>EPC 상품 조회</strong></div>
+  <h1 class="lst-title">EPC 상품 조회</h1>
+
+  <!-- 조회 조건: [조회]를 눌러야 결과에 반영된다. 버튼은 마지막 줄 오른쪽 -->
+  <form class="lst-filter" id="lFilter" autocomplete="off">
+    <div class="lf-row">
+      <span class="lf-g">
+        <label class="lf-l" for="fKey">조회 조건</label>
+        <select id="fKey"><option value="all">전체</option><option value="name">EPC 상품명</option><option value="po">PO ID</option><option value="spec">Spec ID</option></select>
+        <input type="text" id="fQ" placeholder="EPC 상품명 또는 PO ID, Spec ID 입력" aria-label="검색어">
+      </span>
+    </div>
+    <div class="lf-row">
+      <span class="lf-g"><label class="lf-l" for="fGroup">상품 구분</label><select id="fGroup"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fType">상품 유형</label><select id="fType"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fSt">상품 상태</label><select id="fSt"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fOrd">주문 유형</label><select id="fOrd"></select></span>
+      <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
+    </div>
+  </form>
+  <h2 class="lst-count">조회 결과 <span><b id="lCount">0</b>건</span></h2>
+
+  <div class="lst-tw"><table class="lst-table" id="listTable">
+    <colgroup><col class="w-id"><col class="w-ver"><col><col class="w-gb"><col class="w-ty"><col class="w-st"><col class="w-n"><col class="w-ord"><col class="w-at"></colgroup>
+    <thead><tr>
+      <th>EPC 상품ID</th>
+      <th>버전</th>
+      <th>EPC 상품명</th>
+      <th>상품 구분</th>
+      <th>상품 유형</th>
+      <th class="c">EPC 상품상태</th>
+      <th>전시 상품수</th>
+      <th>주문 유형</th>
+      <th class="c">최종등록(수정)일시</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <nav class="lst-pager" id="pager" aria-label="페이지"></nav>
+</section>
+
+</main>
+</div>
+    <script type="module" src="/src/epc-list.ts"></script>
+  </body>
+</html>

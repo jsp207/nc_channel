@@ -35,6 +35,7 @@ export default defineConfig({
         paymentHistory2: 'payment-history2.html',
         paymentReconciliation2: 'payment-reconciliation2.html',
         productList: 'product-list.html',
+        epcList: 'epc-list.html',
         productDisplayBulk: 'product-display-bulk.html',
         productContent: 'product-content.html',
         order1: 'order1.html',

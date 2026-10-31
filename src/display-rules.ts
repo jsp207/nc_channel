@@ -105,7 +105,8 @@ export function sectionState(d){
  // OFF: 대체 버튼 문구를 채워야 한다 (버튼 없음 제외)
  if(d.kind==='ps') S.order={st:'na',e:[]};
  else if(d.orderOn){ const e=[!d.orderPlan&&'사용할 주문 구성안을 선택하세요',planMismatch(d)&&`연결한 구성안이 ${ptOf(d).ord}용이 아니에요`].filter(Boolean); S.order={st:!d.orderPlan?'todo':e.length?'warn':'done',e}; }
- else { const o=d.off, e=[o.act!=='none'&&!o.btn.trim()&&'대체 버튼 문구를 입력하세요'].filter(Boolean); S.order={st:e.length?'warn':'done',e}; }
+ // product-v022: OFF에서 버튼 문구만 비어 있지 않으면 필수에서 빠지고, 버튼 없음은 미작성으로 보인다
+ else { const o=d.off, e=[o.act!=='none'&&!o.btn.trim()&&'대체 버튼 문구를 입력하세요'].filter(Boolean); S.order=usesRep(d)?{st:e.length?'warn':o.act==='none'?'todo':'done',e,opt:!e.length}:{st:e.length?'warn':'done',e}; }
  return S;
 }
 // [키, 이름, 필수, 짧은 이름]. 화면 순서와 같다

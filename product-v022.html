@@ -603,10 +603,6 @@
       .itabs small{margin-left:4px;font-size:11px;font-weight:600;color:var(--accent)}
       .itabs small.ok{color:var(--ok)}
       .itabs small.warn{color:var(--warn)}
-      /* 추가설정 탭: 탭 옆에 사용 스위치를 둔다. 끄면 탭 이름만 흐리게 */
-      .itabs .mtab{display:flex;align-items:center;margin-right:10px}
-      .itabs .mtab button{padding-right:8px}
-      .itabs .mtab.off button{opacity:.55}
       .olist .or .oc-d{color:var(--text)}
       .itop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:var(--muted)}
       .itop input[type=number]{width:64px;text-align:center}
@@ -633,15 +629,18 @@
       .jump i.ok{background:var(--ok)}
       .jump small{font-size:11px;color:var(--muted)}
       /* 주문 구성 방식 OFF: 대체 버튼 */
-      .acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:1}
-      .acts label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;font-size:13px;cursor:pointer}
-      .acts label:has(input:checked){border:2px solid var(--accent);padding:9px 11px;background:var(--accent-soft)}
-      .acts input{margin-top:3px;accent-color:var(--accent)}
-      .acts small{display:block;font-size:11px;color:var(--muted)}
+      /* 주문 구성 방식 OFF: 필수 표시가 빠져도 상태는 오른쪽 끝. 대체 버튼을 한 줄씩 고르는 카드 */
+      #sec-order>header .req[hidden]+.st{margin-left:auto}
+      .oacts{display:flex;flex-direction:column;gap:10px}
+      .oact{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:52px;padding:8px 15px;border:1px solid var(--line-strong);border-radius:8px;font-size:14px;cursor:pointer}
+      .oact:has(input:checked){border-color:var(--accent)}
+      .oact input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+      .oact b{font-weight:600;color:var(--muted)}
+      .oact:has(input:checked) b{color:var(--text)}
+      .oact small{margin-left:2px;font-size:13px;color:var(--muted)}
       .op-tag.here{border-color:#ded6ff;background:var(--accent-soft);color:var(--accent);cursor:pointer;font:inherit;font-size:12px}
       .op-warn{margin:12px 0 0}
       .ord-sw{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}
-      @media(max-width:900px){.acts{grid-template-columns:1fr}}
       .olist .or.hd{min-height:36px;border-top:0;background:var(--surface);font-size:11px;font-weight:600;color:var(--muted)}
       .olist .or .c{justify-self:center}
       .olist .or.off>:not(.switch){opacity:.45}
@@ -780,7 +779,7 @@
         <header><b>연관 상품</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rlOn" aria-label="연관 상품 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-rel"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-rel"><div id="sb-sim"></div></div>
       </div>
-      <!-- 검색 노출 설정 · 오퍼링 문구: 전시 정보와 같은 탭 구성. 탭 옆 스위치로 사용 여부를 정한다 -->
+      <!-- 검색 노출 설정 · 오퍼링 문구: 전시 정보와 같은 탭 구성 -->
       <div class="step" id="sec-more">
         <header><b>추가설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-more"><div class="itabs" id="moreList" role="tablist" aria-label="추가설정"></div><div id="sb-search"></div><div id="sb-cvm" hidden></div></div>

@@ -82,9 +82,9 @@ function openEdit(id){
  const d=id?DISPLAYS.find(x=>x.id===id):null;
  E=d?clone(d):newDisplay();
  // v0.2.2: 새 전시는 주문 구성 방식(주문 받기)을 꺼 둔 채로 시작한다. 저장된 전시는 저장 값을 따른다
- if(!d) E.orderOn=false;
- // 추가설정의 첫 항목인 검색 노출 설정(SEO)은 새 전시에서 켜 둔 채로 시작한다. 저장된 전시는 저장 값을 따른다
- if(!d) E.search.on=true;
+ if(!d){ E.orderOn=false; E.off={act:'none',btn:''}; }
+ // 추가설정(검색 노출 설정 · 오퍼링 문구)은 끄는 스위치 없이 항상 사용한다
+ E.search.on=E.cvm.on=true;
  // v0.2.1 이전에 저장한 전시는 대표 상품이 없다. 미지정으로 두고 운영자가 직접 지정한다 (v024: 자동 지정 없음)
  if(E.repPo===undefined) E.repPo=null; delete E.repAuto; syncRep();
  // 유사한 상품 문구가 연관 상품으로 옮겨 왔다. 고객 화면 노출은 연관 상품 스위치 하나로 정한다
@@ -612,17 +612,15 @@ function rSim(){
  bind('#smT','t','#smTC'); bind('#smS','s','#smSC');
 }
 // ---------- 6-2. 추가설정: 검색 노출 설정 · 오퍼링 문구 ----------
-// 전시 정보와 같은 탭 구성. 탭을 고르면 아래에 그 항목 설정이 나오고, 탭 옆 스위치로 사용 여부를 켜고 끈다
+// 전시 정보와 같은 탭 구성. 탭을 고르면 아래에 그 항목 설정이 나온다
 const MORE=[['search','검색 노출 설정 (SEO)'],['cvm','오퍼링 문구(CVM)']];
 let curM='search';
-const moreObj=k=>k==='cvm'?E.cvm:E.search;
 function moreChips(){ const S=sectionState(E); MORE.forEach(([k])=>{ const ch=$('#mst-'+k); if(!ch) return; const [t,c]=STL[S[k].st]; ch.textContent=S[k].st==='todo'?'':t; ch.className=c; }); }
 function rMore(){
- $('#moreList').innerHTML=MORE.map(([k,l])=>{ const on=!!moreObj(k).on; return `<span class="mtab ${on?'':'off'}" role="presentation"><button type="button" role="tab" data-mk="${k}" class="${k===curM?'on':''}" aria-selected="${k===curM}">${l}<small id="mst-${k}"></small></button>${sw('data-ms',k,on,l)}</span>`; }).join('');
+ $('#moreList').innerHTML=MORE.map(([k,l])=>`<button type="button" role="tab" data-mk="${k}" class="${k===curM?'on':''}" aria-selected="${k===curM}">${l}<small id="mst-${k}"></small></button>`).join('');
  MORE.forEach(([k])=>{ $('#sb-'+k).hidden=k!==curM; });
  moreChips();
  $$('#moreList [data-mk]').forEach(el=>el.addEventListener('click',()=>{ curM=el.dataset.mk; rMore(); }));
- $$('#moreList [data-ms]').forEach(c=>c.addEventListener('change',()=>{ moreObj(c.dataset.ms).on=c.checked; rMore(); refresh(); }));
 }
 
 // ---------- 7. 검색 노출 설정 (SEO) ----------
@@ -787,7 +785,7 @@ function openBenefitModal(kind){
 // 머리줄 스위치 = 주문 받기. ON: 상품 유형에 맞는 주문 구성안을 연결한다. OFF: 주문 버튼 대신 보일 대체 버튼과 버튼 문구를 정한다
 $('#odOn').addEventListener('change',e=>{ E.orderOn=e.target.checked; setFold($('#sec-order'),true); onStepsChange(); toast(E.orderOn?'주문을 다시 받아요. 가입 유형 · 할부 · 배송 설정이 고객 화면에 나와요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
 // [키, 이름, 설명, 기본 버튼 문구]
-const OFF_ACT=[['notify','출시 · 입고 알림 신청','신청자에게 주문 시작 시 문자를 보내요','출시 알림 받기'],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['link','다른 전시로 이동','고른 전시 상품으로 보내요','다른 상품 보러가기'],['none','버튼 없음','안내 문구만 보여요','']];
+const OFF_ACT=[['none','버튼 없음','안내 문구만 보여요',''],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['notify','출시 · 입고 알림 신청','신청자에게 알림을 보내요','출시 알림 받기'],['link','다른 전시로 이동','링크 및 전시 상품으로 보내요','다른 상품 보러가기']];
 const OFF_BTN=14;
 const offBtn=o=>o.act==='none'?'':(o.btn||(OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0])[3]);
 // 필요한 주문 항목 중 이 화면에서 정하는 단계 → 섹션
@@ -800,7 +798,7 @@ function bindPlan(){
  $$('#sb-order [data-jump]').forEach(b=>b.addEventListener('click',()=>goSec(b.dataset.jump)));
 }
 function rOrder(){
- $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='po'?(E.orderOn?'주문 받는 중':'주문 받지 않음'):'';
+ $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='po'&&E.orderOn?'주문 받는 중':'';
  const box=$('#sb-order');
  if(E.kind==='ps'){ box.innerHTML=ntc('','상품 개별 전시(PS)는 주문을 받지 않아요. 고객이 주문하려면 PS가 속한 PO 전시로 이동합니다.'); return; }
  const p=ptOf(E);
@@ -814,8 +812,8 @@ function rOrder(){
   bindPlan(); return;
  }
  const o=E.off, A=OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0];
- box.innerHTML=`<div class="row" style="align-items:flex-start"><label class="fl" style="padding-top:10px">대체 버튼</label><div class="acts" role="radiogroup" aria-label="대체 버튼">${OFF_ACT.map(([k,t,d])=>`<label><input type="radio" name="oAct" value="${k}" ${o.act===k?'checked':''}><span>${t}<small>${d}</small></span></label>`).join('')}</div></div>
- ${o.act!=='none'?`<div class="row" style="margin-bottom:0"><label class="fl" for="oBtn">버튼 문구</label><input type="text" id="oBtn" value="${esc(o.btn)}" maxlength="${OFF_BTN}" placeholder="${esc(A[3])}" style="flex:1"><span class="pill len" id="oBtnC">${o.btn.length}/${OFF_BTN}</span></div>`:''}`;
+ box.innerHTML=`<div class="oacts" role="radiogroup" aria-label="대체 버튼">${OFF_ACT.map(([k,t,d])=>`<label class="oact"><input type="radio" name="oAct" value="${k}" ${o.act===k?'checked':''}><b>${t}</b><small>${d}</small></label>`).join('')}</div>
+ ${o.act!=='none'?`<div class="row" style="margin:14px 0 0"><label class="fl" for="oBtn">버튼 문구</label><input type="text" id="oBtn" value="${esc(o.btn)}" maxlength="${OFF_BTN}" placeholder="${esc(A[3])}" style="flex:1"><span class="pill len" id="oBtnC">${o.btn.length}/${OFF_BTN}</span></div>`:''}`;
  // 버튼을 바꿀 때 문구가 비었거나 이전 기본 문구 그대로면 새 기본 문구로 바꾼다
  $$('#sb-order input[name=oAct]').forEach(r=>r.addEventListener('change',()=>{ if(!o.btn||o.btn===A[3]) o.btn=OFF_ACT.find(x=>x[0]===r.value)[3]; o.act=r.value; rOrder(); refresh(); }));
  const ob=$('#oBtn'); if(ob) ob.addEventListener('input',e=>{ o.btn=e.target.value; $('#oBtnC').textContent=`${o.btn.length}/${OFF_BTN}`; refresh(); });
