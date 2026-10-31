@@ -42,6 +42,7 @@ export default defineConfig({
         order2Create: 'order2-create.html',
         order3Create: 'order3-create.html',
         order4Create: 'order4-create.html',
+        orderCornerV21: 'order-corner-v21.html',
         orderCornerCreate: 'order-corner-create.html',
         orderContainerLayout: 'order_container_layout.html',
       },

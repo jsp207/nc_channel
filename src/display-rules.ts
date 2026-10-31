@@ -88,10 +88,11 @@ export function sectionState(d){
   S.search=!sr.on?{st:any?'done':'todo',e:[]}:{st:miss.length?(miss.length===3&&!sr.og?'todo':'warn'):'done',e:miss}; }
  S.cvm={st:d.cvm.lines.slice(0,d.cvm.n).some(x=>x.trim())?'done':'todo',e:[]};
  S.review={st:d.review?'on':'off',e:[]};
- S.rel={st:d.related?'on':'off',e:[]};
  S.sim=!d.sim.on?{st:'off',e:[]}:(d.sim.mode==='def'||(d.sim.t.trim()&&d.sim.s.trim()))?{st:'on',e:[]}:{st:'warn',e:['직접 입력한 타이틀과 소타이틀을 채우세요']};
- // 추가설정 = 유사한 상품 · 오퍼링 문구 · 검색 노출 설정을 묶은 섹션
- { const sub=[S.sim,S.cvm,S.search]; S.more={st:sub.some(s=>s.st==='warn')?'warn':sub.some(s=>s.st==='done'||s.st==='on')?'done':'todo',e:sub.flatMap(s=>s.e)}; }
+ // product-v022는 유사한 상품 문구를 연관 상품 섹션에서 정한다. 문구 검사도 연관 상품으로 옮긴다
+ S.rel=usesRep(d)&&d.related&&S.sim.st==='warn'?S.sim:{st:d.related?'on':'off',e:[]};
+ // 추가설정 = 오퍼링 문구 · 검색 노출 설정을 묶은 섹션 (product-v021은 유사한 상품도 포함)
+ { const sub=usesRep(d)?[S.cvm,S.search]:[S.sim,S.cvm,S.search]; S.more={st:sub.some(s=>s.st==='warn')?'warn':sub.some(s=>s.st==='done'||s.st==='on')?'done':'todo',e:sub.flatMap(s=>s.e)}; }
  // 가입 유형 · 할부 · 배송: 통합 APP · WEB + 상품 유형이 쓰는 단계일 때만 나오는 필수 섹션.
  // 주문 구성 방식이 꺼져 있으면 고객 화면에 나오지 않으므로 필수에서 뺀다(opt). 설정 값은 남는다
  const jOn=d.join.filter(j=>j.on), opt=!d.orderOn;

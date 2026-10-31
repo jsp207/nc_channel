@@ -21,13 +21,15 @@ tabs.forEach((t,i)=>{
 });
 showTab(tabs.some(t=>'#'+t.dataset.tab===location.hash)?location.hash.slice(1):'prod');
 
-// 상품 탭: 목록 / 상세 / 정책 버튼으로 행(data-k)을 걸러 보여 준다. 처음에는 목록
-const segs=[...document.querySelectorAll('.h-seg button')];
-const prodRows=[...document.querySelectorAll('#historyProd tbody tr')];
-segs.forEach(b=>{ b.querySelector('.h-cnt').textContent=String(prodRows.filter(r=>r.dataset.k===b.dataset.k).length); });
-function showKind(k){
-  segs.forEach(b=>{ const on=b.dataset.k===k; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
-  prodRows.forEach(r=>{ r.hidden=r.dataset.k!==k; });
-}
-segs.forEach(b=>b.addEventListener('click',()=>showKind(b.dataset.k)));
-showKind('list');
+// 탭 안 구분 버튼(상품: 목록 / 상세 / 정책, 주문: 코너 / 프로세스)으로 행(data-k)을 걸러 보여 준다. 처음에는 첫 버튼
+document.querySelectorAll('[role="tabpanel"]:has(.h-seg)').forEach(panel=>{
+  const segs=[...panel.querySelectorAll('.h-seg button')];
+  const rows=[...panel.querySelectorAll('tbody tr')];
+  segs.forEach(b=>{ b.querySelector('.h-cnt').textContent=String(rows.filter(r=>r.dataset.k===b.dataset.k).length); });
+  function showKind(k){
+    segs.forEach(b=>{ const on=b.dataset.k===k; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
+    rows.forEach(r=>{ r.hidden=r.dataset.k!==k; });
+  }
+  segs.forEach(b=>b.addEventListener('click',()=>showKind(b.dataset.k)));
+  showKind(segs[0].dataset.k);
+});

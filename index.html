@@ -48,7 +48,7 @@
   <!-- 탭마다 tbody 맨 위에 한 줄씩 추가하세요(최근 날짜순) -->
   <div class="h-tabs" role="tablist" aria-label="히스토리 구분">
     <button type="button" role="tab" id="tab-prod" aria-controls="panel-prod" data-tab="prod">상품 <span class="h-cnt">16</span></button>
-    <button type="button" role="tab" id="tab-order" aria-controls="panel-order" data-tab="order">주문 <span class="h-cnt">7</span></button>
+    <button type="button" role="tab" id="tab-order" aria-controls="panel-order" data-tab="order">주문 <span class="h-cnt">8</span></button>
     <button type="button" role="tab" id="tab-pay" aria-controls="panel-pay" data-tab="pay">결제 <span class="h-cnt">11</span></button>
   </div>
   <div role="tabpanel" id="panel-prod" aria-labelledby="tab-prod">
@@ -82,16 +82,22 @@
     </table></div>
   </div>
   <div role="tabpanel" id="panel-order" aria-labelledby="tab-order" hidden>
+    <!-- 화면 구분 버튼: 각 행의 data-k(corner | process)로 걸러 보여 준다 -->
+    <div class="seg h-seg" role="group" aria-label="주문 화면 구분">
+      <button type="button" data-k="corner">코너 <span class="h-cnt"></span></button>
+      <button type="button" data-k="process">프로세스 <span class="h-cnt"></span></button>
+    </div>
     <div class="tw"><table id="historyOrder">
       <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
       <tbody>
-        <tr><td>2026-10-26</td><td><a href="order4-create.html">주문 프로세스 관리 v0.2.2</a></td><td>order4-create.html</td></tr>
-        <tr><td>2026-10-20</td><td><a href="order-corner-create.html">주문 코너 등록</a></td><td>order-corner-create.html</td></tr>
-        <tr><td>2026-10-17</td><td><a href="order3-create.html">주문 프로세스 관리 v0.2.1</a></td><td>order3-create.html</td></tr>
-        <tr><td>2026-10-13</td><td><a href="order2-create.html">주문 컨테이너 관리 2차</a></td><td>order2-create.html</td></tr>
-        <tr><td>2026-10-13</td><td><a href="order_container_layout.html">주문관리 2차</a></td><td>order_container_layout.html</td></tr>
-        <tr><td>2026-10-12</td><td><a href="order1-create.html">주문 템플릿 관리 1차 (등록)</a></td><td>order1-create.html</td></tr>
-        <tr><td>2026-10-12</td><td><a href="order1.html">주문 컨테이너 목록</a></td><td>order1.html</td></tr>
+        <tr data-k="corner" data-latest><td>2026-10-30</td><td><a href="order-corner-v21.html">주문 코너 등록 v0.2.1</a></td><td>order-corner-v21.html</td></tr>
+        <tr data-k="process" data-latest><td>2026-10-26</td><td><a href="order4-create.html">주문 프로세스 관리 v0.2.2</a></td><td>order4-create.html</td></tr>
+        <tr data-k="corner"><td>2026-10-20</td><td><a href="order-corner-create.html">주문 코너 등록</a></td><td>order-corner-create.html</td></tr>
+        <tr data-k="process"><td>2026-10-17</td><td><a href="order3-create.html">주문 프로세스 관리 v0.2.1</a></td><td>order3-create.html</td></tr>
+        <tr data-k="process"><td>2026-10-13</td><td><a href="order2-create.html">주문 컨테이너 관리 2차</a></td><td>order2-create.html</td></tr>
+        <tr data-k="process"><td>2026-10-13</td><td><a href="order_container_layout.html">주문관리 2차</a></td><td>order_container_layout.html</td></tr>
+        <tr data-k="process"><td>2026-10-12</td><td><a href="order1-create.html">주문 템플릿 관리 1차 (등록)</a></td><td>order1-create.html</td></tr>
+        <tr data-k="process"><td>2026-10-12</td><td><a href="order1.html">주문 컨테이너 목록</a></td><td>order1.html</td></tr>
       </tbody>
     </table></div>
   </div>

@@ -11,6 +11,7 @@ const ICONS = {
   content: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.8"/><path d="m21 15-4.5-4.5L6 21"/>',
   policy: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
   process: '<rect x="3" y="4" width="6" height="6" rx="1.5"/><rect x="15" y="14" width="6" height="6" rx="1.5"/><path d="M9 7h5a3 3 0 0 1 3 3v4"/>',
+  corner: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
   card: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
   history: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   reconcile: '<path d="M4 8h13l-3-3M20 16H7l3 3"/>',
@@ -31,6 +32,7 @@ const MENU = [
   ] },
   { label: '주문관리', items: [
     { label: '주문 프로세스 관리', icon: 'process', href: 'order4-create.html', match: ['order3-create.html'] },
+    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v21.html', match: ['order-corner-create.html'] },
     { label: '정책', icon: 'policy', href: '' },
   ] },
   { label: '결제관리', items: [
