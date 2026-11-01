@@ -1,0 +1,20 @@
+/* 결제이력 관리 목록 (payment-history3.html): 결제수단 기준정보 목록의 스타일(style.css, list.css, payment3-list.css)을 그대로 쓰고, 이 표의 열 폭 · 합계 행 · 선택 표시만 더한다. */
+.pm3-tools{flex-wrap:wrap}
+.pm3-tools .btn{height:36px;min-height:0;padding:0 14px;border-radius:6px;font-size:13px}
+.pm3h-picked{font-size:14px}
+.pm3h-picked b{color:var(--accent);font-weight:500}
+.pm3h-clear{padding:0;border:0;background:none;color:var(--accent);font-size:13px;cursor:pointer}
+.pm3h-clear:hover{text-decoration:underline}
+
+/* 결과 표: 글자 크기와 칸 여백은 결제수단 목록과 같다. 모든 열에 폭을 줘서 넓은 화면에서는 같은 비율로 늘어나고, 좁으면 표 안에서 옆으로 스크롤한다 */
+#listTable{min-width:1268px}
+#listTable col.w-ck{width:34px}#listTable col.w-gr{width:62px}#listTable col.w-or{width:126px}#listTable col.w-pd{width:88px}#listTable col.w-at{width:156px}
+#listTable col.w-pg{width:92px}#listTable col.w-mi{width:98px}#listTable col.w-me{width:80px}#listTable col.w-am{width:92px}#listTable col.w-ca{width:72px}#listTable col.w-ne{width:92px}
+#listTable col.w-st{width:88px}#listTable col.w-bs{width:78px}#listTable col.w-ac{width:110px}
+@media(min-width:1680px){#listTable col.w-pd{width:160px}}
+#listTable input[type=checkbox]{vertical-align:middle}
+#listTable thead tr.tot td{height:48px;padding:8px;background:#f7f8fa;font-weight:600}
+#listTable tbody tr.sel{background:var(--accent-soft)}
+#listTable .btn.sm{min-height:28px;padding:0 8px;border-radius:6px}
+.pm3h-dim{color:var(--muted)}
+.pm3h-bad{color:var(--bad)}

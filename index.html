@@ -49,7 +49,7 @@
   <div class="h-tabs" role="tablist" aria-label="히스토리 구분">
     <button type="button" role="tab" id="tab-prod" aria-controls="panel-prod" data-tab="prod">상품 <span class="h-cnt">17</span></button>
     <button type="button" role="tab" id="tab-order" aria-controls="panel-order" data-tab="order">주문 <span class="h-cnt">8</span></button>
-    <button type="button" role="tab" id="tab-pay" aria-controls="panel-pay" data-tab="pay">결제 <span class="h-cnt">11</span></button>
+    <button type="button" role="tab" id="tab-pay" aria-controls="panel-pay" data-tab="pay">결제 <span class="h-cnt">16</span></button>
   </div>
   <div role="tabpanel" id="panel-prod" aria-labelledby="tab-prod">
     <!-- 화면 구분 버튼: 각 행의 data-k(list | detail | policy)로 걸러 보여 준다. 상세 제목은 '화면명 vX.Y.Z' 형식 -->
@@ -103,20 +103,32 @@
     </table></div>
   </div>
   <div role="tabpanel" id="panel-pay" aria-labelledby="tab-pay" hidden>
+    <!-- 화면 구분 버튼: 각 행의 data-k(method | history | recon | fee)로 걸러 보여 준다 -->
+    <div class="seg h-seg" role="group" aria-label="결제 화면 구분">
+      <button type="button" data-k="method">결제수단 기준정보 <span class="h-cnt"></span></button>
+      <button type="button" data-k="history">결제이력관리 <span class="h-cnt"></span></button>
+      <button type="button" data-k="recon">거래내역관리 <span class="h-cnt"></span></button>
+      <button type="button" data-k="fee">수수료조회 <span class="h-cnt"></span></button>
+    </div>
     <div class="tw"><table id="historyPay">
       <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
       <tbody>
-        <tr><td>2026-10-13</td><td><a href="payment-method2.html">결제수단 기준정보 관리 (목록)</a></td><td>payment-method2.html</td></tr>
-        <tr><td>2026-10-13</td><td><a href="payment-method2-create.html">결제수단 기준정보 관리 (생성)</a></td><td>payment-method2-create.html</td></tr>
-        <tr><td>2026-10-13</td><td><a href="payment-history2.html">결제이력관리</a></td><td>payment-history2.html</td></tr>
-        <tr><td>2026-10-13</td><td><a href="payment-reconciliation2.html">PG 수수료 / 정산 대사</a></td><td>payment-reconciliation2.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment-merchant.html">결제 가맹점 정보관리</a></td><td>payment-merchant.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment-merchant-product.html">결제 가맹점 상품관리</a></td><td>payment-merchant-product.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment-history.html">결제이력 관리</a></td><td>payment-history.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment-settlement.html">PG 수수료/정산 관리</a></td><td>payment-settlement.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment-exposure.html">결제수단 노출 우선순위 관리</a></td><td>payment-exposure.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment-policy.html">결제 폴리시</a></td><td>payment-policy.html</td></tr>
-        <tr><td>2026-10-04</td><td><a href="payment1.html">결제 1차</a></td><td>payment1.html</td></tr>
+        <tr data-k="history" data-latest><td>2026-11-01</td><td><a href="payment-history3.html">결제이력 관리 v0.2.1 (목록)</a></td><td>payment-history3.html</td></tr>
+        <tr data-k="history" data-latest><td>2026-11-01</td><td><a href="payment-history3-detail.html">결제이력 관리 v0.2.1 (상세)</a></td><td>payment-history3-detail.html</td></tr>
+        <tr data-k="method" data-latest><td>2026-11-01</td><td><a href="payment-method3.html">결제수단 기준정보 관리 v0.2.1 (목록)</a></td><td>payment-method3.html</td></tr>
+        <tr data-k="method" data-latest><td>2026-11-01</td><td><a href="payment-method3-create.html">결제수단 기준정보 관리 v0.2.1 (등록)</a></td><td>payment-method3-create.html</td></tr>
+        <tr data-k="method" data-latest><td>2026-11-01</td><td><a href="payment-method3-detail.html">결제수단 기준정보 관리 v0.2.1 (상세)</a></td><td>payment-method3-detail.html</td></tr>
+        <tr data-k="method"><td>2026-10-13</td><td><a href="payment-method2.html">결제수단 기준정보 관리 (목록)</a></td><td>payment-method2.html</td></tr>
+        <tr data-k="method"><td>2026-10-13</td><td><a href="payment-method2-create.html">결제수단 기준정보 관리 (생성)</a></td><td>payment-method2-create.html</td></tr>
+        <tr data-k="history"><td>2026-10-13</td><td><a href="payment-history2.html">결제이력관리</a></td><td>payment-history2.html</td></tr>
+        <tr data-k="recon"><td>2026-10-13</td><td><a href="payment-reconciliation2.html">PG 수수료 / 정산 대사</a></td><td>payment-reconciliation2.html</td></tr>
+        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-merchant.html">결제 가맹점 정보관리</a></td><td>payment-merchant.html</td></tr>
+        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-merchant-product.html">결제 가맹점 상품관리</a></td><td>payment-merchant-product.html</td></tr>
+        <tr data-k="history"><td>2026-10-04</td><td><a href="payment-history.html">결제이력 관리</a></td><td>payment-history.html</td></tr>
+        <tr data-k="fee"><td>2026-10-04</td><td><a href="payment-settlement.html">PG 수수료/정산 관리</a></td><td>payment-settlement.html</td></tr>
+        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-exposure.html">결제수단 노출 우선순위 관리</a></td><td>payment-exposure.html</td></tr>
+        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-policy.html">결제 폴리시</a></td><td>payment-policy.html</td></tr>
+        <tr data-k="method"><td>2026-10-04</td><td><a href="payment1.html">결제 1차</a></td><td>payment1.html</td></tr>
       </tbody>
     </table></div>
   </div>

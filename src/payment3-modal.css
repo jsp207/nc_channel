@@ -1,0 +1,45 @@
+/* 결제수단 기준정보 관리 v0.2.1: 운영상태 변경 모달 · 토스트. 목록과 상세의 기본 스타일이 달라 pm- 접두어로 따로 둔다. */
+.pm-dim{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-start;justify-content:center;padding:6vh 20px;overflow:auto;background:rgba(18,19,32,.42)}
+.pm-box{width:min(640px,100%);border-radius:14px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.25);font-size:13px;line-height:1.5}
+.pm-h{display:flex;justify-content:space-between;gap:16px;padding:20px 24px 12px;border-bottom:1px solid var(--line)}
+.pm-h h2{margin:0;font-size:18px;font-weight:700}
+.pm-h p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.pm-x{width:34px;height:34px;flex:none;border:0;border-radius:8px;background:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer}
+.pm-x:hover{background:#f4f5f8}
+.pm-b{max-height:64vh;padding:16px 24px;overflow:auto}
+.pm-b h3{margin:20px 0 8px;font-size:14px;font-weight:700}
+.pm-b h3 small{margin-left:6px;color:var(--muted);font-size:12px;font-weight:400}
+.pm-form{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px 12px;align-items:center}
+.pm-l{font-weight:500}
+.pm-l i{color:var(--bad);font-style:normal}
+.pm-c{display:flex;flex-wrap:wrap;gap:8px 18px}
+.pm-c textarea{width:100%;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;font:inherit;resize:vertical}
+.pm-ck{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.pm-st{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500}
+.pm-st.ok{background:#e0f6e9;color:#1f8a5b}
+.pm-st.warn{background:#fff0c2;color:#b86a00}
+.pm-st.off{background:#eceef3;color:#5c6577}
+.pm-t{width:100%;border-collapse:collapse;border-top:1px solid var(--line);font-size:13px}
+.pm-t td{padding:8px 10px;border-bottom:1px solid var(--line);background:none;vertical-align:middle;line-height:1.5}
+.pm-skip td{color:var(--muted)}
+.pm-mono{font-variant-numeric:tabular-nums;font-weight:600}
+.pm-impact{margin-top:14px}
+.pm-impact h3{margin-top:0}
+.pm-info{padding:10px 12px;border-radius:8px;background:#f4f5f8;color:#4e5b73}
+.pm-info.warn{background:#fff4e2;color:#6f3b00}
+.pm-info.ok{background:#e9f6ee;color:#147a43}
+.pm-corner{margin-top:10px;border:1px solid var(--line);border-radius:8px}
+.pm-corner-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);background:#f7f8fa;border-radius:8px 8px 0 0}
+.pm-corner-h small{color:var(--muted)}
+.pm-corner-i{padding:9px 12px}
+.pm-corner-i+.pm-corner-i{border-top:1px solid var(--line)}
+.pm-alt{margin-top:4px;font-size:12px}
+.pm-cp{display:inline-block;padding:0 6px;border:1px solid var(--line-strong);border-radius:4px;font-size:11px;line-height:18px}
+.pm-bad{color:var(--bad)}
+.pm-impact>.pm-ck{margin-top:12px}
+.pm-f{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:14px 24px;border-top:1px solid var(--line)}
+.pm-why{margin-right:auto;color:var(--bad);font-size:12px}
+.pm-toast{position:fixed;left:50%;bottom:28px;z-index:60;max-width:calc(100vw - 32px);padding:12px 18px;border-radius:10px;background:#22232c;color:#fff;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.2);transform:translateX(-50%);opacity:0;pointer-events:none;transition:opacity .2s}
+.pm-toast.on{opacity:1}
+.pm-toast.bad{background:#a51f2f}
+@media(prefers-reduced-motion:reduce){.pm-toast{transition:none}}

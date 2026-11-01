@@ -1,0 +1,24 @@
+/* 결제이력 관리 상세 v0.2.1 (payment-history3-detail.html): payment2.css 위에 이 화면의 요소를 더한다. 목록은 payment3-history-list.css */
+.ph .h1{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+
+/* 표: 모든 표가 같은 4칸을 써서 세로줄이 맞는다. 라벨 칸은 거래 이력의 일시가 한 줄에 들어가는 폭이다 */
+.pm3h-grid{width:100%;table-layout:fixed}
+.pm3h-grid col.pm3h-k{width:176px}
+.ft.pm3h-grid th{width:auto}
+.tbl.pm3h-grid{min-width:680px}
+.tbl.pm3h-grid th,.tbl.pm3h-grid td{padding:12px 14px;white-space:normal}
+.tbl.pm3h-grid th{position:static}
+.pm3h-foot{align-items:center;flex-wrap:wrap}
+.pm3h-mono{font-weight:600;font-variant-numeric:tabular-nums}
+.pm3h-box{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.pm3h-box>div{padding:12px 14px;border:1px solid var(--line);border-radius:8px}
+.pm3h-box span{display:block;color:var(--ink3);font-size:12px}
+.pm3h-box b{font-size:17px}
+.pm3h-err{margin-top:4px;color:var(--bad);font-size:12px}
+.pm3h-err:empty{display:none}
+.mdl-f .why{margin-right:auto;color:var(--bad);font-size:12px;align-self:center}
+
+@media(max-width:900px){
+  .ft,.ft tbody,.ft tr,.ft th,.ft td{display:block;width:100%}
+  .ft .rng{flex-wrap:wrap}
+}

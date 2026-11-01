@@ -36,8 +36,8 @@ const MENU = [
     { label: '정책', icon: 'policy', href: '' },
   ] },
   { label: '결제관리', items: [
-    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method2.html', match: ['payment-method2-create.html'] },
-    { label: '결제 이력 관리', icon: 'history', href: 'payment-history2.html' },
+    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method3.html', match: ['payment-method3-create.html', 'payment-method3-detail.html', 'payment-method2.html', 'payment-method2-create.html'] },
+    { label: '결제 이력 관리', icon: 'history', href: 'payment-history3.html', match: ['payment-history3-detail.html', 'payment-history2.html'] },
     { label: '거래내역 대사관리', icon: 'reconcile', href: 'payment-reconciliation2.html' },
     { label: '수수료 조회', icon: 'fee', href: '' },
     { label: '정책', icon: 'policy', href: 'payment-policy.html' },

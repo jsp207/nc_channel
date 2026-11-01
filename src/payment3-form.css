@@ -1,0 +1,27 @@
+/* 결제수단 기준정보 관리 등록 · 상세: payment2.css(기존 결제수단 등록 화면) 위에 이 화면에서만 쓰는 모양을 더한다. */
+.pm3-err{margin-top:4px;color:var(--bad);font-size:12px}
+.pm3-err:empty{display:none}
+.pm3-kst{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pm3-kmsg{font-size:12px;color:var(--ink2)}
+.pm3-kmsg.ok{color:var(--ok)}
+.pm3-kmsg.bad{color:var(--bad)}
+.pm3-keyline{display:flex;align-items:center;gap:8px;min-height:24px}
+.pm3-keyline span:first-child{min-width:120px;color:var(--ink3)}
+.pm3-keyrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:6px}
+.pm3-cps{display:flex;flex-wrap:wrap;gap:6px}
+.pm3-cp{display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid var(--line2);border-radius:6px;background:#fff;color:var(--ink);font-size:12.5px;text-decoration:none}
+a.pm3-cp:hover{border-color:var(--ac);color:var(--ac)}
+.pm3-cp.on{border-color:var(--ac);background:var(--ac2);color:var(--ac);font-weight:700}
+.pm3-mono{font-weight:600;font-variant-numeric:tabular-nums}
+.ph .h1{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pm3-tabbody{margin-top:24px}
+.pm3-tabbody>.sec:first-child{margin-top:0}
+.tabs button em{min-width:20px;padding:0 6px;border-radius:10px;background:var(--th);color:var(--ink3);font-size:11px;font-style:normal;font-weight:600;line-height:18px;text-align:center}
+.tabs button.on em{background:var(--ac2);color:var(--ac)}
+.tbl tr.me td{background:var(--ac2)}
+.tbl tr.end td{color:var(--ink3)}
+.tbl .lock{margin-right:6px;color:var(--ink3);font-size:12px}
+.pm3-corner+.pm3-corner{margin-top:24px}
+.pm3-corner-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+.pm3-corner-h small{color:var(--ink3)}
+@media(max-width:900px){.ft,.ft tbody,.ft tr,.ft th,.ft td{display:block;width:100%}}
