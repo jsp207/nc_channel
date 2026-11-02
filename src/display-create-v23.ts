@@ -199,7 +199,7 @@ function rChLink(S){
 
 // ---------- 1. 전시 유형 ----------
 function rKind(){
- const T=[['po','상품 판매'],['ps','[TBD] 상품 개별 전시 (PS · 주문 없음)']];
+ const T=[['po','PO/MP 상품 전시'],['ps','PS 상품 전시[TBD]']];
  $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
  ${ntc('',E.kind==='po'?'EPC 상품(PO)을 연결해 판매합니다. 고객 선택 방식과 주문 구성을 설정해요.':'PO 안의 서비스(PS) 하나를 소개용으로 전시합니다. 주문은 PS가 속한 PO 전시에서 진행되므로 고객 선택 방식·가입 유형·할부·티다팩·주문 구성은 쓰지 않아요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
  $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.areas=k==='po'?[newArea('','fixed')]:[]; E.method='fixed'; syncRep(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefits(E); renderAll(); }));
@@ -250,7 +250,7 @@ const curArea=()=>E.areas.find(a=>a.id===cur);
 const areaLabel=a=>a.name.trim()||(E.method==='complex'?`구성 영역 ${E.areas.indexOf(a)+1}`:'고객 선택 방식');
 function rMethod(){
  const box=$('#sb-method');
- if(E.kind==='ps'){ box.innerHTML=ntc('','상품 개별 전시(PS)는 판매 단위가 아니라서 고객 선택 방식을 쓰지 않아요.'); return; }
+ if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 판매 단위가 아니라서 고객 선택 방식을 쓰지 않아요.'); return; }
  const M=[['fixed','고정형','연결 상품을 모두 제공'],['select','선택형','연결 상품 중에서 목록·옵션으로 고름'],['complex','복합형','구성 영역 N개를 순서대로 조합']];
  const m=M.find(x=>x[0]===E.method);
  box.innerHTML=`${!E.conn.length?ntc('warn',`먼저 연결 상품을 추가하세요.${E.method==='complex'?' 연결한 상품을 구성 영역에 나눠 담아요.':''}`):''}
@@ -800,7 +800,7 @@ function bindPlan(){
 function rOrder(){
  $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='po'&&E.orderOn?'주문 받는 중':'';
  const box=$('#sb-order');
- if(E.kind==='ps'){ box.innerHTML=ntc('','상품 개별 전시(PS)는 주문을 받지 않아요. 고객이 주문하려면 PS가 속한 PO 전시로 이동합니다.'); return; }
+ if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 주문을 받지 않아요. 고객이 주문하려면 PS가 속한 PO 전시로 이동합니다.'); return; }
  const p=ptOf(E);
  if(E.orderOn){
   if(!p){ box.innerHTML=ntc('warn','고객 선택 방식에서 <b>대표 상품</b>을 먼저 지정하세요. 대표 상품의 상품 유형에 따라 주문 구성안 종류와 필요한 주문 항목이 정해져요')+planBox(null); bindPlan(); return; }
