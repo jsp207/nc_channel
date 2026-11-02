@@ -1,7 +1,7 @@
 // @ts-nocheck
 // 상품 전시 목록 v0.3 (display-list2.html)
 // 상품 전시 관리의 목록(product-v021.html?view=list)과 상품 전시 일괄 관리(product-display-bulk.html)를 한 화면으로 합쳤다.
-// - 목록 열 · 조회 조건: 상품 전시 목록(버전 · 연결 상품 · 고객 선택 방식 · 운영 상태 · EPC 상태 · 담당자) + 일괄 관리(판매상태 · 전시여부 · 노출순위)
+// - 목록 열 · 조회 조건: 상품 전시 목록(버전 · 연결 상품 · 고객 선택 방식 · 운영 상태 · EPC 상태 · 담당자) + 일괄 관리(상태 · 전시여부 · 노출순위)
 // - 선택 · 일괄 변경 · 행 안의 바로 변경 · 수정 팝업 · 복사 · 삭제 · 되돌리기 · 엑셀(CSV) 내려받기/올리기는 일괄 관리와 같다
 // 등록/수정은 product-v021.html. 데이터는 같은 저장소(display-data.ts), 운영 상태 규칙은 display-rules.ts를 함께 쓴다.
 import "./style.css";
@@ -20,10 +20,11 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const EDIT_URL = id => `product-v021.html${id ? `?id=${id}` : ''}`;
 
 // ---------- 기준값 ----------
-const SALE = { live: '판매중', wait: '판매대기', soldout: '품절', stop: '판매중지' };
+// 승인 절차: 임시저장 → 승인요청 → 승인완료 또는 반려
+const APPR = { draft: '임시저장', req: '승인요청', done: '승인완료', reject: '반려' };
 const DISP = { Y: '전시', N: '미전시' };
-const FIELD = { sale: '판매상태', disp: '전시여부', ch: '전시 채널', period: '전시기간', rank: '노출순위' };
-const SALE_KEYS = Object.keys(SALE);
+const FIELD = { appr: '상태', disp: '전시여부', ch: '전시 채널', period: '전시기간', rank: '노출순위' };
+const APPR_KEYS = Object.keys(APPR);
 const OPS = ['예정', '전시중', '종료', '미전시', '작성중'];
 const METHODS = ['고정형', '선택형(목록)', '선택형(옵션)', '복합형'];
 // 고객 선택 방식: 상품 판매(PO) 전시만 있고, 선택형은 첫 영역이 옵션 선택이면 옵션, 아니면 목록
@@ -38,7 +39,7 @@ const addDays = (iso, n) => { const dt = new Date(iso + 'T00:00:00'); dt.setDate
 
 // ---------- 전시 → 목록 행 ----------
 // 행은 상품 전시(DISPLAYS)를 그대로 읽고 쓰는 창이다. 전시명 · 전시 유형 · 전시 채널 · 전시여부 · 전시기간은 등록/수정 화면과 같은 값,
-// 판매상태 · 노출순위는 목록에서 정하는 값으로 전시에 함께 저장한다. 운영 상태 · EPC 상태 · 담당자 등은 읽기 전용
+// 상태 · 노출순위는 목록에서 정하는 값으로 전시에 함께 저장한다. 상태를 정한 적 없는 전시는 작성중이면 임시저장, 아니면 승인완료로 본다. 운영 상태 · EPC 상태 · 담당자 등은 읽기 전용
 const views = new WeakMap();
 function view(d) {
   if (views.has(d)) return views.get(d);
@@ -49,7 +50,7 @@ function view(d) {
     name: p(() => nameText(d.name), x => { if (x !== nameText(d.name)) d.name = x; }),
     area: p(() => d.svc || '', x => d.svc = x),
     ch: p(() => d.channels.slice(), x => d.channels = CHS.filter(c => x.includes(c))),
-    sale: p(() => d.sale || 'live', x => d.sale = x),
+    appr: p(() => d.appr || (opState(d)[0] === '작성중' ? 'draft' : 'done'), x => d.appr = x),
     disp: p(() => d.show ? 'Y' : 'N', x => d.show = x === 'Y'),
     rank: p(() => d.rank || Math.min(999, d.id), x => d.rank = x),
     from: p(() => d.from || '', x => d.from = x),
@@ -74,7 +75,7 @@ function commit() { if (!saveList()) toast('브라우저 저장소를 쓸 수 �
 
 // ---------- 상태 ----------
 // 조회 기간 기본값: 최근 90일 ~ 올해 말 (등록일/수정일 기준)
-const ST_DEF = () => ({ key: 'all', q: '', dateType: 'upd', from: addDays(TODAY, -90), to: TODAY.slice(0, 4) + '-12-31', op: '', ch: '', area: '', sale: '', disp: '', method: '', owner: '', team: '' });
+const ST_DEF = () => ({ key: 'all', q: '', dateType: 'upd', from: addDays(TODAY, -90), to: TODAY.slice(0, 4) + '-12-31', op: '', ch: '', area: '', appr: '', disp: '', method: '', owner: '', team: '' });
 const st = { ...ST_DEF(), sort: 'upd', dir: 'desc', page: 1, size: 20 };
 const selected = new Set();
 
@@ -89,23 +90,23 @@ function filtered() {
   };
   return rowsAll().filter(d => hitQ(d) && hitDate(d)
     && (!st.op || d.op === st.op) && (!st.area || d.area === st.area) && (!st.ch || d.ch.includes(st.ch))
-    && (!st.sale || d.sale === st.sale) && (!st.disp || d.disp === st.disp)
+    && (!st.appr || d.appr === st.appr) && (!st.disp || d.disp === st.disp)
     && (!st.method || d.method === st.method) && (!st.owner || d.owner === st.owner) && (!st.team || d.team === st.team));
 }
 function sorted(list) {
   const k = st.sort, m = st.dir === 'asc' ? 1 : -1;
-  const v = d => k === 'sale' ? SALE_KEYS.indexOf(d.sale) : k === 'op' ? OPS.indexOf(d.op) : k === 'rank' ? d.rank : String(d[k] ?? '');
+  const v = d => k === 'appr' ? APPR_KEYS.indexOf(d.appr) : k === 'op' ? OPS.indexOf(d.op) : k === 'rank' ? d.rank : String(d[k] ?? '');
   return [...list].sort((a, b) => (v(a) > v(b) ? 1 : v(a) < v(b) ? -1 : 0) * m);
 }
 
 // ---------- 필터 ----------
 const fill = (sel, list, label = x => x) => list.forEach(x => sel.appendChild(new Option(label(x), x)));
-fill($('#eArea'), SVCS); fill($('#eSale'), SALE_KEYS, k => SALE[k]);
+fill($('#eArea'), SVCS); fill($('#eAppr'), APPR_KEYS, k => APPR[k]);
 const chBoxes = (name, cur) => CHS.map(c => `<label class="pb-ck"><input type="checkbox" name="${name}" value="${esc(c)}" ${cur.includes(c) ? 'checked' : ''}> ${esc(c)}</label>`).join('');
 const checkedCh = name => $$(`input[name="${name}"]:checked`).map(x => x.value);
 
 // 조회 조건은 [조회]를 눌러야 반영된다.
-const FILTERS = { fKey: 'key', fQ: 'q', fDate: 'dateType', fFrom: 'from', fTo: 'to', fSt: 'op', fCh: 'ch', fArea: 'area', fSale: 'sale', fDisp: 'disp', fMethod: 'method', fOwner: 'owner', fTeam: 'team' };
+const FILTERS = { fKey: 'key', fQ: 'q', fDate: 'dateType', fFrom: 'from', fTo: 'to', fSt: 'op', fCh: 'ch', fArea: 'area', fAppr: 'appr', fDisp: 'disp', fMethod: 'method', fOwner: 'owner', fTeam: 'team' };
 function applyFilter() {
   Object.entries(FILTERS).forEach(([id, k]) => st[k] = $('#' + id).value.trim());
   if (st.from && st.to && st.from > st.to) [st.from, st.to] = [st.to, st.from];
@@ -123,12 +124,12 @@ function resetFilter() {
 $('#lFilter').addEventListener('submit', e => { e.preventDefault(); applyFilter(); });
 $('#lFilter').addEventListener('reset', e => { e.preventDefault(); resetFilter(); });
 
-// 선택 상자: 운영 상태 · 판매상태 · 전시여부는 항목마다 건수를 보여 준다. 담당자 · 담당팀은 지금 있는 값으로 채운다. 고른 값은 [조회] 때 반영한다.
+// 선택 상자: 운영 상태 · 상태 · 전시여부는 항목마다 건수를 보여 준다. 담당자 · 담당팀은 지금 있는 값으로 채운다. 고른 값은 [조회] 때 반영한다.
 const OPTS = {
   fSt: { k: 'op', opts: () => OPS.map(v => [v, v]), count: true },
   fCh: { k: 'ch', opts: () => CHS.map(v => [v, v]) },
   fArea: { k: 'area', opts: () => SVCS.map(v => [v, v]) },
-  fSale: { k: 'sale', opts: () => SALE_KEYS.map(k => [k, SALE[k]]), count: true },
+  fAppr: { k: 'appr', opts: () => APPR_KEYS.map(k => [k, APPR[k]]), count: true },
   fDisp: { k: 'disp', opts: () => [['Y', '전시'], ['N', '미전시']], count: true },
   fMethod: { k: 'method', opts: () => METHODS.map(v => [v, v]) },
   fOwner: { k: 'owner', opts: () => [...new Set(rowsAll().map(d => d.owner))].sort().map(v => [v, personName(v)]) },
@@ -168,7 +169,7 @@ function rowHtml(d) {
     <td title="${esc(d.method)}">${esc(d.method)}</td>
     <td class="c"><span class="lb ${oc}">${os}</span></td>
     <td class="c">${ep ? `<span class="lb ${ep[1]}">${esc(ep[0])}</span>` : '-'}</td>
-    <td><select class="pb-inline s-${d.sale}" data-act="sale" aria-label="판매상태">${SALE_KEYS.map(k => `<option value="${k}" ${k === d.sale ? 'selected' : ''}>${SALE[k]}</option>`).join('')}</select></td>
+    <td><select class="pb-inline s-${d.appr}" data-act="appr" aria-label="상태">${APPR_KEYS.map(k => `<option value="${k}" ${k === d.appr ? 'selected' : ''}>${APPR[k]}</option>`).join('')}</select></td>
     <td><button type="button" class="pb-switch" role="switch" data-act="disp" aria-checked="${d.disp === 'Y'}" aria-label="전시 여부" title="${DISP[d.disp]}"></button></td>
     <td class="c"><input type="text" class="pb-rank" data-act="rank" value="${d.rank}" inputmode="numeric" aria-label="노출순위"></td>
     <td class="c pb-period">${periodHtml(d)}</td>
@@ -210,8 +211,8 @@ function render() {
   renderSelection(rows, list);
 }
 $('#pager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; st.page = +b.dataset.p; render(); });
-// 등록은 상품 전시 관리 v0.2.2(대표 상품) 화면으로 연다
-$('#lNew').addEventListener('click', () => { location.href = 'product-v022.html'; });
+// 등록은 상품 전시 관리 v0.2.3(EPC LV2 · LV3 조회) 화면으로 연다
+$('#lNew').addEventListener('click', () => { location.href = 'product-v023.html'; });
 
 // 등록/수정 화면(다른 탭)에서 저장하면 다시 읽는다. 지워진 전시는 선택에서 뺀다
 window.addEventListener('storage', e => {
@@ -261,10 +262,10 @@ tbody.addEventListener('change', e => {
     e.target.checked ? selected.add(d.id) : selected.delete(d.id);
     tr.classList.toggle('sel', e.target.checked); renderSelection(); return;
   }
-  if (e.target.dataset.act === 'sale') {
+  if (e.target.dataset.act === 'appr') {
     const before = snap(d);
-    update([d], x => x.sale = e.target.value);
-    toast(`${d.name} · 판매상태를 ${SALE[d.sale]}(으)로 바꿨습니다`, () => restore([before]));
+    update([d], x => x.appr = e.target.value);
+    toast(`${d.name} · 상태를 ${APPR[d.appr]}(으)로 바꿨습니다`, () => restore([before]));
   }
   if (e.target.dataset.act === 'rank') {
     const v = +e.target.value;
@@ -288,13 +289,13 @@ tbody.addEventListener('click', e => {
   if (b.dataset.act === 'edit') openEdit(d);
   if (b.dataset.act === 'pvw') alert('준비중입니다.');
   if (b.dataset.act === 'copy') {
-    // 전시 전체를 복사하고 판매대기 · 미전시 · V1로 만든다. 대표 전시 지정은 가져오지 않는다
+    // 전시 전체를 복사하고 임시저장 · 미전시 · V1로 만든다. 대표 전시 지정은 가져오지 않는다
     const c = clone(d._d);
-    Object.assign(c, { id: nextDisplayId(), name: d.name + ' (복사)', show: false, rep: [], ver: 1, sale: 'wait', updatedAt: nowStamp(), editor: EDITOR });
+    Object.assign(c, { id: nextDisplayId(), name: d.name + ' (복사)', show: false, rep: [], ver: 1, appr: 'draft', updatedAt: nowStamp(), editor: EDITOR });
     DISPLAYS.splice(DISPLAYS.indexOf(d._d) + 1, 0, c); commit();
     const cid = dispId(c.id);
     flashIds.add(cid); render();
-    toast(`${cid}로 복사했습니다 (판매대기 · 미전시)`, () => { removeDisplays(new Set([cid])); selected.delete(cid); commit(); render(); });
+    toast(`${cid}로 복사했습니다 (임시저장 · 미전시)`, () => { removeDisplays(new Set([cid])); selected.delete(cid); commit(); render(); });
   }
 });
 
@@ -321,7 +322,7 @@ function openEdit(d) {
   $('#eTitle').textContent = `전시 수정 · ${d.id}`;
   $('#eFull').href = EDIT_URL(d._d.id);
   $('#eName').value = d.name; $('#eArea').value = d.area; $('#eCh').innerHTML = chBoxes('eCh', d.ch);
-  $('#eSale').value = d.sale; $('#eDisp').value = d.disp; $('#eRank').value = d.rank; $('#eFrom').value = d.from; $('#eTo').value = d.to;
+  $('#eAppr').value = d.appr; $('#eDisp').value = d.disp; $('#eRank').value = d.rank; $('#eFrom').value = d.from; $('#eTo').value = d.to;
   $('#eErr').textContent = '';
   $('#dlgEdit').showModal();
 }
@@ -331,16 +332,16 @@ $('#eForm').addEventListener('submit', e => {
     : !from ? '전시 시작일을 입력하세요' : (to && to < from) ? '종료일은 시작일 이후여야 합니다' : '';
   if (err) { e.preventDefault(); $('#eErr').textContent = err; return; }
   const before = snap(editing);
-  update([editing], x => Object.assign(x, { name, area: $('#eArea').value, ch, sale: $('#eSale').value, disp: $('#eDisp').value, rank, from, to }));
+  update([editing], x => Object.assign(x, { name, area: $('#eArea').value, ch, appr: $('#eAppr').value, disp: $('#eDisp').value, rank, from, to }));
   toast(`${editing.id}을(를) 저장했습니다`, () => restore([before]));
 });
 
 // ---------- 일괄 변경 팝업 ----------
-const fmt = (f, d) => f === 'sale' ? SALE[d.sale] : f === 'disp' ? DISP[d.disp] : f === 'period' ? `${d.from} ~ ${d.to || '상시'}` : f === 'ch' ? (d.ch.join(', ') || '-') : String(d[f]);
+const fmt = (f, d) => f === 'appr' ? APPR[d.appr] : f === 'disp' ? DISP[d.disp] : f === 'period' ? `${d.from} ~ ${d.to || '상시'}` : f === 'ch' ? (d.ch.join(', ') || '-') : String(d[f]);
 let bulkVal = {};
 function valueUi(f) {
   const seg = (opts, cur) => `<div class="seg" role="radiogroup">${opts.map(([v, l]) => `<button type="button" role="radio" data-v="${v}" class="${v === cur ? 'on' : ''}" aria-checked="${v === cur}">${l}</button>`).join('')}</div>`;
-  if (f === 'sale') { bulkVal = { v: bulkVal.f === f ? bulkVal.v : 'live' }; return seg(SALE_KEYS.map(k => [k, SALE[k]]), bulkVal.v); }
+  if (f === 'appr') { bulkVal = { v: bulkVal.f === f ? bulkVal.v : 'req' }; return seg(APPR_KEYS.map(k => [k, APPR[k]]), bulkVal.v); }
   if (f === 'disp') { bulkVal = { v: bulkVal.f === f ? bulkVal.v : 'Y' }; return seg([['Y', '전시'], ['N', '미전시']], bulkVal.v); }
   if (f === 'ch') { bulkVal = { v: [CHS[0]] }; return `<div class="pb-cks">${chBoxes('bCh', bulkVal.v)}</div>`; }
   if (f === 'period') {
@@ -369,7 +370,7 @@ function bulkError(f) {
   return '';
 }
 // 미리보기는 행의 값을 바꾸지 않고 바뀔 값만 겹쳐 본다.
-const peek = (d, f, i) => ({ ch: d.ch, sale: d.sale, disp: d.disp, rank: d.rank, from: d.from, to: d.to, ...nextValue(f, d, i) });
+const peek = (d, f, i) => ({ ch: d.ch, appr: d.appr, disp: d.disp, rank: d.rank, from: d.from, to: d.to, ...nextValue(f, d, i) });
 function renderPreview() {
   const f = $('#bField').value, list = targets(), err = bulkError(f);
   let changed = 0;
@@ -381,8 +382,6 @@ function renderPreview() {
   $('#bSum').textContent = err || `선택 ${list.length}건 중 ${changed}건 변경${list.length - changed ? ` · ${list.length - changed}건은 이미 같은 값` : ''}`;
   $('#bSum').style.color = err ? 'var(--bad)' : '';
   $('#bApply').disabled = !!err || changed === 0;
-  $('#bApply').textContent = changed ? `${changed}건 변경` : '변경';
-  $('#bNote').innerHTML = `선택한 <b>${list.length}건</b>의 <b>${FIELD[f]}</b>을(를) 한 번에 바꿉니다. 변경 전 아래 미리보기에서 대상과 결과를 확인하세요.`;
 }
 function setField(f) {
   $('#bField').value = f; bulkVal = { f: null };
@@ -409,13 +408,13 @@ $('#bVal').addEventListener('input', e => {
   if (t.id === 'bRank') bulkVal.v = t.value.trim() === '' ? NaN : +t.value;
   renderPreview();
 });
-$$('#bulkBar [data-bulk]').forEach(b => b.addEventListener('click', () => { setField(b.dataset.bulk); $('#bKeep').checked = false; $('#dlgBulk').showModal(); }));
+$$('#bulkBar [data-bulk]').forEach(b => b.addEventListener('click', () => { setField(b.dataset.bulk); $('#dlgBulk').showModal(); }));
 $('#bForm').addEventListener('submit', () => {
   const f = $('#bField').value, list = targets();
   const vals = new Map(list.map((d, i) => [d.id, nextValue(f, d, i)]));
   const changed = list.filter((d, i) => fmt(f, peek(d, f, i)) !== fmt(f, d));
   const before = changed.map(snap);
-  if (!$('#bKeep').checked) selected.clear();
+  selected.clear();
   update(changed, d => Object.assign(d, vals.get(d.id)));
   toast(`${changed.length}건의 ${FIELD[f]}을(를) 변경했습니다`, () => restore(before));
 });
@@ -423,8 +422,8 @@ $('#bForm').addEventListener('submit', () => {
 // 선택 삭제
 $('#bulkDelete').addEventListener('click', async () => {
   const list = rowsAll().filter(d => selected.has(d.id));
-  const live = list.filter(d => d.sale === 'live' && d.disp === 'Y').length;
-  const ok = await confirmBox('선택 삭제', `선택한 <b>${list.length}건</b>을 삭제합니다.${live ? `<br><span style="color:var(--bad)">판매중·전시 중인 전시 ${live}건이 포함되어 있습니다.</span>` : ''}<br>삭제 직후에는 되돌리기로 복구할 수 있습니다.`, '삭제');
+  const live = list.filter(d => d.appr === 'done' && d.disp === 'Y').length;
+  const ok = await confirmBox('선택 삭제', `선택한 <b>${list.length}건</b>을 삭제합니다.${live ? `<br><span style="color:var(--bad)">승인완료·전시 중인 전시 ${live}건이 포함되어 있습니다.</span>` : ''}<br>삭제 직후에는 되돌리기로 복구할 수 있습니다.`, '삭제');
   if (!ok) return;
   const snaps = list.map(d => ({ ...snap(d), _idx: DISPLAYS.indexOf(d._d) })).sort((a, b) => a._idx - b._idx);
   removeDisplays(selected); selected.clear(); commit(); render();
@@ -453,8 +452,8 @@ function toast(msg, undo) {
 $('#toastUndo').addEventListener('click', () => { const f = undoFn; undoFn = null; $('#toast').classList.remove('on'); f && f(); });
 
 // ---------- 엑셀(CSV) ----------
-const COLS = [['id', '전시ID'], ['name', '전시명'], ['area', '전시 유형'], ['ch', '전시 채널'], ['sale', '판매상태'], ['disp', '전시여부(Y/N)'], ['rank', '노출순위'], ['from', '전시시작일'], ['to', '전시종료일']];
-const GUIDE = ['# 비우면 신규 등록 · 있으면 수정', '# 필수 · 60자 이내', `# ${SVCS.join(' / ')}`, `# 여러 개는 / 로 구분: ${CHS.join(' / ')}`, `# ${Object.values(SALE).join(' / ')}`, '# Y / N', '# 1~999', '# YYYY-MM-DD', '# 비우면 상시'];
+const COLS = [['id', '전시ID'], ['name', '전시명'], ['area', '전시 유형'], ['ch', '전시 채널'], ['appr', '상태'], ['disp', '전시여부(Y/N)'], ['rank', '노출순위'], ['from', '전시시작일'], ['to', '전시종료일']];
+const GUIDE = ['# 비우면 신규 등록 · 있으면 수정', '# 필수 · 60자 이내', `# ${SVCS.join(' / ')}`, `# 여러 개는 / 로 구분: ${CHS.join(' / ')}`, `# ${Object.values(APPR).join(' / ')}`, '# Y / N', '# 1~999', '# YYYY-MM-DD', '# 비우면 상시'];
 // 목록 내려받기는 화면의 읽기 전용 열(운영 상태 · 담당자 등)도 함께 내려준다. 올릴 때는 COLS만 읽는다
 const INFO_COLS = ['버전', '연결 상품', '고객 선택 방식', '운영 상태', 'EPC 상태', '담당자', '담당팀', '최종등록(수정)자', '최종등록(수정)일시'];
 const csvCell = v => { const s = String(v ?? ''); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
@@ -466,10 +465,10 @@ function download(name, text) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 const exportRow = d => { const x = d._d, m = meta(x), ep = epcState(x);
-  return [d.id, d.name, d.area, d.ch.join('/'), SALE[d.sale], d.disp, d.rank, d.from, d.to, `V${m.ver}`, connNames(x).join('/'), d.method, d.op, ep ? ep[0] : '', m.owner, m.team, m.editor, m.at]; };
+  return [d.id, d.name, d.area, d.ch.join('/'), APPR[d.appr], d.disp, d.rank, d.from, d.to, `V${m.ver}`, connNames(x).join('/'), d.method, d.op, ep ? ep[0] : '', m.owner, m.team, m.editor, m.at]; };
 const stamp = () => nowStamp().replace(/[-: ]/g, '').slice(0, 12);
 function downloadTemplate() {
-  download('상품전시_일괄등록_양식.csv', toCsv([COLS.map(c => c[1]), GUIDE, ['', 'Galaxy S26 Edge 사전예약', '기기서비스', '통합 APP/통합 WEB', '판매대기', 'N', '1', '2026-11-01', ''], [rowsAll()[0]?.id || '000001', '(수정 예시) 빈 칸은 기존 값 유지', '', '', '판매중지', '', '', '', '']]));
+  download('상품전시_일괄등록_양식.csv', toCsv([COLS.map(c => c[1]), GUIDE, ['', 'Galaxy S26 Edge 사전예약', '기기서비스', '통합 APP/통합 WEB', '임시저장', 'N', '1', '2026-11-01', ''], [rowsAll()[0]?.id || '000001', '(수정 예시) 빈 칸은 기존 값 유지', '', '', '승인요청', '', '', '', '']]));
   toast('엑셀 양식을 내려받았습니다. 예시 행은 지우고 작성하세요');
 }
 $('#btnTemplate').addEventListener('click', downloadTemplate);
@@ -501,7 +500,7 @@ async function readText(file) {
 }
 const normDate = s => { const m = String(s).trim().match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/); return m ? `${m[1]}-${pad(m[2])}-${pad(m[3])}` : null; };
 const validDate = s => { const d = new Date(s + 'T00:00:00'); return !isNaN(d) && d.toISOString().slice(0, 10) === s; };
-const SALE_BY_LABEL = Object.fromEntries(Object.entries(SALE).map(([k, v]) => [v, k]));
+const APPR_BY_LABEL = Object.fromEntries(Object.entries(APPR).map(([k, v]) => [v, k]));
 
 // 파일 → 행별 검증 결과. 수정 행의 빈 칸은 기존 값을 유지한다.
 function validate(text) {
@@ -529,7 +528,7 @@ function validate(text) {
       const l = ch.split('/').map(x => x.trim()).filter(Boolean), bad = l.filter(x => !CHS.includes(x));
       bad.length ? errs.push(`전시 채널 '${bad.join(', ')}'은(는) 없는 값입니다 (${CHS.join('/')})`) : v.ch = l;
     }
-    const sale = need('sale', '판매상태'); if (sale) SALE_BY_LABEL[sale] ? v.sale = SALE_BY_LABEL[sale] : errs.push(`판매상태 '${sale}'은(는) 없는 값입니다 (${Object.values(SALE).join('/')})`);
+    const appr = need('appr', '상태'); if (appr) APPR_BY_LABEL[appr] ? v.appr = APPR_BY_LABEL[appr] : errs.push(`상태 '${appr}'은(는) 없는 값입니다 (${Object.values(APPR).join('/')})`);
     const disp = need('disp', '전시여부').toUpperCase(); if (disp) ['Y', 'N'].includes(disp) ? v.disp = disp : errs.push(`전시여부는 Y 또는 N으로 입력하세요 ('${disp}')`);
     const rank = need('rank', '노출순위'); if (rank) /^\d+$/.test(rank) && +rank >= 1 && +rank <= 999 ? v.rank = +rank : errs.push(`노출순위는 1~999 사이 숫자로 입력하세요 ('${rank}')`);
     const from = need('from', '전시시작일'); if (from) { const n = normDate(from); n && validDate(n) ? v.from = n : errs.push(`전시시작일 형식이 잘못됐습니다 ('${from}' → YYYY-MM-DD)`); }

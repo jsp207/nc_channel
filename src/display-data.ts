@@ -65,6 +65,10 @@ export const PO=[
   .map(([n,f,p,d,s,c],i)=>mk({id:'DEV-'+String(12+i).padStart(3,'0'),name:n,type:'기기서비스',cat:'웨어러블',base:p,desc:d,img:[f+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:s},{id:'PS2',name:'기본 구성품',req:true,desc:c}]})),
  // v023 반영: 제휴 상품 1 (상품 유형 제휴서비스). 기존 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
  mk({id:'PTN-001',name:'넷플릭스 프리미엄 제휴 이용권',type:'제휴',base:17000,desc:'넷플릭스 프리미엄을 SKT 회선 인증으로 이용하는 제휴 이용권입니다',dt:[{id:'PS1',name:'Netflix 프리미엄 이용',req:true,desc:'동시 시청 4명 · UHD'}]}),
+ // v024-1 반영: 로밍형 · 클럽형 · 앱서비스형 샘플. 금액은 화면 확인용 임시값. 기존 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
+ mk({id:'PLN-006',name:'baro 요금제',type:'요금제',lv3:'로밍형',base:33000,desc:'해외에서 데이터와 통화를 함께 쓰는 로밍 요금제입니다',dt:[{id:'PS1',name:'로밍 데이터',req:true,desc:'해외 데이터 · 음성 제공'}]}),
+ mk({id:'INS-002',name:'아이폰16 AI클럽',type:'보험',lv3:'클럽형',base:15900,desc:'아이폰16 보상과 기기 교체 혜택을 묶은 클럽 상품입니다',dt:[{id:'PS1',name:'AI클럽 혜택',req:true,desc:'파손 보상 · 기기 교체'}]}),
+ mk({id:'APP-001',name:'에이닷(타사)',type:'구독서비스',lv3:'앱서비스형',base:0,desc:'타사 고객도 쓸 수 있는 앱 서비스입니다',dt:[{id:'PS1',name:'에이닷 이용',req:true,desc:'앱 서비스'}]}),
 ];
 export const poBy=id=>PO.find(p=>p.id===id);
 export const selPS=po=>po.dt.filter(p=>!p.req);
@@ -72,6 +76,33 @@ export const hasSel=po=>selPS(po).length>0;
 // PS 개별 전시용: PO의 PS를 펼친 목록
 export const PSLIST=PO.flatMap(po=>po.dt.flatMap(ps=>ps.req?[{key:po.id+'|'+ps.id,name:ps.name,desc:ps.desc,po,kind:'필수 PS'}]:ps.cands.map((c,ci)=>({key:po.id+'|'+ps.id+'|'+ci,name:c.n,desc:`${ps.name} 후보 · ${c.add?'+'+c.add.toLocaleString()+'원':'추가금 없음'}`,po,kind:'선택 PS 후보'}))));
 export const psBy=k=>PSLIST.find(x=>x.key===k);
+
+// ---------- v024-1 반영: EPC 상품 분류 · 계약 속성 (product-v023.html) ----------
+// LV1은 '상품' 고정. EPC에서 내려오는 읽기 전용 값으로 가정한다.
+// 레퍼런스(ref/product-admin-prototype-v024-1.html)에 있는 값: LV2 목록, 로밍형까지의 LV3와 그 계약유형(contract) · 회선필수(line) · 제공주체(provider), Product Spec 표기.
+// 나머지는 화면 확인용 가정값이다(정책 확정 필요): 기기 LV3 4종, 회선종류(lineKind) · 회선상태(lineState) · 기존 가입상품(exist) · 중복가입(dup) · 상품 조합(combo).
+export const LV2S=['이동전화','제휴','기기','범용','인터넷','TV'];
+const MOBILE='이동전화 회선(5G · LTE)', NO_LINE='회선 없이 가입 가능', IN_USE='사용 중 회선 (정지 · 미납 회선 불가)', NO_CHECK='확인 안 함';
+export const LV3S={
+ '이동전화 요금제형':{lv2:'이동전화',contract:'메인',line:'Y',provider:'자사',lineKind:MOBILE,lineState:'신규 또는 사용 중 회선 (정지 · 미납 회선 불가)',exist:'기존 요금제가 있으면 요금제 변경으로 처리',dup:'불가 (회선당 요금제 1개)',combo:'단말 · 부가서비스 · 구독과 함께 가입 가능'},
+ '이동전화 base 옵션형':{lv2:'이동전화',spec:'데이터 Product Spec',contract:'옵션',line:'Y',provider:'자사',lineKind:MOBILE,lineState:IN_USE,exist:'기본 요금제 가입 필수',dup:'불가 (같은 상품)',combo:'요금제에 더해 가입 · 단독 가입 불가'},
+ '이동전화 base 제휴형':{lv2:'제휴',spec:'제휴 부가 Product Spec',contract:'옵션',line:'Y',provider:'자사/제휴사',lineKind:MOBILE,lineState:IN_USE,exist:'기본 요금제 가입 필수',dup:'불가 (같은 원천 서비스 코드)',combo:'요금제에 더해 가입 · 단독 가입 불가'},
+ '클럽형':{lv2:'제휴',spec:'클럽 Product Spec',contract:'메인/옵션',line:'N',provider:'자사/보험사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'같은 클럽 가입 여부 확인',dup:'불가 (단말당 1개)',combo:'단말과 함께 또는 단독 가입'},
+ '플랫폼형':{lv2:'제휴',spec:'제휴 플랫폼 Product Spec',contract:'메인/옵션',line:'N',provider:'제휴사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'같은 구독 가입 여부 확인',dup:'불가 (같은 원천 서비스 코드)',combo:'요금제 · 부가서비스와 함께 또는 단독 가입'},
+ '로밍형':{lv2:'이동전화',spec:'로밍 Product Spec',contract:'메인/옵션',line:'Y',provider:'자사',lineKind:MOBILE,lineState:IN_USE,exist:'같은 기간 로밍 상품 가입 여부 확인',dup:'불가 (같은 기간 로밍 상품 1개)',combo:'요금제에 더해 가입'},
+ '앱서비스형':{lv2:'범용',contract:'메인',line:'N',provider:'타사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'해당 없음',dup:'해당 없음 (타사 앱에서 관리)',combo:'단독 가입'},
+ '휴대폰형':{lv2:'기기',spec:'휴대폰 Product Spec',contract:'메인',line:'Y',provider:'자사',lineKind:MOBILE,lineState:'신규 또는 사용 중 회선 (정지 · 미납 회선 불가)',exist:'기기변경은 기존 요금제 유지 가능',dup:'불가 (회선당 단말 1대)',combo:'요금제 필수 · 부가서비스 · 보험 선택'},
+ '태블릿형':{lv2:'기기',spec:'태블릿 Product Spec',contract:'메인',line:'Y',provider:'자사',lineKind:'데이터 전용 회선',lineState:'신규 또는 사용 중 회선 (정지 · 미납 회선 불가)',exist:'기기변경은 기존 요금제 유지 가능',dup:'불가 (회선당 단말 1대)',combo:'데이터 요금제 필수'},
+ '웨어러블형':{lv2:'기기',spec:'웨어러블 Product Spec',contract:'메인',line:'Y',provider:'자사',lineKind:'웨어러블 회선 (모회선 연결)',lineState:'모회선이 사용 중이어야 가입 가능',exist:'모회선 요금제 가입 필수',dup:'불가 (회선당 단말 1대)',combo:'모회선 요금제 필수 · 데이터 쉐어링 선택'},
+ '액세서리형':{lv2:'기기',spec:'액세서리 Product Spec',contract:'메인',line:'N',provider:'자사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'해당 없음',dup:'가능',combo:'단말과 함께 또는 단독 구매'},
+};
+// 지금 샘플 상품(PO)의 LV3: 상품별 값 → 상품유형(cat) → 상품 구분(type) 순서로 찾는다. 보험은 제공주체가 달라 함께 적는다
+const LV3_BY_ID={'ADD-001':['이동전화 base 제휴형'],'ADD-002':['이동전화 base 옵션형'],'INS-001':['이동전화 base 제휴형','자사/보험사'],'PTN-001':['이동전화 base 제휴형']};
+const LV3_BY_KIND={기기서비스:'휴대폰형',태블릿:'태블릿형',웨어러블:'웨어러블형',액세서리:'액세서리형',요금제:'이동전화 요금제형',구독서비스:'플랫폼형'};
+export const epcOf=p=>{
+ const [idLv3,provider]=LV3_BY_ID[p.id]||[], lv3=p.lv3||idLv3||LV3_BY_KIND[p.cat||p.type], s=LV3S[lv3];
+ return {...s,lv3,provider:provider||s.provider,spec:s.spec||`${p.name} Product Spec`};
+};
 
 export const BCOL=[['보라','#4320d4'],['파랑','#1f5fa8'],['초록','#1f8a5b'],['주황','#d4612a'],['빨강','#c0392b'],['핑크','#a8326a'],['검정','#2c2c2a']];
 export const MSG1='이 상품은 고객이 직접 선택하는 항목이 있어, 고정으로 등록해도 고객 화면에 선택 항목이 표시됩니다.';
