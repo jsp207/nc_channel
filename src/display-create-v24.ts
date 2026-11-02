@@ -1077,7 +1077,7 @@ function buyPv(){
  const tb=`<button type="button" class="ph-tbtn" data-tbtn aria-label="T 상담">${svg('<path d="M5 6h11M10.5 6v13"/><path d="M17 15v6M14 18h6"/>')}</button>`;
  const pill=once||mon?`<div class="ph-float"><div class="ph-pill-wrap">${PVPILL?`<div class="ph-pop" role="dialog" aria-label="예상 금액">${once?`<div><span>기기</span><b>${won(once)}</b></div>`:''}${mon?`<div><span>월 요금</span><b>${won(mon)}</b></div>`:''}</div>`:''}<button type="button" class="ph-pill" data-pill aria-expanded="${PVPILL}">${once?`기기 <b>${once.toLocaleString()}</b> 원`:`월 <b>${mon.toLocaleString()}</b> 원`}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div></div>`:'';
  // 주문 받기 OFF: 대체 버튼(버튼 없음이면 비활성)
- if(!E.orderOn){ const o=E.off; return `${pill}<div class="ph-buy"><p class="ph-insight">● 지금은 주문을 받지 않아요</p><div class="ph-buy-row">${tb}<button type="button" class="ph-cta" data-cta ${o.act==='none'?'disabled':''}>${o.act==='none'?'버튼 없음':esc(offBtn(o))}</button></div></div>`; }
+ if(!E.orderOn){ const o=E.off; return `${pill}<div class="ph-buy"><p class="ph-insight">● 지금은 주문을 받지 않아요</p><div class="ph-buy-row">${tb}<button type="button" class="ph-cta" data-cta data-pa="cta" ${o.act==='none'?'disabled':''}>${o.act==='none'?'버튼 없음':esc(offBtn(o))}</button></div></div>`; }
  return `${pill}<div class="ph-buy"><p class="ph-insight">${insight}</p><div class="ph-buy-row">${tb}<button type="button" class="ph-cta" data-cta ${left?'disabled':''}>${left?`선택이 ${left}개 남았어요`:'상품 주문하기'}</button></div></div>`;
 }
 // 상품 정보·구매 후기 탭에도 금액 알약·고객 선택 안내·상품 주문하기를 둔다 (상품 주문 탭과 같은 조건: PO 전시 + 구성 영역 있음)
@@ -1184,6 +1184,8 @@ function pvTarget(k){
  if(k==='method') return E.kind==='po'?[`area-${cur}`,'order']:['top'];
  if(k==='extra') return curX!=null?[`x-${curX}`,'info']:['tabs','info'];
  if(k==='order'&&E.kind!=='po') return ['top'];
+ // 주문 받기 OFF: 주문서 영역이 없으니 대체 버튼(CTA)으로 간다
+ if(k==='order'&&!E.orderOn) return ['cta','order'];
  if(k==='review'&&!E.review) return ['top'];
  if(k==='rel'&&!E.related) return ['top'];
  return PV_AT[k]||['top'];
