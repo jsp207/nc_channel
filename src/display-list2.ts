@@ -211,8 +211,8 @@ function render() {
   renderSelection(rows, list);
 }
 $('#pager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; st.page = +b.dataset.p; render(); });
-// 등록은 상품 전시 관리 v0.2.2(대표 상품) 화면으로 연다
-$('#lNew').addEventListener('click', () => { location.href = 'product-v022.html'; });
+// 등록은 상품 전시 관리 v0.2.3(EPC LV2 · LV3 조회) 화면으로 연다
+$('#lNew').addEventListener('click', () => { location.href = 'product-v023.html'; });
 
 // 등록/수정 화면(다른 탭)에서 저장하면 다시 읽는다. 지워진 전시는 선택에서 뺀다
 window.addEventListener('storage', e => {

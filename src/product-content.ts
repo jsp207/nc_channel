@@ -39,26 +39,25 @@ const TABS = {
     label: '안내 템플릿', noun: '템플릿', store: 'tpl', key: 'id', idLabel: '템플릿ID', nameLabel: '템플릿명', readOnly: true,
     filters: [{ id: 'fType', label: '콘텐츠 유형', opts: TPL_TYPES.map(t => [t, t]), test: (r, v) => r.t === v }],
     cols: [
-      ['템플릿ID', 110, '', r => r.id], ['버전', 72, 'c', r => esc(r.v)], ['템플릿명', 0, '', r => esc(r.n)], ['콘텐츠 유형', 130, '', r => esc(r.t)],
-      ['완전 매핑', 100, 'c', r => `${tplUsers(r.id, 'link').length}개 전시`], ['1회 매핑', 100, 'c', r => `${tplUsers(r.id, 'copy').length}개 전시`], ON_COL, UPD],
+      ['템플릿ID', 110, '', r => r.id], ['버전', 72, 'c', r => esc(r.v)], ['템플릿명', 0, '', r => esc(r.n)], ['콘텐츠 유형', 130, '', r => esc(r.t)], ON_COL, UPD],
     fields: [
       { k: 'id', label: '템플릿ID', type: 'ro' },
       { k: 'v', label: '버전', type: 'ro' },
       { k: 'n', label: '템플릿명', type: 'ro' },
       { k: 't', label: '콘텐츠 유형', type: 'ro' },
-      { ...ON_F, help: '바꾸면 바로 저장돼요. 미사용으로 바꾸면 새 전시에서 고를 수 없고, 이미 쓰는 전시에는 그대로 남아요' },
-      { k: 'body', label: '내용', type: 'roarea', help: '완전 매핑한 전시에는 템플릿 내용이 그대로 보이고, 1회 매핑한 전시는 복사한 당시 내용을 써요' },
+      { ...ON_F, help: '' },
+      { k: 'body', label: '내용', type: 'roarea' },
     ],
   },
   color: {
-    label: '컬러 관리', noun: '컬러', store: 'color', key: 'code', idLabel: '컬러코드', nameLabel: '컬러명', chipOnly: true,
+    label: '컬러 템플릿', noun: '컬러', store: 'color', key: 'code', idLabel: '컬러코드', nameLabel: '컬러명', chipOnly: true,
     cols: [['컬러코드', 120, '', r => r.code], ['컬러칩', 72, 'c', r => chip(r.hex)], ['컬러명', 0, '', r => esc(r.n)], ['HEX', 110, '', r => `<span class="pc-mono">${esc(r.hex)}</span>`],
       ['EPC 속성값', 170, 'c', r => epcCell(r.epc)], ['사용 전시', 100, 'c', nUse], ON_COL, UPD],
     fields: [codeF('컬러코드', 'CLR-', 'CLR-BK'), nameF('컬러명', '예: 블랙, 내추럴 티타늄'), { k: 'hex', label: '컬러값(HEX)', type: 'hex', req: true, help: '# 뒤 6자리. 옵션 선택 화면의 컬러칩을 이 색으로 그려요' }, EPC_F, ON_F],
     blank: () => ({ code: 'CLR-', n: '', hex: '#000000', epc: '', on: true }),
   },
   cap: {
-    label: '용량 관리', noun: '용량', store: 'cap', key: 'code', idLabel: '용량코드', nameLabel: '용량명', sort: (a, b) => a.gb - b.gb,
+    label: '용량 템플릿', noun: '용량', store: 'cap', key: 'code', idLabel: '용량코드', nameLabel: '용량명', sort: (a, b) => a.gb - b.gb,
     cols: [['용량코드', 120, '', r => r.code], ['환산값(GB)', 110, 'r', r => Number(r.gb).toLocaleString()], ['용량명', 0, '', r => esc(r.n)], ['단위', 80, 'c', r => esc(r.unit)],
       ['EPC 속성값', 170, 'c', r => epcCell(r.epc)], ['사용 전시', 100, 'c', nUse], ON_COL, UPD],
     fields: [codeF('용량코드', 'CAP-', 'CAP-128G'), nameF('용량명', '예: 128GB, 1TB'), { k: 'unit', label: '단위', type: 'select', req: true, opts: [['GB', 'GB'], ['TB', 'TB']] },
@@ -66,7 +65,7 @@ const TABS = {
     blank: () => ({ code: 'CAP-', n: '', unit: 'GB', gb: '', epc: '', on: true }),
   },
   size: {
-    label: '사이즈 관리', noun: '사이즈', store: 'size', key: 'code', idLabel: '사이즈코드', nameLabel: '사이즈명',
+    label: '사이즈 템플릿', noun: '사이즈', store: 'size', key: 'code', idLabel: '사이즈코드', nameLabel: '사이즈명',
     filters: [{ id: 'fGroup', label: '구분', opts: () => groups('size'), test: (r, v) => r.group === v }],
     cols: [['사이즈코드', 120, '', r => r.code], ['구분', 130, '', r => esc(r.group)], ['사이즈명', 0, '', r => esc(r.n)], ['값', 100, 'r', r => r.val === '' ? '<span class="pc-dim">-</span>' : `${r.val} ${esc(r.unit)}`],
       ['EPC 속성값', 170, 'c', r => epcCell(r.epc)], ['사용 전시', 100, 'c', nUse], ON_COL, UPD],
@@ -75,7 +74,7 @@ const TABS = {
     blank: () => ({ code: 'SIZ-', group: '', n: '', val: '', unit: 'mm', epc: '', on: true }),
   },
   etc: {
-    label: '기타 옵션 관리', noun: '기타 옵션', store: 'etc', key: 'code', idLabel: '옵션코드', nameLabel: '옵션값',
+    label: '옵션 템플릿', noun: '기타 옵션', store: 'etc', key: 'code', idLabel: '옵션코드', nameLabel: '옵션값',
     filters: [{ id: 'fGroup', label: '옵션 그룹', opts: () => groups('etc'), test: (r, v) => r.group === v }],
     cols: [['옵션코드', 130, '', r => r.code], ['옵션 그룹', 140, '', r => esc(r.group)], ['옵션값', 0, '', r => esc(r.n)],
       ['EPC 속성값', 170, 'c', r => epcCell(r.epc)], ['사용 전시', 100, 'c', nUse], ON_COL, UPD],
@@ -87,10 +86,10 @@ const TAB_KEYS = Object.keys(TABS);
 const groups = store => [...new Set(CONTENT[store].map(r => r.group).filter(Boolean))].map(g => [g, g]);
 const rowsOf = k => CONTENT[TABS[k].store];
 const idOf = (k, r) => r[TABS[k].key];
-// 이 콘텐츠를 쓰는 전시 [{d, kind}]. 템플릿은 완전 매핑 · 1회 매핑을 함께 보여 준다
+// 이 콘텐츠를 쓰는 전시. 템플릿은 연결 · 복사를 구분하지 않고 한 전시를 한 번만 센다
 function users(k, r) {
-  if (k === 'tpl') return [...tplUsers(r.id, 'link').map(d => ({ d, kind: '완전 매핑' })), ...tplUsers(r.id, 'copy').map(d => ({ d, kind: '1회 매핑' }))];
-  return optUsers(r.n, !!TABS[k].chipOnly).map(d => ({ d, kind: '옵션 선택' }));
+  if (k === 'tpl') return [...new Set([...tplUsers(r.id, 'link'), ...tplUsers(r.id, 'copy')])];
+  return optUsers(r.n, !!TABS[k].chipOnly);
 }
 
 // ---------- 화면 상태 · 주소 ----------
@@ -228,14 +227,14 @@ function fieldHtml(f, r, used) {
 }
 function useHtml(k, list) {
   const T = TABS[k];
-  const note = k === 'tpl' ? '완전 매핑은 이 템플릿을 연결해 쓰는 전시로, 템플릿 내용이 바뀌면 함께 바뀌어요. 1회 매핑은 복사해 간 전시라 바뀌지 않아요.' : `이 ${T.noun}을(를) 옵션 값으로 쓰는 전시예요. 사용 중이면 ${T.nameLabel}을(를) 바꾸거나 삭제할 수 없어요.`;
-  const rows = list.map(({ d, kind }) => `<tr><td><a class="lid" href="product-v021.html?id=${d.id}">${dispId(d.id)}</a></td><td title="${esc(nameText(d.name))}">${esc(nameText(d.name)) || '이름 없음'}</td>${k === 'tpl' ? `<td class="c">${kind}</td>` : ''}
+  const note = k === 'tpl' ? '' : `<p class="pc-note">이 ${T.noun}을(를) 옵션 값으로 쓰는 전시예요. 사용 중이면 ${T.nameLabel}을(를) 바꾸거나 삭제할 수 없어요.</p>`;
+  const rows = list.map(d => `<tr><td><a class="lid" href="product-v021.html?id=${d.id}">${dispId(d.id)}</a></td><td title="${esc(nameText(d.name))}">${esc(nameText(d.name)) || '이름 없음'}</td>
     <td title="${esc(d.channels.join(', '))}">${esc(d.channels.length && CHS.every(c => d.channels.includes(c)) ? 'All 채널' : d.channels[0] ? d.channels[0] + (d.channels.length > 1 ? ` 외 ${d.channels.length - 1}` : '') : '-')}</td>
     <td class="c">${d.from ? `${dotD(d.from)} ~ ${d.noEnd || !d.to ? '기한없음' : dotD(d.to)}` : '-'}</td><td class="c">${d.show ? '<span class="lb live">전시</span>' : '<span class="lb off">미전시</span>'}</td></tr>`).join('');
-  return `<section class="pc-sec pc-use"><h2 class="pc-h">사용 전시 <b>${list.length}건</b></h2><p class="pc-note">${note}</p>
-    <div class="lst-tw"><table class="lst-table"><colgroup><col style="width:100px"><col>${k === 'tpl' ? '<col style="width:110px">' : ''}<col style="width:150px"><col style="width:200px"><col style="width:90px"></colgroup>
-    <thead><tr><th>전시ID</th><th>전시명</th>${k === 'tpl' ? '<th class="c">매핑 구분</th>' : ''}<th>전시 채널</th><th class="c">전시 기간</th><th class="c">전시여부</th></tr></thead>
-    <tbody>${rows || `<tr><td class="empty" colspan="${k === 'tpl' ? 6 : 5}">이 ${T.noun}을(를) 쓰는 전시가 없습니다.</td></tr>`}</tbody></table></div></section>`;
+  return `<section class="pc-sec pc-use"><h2 class="pc-h">사용 전시 <b>${list.length}건</b></h2>${note}
+    <div class="lst-tw"><table class="lst-table"><colgroup><col style="width:100px"><col><col style="width:150px"><col style="width:200px"><col style="width:90px"></colgroup>
+    <thead><tr><th>전시ID</th><th>전시명</th><th>전시 채널</th><th class="c">전시 기간</th><th class="c">전시여부</th></tr></thead>
+    <tbody>${rows || `<tr><td class="empty" colspan="5">이 ${T.noun}을(를) 쓰는 전시가 없습니다.</td></tr>`}</tbody></table></div></section>`;
 }
 // 삭제할 수 없는 이유. 없으면 ''
 function delBlock(k, r) {
