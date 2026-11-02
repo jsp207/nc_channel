@@ -1,0 +1,29 @@
+/* EPC 상품 조회 (epc-list.html): list.css(목록 공통) 위에 이 화면의 크기 · 간격만 더한다. */
+#v-list .breadcrumb{font-size:13px;color:var(--muted)}
+#v-list .breadcrumb strong{color:var(--text);font-weight:400}
+#v-list .lst-title{margin-bottom:24px;font-size:24px}
+
+/* 조회 조건: 항목 사이는 구분선 없이 띄우고, 고르지 않은 값도 진한 글자로 둔다 */
+.lst-filter{margin-bottom:40px;box-shadow:0 8px 24px rgba(32,41,59,.05)}
+.lst-filter .lf-g+.lf-g{margin-left:32px}
+.lst-filter .lf-g+.lf-g::before{display:none}
+.lst-filter .lf-l{margin-right:4px}
+.lst-filter .lf-row select:has(option[value=""]:checked){color:var(--text)}
+.lst-filter .lf-row select{padding-right:36px;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2320293b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/16px}
+#fKey{width:154px}
+#fQ{width:226px}
+.lst-filter .btn.primary{min-width:56px}
+
+.lst-count{gap:12px;font-size:20px}
+.lst-count span{font-size:14px}
+
+/* 결과 표: 행 48px · 글자 14px. EPC 상품명이 남는 폭을 쓴다 */
+#listTable{min-width:1200px;font-size:14px}
+#listTable col.w-id{width:160px}#listTable col.w-ver{width:100px}#listTable col.w-gb{width:150px}#listTable col.w-ty{width:164px}
+#listTable col.w-st{width:112px}#listTable col.w-n{width:150px}#listTable col.w-ord{width:200px}#listTable col.w-at{width:176px}
+#listTable th{height:48px;padding:0 12px;background:#f2f3f5;font-size:14px;font-weight:500;vertical-align:middle}
+#listTable td{height:48px;padding:0 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+#listTable .lb{min-width:42px;padding:3px 8px}
+
+/* 페이지 번호: 숫자 사이를 넓게 */
+.lst-pager{gap:9px}

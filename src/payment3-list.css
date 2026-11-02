@@ -1,0 +1,47 @@
+/* 결제수단 기준정보 관리 목록 (payment-method3.html): list.css(목록 공통) 위에 EPC 상품 조회와 같은 크기 · 간격을 맞춘다. */
+#v-list .breadcrumb{font-size:13px;color:var(--muted)}
+#v-list .breadcrumb strong{color:var(--text);font-weight:400}
+#v-list .lst-title{margin-bottom:24px;font-size:24px}
+
+/* 조회 조건: 세 줄 모두 4칸에 맞춰 줄을 세운다 */
+.lst-filter{margin-bottom:40px;box-shadow:0 8px 24px rgba(32,41,59,.05)}
+.lst-filter .lf-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 24px}
+.lst-filter .lf-g{min-width:0}
+.lst-filter .lf-g+.lf-g::before{display:none}
+.lst-filter .lf-l{flex:none;width:84px;margin-right:4px}
+.lst-filter .lf-row select,.lst-filter .lf-row input[type=text]{flex:1;width:auto;min-width:0}
+.lst-filter .lf-row select:has(option[value=""]:checked){color:var(--text)}
+.lst-filter .lf-row select{padding-right:36px;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2320293b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/16px}
+.lst-filter .lf-wide{grid-column:span 2}
+.lst-filter .lf-range{flex:1;min-width:0}
+.lst-filter .lf-range input{flex:1;width:auto;min-width:0}
+.lst-filter .lf-acts{grid-column:4;justify-self:end}
+.lst-filter .btn.primary{min-width:56px}
+
+/* 결과 머리줄: 건수 왼쪽, 페이지당 행 수 오른쪽 */
+.pm3-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:14px}
+.pm3-bar .lst-count{gap:12px;margin:0;font-size:20px}
+.pm3-bar .lst-count>span{font-size:14px}
+.pm3-bar .lst-count>span span{font-size:inherit;color:var(--muted)}
+.pm3-tools{display:flex;align-items:center;gap:12px}
+.pm3-tools select{width:104px;min-width:0;height:36px;min-height:0;padding:0 28px 0 10px;border-radius:6px;font-size:13px}
+
+/* 결과 표: 머리줄 48px · 글자 14px. 모든 열에 폭을 줘서 넓은 화면에서는 같은 비율로 늘어난다 */
+#listTable{min-width:1100px;font-size:14px}
+#listTable col.w-pg{width:90px}#listTable col.w-me{width:80px}#listTable col.w-pr{width:68px}#listTable col.w-mid{width:96px}
+#listTable col.w-pu{width:146px}#listTable col.w-se{width:68px}#listTable col.w-fe{width:118px}#listTable col.w-ks{width:76px}
+#listTable col.w-st{width:76px}#listTable col.w-cn{width:76px}#listTable col.w-up{width:94px}#listTable col.w-by{width:120px}
+#listTable th{height:48px;padding:0 8px;background:#f2f3f5;font-size:14px;font-weight:500;vertical-align:middle}
+#listTable td{height:48px;padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+#listTable tbody tr.flash{animation:pm3-flash 2.6s ease-out}
+@keyframes pm3-flash{0%,40%{background:#e4f6ea}100%{background:transparent}}
+#listTable .lb{min-width:42px;padding:3px 8px}
+#listTable .lid{text-decoration:none}
+#listTable .lid:hover{text-decoration:underline}
+.pm3-sub{display:block;color:var(--muted);font-size:12px;white-space:normal}
+.pm3-mid{font-weight:600;font-variant-numeric:tabular-nums}
+
+.lst-pager{gap:9px}
+
+@media(max-width:1100px){.lst-filter .lf-row{grid-template-columns:repeat(2,minmax(0,1fr))}.lst-filter .lf-acts{grid-column:auto}}
+@media(max-width:640px){.lst-filter .lf-row{grid-template-columns:minmax(0,1fr)}.lst-filter .lf-wide{grid-column:auto}.lst-filter .lf-acts{justify-self:start}}

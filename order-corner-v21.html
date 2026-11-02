@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J45JDGG545"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-J45JDGG545');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>주문 코너 등록 v0.2.1 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      /* 주문 코너 등록 v0.2.1: ref/order_mockup_1029.html(코너 유형 관리 목록 · 상세) 반영. 화면 스타일은 product-v022.html과 맞춘다
+         (공통 LNB · 목록은 list.css · 상세는 왼쪽 휴대폰 미리보기 + 오른쪽 섹션). 스크립트는 src/order-corner-v21.ts */
+      [hidden]{display:none!important}
+      .faint{color:var(--muted)}
+      .mono{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+
+      /* 상위 탭: 전시 / 프로모션 / 상품 (product-v022 .itabs와 같은 모양) */
+      .itabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 20px;border-bottom:1px solid var(--line)}
+      .itabs button{height:40px;margin-bottom:-1px;padding:0 16px;border:0;border-bottom:2px solid transparent;background:none;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+      .itabs button.on{color:var(--accent);font-weight:700;border-bottom-color:var(--accent)}
+      .itabs small{margin-left:4px;font-size:11px;font-weight:600;color:var(--accent)}
+
+      /* 조회 조건: 사용 여부 라디오 (product-v022 .srch-radio) */
+      .srch-radio{display:inline-flex;flex-wrap:wrap;gap:16px}
+      .srch-radio label{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer}
+      .srch-radio label:has(input:checked){color:var(--text);font-weight:600}
+      .srch-radio input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer}
+      .lf-row select.sm{width:130px}
+      .lf-q{position:relative;display:inline-flex}
+      .lf-q input[type=text]{width:280px;padding-right:32px}
+      .lf-clr{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;padding:0;border:0;border-radius:50%;background:#b9bec8;color:#fff;display:grid;place-items:center;cursor:pointer}
+      .lf-clr svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round}
+
+      /* 결과 표: 미리보기 썸네일이 있어 행이 높다. 코너명 칸이 남는 폭을 쓴다 */
+      #cTable col.w-no{width:52px}#cTable col.w-pv{width:176px}#cTable col.w-kind{width:96px}#cTable col.w-id{width:124px}
+      #cTable col.w-lk{width:150px}#cTable col.w-pc{width:110px}#cTable col.w-use{width:80px}#cTable col.w-dt{width:140px}
+      #cTable td{vertical-align:middle}
+      #cTable tbody tr[data-id]{cursor:pointer}
+      #cTable tbody tr[data-id]:hover .cn{color:var(--accent);text-decoration:underline}
+      #cTable .cn{font-weight:600;color:var(--text)}
+      #cTable td.dt{color:var(--muted);font-size:12px}
+      .pcnt{display:inline-block;min-width:24px;padding:0 7px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;text-align:center}
+      .lks{display:inline-flex;gap:4px;flex-wrap:wrap;justify-content:center}
+      .thumb{position:relative;width:150px;height:92px;margin:0 auto;border:1px solid var(--line);border-radius:8px;background:#f1f3f7;overflow:hidden}
+      .thumb .fo{position:absolute;left:50%;top:6px;width:330px;transform:translateX(-50%) scale(.4);transform-origin:top center;pointer-events:none}
+      .lst-tw+.empty{margin-top:8px}
+
+      /* ===== 상세 (조회 전용) ===== */
+      #v-detail>.toolbar{margin-bottom:16px}
+      .dh-id{color:var(--accent);font-weight:600}
+      .dh-bd{display:inline-flex;gap:4px}
+      .ntc{display:flex;gap:8px;align-items:flex-start;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.7;margin:0 0 20px}
+      .ntc.info{background:var(--accent-soft);color:var(--accent)}
+      .ntc svg{width:16px;height:16px;flex:none;margin-top:2px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+      #v-detail .builder{grid-template-columns:380px minmax(0,1fr);border-top:0;padding-top:0}
+      #v-detail .side{position:sticky;top:20px;align-self:start;min-width:0}
+      /* 미리보기는 휴대폰처럼 (product-v022 .pv-panel) */
+      #v-detail .pv-panel{position:static;display:flex;flex-direction:column;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);border:3px solid #1d1e2c;border-radius:30px;background:#fff;overflow:hidden}
+      #v-detail .pv-panel>header{background:#fff;border-bottom:0;min-height:0;padding:20px 18px 12px}
+      #v-detail .pv-panel>header b{font-size:15px;font-weight:700;color:#1d1e2c;letter-spacing:-.3px}
+      #v-detail .pv-panel>header small{font-size:11px;color:var(--muted)}
+      .pv-scr{flex:1;min-height:0;margin:2px 8px 18px;padding:18px 12px;border-radius:14px;background:#eceef3;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+      .pv-scr::-webkit-scrollbar{display:none}
+      .step>header{flex-wrap:nowrap}
+      .step>header small{margin-left:auto;font-size:11px;font-weight:400;color:var(--muted)}
+      /* 기본 정보: 왼쪽 회색 항목명 칸 + 오른쪽 값 칸 (product-v022 .ftbl) */
+      .ftbl{border-top:1px solid var(--line)}
+      .ft-row{display:grid;grid-template-columns:130px minmax(0,1fr);border-bottom:1px solid var(--line)}
+      .ft-l{display:flex;align-items:center;padding:14px 16px;background:var(--surface);border-right:1px solid var(--line);font-size:13px;color:var(--text)}
+      .ft-v{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0;padding:12px 20px;font-size:13px;line-height:1.7;word-break:keep-all}
+      .ft-v .kd{width:100%;margin:0;font-size:12px;color:var(--muted)}
+      .ft-v .kd1{font-size:12px;color:var(--muted)}
+      .ft-v .sep{color:var(--line-strong);margin:0 2px}
+      .og{display:grid;gap:4px}
+      .ogl{display:inline-block;width:40px;color:var(--muted);font-size:12px}
+      .chips{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+      .lc{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:1px solid var(--line-strong);border-radius:15px;background:var(--bg);color:var(--text);font:inherit;font-size:12px;text-decoration:none;cursor:pointer}
+      .lc:hover{border-color:var(--accent);color:var(--accent)}
+      .lc .mono{color:var(--accent);font-size:11px}
+      .lc svg{width:12px;height:12px;flex:none;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      .tbd{display:inline-block;padding:0 6px;border-radius:4px;background:var(--bad-soft);color:var(--bad);font-size:10px;font-weight:600;line-height:1.7}
+      .prov{display:inline-block;padding:0 5px;border-radius:4px;background:var(--warn-soft);color:var(--warn);font-size:10px;font-weight:600;line-height:1.7}
+      /* 사용 위치: 이 코너를 쓰는 주문 프로세스 · 화면 · 순서 */
+      .utbl th,.utbl td{padding:11px 12px;text-align:center;white-space:nowrap}
+      .utbl td.l{text-align:left}
+      .utbl .mono{color:var(--accent)}
+      .ord{font-weight:600}.ord small{color:var(--muted);font-weight:400}
+      .dfoot{display:flex;gap:8px;margin-top:8px}
+
+      /* ===== FO 미리보기 (ref/order_mockup_1029.html 그대로, 고객 화면 색) ===== */
+      .fo{background:#fff;border-radius:22px;padding:22px 20px;font-size:13px;color:#1a1a1a;text-align:left;line-height:1.5;letter-spacing:0;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+      .fo.bs{border-radius:22px 22px 0 0}
+      .fo-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+      .fo-h b{font-size:16px;font-weight:700;display:flex;align-items:center;gap:4px;line-height:1.35}
+      .fo-h p{margin:4px 0 0;color:#8a8f99;font-size:12.5px}
+      .fo-ti{width:14px;height:14px;color:#9aa0aa}
+      .fo-all{font-size:12px;color:#8a8f99;text-decoration:underline;white-space:nowrap}
+      .fo-ls{display:grid;gap:8px}
+      .fo-op{border:1px solid #e6e8ec;border-radius:14px;padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fafbfc}
+      .fo-op.on{border:1.5px solid #222;background:#fff}
+      .fo-op .fo-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+      .fo-op b{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+      .fo-op small{font-size:11.5px;color:#8a8f99}
+      .fo-op strong{font-size:14px;font-weight:700}
+      .fo-op.sold b,.fo-op.sold strong{color:#9aa0aa}
+      .fo-sold{font-size:12px;color:#9aa0aa;align-self:flex-start}
+      .fo-op.more{justify-content:flex-start;color:#555}
+      .fo-op.row .fo-r{display:flex;align-items:center;gap:6px;color:#999;font-size:11.5px}
+      .fo-lb{font-size:10px;font-weight:500;background:#eef0f4;color:#777;border-radius:4px;padding:0 5px}
+      .fo-op.card .fo-l{gap:3px}
+      .fo-lk{font-size:11.5px;color:#8a8f99;text-decoration:underline;margin-top:4px}
+      .fo-logo{width:40px;height:40px;border-radius:9px;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;flex:none}
+      .fo-bd{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;align-self:flex-start}
+      .bd-dk{background:#2b2d33;color:#fff}.bd-pu{background:#6c55f0;color:#fff}.bd-sk{background:#e8efff;color:#5b74e0}.bd-gy{background:#eef0f4;color:#777}
+      .fo-morebtn{background:#eff1ff;color:#5b67e0;border-radius:12px;text-align:center;padding:11px;font-size:13px;font-weight:600}
+      .fo-sm{font-size:12px;color:#666;margin:10px 0 6px}
+      .fo-sw{display:flex;gap:10px}
+      .fo-sw i{width:34px;height:34px;border-radius:50%;border:1px solid #ddd}
+      .fo-sw i.on{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #333}
+      .fo-sw i.so{position:relative;opacity:.55}
+      .fo-sw i.so::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1.5px;background:#888;transform:rotate(45deg)}
+      .fo-gd{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .fo-gi small{display:block;font-size:11px;color:#8a8f99;margin-top:8px}
+      .fo-gi b{display:block;font-size:12.5px;font-weight:600;line-height:1.35}
+      .fo-gimg{height:110px;background:#f0f1f4;border-radius:12px;display:grid;place-items:center;color:#b5bac4;position:relative}
+      .fo-rd{position:absolute;left:8px;top:8px;width:16px;height:16px;border-radius:50%;border:1.5px solid #c5c9d1;background:#fff}
+      .fo-gb{display:block;border:1px solid #e1e3e8;border-radius:8px;text-align:center;font-size:11.5px;padding:5px;margin-top:8px}
+      .fo-hs{display:flex;gap:10px;overflow:hidden}
+      .fo-hi{flex:0 0 120px;display:flex;flex-direction:column;gap:2px}
+      .fo-hi .fo-gimg{height:96px;margin-bottom:6px}
+      .fo-hi b{font-size:12.5px;font-weight:600}.fo-hi strong{font-size:12.5px}.fo-hi small{font-size:11px;color:#8a8f99}
+      .fo-ch{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .fo-ch span{border:1px solid #e1e3e8;border-radius:12px;text-align:center;padding:11px;font-size:13px;background:#fafbfc}
+      .fo-ch span.on{border:1.5px solid #222;background:#fff;font-weight:600}
+      .fo-ch span.pri{background:#5b55e8;color:#fff;border-color:#5b55e8;font-weight:600}
+      .fo-in{border:1px solid #e1e3e8;border-radius:12px;padding:11px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center;background:#fff}
+      .fo-in.ph{color:#b5bac4;background:#f6f7f9}
+      .fo-in em{font-style:normal;font-size:11px;background:#eef0f4;color:#666;border-radius:10px;padding:2px 8px}
+      .fo-ck{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#666;margin:12px 0 0}
+      .fo-ck svg{color:#b5bac4;border:1px solid #d5d8de;border-radius:50%;padding:2px;width:16px;height:16px}
+      .fo-ck.all{margin:0 0 10px}.fo-ck.all i{width:16px;height:16px;border:1.5px solid #c5c9d1;border-radius:50%}
+      .fo-rl{display:grid;gap:12px}
+      .fo-ri{display:flex;align-items:center;gap:8px;font-size:13.5px}
+      .fo-ri i{width:18px;height:18px;border-radius:50%;border:1.5px solid #c5c9d1}
+      .fo-ri i.on{border:5px solid #5b55e8}
+      .fo-rd2{margin:-6px 0 0 26px;font-size:11.5px;color:#8a8f99;background:#f4f5f8;border-radius:8px;padding:6px 10px}
+      .fo-sum{display:grid;gap:8px}
+      .fo-sp{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;border:1px solid #e6e8ec;border-radius:12px;padding:10px 12px;margin-bottom:4px}
+      .fo-sp i{width:30px;height:38px;border-radius:5px;background:#6d4c4c}
+      .fo-sp b{font-weight:500}
+      .fo-sr{display:flex;justify-content:space-between;font-size:12.5px;color:#555}
+      .fo-sr em{font-style:normal;color:#1a1a1a}
+      .fo-sr.tot{border-top:1px solid #eee;padding-top:10px;font-weight:700}
+      .fo-sr.tot em{color:#5b55e8}
+      .fo-x{color:#555}
+      .fo-tl{display:flex;align-items:center;gap:8px;margin:0;padding:6px 0;font-size:12.5px;color:#555}
+      .fo-tl span{flex:1}.fo-tl svg{color:#b5bac4}
+      .fo-btn{width:100%;border:1px solid #e1e3e8;background:#fff;border-radius:12px;padding:10px;font-size:12.5px;margin-top:12px;cursor:default}
+      .fo-btn.pri{background:#5b55e8;border-color:#5b55e8;color:#fff;font-weight:600}
+      .fo-pimg{height:180px;background:#eef0f4;border-radius:12px;display:grid;place-items:center}
+      .fo-pimg.sm{height:130px;margin:14px 0}
+      .fo-phone{width:70px;height:120px;border-radius:14px;background:linear-gradient(160deg,#f6f6f6,#d9dbe0);border:3px solid #cfd2d8}
+      .fo-pimg.sm .fo-phone{width:52px;height:92px;background:linear-gradient(160deg,#bfe0f5,#4d86c9);border-color:#333}
+      .fo-note{font-size:11px;color:#888;background:#f4f5f8;padding:6px 10px;border-radius:8px;margin:10px 0}
+      .fo-cp{margin:0;font-size:11.5px;color:#999}
+      .fo-pn{font-size:20px;font-weight:700;display:block;margin:2px 0 6px}
+      .fo-tags{display:flex;gap:4px;flex-wrap:wrap}
+      .fo-warn{margin-top:10px;font-size:11.5px;color:#888;border:1px solid #eee;border-radius:10px;padding:8px;text-align:center}
+      .fo-done{text-align:center}
+      .fo-ok{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#22b07d;color:#fff}
+      .fo-ok svg{width:20px;height:20px}
+      .fo-done b{display:block;font-size:17px;margin:10px 0 4px}.fo-done p{margin:0;font-size:12px;color:#888}
+      .fo-div{height:8px;background:#f2f3f6;margin:18px -20px}
+
+      /* 반응형: 1200px 이하는 미리보기를 위로 올려 한 줄로 */
+      @media(max-width:1200px){#v-detail .builder{grid-template-columns:minmax(0,1fr)}#v-detail .side{position:static;max-width:400px}}
+      @media(max-width:900px){.lf-q input[type=text]{width:100%}.lf-q{flex:1 1 200px}}
+      @media(max-width:700px){.ft-row{grid-template-columns:1fr}.ft-l{border-right:0;padding:10px 14px}}
+    </style>
+  </head>
+  <body>
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴" data-auto-collapse="1440"></nav>
+<main>
+
+<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 코너 데이터 · 미리보기 · 목록/상세 로직은 src/order-corner-v21.ts -->
+<!-- ===== 목록 ===== -->
+<section class="view on" id="v-list">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 주문 관리 <span aria-hidden="true">›</span> <strong>코너 유형 관리</strong></div>
+  <h1 class="lst-title">코너 유형 관리</h1>
+  <div class="itabs" id="topTabs" role="tablist" aria-label="코너 구분">
+    <button type="button" role="tab" data-tt="전시" aria-selected="false">전시</button>
+    <button type="button" role="tab" data-tt="프로모션" aria-selected="false">프로모션</button>
+    <button type="button" role="tab" data-tt="상품" aria-selected="true" class="on">상품<small id="tabCnt"></small></button>
+  </div>
+
+  <!-- 조회 조건: [조회]를 눌러야 결과에 반영된다 (검색어 입력칸은 Enter로도 조회) -->
+  <form class="lst-filter" id="cFilter" autocomplete="off">
+    <div class="lf-row">
+      <span class="lf-g"><span class="lf-l">사용 여부</span>
+        <span class="srch-radio" role="radiogroup" aria-label="사용 여부"><label><input type="radio" name="fUse" value="" checked>전체</label><label><input type="radio" name="fUse" value="Y">Y</label><label><input type="radio" name="fUse" value="N">N</label></span>
+      </span>
+      <span class="lf-g"><label class="lf-l" for="fKind">구분</label><select id="fKind"><option value="">전체</option><option value="주문">주문</option><option value="상품 연동">상품 연동</option></select></span>
+      <span class="lf-g">
+        <label class="lf-l" for="fKey">검색어</label>
+        <select id="fKey" class="sm"><option value="n">코너명</option><option value="i">코너 ID</option></select>
+        <span class="lf-q"><input type="text" id="fKw" placeholder="코너명을 입력하세요" aria-label="검색어"><button type="button" class="lf-clr" id="bClr" aria-label="입력값 삭제" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>
+      </span>
+      <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
+    </div>
+  </form>
+  <h2 class="lst-count">조회결과 <span>총 <b id="cCount">0</b>건</span></h2>
+
+  <!-- 행을 누르면 상세(조회 전용). 주소 끝 #코너ID로 상세를 바로 열 수 있다 -->
+  <div class="lst-tw" id="cWrap"><table class="lst-table" id="cTable">
+    <colgroup><col class="w-no"><col class="w-pv"><col class="w-kind"><col class="w-id"><col><col class="w-lk"><col class="w-pc"><col class="w-use"><col class="w-dt"></colgroup>
+    <thead><tr><th class="c">NO</th><th class="c">미리보기</th><th class="c">구분</th><th class="c">코너 ID</th><th>코너명</th><th class="c">선·후행</th><th class="c">사용 프로세스</th><th class="c">사용여부</th><th class="c">최근 수정일시</th></tr></thead>
+    <tbody id="cBody"></tbody>
+  </table></div>
+  <div class="empty" id="cEmpty" hidden>조회된 코너가 없습니다.</div>
+  <nav class="lst-pager" id="pager" aria-label="페이지"></nav>
+</section>
+
+<!-- ===== 상세 (조회 전용) ===== -->
+<section class="view" id="v-detail">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 주문 관리 <span aria-hidden="true">›</span> 코너 유형 관리 <span aria-hidden="true">›</span> <strong>코너 유형 상세</strong></div>
+  <div class="toolbar"><h1 id="dName"></h1><span class="dh-id mono" id="dId"></span><span class="dh-bd" id="dBadges"></span><button type="button" class="btn" id="bBack" style="margin-left:auto">목록 보기</button></div>
+  <p class="ntc info"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>조회 전용 화면입니다. 코너는 원천 시스템에서 등록한 내용을 그대로 사용하며, 주문 프로세스에서는 노출 조건과 순서만 설정합니다.</p>
+  <div class="builder">
+    <aside class="side">
+      <section class="panel pv-panel" aria-label="미리보기">
+        <header><b>미리보기</b><small>FO 화면</small></header>
+        <div class="pv-scr" id="dPv"></div>
+      </section>
+    </aside>
+    <div>
+      <div class="step">
+        <header><b>기본 정보</b></header>
+        <div class="body"><div class="ftbl" id="dInfo"></div></div>
+      </div>
+      <div class="step">
+        <header><b>사용 위치</b><small>이 코너를 쓰는 주문 프로세스 · 화면 · 순서</small></header>
+        <div class="body" id="dUse"></div>
+      </div>
+      <div class="dfoot"><button type="button" class="btn lg" id="bList">목록</button></div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+    <script type="module" src="/src/order-corner-v21.ts"></script>
+  </body>
+</html>

@@ -82,10 +82,14 @@ function openEdit(id){
  const d=id?DISPLAYS.find(x=>x.id===id):null;
  E=d?clone(d):newDisplay();
  // v0.2.2: 새 전시는 주문 구성 방식(주문 받기)을 꺼 둔 채로 시작한다. 저장된 전시는 저장 값을 따른다
- if(!d) E.orderOn=false;
+ if(!d){ E.orderOn=false; E.off={act:'none',btn:''}; }
+ // 추가설정(검색 노출 설정 · 오퍼링 문구)은 끄는 스위치 없이 항상 사용한다
+ E.search.on=E.cvm.on=true;
  // v0.2.1 이전에 저장한 전시는 대표 상품이 없다. 미지정으로 두고 운영자가 직접 지정한다 (v024: 자동 지정 없음)
  if(E.repPo===undefined) E.repPo=null; delete E.repAuto; syncRep();
- cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; curM='sim'; instCur='번호이동'; PV={}; badgeEd=null; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=false;
+ // 유사한 상품 문구가 연관 상품으로 옮겨 왔다. 고객 화면 노출은 연관 상품 스위치 하나로 정한다
+ E.sim.on=E.related;
+ cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; curM='search'; instCur='번호이동'; PV={}; badgeEd=null; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=false;
  syncSingle(); syncBenefits(E);
  // 처음 열 때(새로고침 포함)는 모든 섹션을 펼친다. 섹션마다 따로 접고 편다
  $$('#v-edit .step').forEach(s=>setFold(s,true,true)); tabIdx=0;
@@ -590,25 +594,11 @@ function rReview(){
  $('#sb-review').innerHTML=`${ntc('','연결 상품의 구매후기가 고객 화면 <b>구매 후기</b> 탭에 자동으로 노출돼요. 평점 · 후기 수 · 최근 후기 순이고, 데이터는 리뷰 시스템 기준이에요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
 }
 $('#rvOn').addEventListener('change',e=>{ E.review=e.target.checked; if(!E.review&&PVTAB==='review') PVTAB='order'; refresh(); toast(E.review?'구매후기를 노출해요':'구매후기를 숨겼어요'); });
-// 연관 상품: 구매후기와 같은 구성. 머리줄 스위치로 고객 화면 노출을 켜고 끈다. 연관 상품은 추천 시스템에서 자동으로 온다
+// 연관 상품: 구매후기와 같은 구성. 머리줄 스위치로 고객 화면 노출을 켜고 끈다. 연관 상품은 추천 시스템에서 자동으로 오고, 고객 화면 문구는 rSim에서 정한다
 function rRel(){
  $('#rlOn').checked=E.related;
- $('#sb-rel').innerHTML=`${ntc('','연결 상품과 함께 많이 보거나 구매한 상품이 고객 화면 <b>연관 상품</b> 영역에 자동으로 노출돼요. 판매중 · 전시 중인 상품만 보이고, 데이터는 추천 시스템 기준이에요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
 }
-$('#rlOn').addEventListener('change',e=>{ E.related=e.target.checked; refresh(); toast(E.related?'연관 상품을 노출해요':'연관 상품을 숨겼어요'); });
-// ---------- 6-2. 추가설정: 유사한 상품 · 오퍼링 문구 · 검색 노출 설정 ----------
-// 콘텐츠 정보와 같은 구성. 왼쪽 목록에서 항목을 고르면 오른쪽에 그 항목 설정이 나오고, 목록의 스위치로 사용 여부를 켜고 끈다
-const MORE=[['sim','유사한 상품 구성하기'],['cvm','오퍼링 문구(CVM)'],['search','검색 노출 설정 (SEO)']];
-let curM='sim';
-const moreObj=k=>k==='sim'?E.sim:k==='cvm'?E.cvm:E.search;
-function moreChips(){ const S=sectionState(E); MORE.forEach(([k])=>{ const ch=$('#mst-'+k); if(!ch) return; const [t,c]=STL[S[k].st]; ch.textContent=t; ch.className='chip '+c; }); }
-function rMore(){
- $('#moreList').innerHTML=MORE.map(([k,l])=>{ const on=!!moreObj(k).on; return `<div class="ali ${k===curM?'on':''} ${on?'':'off'}" data-mk="${k}"><div class="nm"><b>${l}</b><div><span class="chip" id="mst-${k}"></span></div></div>${sw('data-ms',k,on,l)}</div>`; }).join('');
- MORE.forEach(([k])=>{ $('#sb-'+k).hidden=k!==curM; });
- moreChips();
- $$('#moreList .ali[data-mk]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.switch')) return; curM=el.dataset.mk; rMore(); }));
- $$('#moreList [data-ms]').forEach(c=>c.addEventListener('change',()=>{ const k=c.dataset.ms; moreObj(k).on=c.checked; rMore(); refresh(); if(k==='sim') toast(c.checked?'유사한 상품을 노출해요':'유사한 상품을 숨겼어요'); }));
-}
+$('#rlOn').addEventListener('change',e=>{ E.related=E.sim.on=e.target.checked; refresh(); toast(E.related?'연관 상품을 노출해요':'연관 상품을 숨겼어요'); });
 function rSim(){
  const m=E.sim, t=simText(E), def=m.mode==='def';
  $('#sb-sim').innerHTML=`<div class="ftbl">
@@ -616,11 +606,21 @@ function rSim(){
  ${seoRow('타이틀',{id:'smTC',v:`${t.t.length}/${SIM_LEN}`},`<input type="text" id="smT" value="${esc(t.t)}" maxlength="${SIM_LEN}" ${def?'disabled':''} placeholder="예: 방금 보신 상품과 유사한 상품" aria-label="타이틀" style="width:100%">`)}
  ${seoRow('소타이틀',{id:'smSC',v:`${t.s.length}/${SIM_LEN}`},`<input type="text" id="smS" value="${esc(t.s)}" maxlength="${SIM_LEN}" ${def?'disabled':''} placeholder="예: 동일한 조건으로 비교한 다른 기기도 확인해보세요" aria-label="소타이틀" style="width:100%">`)}
  </div>
- <div class="simpv" aria-label="고객 화면 문구 미리보기"><b id="smPT">${esc(t.t)||'타이틀을 입력하세요'}</b><span id="smPS">${esc(t.s)||'소타이틀을 입력하세요'}</span></div>
- <p class="pill" style="margin:8px 0 0">상품은 연결 상품과 비슷한 조건의 전시에서 자동으로 골라요</p>`;
+ <div class="simpv" aria-label="고객 화면 문구 미리보기"><b id="smPT">${esc(t.t)||'타이틀을 입력하세요'}</b><span id="smPS">${esc(t.s)||'소타이틀을 입력하세요'}</span></div>`;
  $$('#smMode [data-sm]').forEach(b=>b.addEventListener('click',()=>{ m.mode=b.dataset.sm; if(m.mode==='custom'&&!m.t&&!m.s){ m.t=SIM_DEF.t; m.s=SIM_DEF.s; } rSim(); refresh(); if(m.mode==='custom') $('#smT').focus(); }));
  const bind=(id,k,c)=>$(id).addEventListener('input',e=>{ m[k]=e.target.value; $(c).textContent=`(${m[k].length}/${SIM_LEN})`; $(k==='t'?'#smPT':'#smPS').textContent=m[k]||(k==='t'?'타이틀을 입력하세요':'소타이틀을 입력하세요'); refresh(); });
  bind('#smT','t','#smTC'); bind('#smS','s','#smSC');
+}
+// ---------- 6-2. 추가설정: 검색 노출 설정 · 오퍼링 문구 ----------
+// 전시 정보와 같은 탭 구성. 탭을 고르면 아래에 그 항목 설정이 나온다
+const MORE=[['search','검색 노출 설정 (SEO)'],['cvm','오퍼링 문구(CVM)']];
+let curM='search';
+function moreChips(){ const S=sectionState(E); MORE.forEach(([k])=>{ const ch=$('#mst-'+k); if(!ch) return; const [t,c]=STL[S[k].st]; ch.textContent=S[k].st==='todo'?'':t; ch.className=c; }); }
+function rMore(){
+ $('#moreList').innerHTML=MORE.map(([k,l])=>`<button type="button" role="tab" data-mk="${k}" class="${k===curM?'on':''}" aria-selected="${k===curM}">${l}<small id="mst-${k}"></small></button>`).join('');
+ MORE.forEach(([k])=>{ $('#sb-'+k).hidden=k!==curM; });
+ moreChips();
+ $$('#moreList [data-mk]').forEach(el=>el.addEventListener('click',()=>{ curM=el.dataset.mk; rMore(); }));
 }
 
 // ---------- 7. 검색 노출 설정 (SEO) ----------
@@ -785,7 +785,7 @@ function openBenefitModal(kind){
 // 머리줄 스위치 = 주문 받기. ON: 상품 유형에 맞는 주문 구성안을 연결한다. OFF: 주문 버튼 대신 보일 대체 버튼과 버튼 문구를 정한다
 $('#odOn').addEventListener('change',e=>{ E.orderOn=e.target.checked; setFold($('#sec-order'),true); onStepsChange(); toast(E.orderOn?'주문을 다시 받아요. 가입 유형 · 할부 · 배송 설정이 고객 화면에 나와요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
 // [키, 이름, 설명, 기본 버튼 문구]
-const OFF_ACT=[['notify','출시 · 입고 알림 신청','신청자에게 주문 시작 시 문자를 보내요','출시 알림 받기'],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['link','다른 전시로 이동','고른 전시 상품으로 보내요','다른 상품 보러가기'],['none','버튼 없음','안내 문구만 보여요','']];
+const OFF_ACT=[['none','버튼 없음','안내 문구만 보여요',''],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['notify','출시 · 입고 알림 신청','신청자에게 알림을 보내요','출시 알림 받기'],['link','다른 전시로 이동','링크 및 전시 상품으로 보내요','다른 상품 보러가기']];
 const OFF_BTN=14;
 const offBtn=o=>o.act==='none'?'':(o.btn||(OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0])[3]);
 // 필요한 주문 항목 중 이 화면에서 정하는 단계 → 섹션
@@ -798,7 +798,7 @@ function bindPlan(){
  $$('#sb-order [data-jump]').forEach(b=>b.addEventListener('click',()=>goSec(b.dataset.jump)));
 }
 function rOrder(){
- $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='po'?(E.orderOn?'주문 받는 중':'주문 받지 않음'):'';
+ $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='po'&&E.orderOn?'주문 받는 중':'';
  const box=$('#sb-order');
  if(E.kind==='ps'){ box.innerHTML=ntc('','상품 개별 전시(PS)는 주문을 받지 않아요. 고객이 주문하려면 PS가 속한 PO 전시로 이동합니다.'); return; }
  const p=ptOf(E);
@@ -812,8 +812,8 @@ function rOrder(){
   bindPlan(); return;
  }
  const o=E.off, A=OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0];
- box.innerHTML=`<div class="row" style="align-items:flex-start"><label class="fl" style="padding-top:10px">대체 버튼</label><div class="acts" role="radiogroup" aria-label="대체 버튼">${OFF_ACT.map(([k,t,d])=>`<label><input type="radio" name="oAct" value="${k}" ${o.act===k?'checked':''}><span>${t}<small>${d}</small></span></label>`).join('')}</div></div>
- ${o.act!=='none'?`<div class="row" style="margin-bottom:0"><label class="fl" for="oBtn">버튼 문구</label><input type="text" id="oBtn" value="${esc(o.btn)}" maxlength="${OFF_BTN}" placeholder="${esc(A[3])}" style="flex:1"><span class="pill len" id="oBtnC">${o.btn.length}/${OFF_BTN}</span></div>`:''}`;
+ box.innerHTML=`<div class="oacts" role="radiogroup" aria-label="대체 버튼">${OFF_ACT.map(([k,t,d])=>`<label class="oact"><input type="radio" name="oAct" value="${k}" ${o.act===k?'checked':''}><b>${t}</b><small>${d}</small></label>`).join('')}</div>
+ ${o.act!=='none'?`<div class="row" style="margin:14px 0 0"><label class="fl" for="oBtn">버튼 문구</label><input type="text" id="oBtn" value="${esc(o.btn)}" maxlength="${OFF_BTN}" placeholder="${esc(A[3])}" style="flex:1"><span class="pill len" id="oBtnC">${o.btn.length}/${OFF_BTN}</span></div>`:''}`;
  // 버튼을 바꿀 때 문구가 비었거나 이전 기본 문구 그대로면 새 기본 문구로 바꾼다
  $$('#sb-order input[name=oAct]').forEach(r=>r.addEventListener('change',()=>{ if(!o.btn||o.btn===A[3]) o.btn=OFF_ACT.find(x=>x[0]===r.value)[3]; o.act=r.value; rOrder(); refresh(); }));
  const ob=$('#oBtn'); if(ob) ob.addEventListener('input',e=>{ o.btn=e.target.value; $('#oBtnC').textContent=`${o.btn.length}/${OFF_BTN}`; refresh(); });
@@ -1197,7 +1197,7 @@ function renderPreview(){
 }
 // 입력 섹션 ↔ 미리보기 위치 맞추기: 섹션 안을 누르거나 포커스하면 미리보기의 해당 위치로 이동하고 잠깐 강조한다.
 // [앵커, 필요한 탭]. 앵커가 없으면(예: 노출 끈 콘텐츠 정보) 탭 처음으로 간다
-const PV_AT={kind:['top'],conn:['tabs','order'],basic:['top'],search:['top'],desc:['desc','info'],order:['flow','order'],join:['join','order'],inst:['inst','order'],ship:['ship','order'],gift:['gift','order'],td:['td','order'],sim:['sim'],review:['review','review']};
+const PV_AT={kind:['top'],conn:['tabs','order'],basic:['top'],search:['top'],desc:['desc','info'],order:['flow','order'],join:['join','order'],inst:['inst','order'],ship:['ship','order'],gift:['gift','order'],td:['td','order'],rel:['sim'],review:['review','review']};
 function pvTarget(k){
  if(k==='more') k=curM;
  if(k==='info') k=curI;
@@ -1205,7 +1205,7 @@ function pvTarget(k){
  if(k==='extra') return curX!=null?[`x-${curX}`,'info']:['tabs','info'];
  if(k==='order'&&E.kind!=='po') return ['top'];
  if(k==='review'&&!E.review) return ['top'];
- if(k==='sim'&&!E.sim.on) return ['top'];
+ if(k==='rel'&&!E.related) return ['top'];
  return PV_AT[k]||['top'];
 }
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;

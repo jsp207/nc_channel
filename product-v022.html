@@ -116,8 +116,8 @@
       /* 구성 영역: 왼쪽 목록 + 오른쪽 상세 */
       .ae{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px}
       .ae.single{grid-template-columns:minmax(0,1fr)}
-      /* 콘텐츠 정보 · 추가설정: 왼쪽 목록을 좁게 (좁은 화면은 아래 900px 규칙대로 한 줄) */
-      @media(min-width:901px){:is(#sec-extra,#sec-more) .ae{grid-template-columns:180px minmax(0,1fr)}}
+      /* 콘텐츠 정보: 왼쪽 목록을 좁게 (좁은 화면은 아래 900px 규칙대로 한 줄) */
+      @media(min-width:901px){#sec-extra .ae{grid-template-columns:180px minmax(0,1fr)}}
       .al{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;align-self:start}
       .ali{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);margin-bottom:6px;cursor:pointer}
       .ali:hover{border-color:#b4a8f0}
@@ -131,9 +131,9 @@
       .ali .nm{flex:1;min-width:0}
       .ali .nm b{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ali .nm small{font-size:11px;color:var(--muted)}
-      /* 전시 정보 · 콘텐츠 정보 · 추가설정: 왼쪽 목록은 감싸는 박스 없이, 선택 항목도 왼쪽 굵은 선 없이 테두리로만 표시 */
-      :is(#sec-info,#sec-extra,#sec-more) .al{background:none;border:0;border-radius:0;padding:0}
-      :is(#sec-info,#sec-extra,#sec-more) .ali.on:not(.drop-a,.drop-b){box-shadow:none}
+      /* 전시 정보 · 콘텐츠 정보: 왼쪽 목록은 감싸는 박스 없이, 선택 항목도 왼쪽 굵은 선 없이 테두리로만 표시 */
+      :is(#sec-info,#sec-extra) .al{background:none;border:0;border-radius:0;padding:0}
+      :is(#sec-info,#sec-extra) .ali.on:not(.drop-a,.drop-b){box-shadow:none}
       .mv{display:flex;flex-direction:column;flex:none}
       .mv button{border:0;background:none;padding:0;width:20px;height:16px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
       .mv button:hover:not(:disabled){color:var(--accent)}
@@ -629,15 +629,18 @@
       .jump i.ok{background:var(--ok)}
       .jump small{font-size:11px;color:var(--muted)}
       /* 주문 구성 방식 OFF: 대체 버튼 */
-      .acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:1}
-      .acts label{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line-strong);border-radius:10px;font-size:13px;cursor:pointer}
-      .acts label:has(input:checked){border:2px solid var(--accent);padding:9px 11px;background:var(--accent-soft)}
-      .acts input{margin-top:3px;accent-color:var(--accent)}
-      .acts small{display:block;font-size:11px;color:var(--muted)}
+      /* 주문 구성 방식 OFF: 필수 표시가 빠져도 상태는 오른쪽 끝. 대체 버튼을 한 줄씩 고르는 카드 */
+      #sec-order>header .req[hidden]+.st{margin-left:auto}
+      .oacts{display:flex;flex-direction:column;gap:10px}
+      .oact{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:52px;padding:8px 15px;border:1px solid var(--line-strong);border-radius:8px;font-size:14px;cursor:pointer}
+      .oact:has(input:checked){border-color:var(--accent)}
+      .oact input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+      .oact b{font-weight:600;color:var(--muted)}
+      .oact:has(input:checked) b{color:var(--text)}
+      .oact small{margin-left:2px;font-size:13px;color:var(--muted)}
       .op-tag.here{border-color:#ded6ff;background:var(--accent-soft);color:var(--accent);cursor:pointer;font:inherit;font-size:12px}
       .op-warn{margin:12px 0 0}
       .ord-sw{font-size:12px;font-weight:400;color:var(--muted);margin-left:6px}
-      @media(max-width:900px){.acts{grid-template-columns:1fr}}
       .olist .or.hd{min-height:36px;border-top:0;background:var(--surface);font-size:11px;font-weight:600;color:var(--muted)}
       .olist .or .c{justify-self:center}
       .olist .or.off>:not(.switch){opacity:.45}
@@ -771,15 +774,15 @@
         <header><b>구매후기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rvOn" aria-label="구매후기 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-review"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
       </div>
-      <!-- 연관 상품: 구매후기와 같은 구성(머리줄 스위치로 고객 화면 노출) -->
+      <!-- 연관 상품: 구매후기와 같은 구성(머리줄 스위치로 고객 화면 노출) + 고객 화면 문구(타이틀 · 소타이틀) -->
       <div class="step" id="sec-rel">
         <header><b>연관 상품</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rlOn" aria-label="연관 상품 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-rel"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-rel"></div>
+        <div class="body" id="sb-rel"><div id="sb-sim"></div></div>
       </div>
-      <!-- 유사한 상품 · 오퍼링 문구 · 검색 노출 설정: 콘텐츠 정보와 같은 목록 + 상세 구성 -->
+      <!-- 검색 노출 설정 · 오퍼링 문구: 전시 정보와 같은 탭 구성 -->
       <div class="step" id="sec-more">
         <header><b>추가설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-more"><div class="ae"><div class="al" id="moreList"></div><div class="ad"><div id="sb-sim"></div><div id="sb-cvm" hidden></div><div id="sb-search" hidden></div></div></div></div>
+        <div class="body" id="sb-more"><div class="itabs" id="moreList" role="tablist" aria-label="추가설정"></div><div id="sb-search"></div><div id="sb-cvm" hidden></div></div>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
       <div class="step" id="sec-gift">

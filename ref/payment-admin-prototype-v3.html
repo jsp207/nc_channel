@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="zzangsoo">
+<title>NOVA 결제 관리 어드민 프로토타입 v1.2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#F4F5F7; --card:#fff; --sub:#F8F9FB; --line:#E6E8EC; --line2:#D5D9E0; --line3:#EEF0F3;
+  --tx:#1B1E24; --tx2:#5B6270; --tx3:#9AA0AB;
+  --pri:#3A22D6; --pri-d:#2C18B0; --pri-soft:#EEEBFC; --pri-line:#D6CFF7;
+  --ok:#1E8E4E; --ok-bg:#E7F6EC; --warn:#B26A00; --warn-bg:#FFF4E0; --warn-line:#F2D9A6;
+  --bad:#C23B2E; --bad-bg:#FDEBE8; --bad-line:#F3C7C1; --off:#6B7280; --off-bg:#F0F1F3;
+  --epc:#1D5FA8; --epc-bg:#E8F1FB;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5;display:flex;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+/* sidebar */
+.side{width:230px;background:#fff;border-right:1px solid var(--line);padding:26px 18px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:10px;align-items:center;margin-bottom:34px}
+.brand .lg{width:32px;height:32px;border-radius:8px;background:#1F2430;color:#fff;font-weight:700;display:grid;place-items:center}
+.brand b{display:block;font-size:14px}.brand small{font-size:10px;color:var(--tx3);letter-spacing:.02em}
+.ws{font-size:11px;color:var(--tx3);font-weight:600;margin:0 0 10px 4px}
+.ws.mt{margin-top:28px}
+.m1{font-weight:700;padding:8px 6px;font-size:15px}
+.m2{width:100%;border:0;background:none;text-align:left;padding:10px 6px 10px 30px;color:var(--tx2);border-radius:8px;font-size:14px;display:flex;align-items:center;gap:6px}
+.m2:hover{background:var(--sub)}
+.m2.on{background:var(--pri-soft);color:var(--pri);font-weight:700}
+.m2.doc{padding-left:6px}
+.m2 .ph{margin-left:auto;font-size:10px;color:var(--tx3);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-weight:500;background:#fff}
+.m2.on .ph{border-color:var(--pri-line);color:var(--pri)}
+.snote{font-size:11px;color:var(--tx3);line-height:1.6;margin:22px 4px 0}
+/* main */
+.main{flex:1;padding:30px 36px 80px;min-width:0}
+.view[hidden]{display:none}
+.crumb{font-size:12px;color:var(--tx3)}
+.hd{display:flex;align-items:flex-end;gap:12px;margin:8px 0 18px}
+.hd h1{font-size:24px;margin:0}
+.hd p{margin:4px 0 0;font-size:13px;color:var(--tx2)}
+.hd .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.demo{font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:var(--warn-bg);color:var(--warn);white-space:nowrap}
+/* common */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.card+.card,.sumbar+.card{margin-top:16px}
+.btn{height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:8px;background:#fff;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--sub)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.pri:hover{background:var(--pri-d)}
+.btn.dan{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.ghost{border-color:transparent;background:none;color:var(--tx2)}
+.btn.ghost:hover{background:var(--off-bg)}
+.btn.soft{border-color:var(--pri-line);color:var(--pri);background:var(--pri-soft)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.link{border:0;background:none;padding:0;color:var(--pri);text-decoration:underline;text-underline-offset:3px;font-size:inherit}
+.st{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:5px;font-weight:600;white-space:nowrap;line-height:1.4}
+.st.ok{background:var(--ok-bg);color:var(--ok)}.st.warn{background:var(--warn-bg);color:var(--warn)}
+.st.bad{background:var(--bad-bg);color:var(--bad)}.st.off{background:var(--off-bg);color:var(--off)}
+.st.pri{background:var(--pri-soft);color:var(--pri)}.st.epc{background:var(--epc-bg);color:var(--epc)}
+.st.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;margin-left:4px;white-space:nowrap;vertical-align:1px}
+.tag.fx{background:var(--pri-soft);color:var(--pri)}.tag.pp{background:var(--epc-bg);color:var(--epc)}.tag.ck{background:var(--warn-bg);color:var(--warn)}
+input[type=text],input[type=date],input[type=password],select,textarea{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;background:#fff;font-size:13px;width:100%;min-width:0}
+textarea{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-soft)}
+input[readonly],input:disabled,select:disabled{background:var(--sub);color:var(--tx3)}
+input[type=checkbox],input[type=radio]{accent-color:var(--pri);width:16px;height:16px;margin:0}
+.rd,.ck{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;white-space:nowrap}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.range{display:flex;align-items:center;gap:6px}
+.range span{color:var(--tx3)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;height:32px;padding:0 14px;font-size:13px;color:var(--tx2)}
+.seg button+button{border-left:1px solid var(--line2)}
+.seg button.on{background:var(--pri-soft);color:var(--pri);font-weight:700}
+.seg button:disabled{color:var(--tx3);cursor:not-allowed}
+.mono{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.muted{color:var(--tx3)}
+.err{font-size:12px;color:var(--bad);margin-top:4px}
+.err:empty{display:none}
+.help{font-size:11px;color:var(--tx3);margin-top:4px}
+.sec{font-size:13px;font-weight:700;margin:20px 0 8px;display:flex;align-items:center;gap:6px}
+.sec:first-child{margin-top:0}
+.sec small{font-weight:400;color:var(--tx3);font-size:12px}
+.info{display:flex;gap:10px;align-items:flex-start;background:var(--sub);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--tx2)}
+.info .ico{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--pri);color:var(--pri);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:none;margin-top:1px}
+.info b{color:var(--tx)}
+.info.warn{background:var(--warn-bg);border-color:var(--warn-line);color:#7A4A00}.info.warn .ico{border-color:var(--warn);color:var(--warn)}
+.info.bad{background:var(--bad-bg);border-color:var(--bad-line);color:#8E2A20}.info.bad .ico{border-color:var(--bad);color:var(--bad)}
+.info.ok{background:var(--ok-bg);border-color:#BFE3CC;color:#17643A}.info.ok .ico{border-color:var(--ok);color:var(--ok)}
+.info+.info,.info+.fbx,.fbx+.info,.card+.info{margin-top:10px}
+/* form rows (기존 BO 패턴) */
+.fr{display:grid;grid-template-columns:130px minmax(0,1fr);border-top:1px solid var(--line)}
+.fl{background:var(--sub);padding:12px 14px;font-size:13px;color:var(--tx2);display:flex;align-items:center}
+.fl .rq{color:var(--bad);margin-left:2px}
+.fc{padding:8px 14px;min-width:0;align-self:center;font-size:13px}
+.fbx{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fbx>.fr:first-child{border-top:0}
+/* search filter */
+.sf{overflow:hidden}
+.sf .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.sf .grid .fr:nth-child(-n+2){border-top:0}
+.sf .grid .fr:nth-child(odd){border-right:1px solid var(--line)}
+.sf .grid .fr.span2{grid-column:1/-1;border-right:0}
+.sf .grid .fr.span2:nth-child(-n+2){border-top:0}
+.sf .acts{display:flex;justify-content:center;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.sf .acts .btn{min-width:84px;justify-content:center}
+/* list panel */
+.rp{overflow:hidden}
+.bar{display:flex;align-items:center;gap:10px;padding:16px 18px 12px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.qc{height:30px;padding:0 12px;border:1px solid var(--line);border-radius:16px;background:#fff;font-size:13px;color:var(--tx2);display:inline-flex;align-items:center;gap:6px}
+.qc em{font-style:normal;font-weight:700;color:var(--tx)}
+.qc.on{border-color:var(--pri);background:var(--pri-soft);color:var(--pri);font-weight:600}
+.qc.on em{color:var(--pri)}
+.bar .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.bar select{width:auto;height:30px;font-size:12px}
+.cntl{padding:0 18px 10px;font-size:13px;color:var(--tx2)}
+.cntl b{color:var(--pri)}
+.bulk{display:inline-flex;align-items:center;gap:6px;background:var(--pri-soft);color:var(--pri);padding:3px 4px 3px 10px;border-radius:8px;font-size:12px;font-weight:600}
+.tbl-w{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:var(--sub);color:var(--tx2);font-weight:600;font-size:12px;text-align:left;padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th.s{cursor:pointer;user-select:none}
+.tbl th .ar{font-size:10px;color:var(--tx3);margin-left:3px}
+.tbl th .ar.on{color:var(--pri)}
+.tbl td{padding:12px;border-bottom:1px solid var(--line3);vertical-align:top;white-space:nowrap}
+.tbl .num{text-align:right}
+.tbl tbody tr.cl{cursor:pointer}
+.tbl tbody tr.cl:hover td{background:#FBFAFF}
+.tbl tbody tr.sel td{background:#F6F4FE}
+.tbl tbody tr.flash td{animation:fl 2.4s ease}
+@keyframes fl{0%,40%{background:#FFF6D6}100%{background:transparent}}
+.tbl .sub{display:block;font-size:11px;color:var(--tx3);margin-top:2px}
+.tbl.in{font-size:12.5px}
+.tbl.in th{border-top:0}
+.tbl.in td{padding:10px 12px}
+.tbl tr.cur td{background:#F5FBF7}
+.tbl tr.end td{color:var(--tx3)}
+.tbl tr.hit td{background:#FFFBF0}
+.cps{display:flex;flex-wrap:wrap;gap:3px;max-width:200px}
+.cp{font-size:11px;padding:1px 6px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--tx2);white-space:nowrap}
+.empty{text-align:center;color:var(--tx3);padding:40px}
+.pager{display:flex;justify-content:center;gap:4px;padding:14px}
+.pager button{min-width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:12px;color:var(--tx2)}
+.pager button.on{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+/* summary bar (기존 .summary 패턴) */
+.sumbar{background:var(--pri-soft);border:1px solid var(--pri-line);border-radius:12px;padding:14px 20px;display:flex;gap:10px 32px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.sumbar div{display:flex;flex-direction:column}
+.sumbar small{font-size:12px;color:var(--tx2)}
+.sumbar b{font-size:18px;font-variant-numeric:tabular-nums}
+.sumbar b.pri{color:var(--pri)}.sumbar b.bad{color:var(--bad)}
+.sumbar .note{margin-left:auto;font-size:12px;color:var(--tx2);max-width:300px;text-align:right}
+/* drawer (기존 패턴) */
+.dim{position:fixed;inset:0;background:rgba(20,22,30,.35);display:none;z-index:40}
+.dim.on{display:block}
+.drawer{position:fixed;top:0;right:-700px;width:660px;max-width:100%;height:100%;background:#fff;box-shadow:-8px 0 24px rgba(0,0,0,.08);transition:right .2s;z-index:41;display:flex;flex-direction:column}
+.drawer.on{right:0}
+.dr-h{padding:24px 24px 0}
+.dr-h .r1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dr-h h3{font-size:17px;margin:0}
+.dr-s{font-size:12px;color:var(--tx3);margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.x{border:none;background:none;font-size:20px;color:var(--tx3);line-height:1}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-top:14px;overflow-x:auto}
+.tab{background:none;border:none;padding:10px 12px;font-size:14px;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.on{color:var(--pri);border-color:var(--pri);font-weight:700}
+.tab em{font-style:normal;font-size:12px;color:var(--tx3);margin-left:4px}
+.dr-b{flex:1;overflow:auto;padding:20px 24px}
+.dr-f{border-top:1px solid var(--line);padding:12px 24px;display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.dr-f .note{margin-right:auto;font-size:12px;color:var(--tx3);max-width:320px}
+.imp{background:var(--sub);border-radius:8px;padding:12px;font-size:13px;color:var(--tx2);line-height:1.6}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:8px 10px;font-size:13px;margin:0}
+.kv dt{color:var(--tx3)}.kv dd{margin:0;color:var(--tx);min-width:0}
+.snap{border:1px dashed var(--pri-line);background:#FBFAFF;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--tx2);margin-bottom:16px}
+.snap b{color:var(--pri);font-size:11px;display:block;margin-bottom:4px}
+.snap .row{gap:4px 6px}
+.di{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.di .h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.di .h b{font-size:14px}.di .h small{font-size:12px;color:var(--tx3)}
+.di .it{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.di .it.me{font-weight:700}
+.di .it .m{width:64px;color:var(--tx2)}
+.log{border-left:2px solid var(--line);padding:0 0 14px 14px;position:relative;font-size:13px}
+.log::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--pri)}
+.log.bad::before{border-color:var(--bad)}
+.log small{display:block;color:var(--tx3);font-size:11.5px}
+.log .res{display:block;font-size:12px;color:var(--tx2);margin-top:2px}
+/* modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(20,22,30,.45);display:none;place-items:center;padding:24px}
+.modal.on{display:grid}
+.mbox{background:#fff;border-radius:14px;width:880px;max-width:100%;max-height:calc(100vh - 48px);display:flex;flex-direction:column;box-shadow:0 20px 48px rgba(16,24,40,.22)}
+.mbox.sm{width:640px}
+.m-h{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:10px}
+.m-h h2{margin:0;font-size:17px}
+.m-h p{margin:4px 0 0;font-size:12px;color:var(--tx3)}
+.m-h .x{margin-left:auto}
+.m-b{padding:20px 24px;overflow:auto;flex:1}
+.m-f{padding:12px 24px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.m-f .why{margin-right:auto;font-size:12px;color:var(--bad)}
+.stepper{display:flex;padding:14px 24px;border-bottom:1px solid var(--line);background:var(--sub)}
+.stp{flex:1;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx3);border:0;background:none;padding:0;text-align:left}
+.stp .n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;font-size:11px;font-weight:700;background:#fff;flex:none}
+.stp.done{color:var(--tx2)}.stp.done .n{background:var(--pri);border-color:var(--pri);color:#fff}
+.stp.on{color:var(--pri);font-weight:700}.stp.on .n{border-color:var(--pri);color:var(--pri)}
+.stp:disabled{cursor:default}
+.ogrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.opt{border:1px solid var(--line2);border-radius:10px;padding:14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;background:#fff}
+.opt:hover{border-color:var(--pri-line)}
+.opt.on{border:1.5px solid var(--pri);padding:13.5px;background:var(--pri-soft)}
+.opt b{display:block;font-size:14px}
+.opt small{display:block;font-size:12px;color:var(--tx2);margin-top:3px}
+.opt input{margin-top:3px}
+.tbl tr.pick td{background:var(--pri-soft)}
+.tbl tr.dup td{background:var(--bad-bg)}
+.chk{list-style:none;margin:0;padding:0}
+.chk li{display:flex;gap:8px;align-items:flex-start;padding:7px 0;font-size:13px;border-bottom:1px dashed var(--line)}
+.chk li .i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;margin-top:1px}
+.chk li.o .i{background:var(--ok-bg);color:var(--ok)}
+.chk li.x .i{background:var(--bad-bg);color:var(--bad)}
+.chk li.w .i{background:var(--warn-bg);color:var(--warn)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.box h4{margin:0 0 10px;font-size:14px;display:flex;align-items:center;gap:6px}
+.box h4 small{margin-left:auto;font-weight:400;color:var(--tx3);font-size:12px}
+.big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--pri-line);border-top-color:var(--pri);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2430;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:90;max-width:560px;text-align:center}
+.toast.on{opacity:1}
+.toast.bad{background:#8E2A20}
+/* policy */
+.pol{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;align-items:start}
+.toc{position:sticky;top:20px;padding:14px 10px;font-size:13px}
+.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--tx2);text-decoration:none}
+.toc a:hover{background:var(--pri-soft);color:var(--pri)}
+.doc{padding:32px 40px;max-width:1060px}
+.doc h1{font-size:24px;margin:0 0 6px}
+.doc h2{font-size:18px;margin:40px 0 12px;padding-top:14px;border-top:1px solid var(--line);scroll-margin-top:20px}
+.doc h3{font-size:15px;margin:22px 0 8px}
+.doc p,.doc li{line-height:1.8;color:#2A2F3A}
+.doc p{margin:0 0 10px}
+.doc ul{margin:0 0 12px;padding-left:20px}
+.doc table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 16px}
+.doc th{background:var(--sub);text-align:left;font-weight:600;color:var(--tx2);padding:9px 10px;border:1px solid var(--line)}
+.doc td{padding:9px 10px;border:1px solid var(--line);vertical-align:top;line-height:1.65}
+.doc .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--tx2);margin-bottom:16px}
+.doc code{background:var(--off-bg);padding:1px 5px;border-radius:4px;font-size:12px}
+.ia{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:12.5px;background:var(--sub);border:1px solid var(--line);border-radius:10px;padding:14px 18px;line-height:1.9;white-space:pre;overflow:auto}
+.er{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.er .e{border:1.5px solid var(--pri-line);background:#fff;border-radius:8px;padding:8px 12px;font-size:12.5px}
+.er .e b{display:block;font-size:13px}.er .e small{color:var(--tx2);font-size:11.5px}
+.er .e.ext{border-style:dashed;border-color:var(--line2);color:var(--tx2)}
+.er .a{font-size:11px;color:var(--tx2);font-weight:700}
+.demo-row{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.demo-row .k{width:28px;height:28px;border-radius:8px;background:var(--pri-soft);color:var(--pri);display:grid;place-items:center;font-weight:800;flex:none}
+.demo-row .c{flex:1}.demo-row .c b{display:block}.demo-row .c span{font-size:13px;color:var(--tx2)}
+@media(max-width:1100px){.side{display:none}.main{padding:20px 16px}.sf .grid{grid-template-columns:1fr}.sf .grid .fr{border-right:0!important;border-top:1px solid var(--line)!important}.pol{grid-template-columns:1fr}.toc{display:none}.doc{padding:20px 16px}.ogrid,.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="side" aria-label="주 메뉴">
+  <div class="brand"><div class="lg">N</div><div><b>NOVA</b><small>PAYMENT ADMIN</small></div></div>
+  <div class="ws">WORKSPACE</div>
+  <div class="m1">결제 관리</div>
+  <button class="m2 on" data-nav="master">결제수단 기준정보 관리</button>
+  <button class="m2" data-nav="history">결제이력 관리 <span class="ph">2차</span></button>
+  <button class="m2" data-nav="recon">거래내역 대사 관리 <span class="ph">2차</span></button>
+  <button class="m2" data-nav="fee">금융수수료 조회 <span class="ph">2차</span></button>
+  <div class="ws mt">DOCUMENT</div>
+  <button class="m2 doc" data-nav="policy">정책서 v1.2 <span class="new" style="margin-left:auto;background:var(--pri);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600">NEW</span></button>
+  <p class="snote">결제 관리 아래 4개 메뉴는 같은 1Depth예요. 주문 결제 코너는 관리 주체가 정해지지 않아 메뉴를 두지 않았어요.</p>
+</aside>
+
+<main class="main">
+
+<!-- ============ SCREEN 01 ============ -->
+<section class="view" id="v-master">
+  <div class="crumb">홈 &gt; 결제 관리 &gt; 결제수단 기준정보 관리</div>
+  <div class="hd"><div><h1>결제수단 기준정보 관리</h1><p>PG, MID, 결제수단 계약과 계약 수수료 이력을 관리해요. 화면의 상호, MID, 요율, 키는 모두 가상값이에요.</p></div>
+    <div class="r"><span class="demo">DEMO · 가상 데이터</span><button class="btn pri" data-act="new">+ 신규 등록</button></div></div>
+  <div class="card sf" id="f1"></div>
+  <div class="card rp">
+    <div class="bar"><div class="chips" id="q1"></div><div class="right"><span id="bulk1"></span><select id="size1" aria-label="페이지당 행 수"><option value="10">10개씩</option><option value="20">20개씩</option><option value="50">50개씩</option></select></div></div>
+    <div class="cntl" id="cnt1"></div>
+    <div class="tbl-w"><table class="tbl" style="min-width:1700px"><thead id="th1"></thead><tbody id="tb1"></tbody></table></div>
+    <div class="pager" id="pg1"></div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 02 ============ -->
+<section class="view" id="v-history" hidden>
+  <div class="crumb">홈 &gt; 결제 관리 &gt; 결제이력 관리</div>
+  <div class="hd"><div><h1>결제이력 관리</h1><p>결제 결과와 BSS 반영 상태를 확인하고 재조회, 반영 재요청, 취소를 처리해요. 상품, 주문, 거래는 모두 가상 데이터예요.</p></div>
+    <div class="r"><span class="demo">DEMO · 가상 데이터</span></div></div>
+  <div class="card sf" id="f2"></div>
+  <div class="sumbar" id="sum2"></div>
+  <div class="card rp">
+    <div class="bar"><div class="chips" id="q2"></div><div class="right"><select id="size2" aria-label="페이지당 행 수"><option value="10">10개씩</option><option value="20">20개씩</option><option value="50">50개씩</option></select></div></div>
+    <div class="cntl" id="cnt2"></div>
+    <div class="tbl-w"><table class="tbl" style="min-width:1400px"><thead id="th2"></thead><tbody id="tb2"></tbody></table></div>
+    <div class="pager" id="pg2"></div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 03 ============ -->
+<section class="view" id="v-recon" hidden>
+  <div class="crumb">홈 &gt; 결제 관리 &gt; 거래내역 대사 관리</div>
+  <div class="hd"><div><h1>거래내역 대사 관리</h1><p>정산용 거래 파일을 만들고 정산 담당자에게 전달한 기록을 관리해요. BSS 전달은 모의 동작이에요.</p></div>
+    <div class="r"><span class="demo">DEMO · 가상 데이터</span><button class="btn pri" data-act="rcnew">+ 추출 요청</button></div></div>
+  <div class="card sf" id="f3"></div>
+  <div class="card rp">
+    <div class="bar"><div class="chips" id="q3"></div></div>
+    <div class="cntl" id="cnt3"></div>
+    <div class="tbl-w"><table class="tbl" style="min-width:1240px"><thead id="th3"></thead><tbody id="tb3"></tbody></table></div>
+    <div class="pager" id="pg3"></div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 04 ============ -->
+<section class="view" id="v-fee" hidden>
+  <div class="crumb">홈 &gt; 결제 관리 &gt; 금융수수료 조회</div>
+  <div class="hd"><div><h1>금융수수료 조회</h1><p>계약 수수료 이력으로 계산한 예상수수료와 PG 청구수수료를 비교해요. 거래건수, 금액, 청구액은 모두 가상값이에요.</p></div>
+    <div class="r"><span class="demo">DEMO · 가상 데이터</span></div></div>
+  <div class="card sf" id="f4"></div>
+  <div class="sumbar" id="sum4"></div>
+  <div class="card rp">
+    <div class="bar"><div class="chips" id="q4"></div></div>
+    <div class="cntl" id="cnt4"></div>
+    <div class="tbl-w"><table class="tbl" style="min-width:1380px"><thead id="th4"></thead><tbody id="tb4"></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============ POLICY ============ -->
+<section class="view" id="v-policy" hidden>
+  <div class="crumb">홈 &gt; 문서 &gt; 정책서</div>
+  <div class="hd"><div><h1>정책서 v1.2</h1><p>프로토타입 화면과 같은 규칙을 정리한 문서예요.</p></div></div>
+  <div class="pol">
+    <nav class="card toc" aria-label="정책서 목차">
+      <a href="#p-info">1. 문서 정보</a><a href="#p-diff">2. 변경 사항</a><a href="#p-scope">3. 범위</a><a href="#p-ia">4. IA</a>
+      <a href="#p-term">5. 용어</a><a href="#p-model">6. 데이터 모델</a><a href="#p-s01">7. SCREEN 01</a><a href="#p-s02">8. SCREEN 02</a>
+      <a href="#p-s03">9. SCREEN 03</a><a href="#p-s04">10. SCREEN 04</a><a href="#p-rule">11. 검증 규칙</a><a href="#p-state">12. 상태 정의</a>
+      <a href="#p-err">13. 예외·에러</a><a href="#p-open">14. 미확정 정책</a><a href="#p-api">15. API 연동 포인트</a><a href="#p-demo">16. 시연 시나리오</a><a href="#p-mock">17. Mock 데이터</a>
+    </nav>
+    <article class="card doc">
+      <h1>NOVA 결제 관리 어드민 정책서</h1>
+      <div class="meta"><span>버전 v1.2</span><span>기준일 2026-11-01</span><span>작성 zzangsoo</span><span>대상: 결제 관리 4개 화면</span></div>
+
+      <h2 id="p-info">1. 문서 정보</h2>
+      <p>이 문서는 'NOVA 결제관리 프로토타입 AI 프롬프트 v1.1'을 최신 기준으로 삼아 결제 BO 정책을 정리한 것이다. 프로토타입과 같은 HTML 안에 있고, 화면 동작은 이 문서의 규칙을 그대로 따른다.</p>
+      <table>
+        <tr><th style="width:130px">표기</th><th>의미</th><th style="width:280px">프로토타입 처리</th></tr>
+        <tr><td><span class="tag fx">확정</span></td><td>프롬프트에 결정으로 명시된 정책</td><td>그대로 구현</td></tr>
+        <tr><td><span class="tag pp">제안</span></td><td>프롬프트에 없어 기획 기준으로 정한 값</td><td>구현하되 제안으로 표시</td></tr>
+        <tr><td><span class="tag ck">확인필요</span></td><td>결정 주체가 따로 있거나 아직 정해지지 않은 정책</td><td>데모 가정으로 동작시키고 14장에 모음</td></tr>
+      </table>
+      <p>구현은 단일 HTML 파일(Vanilla JS)이다. 프롬프트는 React + TypeScript + Tailwind를 요구하지만 요청이 HTML 단일 파일이라 그쪽을 따랐다. 목록, 필터, 위저드, 드로어, 모달 단위로 함수를 나눠 두어 React 컴포넌트로 옮길 때 경계를 그대로 쓸 수 있다. API 호출 위치는 코드의 <code>api</code> 객체에 TODO로 모았다.</p>
+
+      <h2 id="p-diff">2. 변경 사항</h2>
+      <h3>v1.2 (2026-11-01)</h3>
+      <table>
+        <tr><th style="width:150px">항목</th><th>v1.1</th><th>v1.2</th></tr>
+        <tr><td>화면 스타일</td><td>별도 스타일(어두운 좌측 내비, 파란 강조색)</td><td>기존 NEXT CHANNEL BO 셸로 통일. 흰색 사이드바, 보라 강조색, 라벨 칸 회색 폼 행, 상태 배지, 우측 슬라이드 드로어, 요약 바</td></tr>
+        <tr><td>2차 화면</td><td>메뉴와 준비중 안내만 표시</td><td>결제이력 관리, 거래내역 대사 관리, 금융수수료 조회를 클릭 가능한 프로토타입으로 구현. 사용자 요청으로 프롬프트의 '1차만 완성' 지시보다 우선 적용</td></tr>
+        <tr><td>UI 문구</td><td>평서형</td><td>기존 BO 프로토타입과 같은 해요체</td></tr>
+        <tr><td>시연 시나리오</td><td>A~E</td><td>A~H 전체 시연 가능</td></tr>
+      </table>
+      <h3>프롬프트 기준 정책 변경 (v1.1부터 유지)</h3>
+      <table>
+        <tr><th style="width:150px">항목</th><th>이전 기준</th><th>현재 기준</th></tr>
+        <tr><td>메뉴 구조</td><td>'결제 정보/이력 관리' 중간 폴더</td><td>결제 관리 바로 아래 4개 메뉴를 같은 1Depth로 배치 <span class="tag fx">확정</span></td></tr>
+        <tr><td>상품과 MID</td><td>상품 → 단일 MID 직접 매핑</td><td>폐지. MID는 PG·결제수단 계약의 기준정보로만 관리 <span class="tag fx">확정</span></td></tr>
+        <tr><td>LV2 매핑, 노출 우선순위</td><td>결제 BO에서 관리</td><td>결제 BO 범위에서 제외 <span class="tag fx">확정</span></td></tr>
+        <tr><td>주문 결제 코너</td><td>결제 BO 안에서 관리</td><td>관리 주체·위치 미정. 결제 BO에 메뉴·탭·화면 없음. 연계 인터페이스만 정의 <span class="tag ck">확인필요</span></td></tr>
+        <tr><td>요율 변경</td><td>기준 없음</td><td>적용시작일별 이력. 적용 시작된 요율은 직접 수정 금지 <span class="tag fx">확정</span></td></tr>
+        <tr><td>인증키</td><td>기준 없음</td><td>기존 MID 선택 시 키 입력 없음. 키 변경 시 미확인으로 초기화 <span class="tag fx">확정</span></td></tr>
+      </table>
+      <p>이 프로젝트의 이전 대화에는 결제 정책서나 결제 화면이 없었다. 화면 패턴은 같은 프로젝트의 상품·전시 BO 프로토타입(전시 자산 관리, 새 상품 전시 만들기)에서 가져왔다. 건수를 누르면 연결 대상을 드로어로 보여주는 방식, 외부 원천 데이터를 읽기 전용으로 두는 원칙, 정하지 않은 정책을 확인 필요로 남기는 방식도 그대로 이어받았다.</p>
+
+      <h2 id="p-scope">3. 범위</h2>
+      <table>
+        <tr><th style="width:130px">구분</th><th>내용</th></tr>
+        <tr><td>1차 구현</td><td>결제수단 기준정보 관리. 검색, 필터, 정렬, 페이징, 선택, 신규 등록 위저드, 상세·수정, 단건·일괄 상태 변경, 계약 수수료 이력, 연결 코너 보기, 변경 이력</td></tr>
+        <tr><td>2차 프로토타입</td><td>결제이력 관리, 거래내역 대사 관리, 금융수수료 조회. 개발 범위는 여전히 2차이고, 기획 검증용으로 화면과 흐름을 먼저 만든 것이다.</td></tr>
+        <tr><td>만들지 않음</td><td>주문 결제 코너 생성·수정, 코너 중첩 검증, 노출 순서 편집, 상품 결제수단 노출·우선순위, 상품-MID 직접 매핑, 상품유형 LV2 매핑</td></tr>
+      </table>
+
+      <h2 id="p-ia">4. IA</h2>
+      <div class="ia">결제 관리
+├─ 결제수단 기준정보 관리   목록 · 신규 등록 위저드 · 계약 상세(기본/수수료 이력/연결 코너/변경 이력) · 상태 변경
+├─ 결제이력 관리            목록 · 조회 합계 · 거래 상세(주문/PG 결제/금액/BSS 반영/거래 이력/담당자) · 재조회 · 반영 재요청 · 취소
+├─ 거래내역 대사 관리       목록 · 추출 요청(조건/대상 확인/정합성 검증/파일 생성) · 요청 상세(파일/전달/시도 이력)
+└─ 금융수수료 조회          목록 · 조회 합계 · 검증 상세(계약 이력/건별 근거/PG 청구 비교/메모·확인완료)
+
+DOCUMENT
+└─ 정책서</div>
+
+      <h2 id="p-term">5. 용어</h2>
+      <table>
+        <tr><th style="width:150px">용어</th><th>정의</th></tr>
+        <tr><td>MID</td><td>PG가 발급한 가맹점 ID. 인증키, PG 등록 상호, 정산주체, 유효기간, 가맹점 용도명이 MID 속성이다.</td></tr>
+        <tr><td>결제수단 계약</td><td>MID 1개와 결제수단 1개의 계약. 기준정보 목록의 한 행이다. 운영상태와 수수료 이력을 가진다.</td></tr>
+        <tr><td>결제 코너</td><td>주문 화면의 결제수단 묶음. 항목 하나가 결제수단 + MID다. 결제 BO 밖에 있다.</td></tr>
+        <tr><td>Snapshot</td><td>결제 시점의 컨테이너, 코너, PG, MID, 결제수단, 요율. 기준정보가 나중에 바뀌어도 거래에 남은 값은 바뀌지 않는다.</td></tr>
+        <tr><td>결과 미확인</td><td>PG 승인 요청 후 결과 응답을 받지 못한 거래. PG 재조회로 결제완료나 결제실패를 확정한다.</td></tr>
+        <tr><td>BSS 반영</td><td>결제 결과를 BSS(과금·정산 시스템)에 기록하는 일. 반영완료, 반영대기, 반영실패, 불일치로 구분한다.</td></tr>
+        <tr><td>대사 파일</td><td>정산 담당자가 PG 정산 내역과 맞춰 보는 거래 목록 파일</td></tr>
+        <tr><td>예상수수료 / 청구수수료</td><td>예상수수료는 계약 수수료 이력으로 계산한 값, 청구수수료는 PG가 보낸 청구 데이터의 값이다.</td></tr>
+      </table>
+
+      <h2 id="p-model">6. 데이터 모델</h2>
+      <div class="er"><div class="e"><b>PG</b><small>지원 결제수단, 키 항목</small></div><span class="a">1 : N</span><div class="e"><b>MID</b><small>용도명, 상호, 정산주체, 키, 유효기간</small></div><span class="a">1 : N</span><div class="e"><b>결제수단 계약</b><small>세부수단, 운영상태</small></div><span class="a">1 : N</span><div class="e"><b>수수료 이력</b><small>적용시작일, 정률/정액</small></div></div>
+      <div class="er"><div class="e"><b>결제수단 계약</b><small>기준정보</small></div><span class="a">1 : N</span><div class="e"><b>결제 거래</b><small>금액, 거래상태, BSS 반영, Snapshot</small></div><span class="a">N : 1</span><div class="e"><b>대사 요청</b><small>조건, 파일, 전달</small></div></div>
+      <div class="er"><div class="e"><b>결제수단 계약 × 정산월</b><small>건수, 금액</small></div><span class="a">1 : 1</span><div class="e"><b>수수료 검증</b><small>예상, 청구, 차액, 원인, 메모</small></div><span class="a">참조</span><div class="e ext"><b>PG 청구 데이터</b><small>외부 수신</small></div></div>
+      <table>
+        <tr><th style="width:220px">관계</th><th>규칙</th></tr>
+        <tr><td>MID 1 : N 결제수단 계약</td><td>MID + 결제수단 계약은 현재 유효 기준 1개. 요율이 바뀌어도 계약은 하나이고 수수료 이력 행만 늘어난다. <span class="tag fx">확정</span></td></tr>
+        <tr><td>화면 계위</td><td>PG → 결제수단 → MID → 가맹점 용도명 <span class="tag fx">확정</span></td></tr>
+        <tr><td>결제 코너 1 : N 항목</td><td>항목 = 결제수단 + MID. 같은 코너 안 같은 결제수단 중복 불가. 다른 PG의 MID가 섞일 수 있다. <span class="tag fx">확정</span> 검증은 코너 도메인에서 한다.</td></tr>
+        <tr><td>거래 → 계약</td><td>거래는 계약 ID와 결제 시점 Snapshot을 함께 저장한다. 화면 표시는 Snapshot 값을 쓴다. <span class="tag pp">제안</span></td></tr>
+        <tr><td>수수료 검증 → 계약 이력</td><td>예상수수료는 거래일에 유효했던 수수료 이력 행으로 계산한다. <span class="tag pp">제안</span></td></tr>
+      </table>
+
+      <h2 id="p-s01">7. SCREEN 01 결제수단 기준정보 관리</h2>
+      <h3>7.1 목록</h3>
+      <p>검색 필터는 PG, 결제수단, MID, 가맹점 용도명, 채널, 사업주체, 운영상태, 키검증, 적용기간 9개다. MID와 용도명은 부분 일치, 적용기간은 MID 유효기간과 하루라도 겹치면 결과에 넣는다. 필터는 '검색'을 눌러야 적용된다. 빠른 필터는 운영상태 3종과 키 미확인·실패, 적용 예정 요율, 만료 임박(30일 이내 <span class="tag pp">제안</span>)이다.</p>
+      <p>테이블은 PG, 결제수단, MID, 가맹점 용도명, PG 등록 상호, 정산주체, 계약 세부수단, 수수료, 키검증, 운영상태, 유효기간, 사용 중 코너 수, 수정일이다. 수수료 칸에는 현재 요율과 적용 예정 요율을 함께 보여준다. 기본 정렬은 수정일 내림차순, 페이지당 10건이다. 행을 누르면 상세 드로어, 수수료 칸은 수수료 이력 탭, 코너 수는 연결 코너 탭으로 바로 연다.</p>
+      <h3>7.2 신규 등록 위저드</h3>
+      <table>
+        <tr><th style="width:110px">단계</th><th>입력</th><th style="width:300px">다음 단계 조건</th></tr>
+        <tr><td>1. PG</td><td>PG 선택</td><td>PG 1개 선택</td></tr>
+        <tr><td>2. 결제수단</td><td>PG 지원 결제수단만 노출</td><td>1개 선택. PG를 바꾸면 뒤 단계 값을 비운다</td></tr>
+        <tr><td>3. MID</td><td>기존 또는 신규</td><td>기존 MID는 같은 결제수단 계약이 없어야 한다</td></tr>
+        <tr><td>4. MID 정보</td><td>기존은 읽기 전용 요약. 신규는 MID 코드, 용도명, 상호, 정산주체, 사업주체, 채널, 유효기간, PG별 인증키</td><td>신규는 필수값과 키 유효성 확인 완료</td></tr>
+        <tr><td>5. 계약 조건</td><td>세부수단, 적용시작일, 정률/정액, 초기 운영상태</td><td>세부수단 1개 이상, 수수료 형식, MID 유효기간 안</td></tr>
+        <tr><td>6. 확인·저장</td><td>요약과 검증 결과</td><td>검증 전부 통과</td></tr>
+      </table>
+      <h3>7.3 상세, 수수료 이력, 상태 변경</h3>
+      <p>MID 정보를 고치면 같은 MID의 다른 계약에도 반영되므로 수정 화면에 영향 계약 수를 표시한다. MID 코드, PG, 결제수단은 식별값이라 수정할 수 없다. 인증키는 '키 변경'을 눌렀을 때만 입력란이 열리고, 바꾸면 저장 전에 다시 확인해야 한다.</p>
+      <p>적용 시작된 요율은 잠근다. 잠긴 행의 '수정'을 누르면 차단 안내와 함께 같은 값을 채운 신규 이력 입력란이 열린다. 적용 예정 행은 수정과 삭제가 된다. 남는 이력이 0건이 되는 삭제는 막는다.</p>
+      <p>운영상태 변경은 '이 계약만' 또는 '이 MID의 모든 계약' 범위를 고른다. 목록에서 여러 건을 골라 일괄로도 바꾼다. 코너에서 쓰는 계약을 일시중지·미사용하면 영향 코너와 같은 결제수단의 대체 MID 후보를 안내하고 확인 체크를 받는다.</p>
+
+      <h2 id="p-s02">8. SCREEN 02 결제이력 관리</h2>
+      <p>검색은 결제일 기간, 주문번호, 거래번호, PG, MID, 결제수단, 거래상태, BSS 반영상태다. 기본 기간은 최근 1개월이다. 검색 영역 바로 아래 요약 바에 조회 전체 합계를 보여준다. 결제금액, 취소금액, 순결제금액이고 결제실패는 뺀다. <span class="tag fx">확정</span> 결과 미확인 건은 금액이 확정되지 않았지만 합계에 넣고 건수를 따로 표시한다. <span class="tag ck">확인필요</span></p>
+      <p>상세 드로어 탭은 주문정보, PG 결제정보, 금액정보, BSS 반영, 거래 이력, 담당자 6개다. 탭 위에 결제 시점 Snapshot(컨테이너, 코너, PG, MID, 결제수단, 요율)을 고정해서 보여준다. 기준정보에서 요율이나 상태를 바꿔도 이 값은 그대로다.</p>
+      <table>
+        <tr><th style="width:170px">상태</th><th>액션</th><th style="width:300px">결과</th></tr>
+        <tr><td>결과 미확인</td><td>PG 재조회</td><td>승인 확인이면 결제완료 + BSS 반영대기. 승인 내역이 없으면 결제실패</td></tr>
+        <tr><td>BSS 반영실패, 불일치</td><td>BSS 반영 재요청</td><td>성공 시 반영완료. 실패 시 상태 유지, 회차와 사유 기록</td></tr>
+        <tr><td>BSS 반영대기</td><td>BSS 반영 확인</td><td>반영완료로 전환</td></tr>
+        <tr><td>결제완료, 부분취소</td><td>취소 처리(전체/부분)</td><td>PG 취소 결과 기록, 거래상태 변경, BSS 반영대기로 전환. 이후 BSS 반영 확인</td></tr>
+      </table>
+      <p>모든 재조회, 재요청, 취소는 거래 이력에 시각, 처리자, 회차, 결과를 남긴다. <span class="tag fx">확정</span> 처리 중에는 같은 버튼을 다시 누를 수 없다.</p>
+
+      <h2 id="p-s03">9. SCREEN 03 거래내역 대사 관리</h2>
+      <p>조회 조건은 추출일자, 전달상태, PG, 결제수단, 검색어(요청 ID, 파일명, 요청자)다. 추출 요청은 4단계로 진행한다.</p>
+      <table>
+        <tr><th style="width:120px">단계</th><th>내용</th></tr>
+        <tr><td>1. 추출 조건</td><td>거래 기간, PG, 결제수단. 기간 종료일은 오늘 이전 <span class="tag pp">제안</span></td></tr>
+        <tr><td>2. 대상 확인</td><td>대상 건수, 결제·취소·순결제 금액, PG별 내역. 결제실패는 대상에서 뺀다</td></tr>
+        <tr><td>3. 정합성 검증</td><td>결과 미확인 0건(차단), BSS 반영실패·불일치(경고, 확인 체크 후 진행), 거래번호 중복, 금액 합계, 대상 1건 이상</td></tr>
+        <tr><td>4. 파일 생성</td><td>성공 시 다운로드. 실패 시 실패 사유와 재추출 버튼. 성공·실패 모두 요청 이력에 남는다</td></tr>
+      </table>
+      <p>요청 상세에서 파일 다운로드, 재추출, 기존 조건 복사, 정산 담당자 전달 기록, 수신 확인을 한다. 전달 기록은 생성이 끝난 파일에만, 수신 확인은 전달 기록 뒤에만 된다. 다운로드는 브라우저에서 데모 CSV를 만들고, BSS 전달은 모의 동작으로 표시한다. <span class="tag fx">확정</span></p>
+
+      <h2 id="p-s04">10. SCREEN 04 금융수수료 조회</h2>
+      <p>검색은 정산기간(월), PG, MID, 결제수단, 검증상태, 차이 원인이다. 요약 바에 거래건수, 거래금액, 예상수수료, PG 청구수수료, 차액 합계를 둔다. 행은 결제수단 계약 × 정산월 단위다.</p>
+      <p>예상수수료는 정률이면 거래금액 × 요율, 정액이면 건수 × 정액으로 계산한다. 요율은 거래일 기준 계약 수수료 이력 행을 쓴다. VAT 포함 여부, 반올림 기준, 취소 수수료 처리는 정해지지 않았으므로 계산에 넣지 않고 화면에 확인 필요로 표시한다. <span class="tag ck">확인필요</span></p>
+      <p>상세 드로어는 계산 요약, 계약 수수료 이력, 건별 계산 근거(표본), PG 청구 데이터 비교, 메모와 확인완료로 구성한다. 불일치와 미수신은 메모를 입력해야 확인완료할 수 있다. <span class="tag fx">확정</span> 차이 원인은 시스템이 추정해 붙이고 운영자가 바꿀 수 있다. <span class="tag pp">제안</span></p>
+
+      <h2 id="p-rule">11. 검증 규칙</h2>
+      <table>
+        <tr><th style="width:52px">코드</th><th>규칙</th><th style="width:120px">시점</th><th style="width:66px">결과</th><th style="width:84px">구분</th></tr>
+        <tr><td>V01</td><td>같은 PG 안 MID 코드 중복 금지</td><td>위저드, 저장</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V02</td><td>MID + 결제수단 계약은 1개</td><td>위저드, 저장</td><td>차단</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V03</td><td>신규 MID는 키 확인 완료 전 저장 불가</td><td>위저드</td><td>차단</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V04</td><td>키 값이 바뀌면 미확인으로 초기화</td><td>입력 즉시</td><td>초기화</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V05</td><td>기존 MID 선택 시 키 필드 읽기 전용</td><td>위저드</td><td>표시</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V06</td><td>적용 시작된 요율 직접 수정 금지</td><td>수수료 이력</td><td>차단</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V07</td><td>신규 이력 적용시작일은 내일 이후, 최신 이력보다 뒤. 신규 계약 첫 요율은 오늘부터</td><td>이력 추가</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V08</td><td>정률 0.01~10.00%(소수 둘째 자리), 정액 1~10,000원</td><td>입력</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V09</td><td>유효기간 시작 ≤ 종료, 종료 ≥ 오늘</td><td>위저드, 수정</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V10</td><td>요율 적용시작일은 MID 유효기간 안</td><td>위저드, 이력</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V11</td><td>세부수단 1개 이상</td><td>위저드, 수정</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V12</td><td>키 미확인·실패, 유효기간 밖 MID의 계약은 사용 불가</td><td>등록, 상태 변경</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V13</td><td>상태 변경 사유 필수</td><td>상태 변경</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V14</td><td>코너 사용 계약 중지 시 영향·대체 MID 안내, 확인 체크</td><td>상태 변경</td><td>확인</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V15</td><td>같은 코너 안 같은 결제수단 중복 금지</td><td>코너 도메인</td><td>범위 밖</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V20</td><td>조회 합계에서 결제실패 제외</td><td>결제이력 조회</td><td>계산</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V21</td><td>결과 미확인 거래는 취소 불가. PG 재조회 먼저</td><td>취소</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V22</td><td>부분취소 금액은 1원 이상, 취소 가능 금액 이하. 전액이면 전체취소로 처리</td><td>취소</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V23</td><td>BSS 반영대기 거래는 반영 확인 뒤 취소</td><td>취소</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V24</td><td>휴대폰 결제 부분취소 불가</td><td>취소</td><td>차단</td><td><span class="tag ck">확인필요</span></td></tr>
+        <tr><td>V25</td><td>가상계좌 취소는 환불 계좌 절차 확정 전까지 BO에서 막음</td><td>취소</td><td>차단</td><td><span class="tag ck">확인필요</span></td></tr>
+        <tr><td>V26</td><td>재조회, 재요청, 취소는 회차와 결과를 거래 이력에 기록</td><td>모든 처리</td><td>기록</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V30</td><td>추출 기간 시작 ≤ 종료, 종료 ≤ 오늘</td><td>추출 요청</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V31</td><td>결과 미확인 거래가 있으면 추출 차단</td><td>정합성 검증</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V32</td><td>BSS 반영실패·불일치 포함 시 확인 체크 후 진행</td><td>정합성 검증</td><td>확인</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V33</td><td>생성 실패 파일은 다운로드·전달 기록 불가</td><td>요청 상세</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V34</td><td>전달 기록 뒤에만 수신 확인</td><td>요청 상세</td><td>차단</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V40</td><td>예상수수료는 거래일 기준 계약 수수료 이력으로 계산</td><td>수수료 조회</td><td>계산</td><td><span class="tag pp">제안</span></td></tr>
+        <tr><td>V41</td><td>불일치·미수신은 메모 입력 후 확인완료</td><td>수수료 상세</td><td>차단</td><td><span class="tag fx">확정</span></td></tr>
+        <tr><td>V42</td><td>VAT, 반올림, 취소 수수료는 확정값 없이 확인 필요로 표시</td><td>수수료 조회</td><td>표시</td><td><span class="tag fx">확정</span></td></tr>
+      </table>
+
+      <h2 id="p-state">12. 상태 정의</h2>
+      <table>
+        <tr><th style="width:140px">구분</th><th>상태</th><th>비고</th></tr>
+        <tr><td>운영상태 (계약)</td><td><span class="st ok dot">사용</span> <span class="st warn dot">일시중지</span> <span class="st off dot">미사용</span></td><td>미사용 계약도 과거 거래·대사를 위해 삭제하지 않는다</td></tr>
+        <tr><td>키검증 (MID)</td><td><span class="st ok">확인완료</span> <span class="st warn">미확인</span> <span class="st bad">실패</span></td><td>실패·미확인이면 사용 불가</td></tr>
+        <tr><td>수수료 이력 (행)</td><td><span class="st epc">적용예정</span> <span class="st ok">적용중</span> <span class="st off">종료</span></td><td>적용예정만 수정·삭제</td></tr>
+        <tr><td>거래상태</td><td><span class="st ok">결제완료</span> <span class="st warn">결과미확인</span> <span class="st bad">결제실패</span> <span class="st epc">부분취소</span> <span class="st off">전체취소</span></td><td>결과미확인은 PG 재조회로 확정</td></tr>
+        <tr><td>BSS 반영</td><td><span class="st ok">반영완료</span> <span class="st pri">반영대기</span> <span class="st bad">반영실패</span> <span class="st warn">불일치</span></td><td>불일치는 PG 금액과 BSS 금액이 다른 상태</td></tr>
+        <tr><td>파일 (대사)</td><td><span class="st ok">생성완료</span> <span class="st bad">생성실패</span></td><td>실패는 재추출 가능</td></tr>
+        <tr><td>전달 (대사)</td><td><span class="st off">미전달</span> <span class="st pri">전달완료</span> <span class="st ok">수신확인</span></td><td>순서대로만 진행</td></tr>
+        <tr><td>검증상태 (수수료)</td><td><span class="st ok">일치</span> <span class="st bad">불일치</span> <span class="st warn">미수신</span> <span class="st epc">확인완료</span></td><td>확인완료는 메모가 남은 상태</td></tr>
+      </table>
+
+      <h2 id="p-err">13. 예외·에러 케이스</h2>
+      <table>
+        <tr><th style="width:240px">상황</th><th>처리</th></tr>
+        <tr><td>기존 MID에 같은 결제수단 계약이 있음</td><td>위저드 3단계 중복 오류, 다음 단계 차단, 기존 계약 열기</td></tr>
+        <tr><td>키 확인 실패, 응답 지연</td><td>실패는 저장 차단. 지연은 재시도 버튼, 미확인 유지</td></tr>
+        <tr><td>적용 중 요율 수정 시도</td><td>차단 안내 후 같은 값으로 신규 이력 입력란 열기</td></tr>
+        <tr><td>PG 재조회 결과 승인 내역 없음</td><td>결제실패로 확정, 사유 기록</td></tr>
+        <tr><td>BSS 반영 재요청 실패</td><td>반영실패 유지, 회차와 사유 기록, 다시 시도 가능</td></tr>
+        <tr><td>부분취소 금액이 취소 가능 금액 초과</td><td>입력란 오류, 요청 차단</td></tr>
+        <tr><td>추출 대상에 결과 미확인 포함</td><td>정합성 검증 차단, 결제이력 관리에서 재조회 안내</td></tr>
+        <tr><td>파일 생성 실패</td><td>실패 사유 표시, 요청 이력에 남김, 재추출</td></tr>
+        <tr><td>PG 청구 데이터 미수신</td><td>미수신 표시, 재수신 요청, 또는 메모 후 확인완료</td></tr>
+        <tr><td>수정 중 드로어 닫기, 탭 이동</td><td>저장하지 않은 변경 확인 창</td></tr>
+      </table>
+
+      <h2 id="p-open">14. 미확정 정책</h2>
+      <table>
+        <tr><th style="width:36px">#</th><th>항목</th><th style="width:300px">데모 가정</th></tr>
+        <tr><td>1</td><td>주문 결제 코너의 관리 주체와 위치</td><td>결제 BO 밖. 외부 Mock 읽기 전용</td></tr>
+        <tr><td>2</td><td>수수료 VAT 포함 여부, 반올림 기준, 취소 수수료</td><td>계산에 넣지 않음</td></tr>
+        <tr><td>3</td><td>일시중지·미사용 시 대체 MID 지정 강제 여부</td><td>안내만</td></tr>
+        <tr><td>4</td><td>MID 만료 시 계약 자동 전환</td><td>자동 전환 없음</td></tr>
+        <tr><td>5</td><td>키 유효성 확인 방식</td><td>모의 응답(FAIL 실패, TIMEOUT 지연)</td></tr>
+        <tr><td>6</td><td>요율·상태 변경, 취소의 승인 절차</td><td>즉시 반영</td></tr>
+        <tr><td>7</td><td>권한 체계(조회, 등록, 키 변경, 취소 권한 분리)</td><td>단일 운영자</td></tr>
+        <tr><td>8</td><td>결과 미확인 건을 조회 합계에 넣을지</td><td>포함, 건수 별도 표시</td></tr>
+        <tr><td>9</td><td>휴대폰 부분취소, 가상계좌 환불 절차</td><td>BO에서 막음</td></tr>
+        <tr><td>10</td><td>대사 파일 양식과 BSS 전달 방식</td><td>CSV, 모의 전달</td></tr>
+        <tr><td>11</td><td>PG 청구 데이터 수신 주기와 형식</td><td>월 1회, 모의 수신</td></tr>
+        <tr><td>12</td><td>외부 도메인에 제공할 기준정보 인터페이스 범위</td><td>15장 초안</td></tr>
+      </table>
+
+      <h2 id="p-api">15. API 연동 포인트</h2>
+      <table>
+        <tr><th style="width:80px">Method</th><th style="width:330px">경로(초안)</th><th>용도</th></tr>
+        <tr><td>GET</td><td><code>/payment/pgs</code></td><td>PG, 지원 결제수단, 키 항목</td></tr>
+        <tr><td>GET/POST/PATCH</td><td><code>/payment/contracts</code></td><td>계약 검색, 등록, 수정. 서버에서 V01, V02 재검증</td></tr>
+        <tr><td>POST/PATCH</td><td><code>/payment/mids</code>, <code>/payment/mids/key-verify</code></td><td>MID 등록·수정, 키 확인. 키 원문은 확인 요청에만 싣는다</td></tr>
+        <tr><td>POST/PATCH/DELETE</td><td><code>/payment/contracts/{id}/fees</code></td><td>수수료 이력. 적용예정만 수정·삭제</td></tr>
+        <tr><td>POST</td><td><code>/payment/contracts/status</code></td><td>단건·일괄 상태 변경</td></tr>
+        <tr><td>GET</td><td><code>/payment/transactions</code></td><td>결제이력 검색과 합계</td></tr>
+        <tr><td>POST</td><td><code>/payment/transactions/{id}/pg-inquiry</code></td><td>PG 재조회</td></tr>
+        <tr><td>POST</td><td><code>/payment/transactions/{id}/bss-sync</code></td><td>BSS 반영 요청·재요청</td></tr>
+        <tr><td>POST</td><td><code>/payment/transactions/{id}/cancel</code></td><td>전체·부분 취소</td></tr>
+        <tr><td>GET/POST</td><td><code>/payment/recon-jobs</code></td><td>대사 요청 목록, 생성(검증 포함)</td></tr>
+        <tr><td>POST</td><td><code>/payment/recon-jobs/{id}/retry</code>, <code>/deliveries</code>, <code>/ack</code></td><td>재추출, 전달 기록, 수신 확인</td></tr>
+        <tr><td>GET</td><td><code>/payment/fee-checks?month=</code></td><td>수수료 검증 목록과 합계</td></tr>
+        <tr><td>POST</td><td><code>/payment/fee-checks/{id}/confirm</code>, <code>/pg-bill-request</code></td><td>메모 후 확인완료, 청구 데이터 재수신 요청</td></tr>
+        <tr><td>GET</td><td><code>/external/corners?midId=&amp;method=</code></td><td>연결 코너 조회 <span class="tag ck">확인필요</span></td></tr>
+        <tr><td>GET</td><td><code>/payment/master/contracts/active</code></td><td>외부 도메인용 기준정보 제공 <span class="tag ck">확인필요</span></td></tr>
+      </table>
+
+      <h2 id="p-demo">16. 시연 시나리오</h2>
+      <p>버튼을 누르면 시작 지점으로 이동한다. 데이터를 처음 상태로 돌리려면 새로고침한다.</p>
+      <div class="demo-row"><span class="k">A</span><div class="c"><b>기존 MID에 카드 계약 추가</b><span>KG이니시스 → 카드 → 기존 MID DEMOINI002 → 키 재입력 없음 → 수수료 입력 → 저장</span></div><button class="btn sm" data-demo="A">시연</button></div>
+      <div class="demo-row"><span class="k">B</span><div class="c"><b>신규 MID 키 검증 실패 후 성공</b><span>토스페이먼츠 → 신규 MID → 시크릿 키에 FAIL 입력 후 확인(차단) → 키 수정(미확인) → 재확인 → 저장</span></div><button class="btn sm" data-demo="B">시연</button></div>
+      <div class="demo-row"><span class="k">C</span><div class="c"><b>적용 중 요율 수정 차단</b><span>DEMOINI001 카드 수수료 이력 → 적용중 행 수정 → 차단 → 새 적용시작일로 추가</span></div><button class="btn sm" data-demo="C">시연</button></div>
+      <div class="demo-row"><span class="k">D</span><div class="c"><b>동일 MID + 결제수단 중복</b><span>KG이니시스 → 카드 → DEMOINI001 선택 시 중복 오류</span></div><button class="btn sm" data-demo="D">시연</button></div>
+      <div class="demo-row"><span class="k">E</span><div class="c"><b>사용 중 MID 일시중지</b><span>DEMOINI001 전체 계약 → 영향 코너와 대체 MID 확인 → 사유 → 확인 체크 → 변경</span></div><button class="btn sm" data-demo="E">시연</button></div>
+      <div class="demo-row"><span class="k">F</span><div class="c"><b>PG 재조회 후 BSS 반영</b><span>결과 미확인 거래 → PG 재조회(결제완료) → BSS 반영 확인 → 거래 이력 확인. 반영실패 건은 재요청 1회차 실패 후 2회차 성공</span></div><button class="btn sm" data-demo="F">시연</button></div>
+      <div class="demo-row"><span class="k">G</span><div class="c"><b>거래파일 생성 오류 후 재추출</b><span>NHN KCP 생성실패 요청 → 재추출 → 다운로드 → 전달 기록 → 수신 확인</span></div><button class="btn sm" data-demo="G">시연</button></div>
+      <div class="demo-row"><span class="k">H</span><div class="c"><b>수수료 차이 확인완료</b><span>10월 DEMOKCP101 카드 불일치 → 계약 이력·건별 근거 확인 → 원인 선택 → 메모 → 확인완료</span></div><button class="btn sm" data-demo="H">시연</button></div>
+
+      <h2 id="p-mock">17. Mock 데이터</h2>
+      <p>PG 3곳, MID 6개, 결제수단 계약 13건, 외부 결제 코너 5개, 결제 거래 약 40건, 대사 요청 5건, 수수료 검증 13건이다. MID 코드는 DEMO로 시작하고 상호, 정산주체, 상품명에는 (가상)을 붙였다. 요율은 정률 1.5%, 2.2%와 정액 200원, 300원이며 실제 계약과 관계없다. 인증키는 처음부터 마스킹 문자열만 있다.</p>
+      <p>포함한 상태: 적용 예정 요율, 키 미확인, 키 실패와 일시중지, 미사용, 만료 임박, 서로 다른 PG가 섞인 코너, 결과 미확인, 반영실패, 불일치, 부분취소, 전체취소, 결제실패, 파일 생성실패, 미전달, 수신확인, 수수료 불일치, 미수신, 확인완료.</p>
+    </article>
+  </div>
+</section>
+</main>
+
+<div class="dim" id="dim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="상세"></aside>
+<div class="modal" id="modal"><div class="mbox" id="mbox" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   NOVA 결제 관리 어드민 · 프로토타입 v1.2 (모든 데이터 가상)
+   ========================================================= */
+const TODAY='2026-11-01';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const addDays=(d,n)=>{const t=new Date(d+'T12:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);};
+const diffDays=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/864e5);
+const pad=n=>String(n).padStart(2,'0');
+const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+const mask=v=>{const s=String(v||'');return '••••••••'+(s.length>=4?s.slice(-4).toUpperCase():'****');};
+const num=n=>Number(n).toLocaleString('ko-KR');
+const won=n=>num(n)+'원';
+const mmdd=d=>d?d.slice(5).replace('-','/'):'';
+const ME='운영자(데모)';
+const fr=(l,c,req,cls)=>`<div class="fr${cls?' '+cls:''}"><div class="fl">${l}${req?'<span class="rq">*</span>':''}</div><div class="fc">${c}</div></div>`;
+const info=(h,k)=>`<div class="info${k?' '+k:''}"><span class="ico">${k==='bad'||k==='warn'?'!':k==='ok'?'✓':'i'}</span><div>${h}</div></div>`;
+const st=(t,k,dot)=>`<span class="st ${k}${dot?' dot':''}">${esc(t)}</span>`;
+function opt(list,first,sel){
+  return (first!=null?`<option value="">${first}</option>`:'')+list.map(x=>{const v=typeof x==='string'?x:x.v,l=typeof x==='string'?x:x.l;return `<option value="${esc(v)}" ${sel===v?'selected':''}>${esc(l)}</option>`;}).join('');
+}
+let tt;
+function toast(t,bad){const el=$('toast');el.textContent=t;el.classList.toggle('bad',!!bad);el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2800);}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- API 연동 포인트 (현재 Mock) ---------- */
+const api={
+  // TODO POST /payment/mids/key-verify  키 원문은 이 요청에만 싣고 저장·로그 금지
+  verifyKey:async keys=>{await wait(900);
+    const all=Object.values(keys).join('|').toUpperCase();
+    if(all.includes('TIMEOUT')) return {result:'error',msg:'PG 응답이 늦어지고 있어요. 잠시 후 다시 시도해 주세요.'};
+    if(all.includes('FAIL')) return {result:'fail',msg:'PG가 키를 거절했어요. (모의 응답: 인증 실패)'};
+    if(Object.values(keys).some(v=>String(v).trim().length<8)) return {result:'fail',msg:'키 형식이 맞지 않아요. 8자 이상 입력해 주세요.'};
+    return {result:'ok',msg:'PG 응답 정상. 키를 확인했어요.'};},
+  // TODO POST /payment/mids, POST /payment/contracts
+  createContract:(mid,c)=>{if(mid) MIDS.push(mid);CONTRACTS.push(c);},
+  // TODO GET /external/corners?midId=&method=  외부 도메인(관리 주체 미정)
+  corners:(mid,method)=>CORNERS.filter(k=>k.items.some(i=>i.mid===mid&&i.method===method)),
+  // TODO POST /payment/transactions/{id}/pg-inquiry
+  pgInquiry:async tx=>{await wait(900);return tx.qres==='ok'?{ok:true,appr:String(400000+tx.amount%99999)}:{ok:false,msg:'PG 승인 내역 없음'};},
+  // TODO POST /payment/transactions/{id}/bss-sync
+  bssSync:async tx=>{await wait(900);if(tx.bssFailOnce){tx.bssFailOnce=false;return {ok:false,msg:'BSS 응답 시간 초과'};}return {ok:true};},
+  // TODO POST /payment/transactions/{id}/cancel
+  pgCancel:async (tx,amt)=>{await wait(1000);return {ok:true,no:'CX'+String(tx.amount+amt).slice(-6)};},
+  // TODO POST /payment/recon-jobs, /retry
+  makeFile:async fail=>{await wait(1100);return fail?{ok:false,err:'파일 서버 응답 없음 (모의)'}:{ok:true};},
+  // TODO POST /payment/fee-checks/{id}/pg-bill-request
+  billRequest:async ()=>{await wait(1000);return {ok:true};}
+};
+
+/* =========================================================
+   기준 데이터 (가상)
+   ========================================================= */
+const PGS=[
+  {id:'ini',name:'KG이니시스',methods:['카드','계좌이체','가상계좌','휴대폰'],keys:[{k:'signKey',l:'웹표준 SignKey'},{k:'apiKey',l:'INIAPI Key'}]},
+  {id:'kcp',name:'NHN KCP',methods:['카드','계좌이체','가상계좌','휴대폰','간편결제'],keys:[{k:'siteKey',l:'Site Key'},{k:'certPw',l:'인증서 비밀번호'}]},
+  {id:'toss',name:'토스페이먼츠',methods:['카드','계좌이체','가상계좌','간편결제'],keys:[{k:'clientKey',l:'클라이언트 키'},{k:'secretKey',l:'시크릿 키'}]}
+];
+const PGO=()=>PGS.map(p=>({v:p.id,l:p.name}));
+const METHODS=['카드','계좌이체','가상계좌','휴대폰','간편결제'];
+const SUBS={'카드':['신용카드','체크카드','법인카드','해외카드'],'계좌이체':['실시간 계좌이체'],'가상계좌':['일반 가상계좌','에스크로 가상계좌'],'휴대폰':['휴대폰 소액결제'],'간편결제':['토스페이','네이버페이','카카오페이','페이코']};
+const CHANNELS=['통합 App','통합 Web','T-Gate','스마트플래너'];
+const OWNERS=['SKT','TDS'];
+const SETTLES=['SK텔레콤 정산팀(가상)','TDS 정산팀(가상)','T멤버십 정산팀(가상)'];
+const STATUSES=['사용','일시중지','미사용'];
+const KEYST={ok:'확인완료',none:'미확인',fail:'실패'};
+const MIDS=[
+  {id:'m1',pg:'ini',code:'DEMOINI001',purpose:'T우주 이용권',biz:'(가상) 티우주',settle:'SK텔레콤 정산팀(가상)',owner:'SKT',chs:['통합 App','통합 Web'],from:'2026-01-01',to:'2027-12-31',ks:'ok',keyAt:'2026-01-02',keys:{signKey:'••••••••A1F2',apiKey:'••••••••77C0'}},
+  {id:'m2',pg:'ini',code:'DEMOINI002',purpose:'T우주 일반',biz:'(가상) 티우주',settle:'SK텔레콤 정산팀(가상)',owner:'SKT',chs:['통합 App','통합 Web','T-Gate'],from:'2026-02-01',to:'2027-12-31',ks:'ok',keyAt:'2026-02-01',keys:{signKey:'••••••••93BD',apiKey:'••••••••1E04'}},
+  {id:'m3',pg:'kcp',code:'DEMOKCP101',purpose:'TDS 액세서리 에스크로',biz:'(가상) 티디에스',settle:'TDS 정산팀(가상)',owner:'TDS',chs:['통합 App','통합 Web'],from:'2026-04-01',to:'2028-03-31',ks:'ok',keyAt:'2026-04-01',keys:{siteKey:'••••••••KC10',certPw:'••••••••0921'}},
+  {id:'m4',pg:'toss',code:'DEMOTOSS01',purpose:'T멤버십 커머스',biz:'(가상) 티멤버십',settle:'T멤버십 정산팀(가상)',owner:'SKT',chs:['통합 App'],from:'2026-10-15',to:'2027-10-14',ks:'none',keyAt:'',keys:{clientKey:'••••••••TC01',secretKey:'••••••••TS01'}},
+  {id:'m5',pg:'kcp',code:'DEMOKCP102',purpose:'T우주 이용권',biz:'(가상) 티우주',settle:'SK텔레콤 정산팀(가상)',owner:'SKT',chs:['스마트플래너'],from:'2026-05-01',to:'2027-04-30',ks:'fail',keyAt:'2026-10-20',keys:{siteKey:'••••••••KC22',certPw:'••••••••7712'}},
+  {id:'m6',pg:'toss',code:'DEMOTOSS02',purpose:'TDS 액세서리 일반',biz:'(가상) 티디에스',settle:'TDS 정산팀(가상)',owner:'TDS',chs:['통합 Web'],from:'2026-06-01',to:'2026-11-25',ks:'ok',keyAt:'2026-06-01',keys:{clientKey:'••••••••TC02',secretKey:'••••••••TS02'}}
+];
+let fseq=100;
+const F=(from,type,val)=>({id:'f'+(fseq++),from,type,val,at:from>TODAY?'2026-10-28':from});
+const CONTRACTS=[
+  {id:'C-1001',mid:'m1',method:'카드',subs:['신용카드','체크카드'],status:'사용',fees:[F('2026-01-01','rate',2.2),F('2026-12-01','rate',1.5)],upd:'2026-10-28 14:20',by:'운영자 B'},
+  {id:'C-1002',mid:'m1',method:'휴대폰',subs:['휴대폰 소액결제'],status:'사용',fees:[F('2026-01-01','rate',2.2)],upd:'2026-09-03 10:05',by:'운영자 A'},
+  {id:'C-1003',mid:'m1',method:'계좌이체',subs:['실시간 계좌이체'],status:'사용',fees:[F('2025-07-01','rate',2.2),F('2026-03-01','rate',1.5)],upd:'2026-02-24 16:40',by:'운영자 A'},
+  {id:'C-1004',mid:'m2',method:'휴대폰',subs:['휴대폰 소액결제'],status:'사용',fees:[F('2026-02-01','rate',2.2)],upd:'2026-08-11 09:12',by:'운영자 B'},
+  {id:'C-1005',mid:'m2',method:'계좌이체',subs:['실시간 계좌이체'],status:'사용',fees:[F('2026-02-01','fixed',200)],upd:'2026-07-19 13:30',by:'운영자 A'},
+  {id:'C-1006',mid:'m2',method:'가상계좌',subs:['일반 가상계좌'],status:'미사용',fees:[F('2026-02-01','fixed',300)],upd:'2026-06-02 11:00',by:'운영자 A'},
+  {id:'C-1007',mid:'m3',method:'카드',subs:['신용카드','체크카드'],status:'사용',fees:[F('2026-04-01','rate',1.5)],upd:'2026-10-02 17:45',by:'운영자 C'},
+  {id:'C-1008',mid:'m3',method:'가상계좌',subs:['에스크로 가상계좌'],status:'사용',fees:[F('2026-04-01','fixed',300)],upd:'2026-04-01 09:00',by:'운영자 C'},
+  {id:'C-1009',mid:'m3',method:'간편결제',subs:['네이버페이','카카오페이'],status:'사용',fees:[F('2026-04-01','rate',2.2)],upd:'2026-09-21 15:10',by:'운영자 C'},
+  {id:'C-1010',mid:'m4',method:'간편결제',subs:['토스페이'],status:'미사용',fees:[F('2026-11-20','rate',1.5)],upd:'2026-10-30 18:22',by:'운영자 B'},
+  {id:'C-1011',mid:'m5',method:'카드',subs:['신용카드'],status:'일시중지',fees:[F('2026-05-01','rate',2.2)],upd:'2026-10-20 08:50',by:'운영자 A'},
+  {id:'C-1012',mid:'m6',method:'카드',subs:['신용카드','체크카드'],status:'사용',fees:[F('2026-06-01','rate',2.2)],upd:'2026-10-25 12:00',by:'운영자 C'},
+  {id:'C-1013',mid:'m6',method:'간편결제',subs:['토스페이'],status:'미사용',fees:[F('2026-11-15','rate',1.5)],upd:'2026-10-31 10:30',by:'운영자 C'}
+];
+const CORNERS=[
+  {id:'K-01',name:'T우주 이용권 결제',where:'주문서(가상)',items:[{method:'카드',mid:'m1'},{method:'휴대폰',mid:'m1'},{method:'간편결제',mid:'m3'}]},
+  {id:'K-02',name:'T우주 정기결제',where:'정기결제 등록(가상)',items:[{method:'카드',mid:'m1'},{method:'계좌이체',mid:'m1'}]},
+  {id:'K-03',name:'TDS 액세서리 주문',where:'주문서(가상)',items:[{method:'카드',mid:'m3'},{method:'가상계좌',mid:'m3'},{method:'간편결제',mid:'m3'}]},
+  {id:'K-04',name:'T멤버십 쿠폰몰',where:'주문서(가상)',items:[{method:'계좌이체',mid:'m2'},{method:'휴대폰',mid:'m2'}]},
+  {id:'K-05',name:'연말 기획전 결제',where:'기획전(가상)',items:[{method:'카드',mid:'m6'},{method:'휴대폰',mid:'m1'}]}
+];
+const CONT={'K-01':'이용권 주문 컨테이너(가상)','K-02':'정기결제 컨테이너(가상)','K-03':'액세서리 주문 컨테이너(가상)','K-04':'쿠폰몰 컨테이너(가상)','K-05':'기획전 컨테이너(가상)'};
+const AUDIT={
+  'C-1001':[{at:'2026-01-01 09:00',by:'운영자 A',t:'계약 등록 · 정률 2.20% (2026-01-01~)'},{at:'2026-10-28 14:20',by:'운영자 B',t:'수수료 이력 추가 · 정률 1.50% (2026-12-01~)'}],
+  'C-1011':[{at:'2026-05-01 09:00',by:'운영자 A',t:'계약 등록'},{at:'2026-10-20 08:50',by:'운영자 A',t:'키 확인 실패 · 사용 → 일시중지 (사유: PG 키 교체 대기)'}]
+};
+
+/* ---------- 계산 ---------- */
+const midOf=c=>MIDS.find(m=>m.id===c.mid);
+const pgOf=id=>PGS.find(p=>p.id===id);
+const conOf=id=>CONTRACTS.find(c=>c.id===id);
+const feesSorted=c=>[...c.fees].sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0);
+const feeAt=(c,d)=>{const r=feesSorted(c).filter(f=>f.from<=d);return r.length?r[r.length-1]:null;};
+const curFee=c=>feeAt(c,TODAY);
+const nextFee=c=>feesSorted(c).find(f=>f.from>TODAY)||null;
+const feeState=(c,f)=>f.from>TODAY?'sched':(curFee(c)&&curFee(c).id===f.id?'cur':'end');
+const fmtFee=f=>f.type==='rate'?`정률 ${Number(f.val).toFixed(2)}%`:`정액 ${num(f.val)}원`;
+const cornersOf=c=>api.corners(c.mid,c.method);
+const expSoon=m=>m.to>=TODAY&&diffDays(TODAY,m.to)<=30;
+const midValidToday=m=>m.from<=TODAY&&m.to>=TODAY;
+const dupContract=(mid,method)=>CONTRACTS.find(c=>c.mid===mid&&c.method===method);
+const ksBadge=ks=>st(KEYST[ks],ks==='ok'?'ok':ks==='fail'?'bad':'warn');
+const opBadge=s=>st(s,s==='사용'?'ok':s==='일시중지'?'warn':'off',1);
+const fsBadge=x=>x==='sched'?st('적용예정','epc'):x==='cur'?st('적용중','ok'):st('종료','off');
+function log(cid,t){(AUDIT[cid]=AUDIT[cid]||[]).push({at:stamp(),by:ME,t});}
+function feeValErr(type,val){
+  if(val===''||val==null) return '수수료를 입력해 주세요.';
+  const n=Number(val);
+  if(isNaN(n)) return '숫자만 입력할 수 있어요.';
+  if(type==='rate'){if(n<0.01||n>10) return '정률은 0.01~10.00% 사이예요.';if(!/^\d+(\.\d{1,2})?$/.test(String(val))) return '소수 둘째 자리까지 입력할 수 있어요.';}
+  else{if(!Number.isInteger(n)) return '정액은 원 단위 정수예요.';if(n<1||n>10000) return '정액은 1~10,000원 사이예요.';}
+  return '';
+}
+function feeRowErr(c,f,exceptId){
+  if(!f.from) return '적용시작일을 입력해 주세요.';
+  if(f.from<=TODAY) return '적용시작일은 내일 이후여야 해요. 적용 중 요율은 바꿀 수 없어요.';
+  const latest=c.fees.filter(x=>x.id!==exceptId).reduce((a,x)=>x.from>a?x.from:a,'');
+  if(latest&&f.from<=latest) return `기존 최신 이력(${latest})보다 뒤 날짜여야 해요.`;
+  const m=midOf(c);
+  if(f.from<m.from||f.from>m.to) return `MID 유효기간(${m.from} ~ ${m.to}) 안의 날짜여야 해요.`;
+  return feeValErr(f.type,f.val);
+}
+
+/* =========================================================
+   공통: 필터, 페이저
+   ========================================================= */
+function filterHTML(px,defs){
+  return `<div class="grid">${defs.map(d=>{
+    const ol=typeof d.o==='function'?d.o():d.o;let c='';
+    if(d.t==='sel') c=`<select id="${px}-${d.k}">${opt(ol,d.noAll?null:'전체')}</select>`;
+    else if(d.t==='txt') c=`<input type="text" id="${px}-${d.k}" placeholder="${esc(d.ph||'')}">`;
+    else c=`<div class="range"><input type="date" id="${px}-${d.k}From" aria-label="${d.l} 시작"><span>~</span><input type="date" id="${px}-${d.k}To" aria-label="${d.l} 종료"></div>`;
+    return fr(d.l,c,false,d.span?'span2':'');}).join('')}</div>
+    <div class="acts"><button class="btn" data-freset="${px}">초기화</button><button class="btn pri" data-fsearch="${px}">검색</button></div>`;
+}
+function readF(px,defs){const o={};defs.forEach(d=>{if(d.t==='range'){o[d.k+'From']=$(`${px}-${d.k}From`).value;o[d.k+'To']=$(`${px}-${d.k}To`).value;}else o[d.k]=$(`${px}-${d.k}`).value.trim();});return o;}
+function writeF(px,defs,vals){defs.forEach(d=>{if(d.t==='range'){$(`${px}-${d.k}From`).value=vals[d.k+'From']||'';$(`${px}-${d.k}To`).value=vals[d.k+'To']||'';}else $(`${px}-${d.k}`).value=vals[d.k]||'';});}
+function pager(n,page,pages){return pages>1?Array.from({length:pages},(_,i)=>`<button class="${page===i+1?'on':''}" data-pg="${n}:${i+1}">${i+1}</button>`).join(''):'';}
+function thSort(cols,sort){return '<tr>'+cols.map(c=>`<th class="${c.s?'s':''} ${c.num?'num':''}" ${c.s?`data-sort="${c.n}:${c.k}"`:''} ${c.w?`style="width:${c.w}"`:''}>${c.l}${c.s?`<span class="ar ${sort.k===c.k?'on':''}">${sort.k===c.k?(sort.d>0?'▲':'▼'):'↕'}</span>`:''}</th>`).join('')+'</tr>';}
+
+/* =========================================================
+   SCREEN 01 결제수단 기준정보 관리
+   ========================================================= */
+const F1=[
+  {k:'pg',l:'PG',t:'sel',o:PGO},{k:'method',l:'결제수단',t:'sel',o:METHODS},
+  {k:'mid',l:'MID',t:'txt',ph:'MID 코드'},{k:'purpose',l:'가맹점 용도명',t:'txt',ph:'예) T우주'},
+  {k:'ch',l:'채널',t:'sel',o:CHANNELS},{k:'owner',l:'사업주체',t:'sel',o:OWNERS},
+  {k:'status',l:'운영상태',t:'sel',o:STATUSES},{k:'key',l:'키검증',t:'sel',o:[{v:'ok',l:'확인완료'},{v:'none',l:'미확인'},{v:'fail',l:'실패'}]},
+  {k:'valid',l:'적용기간',t:'range',span:1}
+];
+const S1={f:{},quick:'',sort:{k:'upd',d:-1},page:1,size:10,sel:new Set(),flash:''};
+const Q1=[{k:'',l:'전체'},{k:'사용',l:'사용'},{k:'일시중지',l:'일시중지'},{k:'미사용',l:'미사용'},{k:'keybad',l:'키 미확인·실패'},{k:'sched',l:'적용 예정 요율'},{k:'exp',l:'만료 임박'}];
+function q1Test(c,q){const m=midOf(c);if(!q)return true;if(STATUSES.includes(q))return c.status===q;if(q==='keybad')return m.ks!=='ok';if(q==='sched')return !!nextFee(c);if(q==='exp')return expSoon(m);return true;}
+function base1(){const f=S1.f;return CONTRACTS.filter(c=>{const m=midOf(c);
+  if(f.pg&&m.pg!==f.pg)return false;if(f.method&&c.method!==f.method)return false;
+  if(f.mid&&!m.code.toLowerCase().includes(f.mid.toLowerCase()))return false;if(f.purpose&&!m.purpose.includes(f.purpose))return false;
+  if(f.ch&&!m.chs.includes(f.ch))return false;if(f.owner&&m.owner!==f.owner)return false;if(f.status&&c.status!==f.status)return false;
+  if(f.key&&m.ks!==f.key)return false;if(f.validFrom&&m.to<f.validFrom)return false;if(f.validTo&&m.from>f.validTo)return false;return true;});}
+const SV1={pg:c=>pgOf(midOf(c).pg).name,method:c=>c.method,mid:c=>midOf(c).code,purpose:c=>midOf(c).purpose,
+  fee:c=>{const f=curFee(c)||nextFee(c);return f?(f.type==='rate'?f.val:1000+f.val/100):0;},key:c=>['ok','none','fail'].indexOf(midOf(c).ks),
+  status:c=>STATUSES.indexOf(c.status),valid:c=>midOf(c).to,corners:c=>cornersOf(c).length,upd:c=>c.upd};
+const C1=[{k:'pg',l:'PG',s:1},{k:'method',l:'결제수단',s:1},{k:'mid',l:'MID',s:1},{k:'purpose',l:'가맹점 용도명',s:1},{k:'biz',l:'PG 등록 상호'},{k:'settle',l:'정산주체'},{k:'subs',l:'계약 세부수단'},{k:'fee',l:'수수료',s:1},{k:'key',l:'키검증',s:1},{k:'status',l:'운영상태',s:1},{k:'valid',l:'유효기간',s:1},{k:'corners',l:'사용 중 코너',s:1,num:1},{k:'upd',l:'수정일',s:1},{k:'act',l:'관리'}].map(c=>({...c,n:1}));
+function render1(){
+  const base=base1();
+  $('q1').innerHTML=Q1.map(q=>`<button class="qc ${S1.quick===q.k?'on':''}" data-q="1:${q.k}">${q.l} <em>${base.filter(c=>q1Test(c,q.k)).length}</em></button>`).join('');
+  const rows=base.filter(c=>q1Test(c,S1.quick)),fn=SV1[S1.sort.k];
+  rows.sort((a,b)=>{const x=fn(a),y=fn(b);return (x<y?-1:x>y?1:0)*S1.sort.d||(a.id<b.id?-1:1);});
+  const pages=Math.max(1,Math.ceil(rows.length/S1.size));if(S1.page>pages)S1.page=pages;
+  const view=rows.slice((S1.page-1)*S1.size,S1.page*S1.size);
+  const allOn=view.length&&view.every(c=>S1.sel.has(c.id));
+  $('th1').innerHTML=thSort(C1,S1.sort).replace('<tr>',`<tr><th style="width:36px"><input type="checkbox" id="chkAll1" aria-label="현재 페이지 전체 선택" ${allOn?'checked':''}></th>`);
+  $('tb1').innerHTML=view.length?view.map(c=>{const m=midOf(c),p=pgOf(m.pg),cf=curFee(c),nf=nextFee(c),kn=cornersOf(c).length;
+    return `<tr class="cl ${S1.sel.has(c.id)?'sel':''} ${S1.flash===c.id?'flash':''}" data-row1="${c.id}">
+      <td><input type="checkbox" data-chk1="${c.id}" ${S1.sel.has(c.id)?'checked':''} aria-label="${c.id} 선택"></td>
+      <td>${esc(p.name)}</td><td>${esc(c.method)}</td>
+      <td><b class="mono">${esc(m.code)}</b><span class="sub">${c.id}</span></td>
+      <td>${esc(m.purpose)}<span class="sub">${esc(m.owner)} · ${esc(m.chs.join(', '))}</span></td>
+      <td>${esc(m.biz)}</td><td>${esc(m.settle)}</td>
+      <td><div class="cps">${c.subs.map(s=>`<span class="cp">${esc(s)}</span>`).join('')}</div></td>
+      <td><button class="link" data-act="fees" data-id="${c.id}" style="text-decoration:none;color:var(--tx)">${cf?fmtFee(cf):'<span class="muted">적용 요율 없음</span>'}</button>${nf?`<span class="sub" style="color:var(--epc)">예정 ${fmtFee(nf)} · ${mmdd(nf.from)}~</span>`:''}</td>
+      <td>${ksBadge(m.ks)}</td><td>${opBadge(c.status)}</td>
+      <td>${m.from}<span class="sub">~ ${m.to}${expSoon(m)?` <b style="color:var(--warn)">D-${diffDays(TODAY,m.to)}</b>`:''}</span></td>
+      <td class="num">${kn?`<button class="link" data-act="corners" data-id="${c.id}">${kn}개</button>`:'<span class="muted">0</span>'}</td>
+      <td>${c.upd.slice(0,10)}<span class="sub">${esc(c.by)}</span></td>
+      <td><button class="btn sm" data-act="detail" data-id="${c.id}">상세</button> <button class="btn sm ghost" data-act="status" data-id="${c.id}">상태</button></td></tr>`;}).join('')
+    :`<tr><td colspan="${C1.length+1}"><div class="empty">조건에 맞는 계약이 없어요.<br><button class="btn sm" style="margin-top:10px" data-freset="f1">조건 초기화</button></div></td></tr>`;
+  $('cnt1').innerHTML=`검색 결과 <b>${rows.length}</b>건 <span class="muted">/ 전체 ${CONTRACTS.length}건</span>`;
+  $('bulk1').innerHTML=S1.sel.size?`<span class="bulk">${S1.sel.size}건 선택 <button class="btn sm" data-act="bulkStatus">일괄 상태 변경</button><button class="btn sm ghost" data-act="clearSel">선택 해제</button></span>`:'';
+  $('pg1').innerHTML=pager(1,S1.page,pages);
+  const ca=$('chkAll1');if(ca)ca.onchange=e=>{view.forEach(c=>e.target.checked?S1.sel.add(c.id):S1.sel.delete(c.id));render1();};
+  S1.flash='';
+}
+
+/* =========================================================
+   공통: 드로어 / 모달
+   ========================================================= */
+let DR=null, MD=null;
+function drShell(o){
+  $('drawer').innerHTML=`<div class="dr-h"><div class="r1"><div><h3>${o.title}</h3><div class="dr-s">${o.meta||''}</div></div><button class="x" data-drx aria-label="닫기">×</button></div>
+    ${o.tabs?`<div class="tabs">${o.tabs.map(t=>`<button class="tab ${o.tab===t[0]?'on':''}" data-tab="${t[0]}">${t[1]}${t[2]!=null?`<em>${t[2]}</em>`:''}</button>`).join('')}</div>`:'<div style="height:14px;border-bottom:1px solid var(--line)"></div>'}</div>
+    <div class="dr-b">${o.body}</div><div class="dr-f">${o.foot||''}</div>`;
+}
+function drOpen(state){DR=state;$('dim').classList.add('on');$('drawer').classList.add('on');renderDR();}
+function drDirty(){return DR&&DR.kind==='con'&&(DR.edit||(DR.feeForm&&DR.feeForm.touched)||DR.feeEditId);}
+function drClose(){if(drDirty()&&!confirm('저장하지 않은 변경이 있어요. 닫을까요?'))return;$('dim').classList.remove('on');$('drawer').classList.remove('on');DR=null;refreshAll();}
+function renderDR(){if(!DR)return;({con:rCon,tx:rTx,rc:rRc,fe:rFe})[DR.kind]();}
+function mdOpen(state,small){MD=state;$('mbox').className='mbox'+(small?' sm':'');$('modal').classList.add('on');renderMD();}
+function mdClose(){$('modal').classList.remove('on');MD=null;}
+function renderMD(){if(!MD)return;({wiz:rWiz,status:rStatus,cancel:rCancel,rc:rRcNew})[MD.kind]();}
+function refreshAll(){render1();render2();render3();render4();}
+
+/* ---------- 계약 상세 드로어 ---------- */
+function openCon(id,tab){drOpen({kind:'con',id,tab:tab||'base',edit:false,draft:null,feeForm:null,feeEditId:null,feeEdit:null,block:''});}
+function rCon(){
+  const c=conOf(DR.id),m=midOf(c),p=pgOf(m.pg),kn=cornersOf(c).length,an=(AUDIT[c.id]||[]).length;
+  let body='',foot='';
+  if(DR.tab==='base'){
+    if(!DR.edit){
+      const same=CONTRACTS.filter(x=>x.mid===m.id);
+      body=`<div class="sec">MID 정보 <small>같은 MID의 계약 ${same.length}건에 공통이에요</small></div><div class="fbx">
+        ${fr('PG',esc(p.name))}${fr('MID',`<b class="mono">${m.code}</b>`)}${fr('가맹점 용도명',esc(m.purpose))}${fr('PG 등록 상호',esc(m.biz))}
+        ${fr('정산주체',esc(m.settle))}${fr('사업주체 · 채널',`${esc(m.owner)} · ${esc(m.chs.join(', '))}`)}
+        ${fr('유효기간',`<div class="row">${m.from} ~ ${m.to} ${expSoon(m)?st('만료 D-'+diffDays(TODAY,m.to),'warn'):''}</div>`)}
+        ${fr('인증키',`${p.keys.map(k=>`<div><span class="muted">${k.l}</span> <span class="mono">${esc(m.keys[k.k]||'')}</span></div>`).join('')}<div class="row" style="margin-top:4px">${ksBadge(m.ks)}<span class="help" style="margin:0">${m.keyAt?'마지막 확인 '+m.keyAt:'확인 이력 없음'}</span></div>`)}
+        ${fr('이 MID의 계약',`<div class="cps" style="max-width:none">${same.map(x=>`<button class="cp" style="cursor:pointer;${x.id===c.id?'border-color:var(--pri);color:var(--pri);font-weight:700':''}" data-goc="${x.id}">${x.method} · ${x.status}</button>`).join('')}</div>`)}</div>
+        <div class="sec">계약 정보</div><div class="fbx">
+        ${fr('계약 ID',`<span class="mono">${c.id}</span>`)}${fr('결제수단',c.method)}${fr('세부수단',`<div class="cps" style="max-width:none">${c.subs.map(s=>`<span class="cp">${s}</span>`).join('')}</div>`)}
+        ${fr('현재 수수료',`<div class="row">${curFee(c)?fmtFee(curFee(c)):'<span class="muted">없음</span>'} ${nextFee(c)?st('예정 '+fmtFee(nextFee(c))+' · '+nextFee(c).from+'~','epc'):''}</div>`)}
+        ${fr('운영상태',opBadge(c.status))}${fr('수정',`${c.upd} · ${esc(c.by)}`)}</div>
+        ${m.ks!=='ok'?'<div style="margin-top:12px">'+info(`키가 <b>${KEYST[m.ks]}</b> 상태예요. 키를 확인하기 전에는 이 MID의 계약을 '사용'으로 바꿀 수 없어요. 수정에서 키를 바꾸고 유효성 확인을 진행해 주세요.`,m.ks==='fail'?'bad':'warn')+'</div>':''}`;
+      foot=`<span class="note">MID 코드, PG, 결제수단은 계약 식별값이라 바꿀 수 없어요.</span><button class="btn" data-dact="status">상태 변경</button><button class="btn pri" data-dact="edit">수정</button>`;
+    }else{
+      const d=DR.draft,same=CONTRACTS.filter(x=>x.mid===m.id).length;
+      body=`<div class="sec">MID 정보 수정 ${same>1?`<small style="color:var(--warn)">같은 MID 계약 ${same}건에 함께 반영돼요</small>`:''}</div><div class="fbx">
+        ${fr('MID',`<input type="text" value="${m.code}" readonly>`)}
+        ${fr('가맹점 용도명',`<input type="text" data-d="purpose" value="${esc(d.purpose)}" maxlength="30">`,1)}
+        ${fr('PG 등록 상호',`<input type="text" data-d="biz" value="${esc(d.biz)}" maxlength="40">`,1)}
+        ${fr('정산주체',`<select data-d="settle">${opt(SETTLES,null,d.settle)}</select>`,1)}
+        ${fr('사업주체',`<select data-d="owner">${opt(OWNERS,null,d.owner)}</select>`,1)}
+        ${fr('채널',`<div class="row" style="gap:14px">${CHANNELS.map(x=>`<label class="ck"><input type="checkbox" data-dch="${x}" ${d.chs.has(x)?'checked':''}>${x}</label>`).join('')}</div>`,1)}
+        ${fr('유효기간',`<div class="range"><input type="date" data-d="from" value="${d.from}"><span>~</span><input type="date" data-d="to" value="${d.to}"></div>`,1)}
+        ${fr('인증키',d.keyChange?`${p.keys.map(k=>`<div style="margin-bottom:6px"><input type="password" autocomplete="off" data-dkey="${k.k}" placeholder="새 ${k.l}" value="${esc(d.keys[k.k]||'')}"></div>`).join('')}
+            <div class="row"><button class="btn sm" id="dVerify" ${d.kbusy?'disabled':''}>${d.kbusy?'확인 중…':d.kerr?'재시도':'키 유효성 확인'}</button><span id="dKst"></span><button class="btn sm ghost" id="dKeyCancel">키 변경 취소</button></div>`
+          :`<div class="row"><span class="mono">${p.keys.map(k=>esc(m.keys[k.k])).join(' / ')}</span><button class="btn sm" id="dKeyOpen">키 변경</button></div><div class="help">키를 바꾸면 미확인으로 돌아가고, 저장 전에 다시 확인해야 해요.</div>`)}</div>
+        <div class="sec">계약 정보 수정</div><div class="fbx">${fr('세부수단',`<div class="row" style="gap:14px">${SUBS[c.method].map(x=>`<label class="ck"><input type="checkbox" data-dsub="${x}" ${d.subs.has(x)?'checked':''}>${x}</label>`).join('')}</div>`,1)}</div>
+        <p class="help" style="margin-top:8px">수수료는 수수료 이력 탭에서, 운영상태는 상태 변경에서 바꿔요.</p><div id="dErr"></div>`;
+      foot=`<button class="btn" data-dact="cancel">취소</button><button class="btn pri" data-dact="save">저장</button>`;
+    }
+  }else if(DR.tab==='fee'){
+    const rows=feesSorted(c);
+    body=`${DR.block?info(`<b>직접 수정할 수 없어요 (V06)</b><br>${esc(DR.block)}`,'bad')+'<div style="height:10px"></div>':''}
+      ${info('적용 시작된 요율은 잠겨 있어요. 요율을 바꾸려면 새 적용시작일로 이력을 추가해 주세요. 결제 건에는 결제 시점 요율이 Snapshot으로 남아요.')}
+      <div class="card" style="margin-top:12px;overflow:hidden"><table class="tbl in"><thead><tr><th>적용시작일</th><th>적용종료일</th><th>수수료</th><th>상태</th><th>등록일</th><th style="width:130px"></th></tr></thead><tbody>
+      ${rows.map((f,i)=>{const s=feeState(c,f),nx=rows[i+1];
+        if(DR.feeEditId===f.id){const fe=DR.feeEdit;return `<tr><td colspan="6"><div class="fbx">
+          ${fr('적용시작일',`<input type="date" data-fe="from" value="${fe.from}" min="${addDays(TODAY,1)}" style="width:180px">`)}
+          ${fr('유형',`<div><div class="seg"><button data-fet="rate" class="${fe.type==='rate'?'on':''}">정률(%)</button><button data-fet="fixed" class="${fe.type==='fixed'?'on':''}">정액(원)</button></div></div>`)}
+          ${fr('수수료',`<input type="text" data-fe="val" value="${esc(fe.val)}" style="width:180px"><div class="err" id="feErr"></div><div class="row" style="margin-top:8px"><button class="btn sm" data-fact="editCancel">취소</button><button class="btn sm pri" data-fact="editSave">저장</button></div>`)}</div></td></tr>`;}
+        return `<tr class="${s}"><td>${f.from}</td><td>${nx?addDays(nx.from,-1):'-'}</td><td><b>${fmtFee(f)}</b></td><td>${fsBadge(s)}</td><td>${f.at||f.from}</td>
+        <td>${s==='sched'?`<button class="btn sm" data-fact="edit" data-fid="${f.id}">수정</button> <button class="btn sm ghost" data-fact="del" data-fid="${f.id}">삭제</button>`:`<span class="muted" style="font-size:12px">🔒 잠금</span> <button class="btn sm ghost" data-fact="locked" data-fid="${f.id}">수정</button>`}</td></tr>`;}).join('')}
+      </tbody></table></div>
+      <div class="sec">새 이력 추가</div>${DR.feeForm?`<div class="fbx">
+        ${fr('적용시작일',`<input type="date" data-ff="from" value="${DR.feeForm.from}" min="${addDays(TODAY,1)}" style="width:180px"><div class="help">내일 이후, 최신 이력(${rows.length?rows[rows.length-1].from:'-'})보다 뒤 · MID 유효기간 ${m.from} ~ ${m.to}</div>`,1)}
+        ${fr('수수료 유형',`<div><div class="seg"><button data-fft="rate" class="${DR.feeForm.type==='rate'?'on':''}">정률(%)</button><button data-fft="fixed" class="${DR.feeForm.type==='fixed'?'on':''}">정액(원)</button></div></div>`,1)}
+        ${fr('수수료',`<div class="row"><input type="text" inputmode="decimal" data-ff="val" value="${esc(DR.feeForm.val)}" style="width:180px"><span class="muted">${DR.feeForm.type==='rate'?'%':'원 / 건'}</span></div><div class="help">VAT 포함 여부, 반올림 기준 <span class="tag ck">확인필요</span></div><div class="err" id="ffErr"></div><div class="row" style="margin-top:8px"><button class="btn sm" data-fact="formCancel">취소</button><button class="btn sm pri" data-fact="formSave">이력 추가</button></div>`,1)}</div>`
+        :`<button class="btn" data-fact="form">+ 새 적용시작일로 이력 추가</button>`}`;
+    foot=`<span class="note">한 시점에 적용되는 요율은 하나예요. 다음 이력 시작 전날이 이전 이력의 종료일이에요.</span><button class="btn" data-drx>닫기</button>`;
+  }else if(DR.tab==='corner'){
+    const ks=cornersOf(c);
+    body=info('결제 코너는 결제 BO가 관리하지 않아요. 관리 주체가 정해지지 않아 외부 도메인 데이터를 Mock으로 참조해 읽기 전용으로 보여줘요. <span class="tag ck">확인필요</span>','warn')+'<div style="height:12px"></div>'+
+      (ks.length?ks.map(k=>`<div class="di"><div class="h"><b>${esc(k.name)}</b><span class="cp mono">${k.id}</span><small>${esc(k.where)} · 항목 ${k.items.length}개</small></div>
+        ${k.items.map(i=>{const mm=MIDS.find(x=>x.id===i.mid),pp=pgOf(mm.pg),cc=dupContract(i.mid,i.method),me=i.mid===c.mid&&i.method===c.method;
+          return `<div class="it ${me?'me':''}"><span class="m">${i.method}</span><span>${esc(pp.name)}</span><span class="mono">${mm.code}</span><span class="muted">${esc(mm.purpose)}</span><span style="margin-left:auto">${cc?opBadge(cc.status):''}</span>${me?st('이 계약','pri'):''}</div>`;}).join('')}</div>`).join('')
+      :'<div class="empty">이 계약을 쓰는 결제 코너가 없어요.</div>')+
+      '<p class="help">코너 항목은 결제수단 + MID예요. 한 코너에 다른 PG의 MID가 섞일 수 있고, 같은 코너 안에서 같은 결제수단은 한 번만 써요.</p>';
+    foot='<button class="btn" data-drx>닫기</button>';
+  }else{
+    const L=(AUDIT[c.id]||[]).slice().reverse();
+    body=L.length?L.map(a=>`<div class="log">${esc(a.t)}<small>${a.at} · ${esc(a.by)}</small></div>`).join(''):'<div class="empty">기록된 변경 이력이 없어요. (Mock 초기 데이터)</div>';
+    foot='<button class="btn" data-drx>닫기</button>';
+  }
+  drShell({title:`${esc(p.name)} · ${c.method} · <span class="mono">${m.code}</span>`,meta:`${esc(m.purpose)} ${opBadge(c.status)} ${ksBadge(m.ks)} <span>${c.id}</span>`,
+    tabs:[['base','기본 정보'],['fee','수수료 이력',c.fees.length],['corner','연결 코너',kn],['audit','변경 이력',an]],tab:DR.tab,body,foot});
+  if(DR.edit&&DR.draft.keyChange) paintDKst();
+}
+function paintDKst(){const d=DR.draft,el=$('dKst');if(!el)return;
+  el.innerHTML=d.kbusy?st('확인 중','off'):d.ks==='ok'?ksBadge('ok'):d.ks==='fail'?`${ksBadge('fail')} <span style="font-size:12px;color:var(--bad)">${esc(d.kmsg)}</span>`:`${ksBadge('none')} <span style="font-size:12px;color:${d.kerr?'var(--bad)':'var(--tx2)'}">${esc(d.kmsg||'새 키를 넣고 확인해 주세요')}</span>`;}
+function startEdit(){const c=conOf(DR.id),m=midOf(c);DR.edit=true;DR.draft={purpose:m.purpose,biz:m.biz,settle:m.settle,owner:m.owner,chs:new Set(m.chs),from:m.from,to:m.to,subs:new Set(c.subs),keyChange:false,keys:{},ks:'none',kmsg:'',kbusy:false,kerr:false};renderDR();}
+function saveEdit(){
+  const c=conOf(DR.id),m=midOf(c),d=DR.draft,p=pgOf(m.pg),errs=[];
+  if(!d.purpose.trim()||!d.biz.trim()) errs.push('용도명과 PG 등록 상호는 필수예요.');
+  if(!d.chs.size) errs.push('채널을 1개 이상 골라 주세요.');
+  if(!d.from||!d.to||d.from>d.to) errs.push('유효기간 시작일이 종료일보다 늦어요. (V09)'); else if(d.to<TODAY) errs.push('유효기간 종료일은 오늘 이후여야 해요. (V09)');
+  if(!d.subs.size) errs.push('세부수단을 1개 이상 골라 주세요. (V11)');
+  if(CONTRACTS.filter(x=>x.mid===m.id).some(x=>x.fees.some(f=>f.from>TODAY&&(f.from<d.from||f.from>d.to)))) errs.push('적용 예정 요율의 시작일이 바뀐 유효기간 밖으로 나가요. (V10)');
+  if(d.keyChange&&d.ks!=='ok') errs.push(d.ks==='fail'?'키 확인에 실패했어요. 키를 고치고 다시 확인해 주세요. (V03)':'바꾼 키의 유효성 확인이 필요해요. (V03, V04)');
+  if(errs.length){$('dErr').innerHTML='<div style="margin-top:10px">'+info(errs.map(esc).join('<br>'),'bad')+'</div>';return;}
+  const ch=[];['purpose','biz','settle','owner','from','to'].forEach(k=>{if(m[k]!==d[k])ch.push(k);});
+  if([...d.chs].sort().join()!==[...m.chs].sort().join())ch.push('chs');
+  Object.assign(m,{purpose:d.purpose.trim(),biz:d.biz.trim(),settle:d.settle,owner:d.owner,from:d.from,to:d.to,chs:[...d.chs]});
+  if(d.keyChange){const k={};p.keys.forEach(x=>k[x.k]=mask(d.keys[x.k]));m.keys=k;m.ks='ok';m.keyAt=TODAY;ch.push('key');}
+  const subCh=SUBS[c.method].filter(x=>d.subs.has(x)).join()!==c.subs.join();
+  c.subs=SUBS[c.method].filter(x=>d.subs.has(x));
+  const lab={purpose:'용도명',biz:'상호',settle:'정산주체',owner:'사업주체',from:'유효기간',to:'유효기간',chs:'채널',key:'인증키(재확인 완료)'};
+  const txt=[...new Set(ch.map(k=>lab[k]))].concat(subCh?['세부수단']:[]);
+  DR.edit=false;DR.draft=null;
+  if(!txt.length){renderDR();toast('바뀐 내용이 없어요.');return;}
+  CONTRACTS.filter(x=>x.mid===m.id).forEach(x=>{if(x.id===c.id||ch.length){x.upd=stamp();x.by=ME;log(x.id,`수정 · ${txt.join(', ')}${x.id!==c.id?' (같은 MID 공통 반영)':''}`);}});
+  renderDR();render1();toast('저장했어요.');
+}
+async function runDVerify(){
+  const d=DR.draft,p=pgOf(midOf(conOf(DR.id)).pg),miss=p.keys.filter(k=>!(d.keys[k.k]||'').trim());
+  if(miss.length){d.kmsg=`${miss.map(k=>k.l).join(', ')}을(를) 입력해 주세요.`;paintDKst();return;}
+  d.kbusy=true;d.kerr=false;$('dVerify').disabled=true;$('dVerify').textContent='확인 중…';paintDKst();
+  const snap=JSON.stringify(d.keys),r=await api.verifyKey({...d.keys});
+  if(!DR||DR.draft!==d)return;d.kbusy=false;
+  if(JSON.stringify(d.keys)!==snap){d.ks='none';d.kmsg='확인 중 키가 바뀌었어요.';}
+  else if(r.result==='ok'){d.ks='ok';d.kmsg=r.msg;}else if(r.result==='fail'){d.ks='fail';d.kmsg=r.msg;}else{d.ks='none';d.kerr=true;d.kmsg=r.msg;}
+  if($('dVerify')){$('dVerify').disabled=false;$('dVerify').textContent=d.kerr?'재시도':'키 유효성 확인';}paintDKst();
+}
+function conClick(e){
+  const t=e.target,c=conOf(DR.id);
+  const gc=t.closest('[data-goc]');if(gc){openCon(gc.dataset.goc,'base');return;}
+  const da=t.closest('[data-dact]');
+  if(da){const a=da.dataset.dact;if(a==='edit')startEdit();if(a==='cancel'){DR.edit=false;DR.draft=null;renderDR();}if(a==='save')saveEdit();if(a==='status')openStatus([DR.id]);return;}
+  if(t.id==='dKeyOpen'){DR.draft.keyChange=true;DR.draft.ks='none';DR.draft.kmsg='키를 바꾸면 미확인 상태가 돼요. (V04)';renderDR();return;}
+  if(t.id==='dKeyCancel'){DR.draft.keyChange=false;DR.draft.keys={};DR.draft.ks='none';renderDR();return;}
+  if(t.id==='dVerify'){runDVerify();return;}
+  const fa=t.closest('[data-fact]');
+  if(fa){const a=fa.dataset.fact,f=c.fees.find(x=>x.id===fa.dataset.fid);
+    if(a==='locked'){
+      DR.block=`${f.from}부터 ${feeState(c,f)==='cur'?'적용 중인':'적용이 끝난'} 요율(${fmtFee(f)})이에요. 이미 결제 건에 쓰였을 수 있어 값을 바꾸면 수수료 검증 근거가 깨져요. 같은 값을 채운 새 이력 입력란을 열었어요. 적용시작일을 정해 추가해 주세요.`;
+      const latest=feesSorted(c).slice(-1)[0];DR.feeForm={from:addDays(latest.from>TODAY?latest.from:TODAY,1),type:f.type,val:String(f.val),touched:false};renderDR();
+      setTimeout(()=>{const el=document.querySelector('[data-ff="val"]');if(el){el.focus();el.select();}},30);return;}
+    if(a==='form'){const latest=feesSorted(c).slice(-1)[0];DR.feeForm={from:addDays(latest&&latest.from>TODAY?latest.from:TODAY,1),type:'rate',val:'',touched:false};renderDR();return;}
+    if(a==='formCancel'){DR.feeForm=null;DR.block='';renderDR();return;}
+    if(a==='formSave'){const ff=DR.feeForm,err=feeRowErr(c,ff,null);if(err){$('ffErr').textContent=err;return;}
+      const nf={id:'f'+(fseq++),from:ff.from,type:ff.type,val:Number(ff.val),at:TODAY};c.fees.push(nf);c.upd=stamp();c.by=ME;log(c.id,`수수료 이력 추가 · ${fmtFee(nf)} (${nf.from}~)`);
+      DR.feeForm=null;DR.block='';renderDR();render1();toast(`${nf.from}부터 ${fmtFee(nf)} 이력을 추가했어요.`);return;}
+    if(a==='edit'){DR.feeEditId=f.id;DR.feeEdit={from:f.from,type:f.type,val:String(f.val)};renderDR();return;}
+    if(a==='editCancel'){DR.feeEditId=null;renderDR();return;}
+    if(a==='editSave'){const fe=DR.feeEdit,err=feeRowErr(c,fe,DR.feeEditId);if(err){$('feErr').textContent=err;return;}
+      const ff=c.fees.find(x=>x.id===DR.feeEditId),before=fmtFee(ff)+' ('+ff.from+'~)';Object.assign(ff,{from:fe.from,type:fe.type,val:Number(fe.val)});c.upd=stamp();c.by=ME;
+      log(c.id,`적용예정 이력 수정 · ${before} → ${fmtFee(ff)} (${ff.from}~)`);DR.feeEditId=null;renderDR();render1();toast('적용예정 이력을 수정했어요.');return;}
+    if(a==='del'){if(c.fees.length<=1){toast('계약에는 수수료 이력이 최소 1건 있어야 해요.',true);return;}
+      if(!confirm(`${f.from} 적용예정 이력(${fmtFee(f)})을 삭제할까요?`))return;
+      c.fees=c.fees.filter(x=>x.id!==f.id);c.upd=stamp();c.by=ME;log(c.id,`적용예정 이력 삭제 · ${fmtFee(f)} (${f.from}~)`);renderDR();render1();toast('적용예정 이력을 삭제했어요.');return;}
+  }
+  const fft=t.closest('[data-fft]');if(fft){DR.feeForm.type=fft.dataset.fft;DR.feeForm.val='';DR.feeForm.touched=true;renderDR();return;}
+  const fet=t.closest('[data-fet]');if(fet){DR.feeEdit.type=fet.dataset.fet;DR.feeEdit.val='';renderDR();return;}
+}
+function conInput(e){const t=e.target;
+  if(t.dataset.d){DR.draft[t.dataset.d]=t.value;return;}
+  if(t.dataset.dkey){DR.draft.keys[t.dataset.dkey]=t.value;if(DR.draft.ks!=='none'||DR.draft.kerr){DR.draft.ks='none';DR.draft.kerr=false;DR.draft.kmsg='키가 바뀌어 미확인으로 돌아갔어요. (V04)';}paintDKst();return;}
+  if(t.dataset.ff){DR.feeForm[t.dataset.ff]=t.value.trim();DR.feeForm.touched=true;$('ffErr').textContent='';return;}
+  if(t.dataset.fe){DR.feeEdit[t.dataset.fe]=t.value.trim();$('feErr').textContent='';}}
+function conChange(e){const t=e.target;
+  if(t.dataset.d){DR.draft[t.dataset.d]=t.value;return;}
+  if(t.dataset.dch){t.checked?DR.draft.chs.add(t.dataset.dch):DR.draft.chs.delete(t.dataset.dch);return;}
+  if(t.dataset.dsub){t.checked?DR.draft.subs.add(t.dataset.dsub):DR.draft.subs.delete(t.dataset.dsub);}}
+
+/* ---------- 신규 등록 위저드 ---------- */
+const WSTEPS=['PG','결제수단','MID','MID 정보','계약 조건','확인·저장'];
+const blankNM=()=>({code:'',purpose:'',biz:'',settle:'',owner:'',chs:new Set(),from:TODAY,to:'',keys:{},ks:'none',kmsg:'',kbusy:false,kerr:false});
+function openWizard(o){o=o||{};mdOpen({kind:'wiz',step:o.step||0,pg:o.pg||'',method:o.method||'',mode:o.mode||'exist',mid:o.mid||'',nm:blankNM(),subs:new Set(o.method?[SUBS[o.method][0]]:[]),feeFrom:TODAY,feeType:'rate',feeVal:'',status:'사용'});}
+const mfOf=W=>W.mode==='exist'?(MIDS.find(x=>x.id===W.mid)||{}):W.nm;
+function wizChecks(){
+  const W=MD,out=[],add=(ok,t)=>out.push({ok,t}),pg=pgOf(W.pg);
+  add(!!pg,'PG 선택');add(!!(pg&&pg.methods.includes(W.method)),'PG 지원 결제수단 선택');
+  if(W.mode==='exist'){const m=MIDS.find(x=>x.id===W.mid);add(!!m,'기존 MID 선택');
+    if(m){const d=dupContract(m.id,W.method);add(!d,d?`MID + 결제수단 중복: ${m.code}에 ${W.method} 계약(${d.id})이 이미 있어요 (V02)`:'MID + 결제수단 중복 없음 (V02)');add(m.to>=TODAY,'MID 유효기간 확인');add(true,'등록된 인증키 사용, 재입력 없음 (V05)');}}
+  else{const n=W.nm;add(/^[A-Za-z0-9]{6,20}$/.test(n.code),'MID 코드 형식(영문·숫자 6~20자)');
+    add(!MIDS.some(m=>m.pg===W.pg&&m.code.toUpperCase()===n.code.toUpperCase()),'같은 PG 안 MID 코드 중복 없음 (V01)');
+    add(!!(n.purpose.trim()&&n.biz.trim()&&n.settle&&n.owner&&n.chs.size),'용도명, 상호, 정산주체, 사업주체, 채널 입력');
+    add(!!(n.from&&n.to&&n.from<=n.to&&n.to>=TODAY),'유효기간 시작 ≤ 종료, 종료 ≥ 오늘 (V09)');
+    add(n.ks==='ok',n.ks==='ok'?'인증키 유효성 확인 완료 (V03)':n.ks==='fail'?'인증키 확인 실패. 저장할 수 없어요 (V03)':'인증키 유효성 확인 필요 (V03)');}
+  add(W.subs.size>0,'세부수단 1개 이상 (V11)');
+  const fe=feeValErr(W.feeType,W.feeVal);add(!fe,fe?`수수료: ${fe} (V08)`:'수수료 형식 (V08)');
+  const mf=mfOf(W),ok=W.feeFrom&&W.feeFrom>=TODAY&&(!mf.from||W.feeFrom>=mf.from)&&(!mf.to||W.feeFrom<=mf.to);
+  add(!!ok,ok?'적용시작일이 오늘 이후, MID 유효기간 안 (V07, V10)':'적용시작일은 오늘 이후, MID 유효기간 안이어야 해요 (V07, V10)');
+  add(W.status!=='사용'||mf.ks==='ok','키 확인 전 계약은 사용 상태 불가 (V12)');
+  return out;
+}
+function stepGate(i){
+  const W=MD,pg=pgOf(W.pg);
+  if(i===0)return pg?'':'PG를 골라 주세요.';
+  if(i===1)return pg&&pg.methods.includes(W.method)?'':'결제수단을 골라 주세요.';
+  if(i===2){if(W.mode==='new')return '';const m=MIDS.find(x=>x.id===W.mid);if(!m)return '기존 MID를 고르거나 신규 MID로 바꿔 주세요.';
+    if(dupContract(m.id,W.method))return `이 MID에는 ${W.method} 계약이 이미 있어 진행할 수 없어요.`;if(m.to<TODAY)return '유효기간이 끝난 MID예요.';return '';}
+  if(i===3){if(W.mode==='exist')return '';const c=wizChecks().filter(x=>!x.ok&&/MID 코드|V01|용도명|V09|V03/.test(x.t));
+    return c.length?(W.nm.ks==='fail'?'인증키 확인에 실패해 저장할 수 없어요. 키를 고치고 다시 확인해 주세요.':c[0].t):'';}
+  if(i===4){const c=wizChecks().filter(x=>!x.ok&&/V11|V08|V07|V12/.test(x.t));return c.length?c[0].t:'';}
+  const c=wizChecks().filter(x=>!x.ok);return c.length?`검증 ${c.length}건을 통과하지 못했어요.`:'';
+}
+function rWiz(){
+  const W=MD,s=W.step,pg=pgOf(W.pg);let body='';
+  if(s===0){
+    body=`<div class="sec">계약을 맺을 PG를 골라 주세요</div><div class="ogrid">${PGS.map(p=>`<label class="opt ${W.pg===p.id?'on':''}"><input type="radio" name="wpg" value="${p.id}" ${W.pg===p.id?'checked':''}>
+      <div><b>${esc(p.name)}</b><small>MID ${MIDS.filter(m=>m.pg===p.id).length}개 · 계약 ${CONTRACTS.filter(c=>midOf(c).pg===p.id).length}건</small><div class="cps" style="margin-top:8px">${p.methods.map(x=>`<span class="cp">${x}</span>`).join('')}</div></div></label>`).join('')}</div>
+      <p class="help" style="margin-top:12px">PG를 바꾸면 뒤 단계에서 고른 값은 모두 비워져요.</p>`;
+  }else if(s===1){
+    body=`<div class="sec">${esc(pg.name)}가 지원하는 결제수단</div><div class="ogrid">${pg.methods.map(x=>`<label class="opt ${W.method===x?'on':''}"><input type="radio" name="wmethod" value="${x}" ${W.method===x?'checked':''}><div><b>${x}</b><small>이 PG의 ${x} 계약 ${CONTRACTS.filter(c=>c.method===x&&midOf(c).pg===pg.id).length}건 · 세부수단 ${SUBS[x].length}종</small></div></label>`).join('')}</div>
+      <p class="help" style="margin-top:12px">PG가 지원하지 않는 결제수단은 목록에 나오지 않아요.</p>`;
+  }else if(s===2){
+    const mids=MIDS.filter(m=>m.pg===W.pg),pick=MIDS.find(x=>x.id===W.mid),dup=W.mode==='exist'&&pick?dupContract(pick.id,W.method):null;
+    body=`<div class="sec">MID 선택 방식</div><div class="seg"><button data-mode="exist" class="${W.mode==='exist'?'on':''}">기존 MID</button><button data-mode="new" class="${W.mode==='new'?'on':''}">신규 MID</button></div>`;
+    if(W.mode==='exist'){
+      body+=`<div class="sec">${esc(pg.name)}의 MID <small>${mids.length}개</small></div>${mids.length?`<div class="card" style="overflow:hidden"><table class="tbl in"><thead><tr><th style="width:36px"></th><th>MID</th><th>가맹점 용도명</th><th>키검증</th><th>유효기간</th><th>계약된 결제수단</th></tr></thead><tbody>
+      ${mids.map(m=>{const has=CONTRACTS.filter(c=>c.mid===m.id).map(c=>c.method),d=has.includes(W.method);
+        return `<tr class="cl ${W.mid===m.id?(d?'dup':'pick'):''}" data-wmid="${m.id}"><td><input type="radio" name="wmid" ${W.mid===m.id?'checked':''} aria-label="${m.code}"></td><td><b class="mono">${m.code}</b></td><td>${esc(m.purpose)}</td><td>${ksBadge(m.ks)}</td><td>${m.from} ~ ${m.to}</td>
+        <td><div class="cps">${has.map(x=>`<span class="cp" ${x===W.method?'style="border-color:var(--bad);color:var(--bad)"':''}>${x}</span>`).join('')}</div>${d?`<span class="sub" style="color:var(--bad)">${W.method} 계약 있음</span>`:''}</td></tr>`;}).join('')}</tbody></table></div>`
+        :info('이 PG에 등록된 MID가 없어요. 신규 MID로 진행해 주세요.')}
+      ${dup?'<div style="margin-top:12px">'+info(`<b>중복 계약 (V02)</b><br>${esc(pick.code)}(${esc(pick.purpose)})에는 ${W.method} 계약 ${dup.id}가 이미 있어요. MID + 결제수단 계약은 하나만 둘 수 있어요. 요율을 바꾸려면 기존 계약에서 수수료 이력을 추가하고, 미사용 계약이면 상태를 사용으로 바꿔 주세요.<div style="margin-top:8px"><button class="btn sm" data-open="${dup.id}">기존 계약 열기</button></div>`,'bad')+'</div>':''}
+      ${pick&&!dup&&pick.ks!=='ok'?'<div style="margin-top:12px">'+info(`이 MID는 키가 ${KEYST[pick.ks]} 상태예요. 계약은 등록되지만 키 확인 전에는 운영상태를 '사용'으로 둘 수 없어요. (V12)`,'warn')+'</div>':''}`;
+    }else body+='<div style="margin-top:14px">'+info(`다음 단계에서 MID 코드, 용도명, 정산주체, 유효기간과 ${esc(pg.name)} 인증키를 입력해요. 저장 전에 키 유효성 확인이 필요해요.`)+'</div>';
+  }else if(s===3){
+    if(W.mode==='exist'){const m=MIDS.find(x=>x.id===W.mid);
+      body=`<div class="sec">기존 MID 정보 ${st('읽기 전용','off')}</div><div class="fbx">${fr('MID',`<b class="mono">${m.code}</b>`)}${fr('가맹점 용도명',esc(m.purpose))}${fr('PG 등록 상호',esc(m.biz))}${fr('정산주체',esc(m.settle))}${fr('사업주체 · 채널',`${esc(m.owner)} · ${esc(m.chs.join(', '))}`)}${fr('유효기간',`${m.from} ~ ${m.to}`)}
+        ${fr('인증키',`${pg.keys.map(k=>`<div><span class="muted">${k.l}</span> <span class="mono">${esc(m.keys[k.k]||'')}</span></div>`).join('')}<div class="row" style="margin-top:4px">${ksBadge(m.ks)}<span class="help" style="margin:0">${m.keyAt?'마지막 확인 '+m.keyAt:''}</span></div>`)}</div>
+        <div style="margin-top:12px">${info('등록된 인증키를 그대로 써요. 키를 다시 입력하지 않아요. 용도명과 키 변경은 계약 상세의 MID 수정에서 해요.','ok')}</div>`;
+    }else{const n=W.nm;
+      body=`<div class="sec">신규 MID 정보</div><div class="fbx">
+        ${fr('MID 코드',`<input type="text" data-w="code" value="${esc(n.code)}" placeholder="PG에서 받은 MID (영문·숫자 6~20자)" maxlength="20"><div class="err" id="eCode"></div>`,1)}
+        ${fr('가맹점 용도명',`<input type="text" data-w="purpose" value="${esc(n.purpose)}" placeholder="예) T우주 이용권" maxlength="30">`,1)}
+        ${fr('PG 등록 상호',`<input type="text" data-w="biz" value="${esc(n.biz)}" placeholder="PG 가맹 계약서상 상호" maxlength="40">`,1)}
+        ${fr('정산주체',`<select data-w="settle">${opt(SETTLES,'선택',n.settle)}</select>`,1)}
+        ${fr('사업주체',`<select data-w="owner">${opt(OWNERS,'선택',n.owner)}</select>`,1)}
+        ${fr('채널',`<div class="row" style="gap:14px">${CHANNELS.map(c=>`<label class="ck"><input type="checkbox" data-wch="${c}" ${n.chs.has(c)?'checked':''}>${c}</label>`).join('')}</div>`,1)}
+        ${fr('유효기간',`<div class="range"><input type="date" data-w="from" value="${n.from}"><span>~</span><input type="date" data-w="to" value="${n.to}"></div><div class="err" id="eDate"></div>`,1)}</div>
+        <div class="sec">${esc(pg.name)} 인증키 <span class="tag fx">확정</span></div><div class="fbx">
+        ${pg.keys.map(k=>fr(k.l,`<input type="password" autocomplete="off" data-wkey="${k.k}" value="${esc(n.keys[k.k]||'')}" placeholder="${k.l} 입력">`,1)).join('')}
+        ${fr('유효성 확인',`<div class="row"><button class="btn" id="wVerify" ${n.kbusy?'disabled':''}>${n.kbusy?'확인 중…':'키 유효성 확인'}</button><span id="wKst"></span></div>`)}</div>
+        <p class="help">데모 규칙: 키에 FAIL이 있으면 실패, TIMEOUT이 있으면 응답 지연, 8자 미만이면 형식 오류예요. 키 원문은 확인 요청에만 쓰고 저장할 때 마스킹해요.</p>`;
+    }
+  }else if(s===4){
+    const mf=mfOf(W);
+    body=`<div class="fbx">
+      ${fr(`${W.method} 세부수단`,`<div class="row" style="gap:16px">${SUBS[W.method].map(x=>`<label class="ck"><input type="checkbox" data-wsub="${x}" ${W.subs.has(x)?'checked':''}>${x}</label>`).join('')}</div>`,1)}
+      ${fr('적용시작일',`<input type="date" data-w2="feeFrom" value="${W.feeFrom}" min="${TODAY}" style="width:180px"><div class="help">오늘(${TODAY})부터 가능해요. MID 유효기간 ${mf.from||'?'} ~ ${mf.to||'?'} 안</div><div class="err" id="eFrom"></div>`,1)}
+      ${fr('수수료 유형',`<div><div class="seg"><button data-ft="rate" class="${W.feeType==='rate'?'on':''}">정률(%)</button><button data-ft="fixed" class="${W.feeType==='fixed'?'on':''}">정액(원)</button></div></div>`,1)}
+      ${fr('수수료',`<div class="row"><input type="text" inputmode="decimal" data-w2="feeVal" value="${esc(W.feeVal)}" placeholder="${W.feeType==='rate'?'예) 2.20':'예) 300'}" style="width:180px"><span class="muted">${W.feeType==='rate'?'%':'원 / 건'}</span></div><div class="err" id="eFee"></div><div class="help">범위 ${W.feeType==='rate'?'0.01~10.00%':'1~10,000원'} <span class="tag pp">제안</span> · VAT 포함 여부, 반올림 기준 <span class="tag ck">확인필요</span></div>`,1)}
+      ${fr('초기 운영상태',`<div class="row" style="gap:16px">${['사용','미사용'].map(x=>{const dis=x==='사용'&&mf.ks!=='ok';return `<label class="rd" ${dis?'style="opacity:.45"':''}><input type="radio" name="wst" value="${x}" ${W.status===x?'checked':''} ${dis?'disabled':''}>${x}</label>`;}).join('')}${mf.ks!=='ok'?'<span class="help" style="margin:0">키 확인 전이라 사용 불가 (V12)</span>':''}</div>`)}</div>`;
+  }else{
+    const m=W.mode==='exist'?MIDS.find(x=>x.id===W.mid):null,n=W.nm,ck=wizChecks();
+    body=`<div class="g2"><div><div class="sec">계약 요약</div><div class="fbx">
+      ${fr('PG · 결제수단',`${esc(pg.name)} · ${W.method}`)}${fr('MID',`<div class="row"><b class="mono">${esc(m?m.code:n.code.toUpperCase())}</b>${W.mode==='new'?st('신규','pri'):st('기존','off')}</div>`)}
+      ${fr('가맹점 용도명',esc(m?m.purpose:n.purpose))}${fr('세부수단',[...W.subs].map(esc).join(', ')||'-')}
+      ${fr('수수료',`${W.feeVal!==''?fmtFee({type:W.feeType,val:Number(W.feeVal)}):'-'} · ${W.feeFrom}~`)}${fr('운영상태',opBadge(W.status))}${fr('인증키',W.mode==='exist'?'기존 키 사용':ksBadge(n.ks))}</div></div>
+      <div><div class="sec">저장 전 검증 <small>${ck.filter(x=>x.ok).length}/${ck.length}</small></div><div class="box"><ul class="chk">${ck.map(x=>`<li class="${x.ok?'o':'x'}"><span class="i">${x.ok?'✓':'!'}</span><span>${esc(x.t)}</span></li>`).join('')}</ul></div></div></div>`;
+  }
+  const g=stepGate(s);
+  $('mbox').innerHTML=`<div class="m-h"><div><h2>결제수단 계약 신규 등록</h2><p>PG → 결제수단 → MID → 가맹점 용도명 순서로 골라요.</p></div><button class="x" data-mclose aria-label="닫기">×</button></div>
+    <div class="stepper">${WSTEPS.map((t,i)=>`<button class="stp ${i<s?'done':i===s?'on':''}" ${i<s?`data-wgo="${i}"`:'disabled'}><span class="n">${i<s?'✓':i+1}</span>${t}</button>`).join('')}</div>
+    <div class="m-b">${body}</div>
+    <div class="m-f"><span class="why" id="wWhy">${esc(g)}</span><button class="btn" data-mclose>취소</button>${s>0?'<button class="btn" id="wPrev">이전</button>':''}
+      ${s<5?`<button class="btn pri" id="wNext" ${g?'disabled':''}>다음</button>`:`<button class="btn pri" id="wSave" ${g?'disabled':''}>저장</button>`}</div>`;
+  if(s===3&&W.mode==='new'){paintKst();wizLive();}
+  if(s===4)wizLive();
+}
+function paintKst(){const n=MD.nm,el=$('wKst');if(!el)return;
+  el.innerHTML=n.kbusy?st('확인 중','off'):n.ks==='ok'?`${ksBadge('ok')} <span style="font-size:12px;color:var(--ok)">${esc(n.kmsg)}</span>`:
+    n.ks==='fail'?`${ksBadge('fail')} <span style="font-size:12px;color:var(--bad)">${esc(n.kmsg)} 저장이 막혀요.</span>`:
+    n.kerr?`${ksBadge('none')} <span style="font-size:12px;color:var(--bad)">${esc(n.kmsg)}</span> <button class="btn sm" id="wRetry">재시도</button>`:
+    `${ksBadge('none')} <span style="font-size:12px;color:var(--tx2)">${esc(n.kmsg||'키를 넣고 유효성 확인을 눌러 주세요.')}</span>`;}
+function wizLive(){
+  const W=MD;if(!W||W.kind!=='wiz')return;const s=W.step;
+  if(s===3&&W.mode==='new'){const n=W.nm;
+    $('eCode').textContent=n.code&&!/^[A-Za-z0-9]{6,20}$/.test(n.code)?'영문·숫자 6~20자로 입력해 주세요.':(n.code&&MIDS.some(m=>m.pg===W.pg&&m.code.toUpperCase()===n.code.toUpperCase())?'이 PG에 같은 MID 코드가 이미 있어요. (V01)':'');
+    $('eDate').textContent=n.from&&n.to&&n.from>n.to?'시작일이 종료일보다 늦어요.':(n.to&&n.to<TODAY?'종료일은 오늘 이후여야 해요.':'');}
+  if(s===4){const mf=mfOf(W);$('eFee').textContent=W.feeVal===''?'':feeValErr(W.feeType,W.feeVal);
+    $('eFrom').textContent=!W.feeFrom?'':W.feeFrom<TODAY?'오늘 이전 날짜는 고를 수 없어요.':((mf.from&&W.feeFrom<mf.from)||(mf.to&&W.feeFrom>mf.to))?'MID 유효기간 밖이에요. (V10)':'';}
+  const g=stepGate(s);$('wWhy').textContent=g;const nb=$('wNext')||$('wSave');if(nb)nb.disabled=!!g;
+}
+async function runVerify(){
+  const W=MD,n=W.nm,pg=pgOf(W.pg),miss=pg.keys.filter(k=>!(n.keys[k.k]||'').trim());
+  if(miss.length){n.ks='none';n.kerr=false;n.kmsg=`${miss.map(k=>k.l).join(', ')}을(를) 입력해 주세요.`;paintKst();return;}
+  n.kbusy=true;n.kerr=false;$('wVerify').disabled=true;$('wVerify').textContent='확인 중…';paintKst();
+  const snap=JSON.stringify(n.keys),r=await api.verifyKey({...n.keys});
+  if(!MD||MD.nm!==n)return;n.kbusy=false;
+  if(JSON.stringify(n.keys)!==snap){n.ks='none';n.kmsg='확인 중 키가 바뀌었어요. 다시 확인해 주세요.';}
+  else if(r.result==='ok'){n.ks='ok';n.kmsg=r.msg;}else if(r.result==='fail'){n.ks='fail';n.kmsg=r.msg;}else{n.ks='none';n.kerr=true;n.kmsg=r.msg;}
+  if($('wVerify')){$('wVerify').disabled=false;$('wVerify').textContent='키 유효성 확인';}paintKst();wizLive();
+}
+function saveWizard(){
+  const W=MD,bad=wizChecks().filter(x=>!x.ok);if(bad.length){toast(bad[0].t,true);return;}
+  let midId=W.mid,newMid=null;
+  if(W.mode==='new'){const n=W.nm,pg=pgOf(W.pg),keys={};pg.keys.forEach(k=>keys[k.k]=mask(n.keys[k.k]));midId='m'+(MIDS.length+1)+'n';
+    newMid={id:midId,pg:W.pg,code:n.code.toUpperCase(),purpose:n.purpose.trim(),biz:n.biz.trim(),settle:n.settle,owner:n.owner,chs:[...n.chs],from:n.from,to:n.to,ks:'ok',keyAt:TODAY,keys};}
+  if(dupContract(midId,W.method)){toast('저장 직전 검사: 같은 MID + 결제수단 계약이 생겼어요.',true);return;}
+  const id='C-'+(1001+CONTRACTS.length);
+  const c={id,mid:midId,method:W.method,subs:SUBS[W.method].filter(x=>W.subs.has(x)),status:W.status,fees:[{id:'f'+(fseq++),from:W.feeFrom,type:W.feeType,val:Number(W.feeVal),at:TODAY}],upd:stamp(),by:ME};
+  api.createContract(newMid,c);log(id,`계약 등록${newMid?' (신규 MID '+newMid.code+')':''} · ${fmtFee(c.fees[0])} (${W.feeFrom}~) · ${W.status}`);
+  mdClose();S1.sort={k:'upd',d:-1};S1.page=1;S1.quick='';S1.flash=id;render1();toast(`${id} 계약을 등록했어요.`);
+}
+function wizClick(e){
+  const W=MD,t=e.target;
+  const go=t.closest('[data-wgo]');if(go){W.step=+go.dataset.wgo;renderMD();return;}
+  if(t.id==='wPrev'){W.step--;renderMD();return;}
+  if(t.id==='wNext'){if(!stepGate(W.step)){W.step++;renderMD();}return;}
+  if(t.id==='wSave'){saveWizard();return;}
+  if(t.id==='wVerify'||t.id==='wRetry'){runVerify();return;}
+  const mo=t.closest('[data-mode]');if(mo){W.mode=mo.dataset.mode;W.mid='';renderMD();return;}
+  const ft=t.closest('[data-ft]');if(ft){W.feeType=ft.dataset.ft;W.feeVal='';renderMD();return;}
+  const tr=t.closest('[data-wmid]');if(tr){W.mid=tr.dataset.wmid;if(MIDS.find(x=>x.id===W.mid).ks!=='ok')W.status='미사용';renderMD();return;}
+  const op=t.closest('[data-open]');if(op){const id=op.dataset.open;mdClose();setView('master');openCon(id,'base');}
+}
+function wizChange(e){const W=MD,t=e.target;
+  if(t.name==='wpg'){if(W.pg!==t.value){W.pg=t.value;W.method='';W.mid='';W.mode='exist';W.nm=blankNM();W.subs=new Set();}renderMD();return;}
+  if(t.name==='wmethod'){if(W.method!==t.value){W.method=t.value;W.mid='';W.subs=new Set([SUBS[t.value][0]]);}renderMD();return;}
+  if(t.name==='wst'){W.status=t.value;wizLive();return;}
+  if(t.dataset.wch){t.checked?W.nm.chs.add(t.dataset.wch):W.nm.chs.delete(t.dataset.wch);wizLive();return;}
+  if(t.dataset.wsub){t.checked?W.subs.add(t.dataset.wsub):W.subs.delete(t.dataset.wsub);wizLive();return;}
+  if(t.dataset.w){W.nm[t.dataset.w]=t.value;wizLive();}}
+function wizInput(e){const W=MD,t=e.target;
+  if(t.dataset.w){W.nm[t.dataset.w]=t.value;wizLive();return;}
+  if(t.dataset.w2){W[t.dataset.w2]=t.value.trim();wizLive();return;}
+  if(t.dataset.wkey){W.nm.keys[t.dataset.wkey]=t.value;if(W.nm.ks!=='none'||W.nm.kerr){W.nm.ks='none';W.nm.kerr=false;W.nm.kmsg='키가 바뀌어 미확인으로 돌아갔어요. 다시 확인해 주세요. (V04)';}paintKst();wizLive();}}
+
+/* ---------- 상태 변경 ---------- */
+function openStatus(ids,o){o=o||{};const f=conOf(ids[0]);mdOpen({kind:'status',ids:[...ids],scope:o.scope||'one',to:o.to||(f.status==='사용'?'일시중지':'사용'),reason:'',ack:false,single:ids.length===1},true);}
+function stTargets(){const S=MD;if(S.single&&S.scope==='mid'){const m=conOf(S.ids[0]).mid;return CONTRACTS.filter(c=>c.mid===m);}return S.ids.map(conOf);}
+function stEval(){
+  const T=stTargets(),to=MD.to,change=[],skip=[];
+  T.forEach(c=>{const m=midOf(c);if(c.status===to){skip.push({c,why:'이미 '+to+' 상태'});return;}
+    if(to==='사용'&&m.ks!=='ok'){skip.push({c,why:'키 '+KEYST[m.ks]+' (V12)'});return;}if(to==='사용'&&!midValidToday(m)){skip.push({c,why:'MID 유효기간 밖 (V12)'});return;}change.push(c);});
+  const impact=[];
+  if(to!=='사용'){const ids=new Set(change.map(c=>c.id)),mids=new Set(change.map(c=>c.mid));
+    CORNERS.forEach(k=>{const hit=k.items.filter(i=>{const cc=dupContract(i.mid,i.method);return cc&&ids.has(cc.id);});
+      if(hit.length)impact.push({k,items:hit.map(i=>({i,alt:CONTRACTS.filter(x=>x.method===i.method&&x.status==='사용'&&!ids.has(x.id)&&!mids.has(x.mid)&&midOf(x).ks==='ok'&&midValidToday(midOf(x)))}))});});}
+  return {change,skip,impact};
+}
+function stGate(){const ev=stEval();return !ev.change.length?'변경할 계약이 없어요.':!MD.reason.trim()?'변경 사유를 입력해 주세요. (V13)':(ev.impact.length&&!MD.ack)?'영향 범위 확인에 체크해 주세요. (V14)':'';}
+function rStatus(){
+  const S=MD,first=conOf(S.ids[0]),m=midOf(first),ev=stEval(),sameMid=CONTRACTS.filter(c=>c.mid===first.mid).length,g=stGate();
+  $('mbox').innerHTML=`<div class="m-h"><div><h2>운영상태 변경</h2><p>${S.single?`${esc(pgOf(m.pg).name)} · ${first.method} · ${m.code} (${esc(m.purpose)})`:`선택한 계약 ${S.ids.length}건`}</p></div><button class="x" data-mclose aria-label="닫기">×</button></div>
+  <div class="m-b"><div class="fbx">
+    ${S.single?fr('변경 범위',`<div><div class="seg"><button data-scope="one" class="${S.scope==='one'?'on':''}">이 계약만</button><button data-scope="mid" class="${S.scope==='mid'?'on':''}">이 MID의 모든 계약 (${sameMid}건)</button></div></div>`):''}
+    ${fr('변경할 상태',`<div class="row" style="gap:18px">${STATUSES.map(s=>`<label class="rd"><input type="radio" name="sto" value="${s}" ${S.to===s?'checked':''}>${opBadge(s)}</label>`).join('')}</div>`,1)}
+    ${fr('변경 사유',`<textarea id="stReason" rows="2" maxlength="200" placeholder="예) PG 정기 점검으로 11/3~11/5 일시중지">${esc(S.reason)}</textarea><div class="help">사유 필수 <span class="tag pp">제안</span></div>`,1)}</div>
+    <div class="sec">대상 <small>변경 ${ev.change.length}건 · 제외 ${ev.skip.length}건</small></div>
+    <div class="card" style="overflow:hidden"><table class="tbl in"><tbody>${ev.change.map(c=>`<tr><td class="mono">${midOf(c).code}</td><td>${c.method}</td><td>${opBadge(c.status)} → ${opBadge(S.to)}</td></tr>`).join('')}
+    ${ev.skip.map(x=>`<tr class="end"><td class="mono">${midOf(x.c).code}</td><td>${x.c.method}</td><td>제외 · ${esc(x.why)}</td></tr>`).join('')}</tbody></table></div>
+    ${S.to!=='사용'?(ev.impact.length?`<div class="sec">결제 코너 영향 <span class="tag fx">확정</span></div>
+      ${info('아래 코너에서 이 계약을 쓰고 있어요. 코너 반영은 코너 관리 도메인에서 해요. 결제 BO는 영향과 대체 후보만 안내해요. (외부 데이터 Mock 참조)','warn')}<div style="height:10px"></div>
+      ${ev.impact.map(x=>`<div class="di"><div class="h"><b>${esc(x.k.name)}</b><span class="cp mono">${x.k.id}</span><small>${esc(x.k.where)}</small></div>
+        ${x.items.map(r=>{const mm=MIDS.find(z=>z.id===r.i.mid);return `<div class="it" style="align-items:flex-start"><span class="m">${r.i.method}</span><div style="flex:1"><span class="mono">${mm.code}</span> <span class="muted">${esc(mm.purpose)}</span>
+          <div style="margin-top:4px;font-size:12px">${r.alt.length?`대체 MID 후보 ${r.alt.map(a=>{const am=midOf(a);return `<span class="cp">${esc(pgOf(am.pg).name)} ${am.code} · ${esc(am.purpose)}${expSoon(am)?' · 만료 임박':''}</span>`;}).join(' ')}`:`<span style="color:var(--bad)">대체 후보가 없어요. 이 코너에서 ${r.i.method}가 빠질 수 있어요.</span> <span class="tag ck">확인필요</span>`}</div></div></div>`;}).join('')}</div>`).join('')}
+      <label class="ck"><input type="checkbox" id="stAck" ${S.ack?'checked':''}>영향받는 코너와 대체 MID 안내를 확인했어요.</label>`
+      :'<div style="margin-top:12px">'+info('이 변경으로 영향받는 결제 코너가 없어요.','ok')+'</div>')
+      :'<div style="margin-top:12px">'+info('사용으로 바꾸려면 MID 키가 확인완료이고 유효기간 안이어야 해요. (V12)')+'</div>'}
+  </div>
+  <div class="m-f"><span class="why" id="stWhy">${esc(g)}</span><button class="btn" data-mclose>취소</button><button class="btn ${S.to==='사용'?'pri':'dan'}" id="stOk" ${g?'disabled':''}>${ev.change.length}건 ${S.to}(으)로 변경</button></div>`;
+}
+function statusClick(e){const t=e.target;
+  const sc=t.closest('[data-scope]');if(sc){MD.scope=sc.dataset.scope;MD.ack=false;renderMD();return;}
+  if(t.id==='stOk'){if(stGate())return;const ev=stEval(),to=MD.to,reason=MD.reason.trim();
+    ev.change.forEach(c=>{const b=c.status;c.status=to;c.upd=stamp();c.by=ME;log(c.id,`${b} → ${to} (사유: ${reason})${ev.impact.length?' · 영향 코너 '+ev.impact.length+'개 안내 확인':''}`);});
+    mdClose();S1.sel.clear();if(DR)renderDR();render1();toast(`${ev.change.length}건을 ${to}(으)로 바꿨어요.`);}}
+function statusChange(e){const t=e.target;
+  if(t.name==='sto'){MD.to=t.value;MD.ack=false;renderMD();return;}
+  if(t.id==='stAck'){MD.ack=t.checked;const g=stGate();$('stWhy').textContent=g;$('stOk').disabled=!!g;}}
+function statusInput(e){if(e.target.id==='stReason'){MD.reason=e.target.value;const g=stGate();$('stWhy').textContent=g;$('stOk').disabled=!!g;}}
+
+/* =========================================================
+   SCREEN 02 결제이력 관리
+   ========================================================= */
+const TXST=['결제완료','결과미확인','결제실패','부분취소','전체취소'];
+const BSSST=['반영완료','반영대기','반영실패','불일치'];
+const txBadge=s=>st(s,{결제완료:'ok',결과미확인:'warn',결제실패:'bad',부분취소:'epc',전체취소:'off'}[s]);
+const bssBadge=s=>s==='-'?'<span class="muted">-</span>':st(s,{반영완료:'ok',반영대기:'pri',반영실패:'bad',불일치:'warn'}[s]);
+let sd=20261101;const rnd=()=>{sd=(sd*48271)%2147483647;return sd/2147483647;};const pick=a=>a[Math.floor(rnd()*a.length)];
+const PROD={m1:['T우주 이용권 월간','T우주 이용권 연간'],m2:['T우주 일반 패스'],m3:['TDS 정품 케이스','TDS 무선충전기','TDS 보호필름'],m6:['TDS 기획전 액세서리']};
+const AMT={'카드':[9900,19900,39000,59000,129000],'휴대폰':[9900,19900],'계좌이체':[9900,39000,99000],'가상계좌':[39000,59000],'간편결제':[12900,29000,49000]};
+const BUYERS=['김*수','이*영','박*민','최*지','정*호','강*은','조*현','윤*아'];
+const CARDCO=['신한카드(가상)','KB국민카드(가상)','현대카드(가상)','삼성카드(가상)'];
+const TXS=[];
+function cornerFor(c){return CORNERS.find(k=>k.items.some(i=>i.mid===c.mid&&i.method===c.method));}
+function mkTx(o){
+  const c=conOf(o.cid),m=midOf(c),p=pgOf(m.pg),k=cornerFor(c),f=feeAt(c,o.at.slice(0,10)),n=TXS.length+1,d=o.at.slice(2,10).replace(/-/g,'');
+  const st0=o.st||'결제완료';
+  const tx={id:`TX${d}${String(1000+n)}`,order:`OD${d}-${5000+n}`,at:o.at,cid:c.id,amount:o.amt,cancel:o.cancel||0,st:st0,bss:o.bss||(st0==='결제실패'?'-':'반영완료'),bssAmt:o.bssAmt||null,bssErr:o.bssErr||'',
+    product:(o.product||pick(PROD[m.id]||['가상 상품']))+'(가상)',buyer:pick(BUYERS),pgTid:`${p.id.toUpperCase()}-DEMO-${70000+n*37}`,
+    appr:['결제실패','결과미확인'].includes(st0)?'':String(100000+Math.floor(rnd()*899999)),
+    detail:c.method==='카드'?pick(CARDCO):c.method==='간편결제'?c.subs[0]:c.method==='계좌이체'?'은행 계좌(가상)':c.method==='가상계좌'?'가상계좌 입금(가상)':'휴대폰 소액결제(가상)',
+    inst:c.method==='카드'&&o.amt>=50000?'3개월':'일시불',failMsg:o.failMsg||'',qres:o.qres||'',bssFailOnce:!!o.bssFailOnce,busy:'',
+    snap:{container:k?CONT[k.id]:'-',corner:k?`${k.id} ${k.name}`:'-',pg:p.name,mid:m.code,purpose:m.purpose,method:c.method,fee:f?fmtFee(f):'-'},
+    logs:[{at:o.at,by:'시스템',t:'결제 요청',res:`${p.name} 승인 요청`}],mgr:{op:o.op||'운영자 A',settle:'정산 담당 B',last:''}};
+  if(st0==='결제완료'||st0==='부분취소'||st0==='전체취소') tx.logs.push({at:o.at,by:'시스템',t:'PG 승인',res:`승인번호 ${tx.appr}`});
+  if(st0==='결과미확인') tx.logs.push({at:o.at,by:'시스템',t:'PG 응답',res:'응답 시간 초과. 결과 미확인',bad:1});
+  if(st0==='결제실패') tx.logs.push({at:o.at,by:'시스템',t:'PG 승인 실패',res:o.failMsg,bad:1});
+  if(tx.bss==='반영완료'&&st0!=='결제실패') tx.logs.push({at:o.at,by:'시스템',t:'BSS 반영',res:'반영완료'});
+  if(tx.bss==='반영실패') tx.logs.push({at:o.at,by:'시스템',t:'BSS 반영',res:`실패 · ${tx.bssErr}`,bad:1});
+  if(tx.bss==='불일치') tx.logs.push({at:o.at,by:'시스템',t:'BSS 반영',res:`불일치 · BSS ${won(tx.bssAmt)} / PG ${won(tx.amount)}`,bad:1});
+  if(o.cancel) tx.logs.push({at:addDays(o.at.slice(0,10),1)+' 10:12',by:'운영자 B',t:st0==='전체취소'?'전체취소':'부분취소',res:`PG 취소 성공 · ${won(o.cancel)} · BSS 반영완료`});
+  TXS.push(tx);return tx;
+}
+function genTx(){
+  const TXC=['C-1001','C-1001','C-1001','C-1002','C-1003','C-1004','C-1005','C-1007','C-1007','C-1009','C-1012','C-1001','C-1007','C-1003'];
+  for(let i=0;i<30;i++){const cid=TXC[i%TXC.length],c=conOf(cid),day=1+Math.floor(rnd()*30);
+    mkTx({cid,at:`2026-10-${pad(day)} ${pad(9+Math.floor(rnd()*12))}:${pad(Math.floor(rnd()*60))}`,amt:pick(AMT[c.method])});}
+  mkTx({cid:'C-1001',at:'2026-11-01 09:42',amt:59000,st:'결과미확인',bss:'반영대기',qres:'ok',product:'T우주 이용권 연간'});
+  mkTx({cid:'C-1009',at:'2026-11-01 08:15',amt:29000,st:'결과미확인',bss:'반영대기',qres:'none'});
+  mkTx({cid:'C-1007',at:'2026-10-31 21:05',amt:129000,bss:'반영실패',bssErr:'BSS 응답 시간 초과',bssFailOnce:true});
+  mkTx({cid:'C-1002',at:'2026-10-31 18:30',amt:19900,bss:'불일치',bssAmt:9900});
+  mkTx({cid:'C-1001',at:'2026-10-30 13:10',amt:39000,st:'부분취소',cancel:10000});
+  mkTx({cid:'C-1003',at:'2026-10-29 11:00',amt:99000,st:'전체취소',cancel:99000});
+  mkTx({cid:'C-1012',at:'2026-10-29 10:20',amt:59000,st:'결제실패',failMsg:'카드 한도 초과'});
+  mkTx({cid:'C-1008',at:'2026-10-28 15:00',amt:59000});
+}
+const F2=[{k:'at',l:'결제일',t:'range'},{k:'order',l:'주문번호',t:'txt',ph:'OD로 시작'},{k:'tid',l:'거래번호',t:'txt',ph:'TX로 시작'},{k:'pg',l:'PG',t:'sel',o:PGO},
+  {k:'mid',l:'MID',t:'sel',o:()=>MIDS.map(m=>({v:m.code,l:`${m.code} · ${m.purpose}`}))},{k:'method',l:'결제수단',t:'sel',o:METHODS},{k:'st',l:'거래상태',t:'sel',o:TXST},{k:'bss',l:'BSS 반영',t:'sel',o:BSSST}];
+const S2={f:{atFrom:'2026-10-01',atTo:TODAY},quick:'',sort:{k:'at',d:-1},page:1,size:10,flash:''};
+const Q2=[{k:'',l:'전체'},{k:'unk',l:'결과 미확인'},{k:'bssbad',l:'반영실패·불일치'},{k:'cancel',l:'취소 건'},{k:'fail',l:'결제실패'}];
+const txC=tx=>conOf(tx.cid);
+function q2Test(t,q){if(!q)return true;if(q==='unk')return t.st==='결과미확인';if(q==='bssbad')return ['반영실패','불일치'].includes(t.bss);if(q==='cancel')return t.cancel>0;if(q==='fail')return t.st==='결제실패';return true;}
+function base2(){const f=S2.f;return TXS.filter(t=>{const c=txC(t),d=t.at.slice(0,10);
+  if(f.atFrom&&d<f.atFrom)return false;if(f.atTo&&d>f.atTo)return false;if(f.order&&!t.order.toLowerCase().includes(f.order.toLowerCase()))return false;if(f.tid&&!t.id.toLowerCase().includes(f.tid.toLowerCase()))return false;
+  if(f.pg&&midOf(c).pg!==f.pg)return false;if(f.mid&&t.snap.mid!==f.mid)return false;if(f.method&&c.method!==f.method)return false;if(f.st&&t.st!==f.st)return false;if(f.bss&&t.bss!==f.bss)return false;return true;});}
+const SV2={at:t=>t.at,amount:t=>t.amount,cancel:t=>t.cancel,st:t=>TXST.indexOf(t.st),bss:t=>BSSST.indexOf(t.bss)};
+const C2=[{k:'at',l:'결제일시',s:1},{k:'order',l:'주문번호 · 상품'},{k:'tid',l:'거래번호'},{k:'pgmid',l:'PG · MID'},{k:'method',l:'결제수단'},{k:'amount',l:'결제금액',s:1,num:1},{k:'cancel',l:'취소금액',s:1,num:1},{k:'st',l:'거래상태',s:1},{k:'bss',l:'BSS 반영',s:1},{k:'next',l:'처리 필요'}].map(c=>({...c,n:2}));
+function nextAct(t){if(t.st==='결과미확인')return 'PG 재조회';if(['반영실패','불일치'].includes(t.bss))return 'BSS 반영 재요청';if(t.bss==='반영대기'&&t.st!=='결제실패')return 'BSS 반영 확인';return '';}
+function render2(){
+  const base=base2();
+  $('q2').innerHTML=Q2.map(q=>`<button class="qc ${S2.quick===q.k?'on':''}" data-q="2:${q.k}">${q.l} <em>${base.filter(t=>q2Test(t,q.k)).length}</em></button>`).join('');
+  const rows=base.filter(t=>q2Test(t,S2.quick)),fn=SV2[S2.sort.k];rows.sort((a,b)=>{const x=fn(a),y=fn(b);return (x<y?-1:x>y?1:0)*S2.sort.d||(a.id<b.id?1:-1);});
+  const ok=base.filter(t=>t.st!=='결제실패'),pay=ok.reduce((a,t)=>a+t.amount,0),can=ok.reduce((a,t)=>a+t.cancel,0),unk=ok.filter(t=>t.st==='결과미확인').length;
+  $('sum2').innerHTML=`<div><small>결제금액</small><b>${won(pay)}</b></div><div><small>취소금액</small><b class="bad">${won(can)}</b></div><div><small>순결제금액</small><b class="pri">${won(pay-can)}</b></div><div><small>대상 건수</small><b>${num(ok.length)}건</b></div>
+    <span class="note">조회 조건 전체 기준, 결제실패 ${base.length-ok.length}건 제외 <span class="tag fx">확정</span>${unk?`<br>결과 미확인 ${unk}건 포함 <span class="tag ck">확인필요</span>`:''}</span>`;
+  const pages=Math.max(1,Math.ceil(rows.length/S2.size));if(S2.page>pages)S2.page=pages;const view=rows.slice((S2.page-1)*S2.size,S2.page*S2.size);
+  $('th2').innerHTML=thSort(C2,S2.sort);
+  $('tb2').innerHTML=view.length?view.map(t=>{const na=nextAct(t);return `<tr class="cl ${S2.flash===t.id?'flash':''}" data-row2="${t.id}">
+    <td>${t.at}</td><td><b class="mono">${t.order}</b><span class="sub">${esc(t.product)}</span></td><td class="mono">${t.id}</td>
+    <td>${esc(t.snap.pg)}<span class="sub mono">${t.snap.mid}</span></td><td>${t.snap.method}</td>
+    <td class="num">${num(t.amount)}</td><td class="num">${t.cancel?`<span style="color:var(--bad)">-${num(t.cancel)}</span>`:'<span class="muted">0</span>'}</td>
+    <td>${txBadge(t.st)}</td><td>${bssBadge(t.bss)}</td><td>${na?`<button class="btn sm soft" data-txo="${t.id}">${na}</button>`:'<span class="muted">-</span>'}</td></tr>`;}).join('')
+    :`<tr><td colspan="${C2.length}"><div class="empty">조건에 맞는 결제가 없어요.<br><button class="btn sm" style="margin-top:10px" data-freset="f2">조건 초기화</button></div></td></tr>`;
+  $('cnt2').innerHTML=`검색 결과 <b>${rows.length}</b>건 <span class="muted">/ 전체 ${TXS.length}건</span>`;
+  $('pg2').innerHTML=pager(2,S2.page,pages);S2.flash='';
+}
+function openTx(id,tab){drOpen({kind:'tx',id,tab:tab||'order'});}
+function rTx(){
+  const t=TXS.find(x=>x.id===DR.id),c=txC(t),can=t.amount-t.cancel;let body='';
+  const snap=`<div class="snap"><b>결제 시점 Snapshot · 기준정보가 바뀌어도 그대로예요</b><div class="row">${[t.snap.container,t.snap.corner,t.snap.pg,t.snap.mid+' · '+t.snap.purpose,t.snap.method,t.snap.fee].map(x=>`<span class="cp">${esc(x)}</span>`).join('')}</div></div>`;
+  if(DR.tab==='order') body=`<div class="fbx">${fr('주문번호',`<b class="mono">${t.order}</b>`)}${fr('상품',esc(t.product))}${fr('주문자',esc(t.buyer)+' <span class="muted">(가상)</span>')}${fr('주문일시',t.at)}${fr('결제 컨테이너',esc(t.snap.container))}${fr('결제 코너',esc(t.snap.corner)+' <span class="tag ck">외부 참조</span>')}</div>`;
+  else if(DR.tab==='pg') body=`<div class="fbx">${fr('PG',esc(t.snap.pg))}${fr('MID',`<span class="mono">${t.snap.mid}</span> · ${esc(t.snap.purpose)}`)}${fr('결제수단',`${t.snap.method} · ${esc(t.detail)}`)}${fr('할부',t.inst)}
+    ${fr('PG 거래번호',`<span class="mono">${t.pgTid}</span>`)}${fr('승인번호',t.appr?`<span class="mono">${t.appr}</span>`:'<span class="muted">없음</span>')}${fr('거래상태',`<div class="row">${txBadge(t.st)}${t.failMsg?`<span style="color:var(--bad);font-size:12px">${esc(t.failMsg)}</span>`:''}</div>`)}${fr('계약 ID',`<button class="link" data-gocon="${c.id}">${c.id}</button> <span class="help" style="display:inline">현재 기준정보로 이동</span>`)}</div>
+    ${t.st==='결과미확인'?'<div style="margin-top:12px">'+info('PG에서 결과 응답을 받지 못했어요. PG 재조회로 결제 결과를 확정해 주세요. 확정 전에는 취소할 수 없어요. (V21)','warn')+'</div>':''}`;
+  else if(DR.tab==='amt') body=`<div class="fbx">${fr('결제금액',`<b>${won(t.amount)}</b>`)}${fr('취소금액',t.cancel?`<span style="color:var(--bad)">${won(t.cancel)}</span>`:'0원')}${fr('순결제금액',`<b style="color:var(--pri)">${won(can)}</b>`)}${fr('취소 가능 금액',['결제완료','부분취소'].includes(t.st)?won(can):'<span class="muted">-</span>')}${fr('적용 요율',esc(t.snap.fee)+' <span class="help" style="display:inline">결제 시점</span>')}</div>
+    <div style="margin-top:12px">${info('금융수수료 계산 시 VAT 포함 여부, 반올림, 취소 수수료 처리 기준은 아직 정해지지 않았어요. <span class="tag ck">확인필요</span>','warn')}</div>`;
+  else if(DR.tab==='bss') body=`<div class="fbx">${fr('반영상태',bssBadge(t.bss))}${fr('BSS 금액',t.bss==='불일치'?`<span style="color:var(--warn);font-weight:700">${won(t.bssAmt)}</span> <span class="muted">PG ${won(t.amount-t.cancel)}</span>`:t.bss==='반영완료'?won(t.amount-t.cancel):'<span class="muted">-</span>')}
+    ${fr('실패 사유',t.bssErr&&t.bss==='반영실패'?`<span style="color:var(--bad)">${esc(t.bssErr)}</span>`:'<span class="muted">-</span>')}${fr('재요청 횟수',`${t.logs.filter(l=>l.t.startsWith('BSS 반영 재요청')||l.t==='BSS 반영 확인').length}회`)}</div>
+    ${t.bss==='불일치'?'<div style="margin-top:12px">'+info('BSS 금액과 PG 금액이 달라요. 반영 재요청을 하면 PG 금액 기준으로 다시 반영해요.','warn')+'</div>':''}
+    ${t.bss==='반영대기'&&t.st!=='결과미확인'?'<div style="margin-top:12px">'+info('PG 처리 결과가 BSS에 아직 반영되지 않았어요. BSS 반영 확인을 눌러 주세요.')+'</div>':''}`;
+  else if(DR.tab==='log') body=t.logs.slice().reverse().map(l=>`<div class="log ${l.bad?'bad':''}"><b style="font-weight:600">${esc(l.t)}</b><span class="res">${esc(l.res)}</span><small>${l.at} · ${esc(l.by)}</small></div>`).join('');
+  else body=`<div class="fbx">${fr('운영 담당',`<select data-mgr="op">${opt(['운영자 A','운영자 B','운영자 C'],null,t.mgr.op)}</select>`)}${fr('정산 담당',`<select data-mgr="settle">${opt(['정산 담당 B','정산 담당 C'],null,t.mgr.settle)}</select>`)}${fr('최근 처리자',t.mgr.last?esc(t.mgr.last):'<span class="muted">없음</span>')}</div><p class="help">담당자를 바꾸면 거래 이력에 남아요.</p>`;
+  const busy=t.busy;let foot='';
+  if(busy) foot=`<span class="note"><span class="spin"></span> ${busy} 중이에요…</span>`;
+  else{
+    const acts=[];
+    if(t.st==='결과미확인') acts.push('<button class="btn pri" data-txa="query">PG 재조회</button>');
+    else if(['반영실패','불일치'].includes(t.bss)) acts.push('<button class="btn pri" data-txa="rebss">BSS 반영 재요청</button>');
+    else if(t.bss==='반영대기'&&t.st!=='결제실패') acts.push('<button class="btn pri" data-txa="bsscheck">BSS 반영 확인</button>');
+    if(['결제완료','부분취소'].includes(t.st)&&can>0){const why=c.method==='가상계좌'?'가상계좌 환불 절차 확정 전 (V25)':t.bss==='반영대기'?'BSS 반영 확인 후 취소 (V23)':'';
+      acts.push(`<button class="btn" data-txa="cancel" ${why?'disabled':''} title="${why}">취소 처리</button>`);if(why)foot+=`<span class="note">${why}</span>`;}
+    foot+=acts.join('')+'<button class="btn" data-drx>닫기</button>';
+  }
+  drShell({title:`<span class="mono">${t.id}</span>`,meta:`${txBadge(t.st)} ${bssBadge(t.bss)} <span>${t.order} · ${won(t.amount)}</span>`,
+    tabs:[['order','주문정보'],['pg','PG 결제정보'],['amt','금액정보'],['bss','BSS 반영'],['log','거래 이력',t.logs.length],['mgr','담당자']],tab:DR.tab,body:snap+body,foot});
+}
+async function txAction(a){
+  const t=TXS.find(x=>x.id===DR.id);if(t.busy)return;
+  if(a==='cancel'){openCancel(t.id);return;}
+  t.busy=a==='query'?'PG 재조회':'BSS 반영 요청';renderDR();
+  if(a==='query'){const r=await api.pgInquiry(t);
+    if(r.ok){t.st='결제완료';t.appr=r.appr;t.bss='반영대기';t.logs.push({at:stamp(),by:ME,t:'PG 재조회',res:`승인 확인 · 승인번호 ${r.appr} · 결제완료로 확정`});toast('PG에서 승인을 확인했어요. BSS 반영을 확인해 주세요.');}
+    else{t.st='결제실패';t.failMsg=r.msg;t.bss='-';t.logs.push({at:stamp(),by:ME,t:'PG 재조회',res:`${r.msg} · 결제실패로 확정`,bad:1});toast('PG 승인 내역이 없어 결제실패로 확정했어요.',true);}
+    t.qres='';}
+  else{const n=t.logs.filter(l=>l.t.startsWith('BSS 반영 재요청')||l.t==='BSS 반영 확인').length+1,label=a==='rebss'?`BSS 반영 재요청 ${n}회차`:'BSS 반영 확인',r=await api.bssSync(t);
+    if(r.ok){t.bss='반영완료';t.bssAmt=null;t.logs.push({at:stamp(),by:ME,t:label,res:`성공 · BSS 금액 ${won(t.amount-t.cancel)}`});toast('BSS 반영을 마쳤어요.');}
+    else{t.bssErr=r.msg;t.logs.push({at:stamp(),by:ME,t:label,res:`실패 · ${r.msg}`,bad:1});toast('BSS 반영에 실패했어요. 다시 시도해 주세요.',true);}}
+  t.busy='';t.mgr.last=ME;if(DR&&DR.id===t.id)renderDR();render2();
+}
+function txClick(e){const t=e.target,a=t.closest('[data-txa]');if(a){txAction(a.dataset.txa);return;}
+  const gc=t.closest('[data-gocon]');if(gc){const id=gc.dataset.gocon;$('dim').classList.remove('on');$('drawer').classList.remove('on');DR=null;setView('master');openCon(id,'base');}}
+function txChange(e){const t=e.target;if(t.dataset.mgr){const x=TXS.find(y=>y.id===DR.id),k=t.dataset.mgr,b=x.mgr[k];x.mgr[k]=t.value;x.logs.push({at:stamp(),by:ME,t:'담당자 변경',res:`${k==='op'?'운영':'정산'} 담당 ${b} → ${t.value}`});toast('담당자를 바꿨어요.');}}
+
+/* ---------- 취소 모달 ---------- */
+function openCancel(id){const t=TXS.find(x=>x.id===id);mdOpen({kind:'cancel',id,type:'all',amt:'',reason:'고객 요청',memo:'',busy:false,partOk:txC(t).method!=='휴대폰'},true);}
+function cancelGate(){const C=MD,t=TXS.find(x=>x.id===C.id),can=t.amount-t.cancel;
+  if(C.type==='part'){const n=Number(C.amt);if(!C.amt)return '취소 금액을 입력해 주세요.';if(!Number.isInteger(n)||n<1)return '1원 이상 정수로 입력해 주세요. (V22)';if(n>can)return `취소 가능 금액(${won(can)})을 넘었어요. (V22)`;}
+  if(C.reason==='기타'&&!C.memo.trim())return '기타 사유를 적어 주세요.';return '';}
+function rCancel(){
+  const C=MD,t=TXS.find(x=>x.id===C.id),can=t.amount-t.cancel,g=cancelGate(),amt=C.type==='all'?can:Number(C.amt||0);
+  $('mbox').innerHTML=`<div class="m-h"><div><h2>결제 취소</h2><p><span class="mono">${t.id}</span> · ${esc(t.product)}</p></div><button class="x" data-mclose aria-label="닫기">×</button></div>
+  <div class="m-b">${C.busy?`<div class="empty"><span class="spin"></span><br><br>PG에 취소를 요청하고 있어요…</div>`:`
+    <div class="g2" style="margin-bottom:14px"><div class="box"><small class="muted">결제금액</small><div class="big">${won(t.amount)}</div></div><div class="box"><small class="muted">취소 가능 금액</small><div class="big" style="color:var(--pri)">${won(can)}</div>${t.cancel?`<small class="muted">이미 취소 ${won(t.cancel)}</small>`:''}</div></div>
+    <div class="fbx">${fr('취소 유형',`<div><div class="seg"><button data-ctype="all" class="${C.type==='all'?'on':''}">전체취소</button><button data-ctype="part" class="${C.type==='part'?'on':''}" ${C.partOk?'':'disabled'}>부분취소</button></div></div>${C.partOk?'':'<div class="help">휴대폰 결제는 부분취소를 막아 두었어요 <span class="tag ck">확인필요</span></div>'}`,1)}
+    ${C.type==='part'?fr('취소 금액',`<div class="row"><input type="text" inputmode="numeric" id="cAmt" value="${esc(C.amt)}" style="width:180px" placeholder="원 단위"><span class="muted">원</span></div><div class="err" id="cErr"></div>`,1):''}
+    ${fr('취소 사유',`<select id="cReason">${opt(['고객 요청','중복 결제','상품 문제','기타'],null,C.reason)}</select>`,1)}
+    ${fr('메모',`<textarea id="cMemo" rows="2" maxlength="200" placeholder="${C.reason==='기타'?'기타 사유를 적어 주세요':'선택 입력'}">${esc(C.memo)}</textarea>`)}</div>
+    <div style="margin-top:12px">${info('PG 취소가 끝나면 BSS 반영대기로 바뀌어요. 거래 상세에서 BSS 반영 확인까지 마쳐 주세요.')}</div>`}</div>
+  <div class="m-f"><span class="why" id="cWhy">${C.busy?'':esc(g)}</span><button class="btn" data-mclose ${C.busy?'disabled':''}>닫기</button><button class="btn dan" id="cOk" ${g||C.busy?'disabled':''}>${won(amt)} 취소 요청</button></div>`;
+}
+async function doCancel(){
+  const C=MD;if(cancelGate())return;const t=TXS.find(x=>x.id===C.id),can=t.amount-t.cancel,amt=C.type==='all'?can:Number(C.amt);
+  C.busy=true;renderMD();const r=await api.pgCancel(t,amt);
+  t.cancel+=amt;t.st=t.cancel>=t.amount?'전체취소':'부분취소';t.bss='반영대기';t.mgr.last=ME;
+  t.logs.push({at:stamp(),by:ME,t:t.st==='전체취소'?'전체취소':'부분취소',res:`PG 취소 성공 · 취소번호 ${r.no} · ${won(amt)} · 사유 ${C.reason}${C.memo?' ('+C.memo+')':''}`});
+  t.logs.push({at:stamp(),by:'시스템',t:'BSS 반영',res:'반영대기'});
+  mdClose();if(DR&&DR.id===t.id){DR.tab='bss';renderDR();}render2();toast('PG 취소가 끝났어요. BSS 반영을 확인해 주세요.');
+}
+function cancelClick(e){const t=e.target,ct=t.closest('[data-ctype]');if(ct&&!ct.disabled){MD.type=ct.dataset.ctype;renderMD();return;}if(t.id==='cOk')doCancel();}
+function cancelInput(e){const t=e.target;if(t.id==='cAmt')MD.amt=t.value.replace(/[^0-9]/g,'');if(t.id==='cMemo')MD.memo=t.value;
+  const g=cancelGate(),tx=TXS.find(x=>x.id===MD.id);$('cWhy').textContent=g;$('cOk').disabled=!!g;if($('cErr'))$('cErr').textContent=MD.type==='part'&&MD.amt?g:'';
+  $('cOk').textContent=`${won(MD.type==='all'?tx.amount-tx.cancel:Number(MD.amt||0))} 취소 요청`;}
+function cancelChange(e){if(e.target.id==='cReason'){MD.reason=e.target.value;renderMD();}}
+
+/* =========================================================
+   SCREEN 03 거래내역 대사 관리
+   ========================================================= */
+const RCS=[];
+const txPg=t=>midOf(txC(t)).pg;
+function rcTarget(o){return TXS.filter(t=>{const d=t.at.slice(0,10);return d>=o.from&&d<=o.to&&(!o.pg||txPg(t)===o.pg)&&(!o.method||txC(t).method===o.method)&&t.st!=='결제실패';});}
+function rcAgg(list){const pay=list.reduce((a,t)=>a+t.amount,0),can=list.reduce((a,t)=>a+t.cancel,0);return {count:list.length,pay,can,net:pay-can};}
+function rcChecks(list){const unk=list.filter(t=>t.st==='결과미확인').length,bad=list.filter(t=>['반영실패','불일치'].includes(t.bss)).length,a=rcAgg(list);
+  return [{t:'추출 대상 1건 이상',ok:list.length>0,block:true},{t:`결과 미확인 거래 ${unk}건 (V31)`,ok:unk===0,block:true,why:'결제이력 관리에서 PG 재조회 후 다시 추출해 주세요.'},
+    {t:`BSS 반영실패·불일치 ${bad}건 (V32)`,ok:bad===0,warn:true,why:'파일에는 PG 금액 기준으로 들어가요. 정산 담당자에게 따로 알려 주세요.'},
+    {t:'거래번호 중복 0건',ok:true},{t:`결제 ${won(a.pay)} - 취소 ${won(a.can)} = 순결제 ${won(a.net)}`,ok:true}];}
+const pgName=id=>id?pgOf(id).name:'전체';
+function mkRc(o){const list=rcTarget(o),a=rcAgg(list);
+  const r={id:o.id,created:o.created,by:o.by||ME,from:o.from,to:o.to,pg:o.pg||'',method:o.method||'',...a,checks:rcChecks(list),
+    file:{st:o.fileSt||'생성완료',name:`PAY_TX_${o.from.replace(/-/g,'')}_${o.to.replace(/-/g,'')}_${(o.pg||'ALL').toUpperCase()}${o.method?'_'+o.method:''}.csv`,size:o.fileSt==='생성실패'?0:Math.max(1,Math.round(list.length*0.21*10)/10),err:o.err||''},
+    dlv:{st:o.dlv||'미전달',to:o.to2||'',via:o.via||'',at:o.dlvAt||'',ack:o.ack||'',memo:''},tries:o.tries||[{at:o.created,by:o.by||ME,t:'파일 생성',res:o.fileSt==='생성실패'?`실패 · ${o.err}`:'성공',bad:o.fileSt==='생성실패'}]};
+  RCS.push(r);return r;}
+function genRc(){
+  mkRc({id:'RX-2610-01',created:'2026-10-11 09:05',by:'정산 담당 B',from:'2026-10-01',to:'2026-10-10',dlv:'수신확인',to2:'정산 담당 B',via:'정산 시스템 업로드(모의)',dlvAt:'2026-10-11 10:00',ack:'2026-10-11 15:20'});
+  mkRc({id:'RX-2610-02',created:'2026-10-21 09:10',by:'정산 담당 B',from:'2026-10-11',to:'2026-10-20',dlv:'전달완료',to2:'정산 담당 B',via:'메일(모의)',dlvAt:'2026-10-21 09:40'});
+  mkRc({id:'RX-2611-01',created:'2026-11-01 08:30',by:'운영자 A',from:'2026-10-21',to:'2026-10-31',pg:'ini'});
+  mkRc({id:'RX-2611-02',created:'2026-11-01 08:32',by:'운영자 A',from:'2026-10-21',to:'2026-10-31',pg:'kcp',fileSt:'생성실패',err:'파일 서버 응답 없음 (모의)'});
+  mkRc({id:'RX-2611-03',created:'2026-11-01 08:35',by:'운영자 A',from:'2026-10-21',to:'2026-10-31',pg:'toss',method:'카드'});
+  RCS.forEach(r=>{if(r.dlv.at)r.tries.push({at:r.dlv.at,by:r.by,t:'정산 담당자 전달',res:`${r.dlv.to} · ${r.dlv.via}`});if(r.dlv.ack)r.tries.push({at:r.dlv.ack,by:r.dlv.to,t:'수신 확인',res:'정산 담당자 수신 확인'});});
+}
+const F3=[{k:'cr',l:'추출일자',t:'range'},{k:'dlv',l:'전달상태',t:'sel',o:['미전달','전달완료','수신확인']},{k:'pg',l:'PG',t:'sel',o:PGO},{k:'method',l:'결제수단',t:'sel',o:METHODS},{k:'q',l:'검색어',t:'txt',ph:'요청 ID, 파일명, 요청자',span:1}];
+const S3={f:{},quick:'',page:1,size:10,flash:''};
+const Q3=[{k:'',l:'전체'},{k:'fail',l:'생성실패'},{k:'미전달',l:'미전달'},{k:'전달완료',l:'전달완료'},{k:'수신확인',l:'수신확인'}];
+const fileBadge=s=>st(s,s==='생성완료'?'ok':s==='생성실패'?'bad':'off');
+const dlvBadge=s=>st(s,{미전달:'off',전달완료:'pri',수신확인:'ok'}[s]);
+function q3Test(r,q){if(!q)return true;if(q==='fail')return r.file.st==='생성실패';return r.dlv.st===q&&r.file.st!=='생성실패';}
+function base3(){const f=S3.f;return RCS.filter(r=>{const d=r.created.slice(0,10);if(f.crFrom&&d<f.crFrom)return false;if(f.crTo&&d>f.crTo)return false;if(f.dlv&&r.dlv.st!==f.dlv)return false;
+  if(f.pg&&r.pg!==f.pg)return false;if(f.method&&r.method!==f.method)return false;if(f.q){const q=f.q.toLowerCase();if(![r.id,r.file.name,r.by].some(x=>x.toLowerCase().includes(q)))return false;}return true;});}
+function render3(){
+  const base=base3();
+  $('q3').innerHTML=Q3.map(q=>`<button class="qc ${S3.quick===q.k?'on':''}" data-q="3:${q.k}">${q.l} <em>${base.filter(r=>q3Test(r,q.k)).length}</em></button>`).join('');
+  const rows=base.filter(r=>q3Test(r,S3.quick)).sort((a,b)=>a.created<b.created?1:-1);
+  $('th3').innerHTML='<tr><th>요청 ID</th><th>추출일시</th><th>거래 기간</th><th>PG</th><th>결제수단</th><th class="num">건수</th><th class="num">순결제금액</th><th>파일</th><th>전달</th><th>요청자</th></tr>';
+  $('tb3').innerHTML=rows.length?rows.map(r=>`<tr class="cl ${S3.flash===r.id?'flash':''}" data-row3="${r.id}"><td><b class="mono">${r.id}</b></td><td>${r.created}</td><td>${r.from} ~ ${r.to}</td><td>${pgName(r.pg)}</td><td>${r.method||'전체'}</td>
+    <td class="num">${num(r.count)}</td><td class="num">${num(r.net)}</td><td>${fileBadge(r.file.st)}${r.file.st==='생성실패'?`<span class="sub" style="color:var(--bad)">${esc(r.file.err)}</span>`:`<span class="sub">${esc(r.file.name)}</span>`}</td>
+    <td>${r.file.st==='생성실패'?'<span class="muted">-</span>':dlvBadge(r.dlv.st)}${r.dlv.at?`<span class="sub">${r.dlv.at.slice(5)}</span>`:''}</td><td>${esc(r.by)}</td></tr>`).join('')
+    :`<tr><td colspan="10"><div class="empty">조건에 맞는 추출 요청이 없어요.</div></td></tr>`;
+  $('cnt3').innerHTML=`검색 결과 <b>${rows.length}</b>건 <span class="muted">/ 전체 ${RCS.length}건</span>`;S3.flash='';
+}
+function openRc(id){drOpen({kind:'rc',id,busy:'',dlvTo:'정산 담당 B',dlvVia:'정산 시스템 업로드(모의)',dlvMemo:''});}
+function rRc(){
+  const r=RCS.find(x=>x.id===DR.id),ok=r.file.st==='생성완료';
+  const body=`<div class="sec">추출 조건</div><div class="fbx">${fr('거래 기간',`${r.from} ~ ${r.to}`)}${fr('PG · 결제수단',`${pgName(r.pg)} · ${r.method||'전체'}`)}${fr('요청',`${r.created} · ${esc(r.by)}`)}</div>
+    <div class="sec">대상 요약</div><div class="g2"><div class="box"><small class="muted">건수</small><div class="big">${num(r.count)}건</div></div><div class="box"><small class="muted">순결제금액</small><div class="big" style="color:var(--pri)">${won(r.net)}</div><small class="muted">결제 ${won(r.pay)} · 취소 ${won(r.can)}</small></div></div>
+    <div class="sec">정합성 검증 <small>요청 시점 결과</small></div><div class="box"><ul class="chk">${r.checks.map(c=>`<li class="${c.ok?'o':c.warn?'w':'x'}"><span class="i">${c.ok?'✓':'!'}</span><span>${esc(c.t)}${!c.ok&&c.why?`<br><small class="muted">${esc(c.why)}</small>`:''}</span></li>`).join('')}</ul></div>
+    <div class="sec">파일</div><div class="fbx">${fr('상태',`<div class="row">${DR.busy==='retry'?'<span class="spin"></span> 다시 만드는 중이에요…':fileBadge(r.file.st)}${r.file.err&&!ok?`<span style="font-size:12px;color:var(--bad)">${esc(r.file.err)}</span>`:''}</div>`)}
+      ${fr('파일명',`<span class="mono">${esc(r.file.name)}</span>${ok?` <span class="muted">· ${r.file.size}KB</span>`:''}`)}
+      ${fr('작업',`<div class="row">${ok?'<button class="btn sm pri" data-rca="dl">다운로드 (데모 CSV)</button>':''}<button class="btn sm" data-rca="retry" ${DR.busy?'disabled':''}>재추출</button><button class="btn sm ghost" data-rca="copy">조건 복사</button></div><div class="help">재추출하면 현재 거래 데이터 기준으로 다시 집계해요.</div>`)}</div>
+    <div class="sec">정산 담당자 전달 <small>BSS 전달은 모의 동작이에요</small></div>
+    ${!ok?info('생성에 실패한 파일은 전달할 수 없어요. 재추출을 먼저 진행해 주세요. (V33)','warn'):r.dlv.st==='미전달'?`<div class="fbx">
+      ${fr('받는 사람',`<select data-rcd="dlvTo">${opt(['정산 담당 B','정산 담당 C'],null,DR.dlvTo)}</select>`,1)}
+      ${fr('전달 방법',`<select data-rcd="dlvVia">${opt(['정산 시스템 업로드(모의)','메일(모의)','기타'],null,DR.dlvVia)}</select>`,1)}
+      ${fr('메모',`<input type="text" data-rcd="dlvMemo" value="${esc(DR.dlvMemo)}" placeholder="선택 입력" maxlength="100">`)}
+      ${fr('',`<div><button class="btn sm pri" data-rca="deliver">전달 기록</button></div>`)}</div>`
+    :`<div class="fbx">${fr('상태',dlvBadge(r.dlv.st))}${fr('받는 사람',esc(r.dlv.to))}${fr('전달 방법',esc(r.dlv.via))}${fr('전달 일시',r.dlv.at)}${fr('수신 확인',r.dlv.ack||`<button class="btn sm pri" data-rca="ack">수신 확인 처리</button> <span class="help" style="display:inline">정산 담당자가 받았다고 알려 오면 눌러요</span>`)}</div>`}
+    <div class="sec">시도 이력 <small>${r.tries.length}건</small></div>${r.tries.slice().reverse().map(l=>`<div class="log ${l.bad?'bad':''}"><b style="font-weight:600">${esc(l.t)}</b><span class="res">${esc(l.res)}</span><small>${l.at} · ${esc(l.by)}</small></div>`).join('')}`;
+  drShell({title:`<span class="mono">${r.id}</span>`,meta:`${fileBadge(r.file.st)} ${ok?dlvBadge(r.dlv.st):''} <span>${r.from} ~ ${r.to} · ${pgName(r.pg)}</span>`,body,foot:'<button class="btn ghost" data-rca="copy">조건 복사해 새로 추출</button><button class="btn" data-drx>닫기</button>'});
+}
+function downloadCsv(r){
+  const list=rcTarget(r),head=['거래번호','주문번호','결제일시','PG','MID','결제수단','결제금액','취소금액','순결제금액','거래상태','BSS반영','비고'];
+  const rows=list.map(t=>[t.id,t.order,t.at,t.snap.pg,t.snap.mid,t.snap.method,t.amount,t.cancel,t.amount-t.cancel,t.st,t.bss,'가상 데이터']);
+  const csv='﻿'+[head,...rows].map(a=>a.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=r.file.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}catch(e){}
+}
+async function rcAction(a){
+  const r=RCS.find(x=>x.id===DR.id);
+  if(a==='dl'){downloadCsv(r);r.tries.push({at:stamp(),by:ME,t:'다운로드',res:r.file.name});renderDR();toast('데모 CSV를 내려받았어요.');return;}
+  if(a==='copy'){const o={from:r.from,to:r.to,pg:r.pg,method:r.method};$('dim').classList.remove('on');$('drawer').classList.remove('on');DR=null;openRcNew(o);toast('기존 조건을 복사했어요.');return;}
+  if(a==='retry'){DR.busy='retry';renderDR();const res=await api.makeFile(false);const list=rcTarget(r);Object.assign(r,rcAgg(list));r.checks=rcChecks(list);
+    r.file.st='생성완료';r.file.err='';r.file.size=Math.max(1,Math.round(list.length*0.21*10)/10);r.tries.push({at:stamp(),by:ME,t:'재추출',res:`성공 · ${num(r.count)}건`});
+    if(DR&&DR.id===r.id){DR.busy='';renderDR();}render3();toast('파일을 다시 만들었어요. 내려받거나 전달 기록을 남겨 주세요.');return;}
+  if(a==='deliver'){r.dlv={st:'전달완료',to:DR.dlvTo,via:DR.dlvVia,at:stamp(),ack:'',memo:DR.dlvMemo};r.tries.push({at:r.dlv.at,by:ME,t:'정산 담당자 전달',res:`${r.dlv.to} · ${r.dlv.via}${r.dlv.memo?' · '+r.dlv.memo:''}`});renderDR();render3();toast('전달 기록을 남겼어요.');return;}
+  if(a==='ack'){if(r.dlv.st!=='전달완료'){toast('전달 기록 뒤에만 수신 확인할 수 있어요. (V34)',true);return;}r.dlv.st='수신확인';r.dlv.ack=stamp();r.tries.push({at:r.dlv.ack,by:ME,t:'수신 확인',res:`${r.dlv.to} 수신 확인`});renderDR();render3();toast('수신 확인을 기록했어요.');}
+}
+function rcClick(e){const a=e.target.closest('[data-rca]');if(a&&!a.disabled)rcAction(a.dataset.rca);}
+function rcInput(e){const t=e.target;if(t.dataset.rcd)DR[t.dataset.rcd]=t.value;}
+
+/* ---------- 추출 요청 모달 ---------- */
+const RSTEPS=['추출 조건','대상 확인','정합성 검증','파일 생성'];
+function openRcNew(o){o=o||{};mdOpen({kind:'rc',step:0,from:o.from||'2026-10-25',to:o.to||'2026-10-31',pg:o.pg||'',method:o.method||'',ack:false,failDemo:false,busy:false,job:null});}
+function rcGate(){const R=MD;
+  if(R.step===0){if(!R.from||!R.to)return '기간을 입력해 주세요.';if(R.from>R.to)return '시작일이 종료일보다 늦어요. (V30)';if(R.to>TODAY)return '종료일은 오늘 이전이어야 해요. (V30)';return '';}
+  if(R.step===2){const ck=rcChecks(rcTarget(R));const b=ck.find(c=>!c.ok&&c.block);if(b)return b.why||b.t;if(ck.some(c=>!c.ok&&c.warn)&&!R.ack)return '경고 항목 확인에 체크해 주세요. (V32)';}
+  return '';}
+function rRcNew(){
+  const R=MD,s=R.step,list=rcTarget(R),a=rcAgg(list);let body='';
+  if(s===0) body=`<div class="fbx">${fr('거래 기간',`<div class="range"><input type="date" data-rn="from" value="${R.from}" max="${TODAY}"><span>~</span><input type="date" data-rn="to" value="${R.to}" max="${TODAY}"></div>`,1)}
+    ${fr('PG',`<select data-rn="pg">${opt(PGO(),'전체',R.pg)}</select>`)}${fr('결제수단',`<select data-rn="method">${opt(METHODS,'전체',R.method)}</select>`)}</div>
+    <div style="margin-top:12px">${info('결제실패 거래는 대상에서 빠져요. 취소 거래는 취소금액을 함께 담아요.')}</div>`;
+  else if(s===1){const by=PGS.map(p=>{const l=list.filter(t=>txPg(t)===p.id);return {p,...rcAgg(l)};}).filter(x=>x.count);
+    body=`<div class="g2"><div class="box"><small class="muted">추출 대상</small><div class="big">${num(a.count)}건</div></div><div class="box"><small class="muted">순결제금액</small><div class="big" style="color:var(--pri)">${won(a.net)}</div><small class="muted">결제 ${won(a.pay)} · 취소 ${won(a.can)}</small></div></div>
+    <div class="sec">PG별 내역</div><div class="card" style="overflow:hidden"><table class="tbl in"><thead><tr><th>PG</th><th class="num">건수</th><th class="num">결제금액</th><th class="num">취소금액</th><th class="num">순결제금액</th></tr></thead><tbody>
+    ${by.length?by.map(x=>`<tr><td>${x.p.name}</td><td class="num">${num(x.count)}</td><td class="num">${num(x.pay)}</td><td class="num">${num(x.can)}</td><td class="num">${num(x.net)}</td></tr>`).join(''):'<tr><td colspan="5"><div class="empty">대상 거래가 없어요.</div></td></tr>'}</tbody></table></div>`;}
+  else if(s===2){const ck=rcChecks(list),hasWarn=ck.some(c=>!c.ok&&c.warn);
+    body=`<div class="box"><ul class="chk">${ck.map(c=>`<li class="${c.ok?'o':c.warn?'w':'x'}"><span class="i">${c.ok?'✓':'!'}</span><span>${esc(c.t)}${!c.ok&&c.why?`<br><small class="muted">${esc(c.why)}</small>`:''}</span></li>`).join('')}</ul></div>
+      ${hasWarn?`<label class="ck" style="margin-top:12px"><input type="checkbox" id="rAck" ${R.ack?'checked':''}>경고 항목을 확인했고 이대로 추출할게요.</label>`:''}`;}
+  else{
+    if(R.busy) body='<div class="empty"><span class="spin"></span><br><br>파일을 만들고 있어요…</div>';
+    else if(!R.job) body=`${info(`<b>${num(a.count)}건 · ${won(a.net)}</b> 파일을 만들어요. 결과는 성공, 실패 모두 추출 요청 목록에 남아요.`)}
+      <label class="ck" style="margin-top:12px"><input type="checkbox" id="rFail" ${R.failDemo?'checked':''}>데모: 생성 실패로 시연</label>`;
+    else if(R.job.file.st==='생성완료') body=info(`<b>파일을 만들었어요.</b><br><span class="mono">${esc(R.job.file.name)}</span> · ${R.job.file.size}KB · ${num(R.job.count)}건`,'ok')+`<div class="row" style="margin-top:12px"><button class="btn pri" data-rna="dl">다운로드 (데모 CSV)</button><button class="btn" data-rna="open">요청 상세 열기</button></div>`;
+    else body=info(`<b>파일을 만들지 못했어요.</b><br>${esc(R.job.file.err)}<br>요청 ${R.job.id}에 실패 기록이 남았어요.`,'bad')+`<div class="row" style="margin-top:12px"><button class="btn pri" data-rna="retry">재추출</button><button class="btn" data-rna="open">요청 상세 열기</button></div>`;
+  }
+  const g=rcGate();
+  $('mbox').innerHTML=`<div class="m-h"><div><h2>거래내역 추출 요청</h2><p>조건을 정하고 대상과 정합성을 확인한 뒤 파일을 만들어요.</p></div><button class="x" data-mclose aria-label="닫기">×</button></div>
+    <div class="stepper">${RSTEPS.map((t,i)=>`<button class="stp ${i<s?'done':i===s?'on':''}" ${i<s&&!R.job?`data-rgo="${i}"`:'disabled'}><span class="n">${i<s?'✓':i+1}</span>${t}</button>`).join('')}</div>
+    <div class="m-b">${body}</div>
+    <div class="m-f"><span class="why" id="rWhy">${esc(g)}</span>${R.job?'<button class="btn" data-mclose>닫기</button>':`<button class="btn" data-mclose>취소</button>${s>0&&!R.busy?'<button class="btn" id="rPrev">이전</button>':''}${s<3?`<button class="btn pri" id="rNext" ${g?'disabled':''}>다음</button>`:`<button class="btn pri" id="rMake" ${R.busy?'disabled':''}>파일 생성</button>`}`}</div>`;
+}
+async function rcMake(retry){
+  const R=MD;R.busy=true;renderMD();const res=await api.makeFile(retry?false:R.failDemo);if(!MD||MD!==R)return;R.busy=false;
+  if(retry&&R.job){const r=R.job,list=rcTarget(r);Object.assign(r,rcAgg(list));r.file.st='생성완료';r.file.err='';r.file.size=Math.max(1,Math.round(list.length*0.21*10)/10);r.tries.push({at:stamp(),by:ME,t:'재추출',res:`성공 · ${num(r.count)}건`});}
+  else{const n=RCS.filter(x=>x.id.startsWith('RX-2611')).length+1;
+    R.job=mkRc({id:`RX-2611-${pad(n)}`,created:stamp(),by:ME,from:R.from,to:R.to,pg:R.pg,method:R.method,fileSt:res.ok?'생성완료':'생성실패',err:res.ok?'':res.err});}
+  S3.flash=R.job.id;render3();renderMD();
+}
+function rcNewClick(e){const R=MD,t=e.target;
+  const go=t.closest('[data-rgo]');if(go){R.step=+go.dataset.rgo;R.ack=false;renderMD();return;}
+  if(t.id==='rPrev'){R.step--;renderMD();return;}if(t.id==='rNext'){if(!rcGate()){R.step++;renderMD();}return;}if(t.id==='rMake'){rcMake(false);return;}
+  const a=t.closest('[data-rna]');if(a){const k=a.dataset.rna;if(k==='dl'){downloadCsv(R.job);R.job.tries.push({at:stamp(),by:ME,t:'다운로드',res:R.job.file.name});toast('데모 CSV를 내려받았어요.');}
+    if(k==='retry')rcMake(true);if(k==='open'){const id=R.job.id;mdClose();openRc(id);}}}
+function rcNewChange(e){const R=MD,t=e.target;if(t.dataset.rn){R[t.dataset.rn]=t.value;R.ack=false;const g=rcGate();$('rWhy').textContent=g;if($('rNext'))$('rNext').disabled=!!g;return;}
+  if(t.id==='rAck'){R.ack=t.checked;const g=rcGate();$('rWhy').textContent=g;$('rNext').disabled=!!g;return;}if(t.id==='rFail')R.failDemo=t.checked;}
+
+/* =========================================================
+   SCREEN 04 금융수수료 조회
+   ========================================================= */
+const CAUSES=['요율 적용 시점 차이','취소 수수료 처리','반올림 차이','VAT 포함 여부','청구 데이터 미수신'];
+const FES=[];
+function mkFe(o){const c=conOf(o.cid),f=feeAt(c,o.month+'-15'),exp=f.type==='rate'?Math.round(o.amount*f.val/100):o.count*f.val;
+  const billed=o.recv===false?null:exp+(o.delta||0);
+  const r={id:`FE-${o.month.replace('-','').slice(2)}-${c.id.slice(2)}`,month:o.month,cid:c.id,count:o.count,amount:o.amount,fee:f,exp,billed,cause:o.cause||(o.recv===false?'청구 데이터 미수신':''),
+    st:o.st||(billed==null?'미수신':billed===exp?'일치':'불일치'),memos:o.memos||[],bill:billed==null?null:{file:`${pgOf(midOf(c).pg).id.toUpperCase()}_FEE_${o.month.replace('-','')}.csv(가상)`,at:o.month==='2026-10'?'2026-11-01 06:00':'2026-10-01 06:00',count:o.count+(o.cnt||0)}};
+  FES.push(r);return r;}
+function genFe(){
+  mkFe({month:'2026-10',cid:'C-1001',count:1240,amount:24180000});
+  mkFe({month:'2026-10',cid:'C-1002',count:310,amount:3410000,delta:7502,cause:'VAT 포함 여부'});
+  mkFe({month:'2026-10',cid:'C-1003',count:420,amount:8820000});
+  mkFe({month:'2026-10',cid:'C-1004',count:95,amount:1045000,recv:false});
+  mkFe({month:'2026-10',cid:'C-1005',count:210,amount:4620000});
+  mkFe({month:'2026-10',cid:'C-1007',count:860,amount:30960000,delta:720,cnt:6,cause:'취소 수수료 처리'});
+  mkFe({month:'2026-10',cid:'C-1008',count:140,amount:6860000});
+  mkFe({month:'2026-10',cid:'C-1009',count:520,amount:15600000,delta:-3,cause:'반올림 차이'});
+  mkFe({month:'2026-10',cid:'C-1012',count:77,amount:2310000});
+  mkFe({month:'2026-09',cid:'C-1001',count:1180,amount:23010000,delta:780,cause:'요율 적용 시점 차이',st:'확인완료',memos:[{at:'2026-10-06 14:10',by:'정산 담당 B',t:'PG 청구 오류 확인. 10월 정산에서 차감 예정'}]});
+  mkFe({month:'2026-09',cid:'C-1007',count:820,amount:29520000});
+  mkFe({month:'2026-09',cid:'C-1009',count:480,amount:14400000});
+  mkFe({month:'2026-09',cid:'C-1011',count:300,amount:9000000});
+}
+const F4=[{k:'month',l:'정산기간(월)',t:'sel',o:['2026-10','2026-09'],noAll:1},{k:'pg',l:'PG',t:'sel',o:PGO},{k:'mid',l:'MID',t:'sel',o:()=>MIDS.map(m=>({v:m.code,l:`${m.code} · ${m.purpose}`}))},{k:'method',l:'결제수단',t:'sel',o:METHODS},{k:'st',l:'검증상태',t:'sel',o:['일치','불일치','미수신','확인완료']},{k:'cause',l:'차이 원인',t:'sel',o:CAUSES}];
+const S4={f:{month:'2026-10'},quick:''};
+const Q4=[{k:'',l:'전체'},{k:'일치',l:'일치'},{k:'불일치',l:'불일치'},{k:'미수신',l:'미수신'},{k:'확인완료',l:'확인완료'}];
+const feBadge=s=>st(s,{일치:'ok',불일치:'bad',미수신:'warn',확인완료:'epc'}[s]);
+function base4(){const f=S4.f;return FES.filter(r=>{const c=conOf(r.cid),m=midOf(c);if(f.month&&r.month!==f.month)return false;if(f.pg&&m.pg!==f.pg)return false;if(f.mid&&m.code!==f.mid)return false;
+  if(f.method&&c.method!==f.method)return false;if(f.st&&r.st!==f.st)return false;if(f.cause&&r.cause!==f.cause)return false;return true;});}
+const diffOf=r=>r.billed==null?null:r.billed-r.exp;
+function render4(){
+  const base=base4();
+  $('q4').innerHTML=Q4.map(q=>`<button class="qc ${S4.quick===q.k?'on':''}" data-q="4:${q.k}">${q.l} <em>${base.filter(r=>!q.k||r.st===q.k).length}</em></button>`).join('');
+  const rows=base.filter(r=>!S4.quick||r.st===S4.quick);
+  const cnt=base.reduce((a,r)=>a+r.count,0),amt=base.reduce((a,r)=>a+r.amount,0),exp=base.reduce((a,r)=>a+r.exp,0),recv=base.filter(r=>r.billed!=null),bill=recv.reduce((a,r)=>a+r.billed,0),dif=recv.reduce((a,r)=>a+diffOf(r),0);
+  $('sum4').innerHTML=`<div><small>거래건수</small><b>${num(cnt)}건</b></div><div><small>거래금액</small><b>${won(amt)}</b></div><div><small>예상수수료</small><b>${won(exp)}</b></div><div><small>PG 청구수수료</small><b>${won(bill)}</b></div><div><small>차액</small><b class="${dif?'bad':'pri'}">${dif>0?'+':''}${won(dif)}</b></div>
+    <span class="note">${S4.f.month||'전체'} 정산 기준 · 미수신 ${base.length-recv.length}건 제외<br>VAT·반올림·취소 수수료 미반영 <span class="tag ck">확인필요</span></span>`;
+  $('th4').innerHTML='<tr><th>PG</th><th>MID</th><th>결제수단</th><th class="num">거래건수</th><th class="num">거래금액</th><th>계약요율</th><th class="num">예상수수료</th><th class="num">PG 청구수수료</th><th class="num">차액</th><th>검증상태</th><th>차이 원인</th></tr>';
+  $('tb4').innerHTML=rows.length?rows.map(r=>{const c=conOf(r.cid),m=midOf(c),d=diffOf(r);return `<tr class="cl" data-row4="${r.id}"><td>${pgOf(m.pg).name}</td><td><b class="mono">${m.code}</b><span class="sub">${esc(m.purpose)}</span></td><td>${c.method}</td>
+    <td class="num">${num(r.count)}</td><td class="num">${num(r.amount)}</td><td>${fmtFee(r.fee)}</td><td class="num">${num(r.exp)}</td><td class="num">${r.billed==null?'<span class="muted">미수신</span>':num(r.billed)}</td>
+    <td class="num" style="${d?'color:var(--bad);font-weight:700':''}">${d==null?'<span class="muted">-</span>':(d>0?'+':'')+num(d)}</td><td>${feBadge(r.st)}</td><td>${r.cause?esc(r.cause)+(r.st==='불일치'?' <span class="tag pp">추정</span>':''):'<span class="muted">-</span>'}</td></tr>`;}).join('')
+    :'<tr><td colspan="11"><div class="empty">조건에 맞는 정산 내역이 없어요.</div></td></tr>';
+  $('cnt4').innerHTML=`검색 결과 <b>${rows.length}</b>건 <span class="muted">· 결제수단 계약 × 정산월 단위</span>`;
+}
+function openFe(id){const r=FES.find(x=>x.id===id);drOpen({kind:'fe',id,tab:'calc',memo:'',cause:r.cause,busy:false});}
+function feSamples(r){const c=conOf(r.cid),amts=[39000,59000,12900,129000,9900],d=diffOf(r)||0;
+  return amts.map((a,i)=>{const e=r.fee.type==='rate'?Math.round(a*r.fee.val/100):r.fee.val;return {id:`TX${r.month.slice(2).replace('-','')}${pad(3+i*5)}${String(2000+i*13)}`,date:`${r.month}-${pad(3+i*5)}`,amt:a,exp:e,bill:r.billed==null?null:e+(i===0?d:0)};});}
+function rFe(){
+  const r=FES.find(x=>x.id===DR.id),c=conOf(r.cid),m=midOf(c),p=pgOf(m.pg),d=diffOf(r),rows=feesSorted(c),mEnd=r.month+'-31';let body='';
+  const warn=info('VAT 포함 여부, 반올림 기준, 취소 수수료 처리는 정해지지 않아 계산에 넣지 않았어요. <span class="tag ck">확인필요</span>','warn');
+  if(DR.tab==='calc') body=`<div class="fbx">${fr('정산월',r.month)}${fr('PG · MID',`${p.name} · <span class="mono">${m.code}</span> · ${esc(m.purpose)}`)}${fr('결제수단',c.method)}${fr('계약요율',`${fmtFee(r.fee)} <span class="help" style="display:inline">${r.fee.from}부터 적용 · 거래일 기준</span>`)}
+    ${fr('거래건수 · 금액',`${num(r.count)}건 · ${won(r.amount)}`)}${fr('예상수수료',`<b>${won(r.exp)}</b> <span class="help" style="display:inline">${r.fee.type==='rate'?`${num(r.amount)} × ${r.fee.val}%`:`${num(r.count)}건 × ${num(r.fee.val)}원`}</span>`)}
+    ${fr('PG 청구수수료',r.billed==null?st('미수신','warn'):won(r.billed))}${fr('차액',d==null?'<span class="muted">-</span>':`<b style="color:${d?'var(--bad)':'var(--ok)'}">${d>0?'+':''}${won(d)}</b>`)}${fr('검증상태',feBadge(r.st))}</div><div style="margin-top:12px">${warn}</div>`;
+  else if(DR.tab==='hist') body=`${info('정산월에 적용된 이력 행을 강조했어요. 기준정보에서 요율을 바꿔도 이미 적용된 행은 바뀌지 않아요.')}
+    <div class="card" style="margin-top:12px;overflow:hidden"><table class="tbl in"><thead><tr><th>적용시작일</th><th>적용종료일</th><th>수수료</th><th>상태</th><th>이 정산월</th></tr></thead><tbody>
+    ${rows.map((f,i)=>{const nx=rows[i+1],endD=nx?addDays(nx.from,-1):'9999-12-31',hit=f.from<=mEnd&&endD>=r.month+'-01';return `<tr class="${hit?'hit':''}"><td>${f.from}</td><td>${nx?endD:'-'}</td><td><b>${fmtFee(f)}</b></td><td>${fsBadge(feeState(c,f))}</td><td>${hit?st('적용','pri'):'<span class="muted">-</span>'}</td></tr>`;}).join('')}</tbody></table></div>
+    <p class="help"><button class="link" data-feg="${c.id}">결제수단 기준정보에서 계약 보기</button></p>`;
+  else if(DR.tab==='calcrow'){const S=feSamples(r);body=`${info(`전체 ${num(r.count)}건 중 표본 5건이에요. 차이가 난 건을 맨 위에 두었어요.`)}
+    <div class="card" style="margin-top:12px;overflow:hidden"><table class="tbl in"><thead><tr><th>거래번호</th><th>거래일</th><th class="num">결제금액</th><th>적용요율</th><th class="num">예상</th><th class="num">PG 청구</th><th class="num">차이</th></tr></thead><tbody>
+    ${S.map(x=>{const dd=x.bill==null?null:x.bill-x.exp;return `<tr class="${dd?'hit':''}"><td class="mono">${x.id}</td><td>${x.date}</td><td class="num">${num(x.amt)}</td><td>${fmtFee(r.fee)}</td><td class="num">${num(x.exp)}</td><td class="num">${x.bill==null?'<span class="muted">-</span>':num(x.bill)}</td><td class="num" style="${dd?'color:var(--bad);font-weight:700':''}">${dd==null?'-':(dd>0?'+':'')+num(dd)}</td></tr>`;}).join('')}</tbody></table></div>
+    <p class="help">계산식: ${r.fee.type==='rate'?'결제금액 × 요율, 원 단위 반올림(데모 가정)':'건당 정액'} <span class="tag ck">확인필요</span></p>`;}
+  else if(DR.tab==='bill') body=r.bill?`<div class="fbx">${fr('청구 파일',`<span class="mono">${esc(r.bill.file)}</span>`)}${fr('수신 일시',r.bill.at)}</div>
+    <div class="card" style="margin-top:12px;overflow:hidden"><table class="tbl in"><thead><tr><th>항목</th><th class="num">우리 계산</th><th class="num">PG 청구</th><th class="num">차이</th></tr></thead><tbody>
+    <tr class="${r.bill.count!==r.count?'hit':''}"><td>거래건수</td><td class="num">${num(r.count)}</td><td class="num">${num(r.bill.count)}</td><td class="num">${r.bill.count-r.count||0}</td></tr>
+    <tr><td>거래금액</td><td class="num">${num(r.amount)}</td><td class="num">${num(r.amount)}</td><td class="num">0</td></tr>
+    <tr class="${d?'hit':''}"><td>수수료</td><td class="num">${num(r.exp)}</td><td class="num">${num(r.billed)}</td><td class="num" style="${d?'color:var(--bad);font-weight:700':''}">${d>0?'+':''}${num(d)}</td></tr></tbody></table></div>
+    ${r.bill.count!==r.count?info(`PG 청구 건수가 ${r.bill.count-r.count}건 많아요. 취소 거래에 수수료를 매긴 것으로 보여요.`,'warn'):''}`
+    :info('PG 청구 데이터를 아직 받지 못했어요. 재수신을 요청하거나, 사유를 메모로 남기고 확인완료할 수 있어요.','warn')+`<div style="margin-top:12px"><button class="btn pri" data-fea="bill" ${DR.busy?'disabled':''}>${DR.busy?'요청 중…':'PG 청구 데이터 재수신 요청'}</button></div>`;
+  else{const need=['불일치','미수신'].includes(r.st);
+    body=`${r.memos.length?r.memos.slice().reverse().map(x=>`<div class="log">${esc(x.t)}<small>${x.at} · ${esc(x.by)}</small></div>`).join(''):'<div class="empty" style="padding:20px">남긴 메모가 없어요.</div>'}
+    ${r.st!=='확인완료'&&r.st!=='일치'?`<div class="fbx" style="margin-top:12px">${r.st==='불일치'?fr('차이 원인',`<select data-fed="cause">${opt(CAUSES,null,DR.cause)}</select><div class="help">시스템이 추정한 원인이에요. 실제 원인으로 바꿔 주세요. <span class="tag pp">제안</span></div>`):''}
+      ${fr('메모',`<textarea data-fed="memo" rows="3" maxlength="300" placeholder="확인한 내용과 처리 계획을 남겨 주세요">${esc(DR.memo)}</textarea>${need?'<div class="help">불일치·미수신은 메모를 남겨야 확인완료할 수 있어요. (V41)</div>':''}`,need)}</div>`
+      :info(r.st==='일치'?'예상수수료와 청구수수료가 같아요. 따로 처리할 일이 없어요.':'확인완료된 건이에요.','ok')}`;}
+  const can=r.st==='불일치'||r.st==='미수신';
+  drShell({title:`${p.name} · ${c.method} · <span class="mono">${m.code}</span>`,meta:`${feBadge(r.st)} <span>${r.month} 정산 · ${r.id}</span>`,
+    tabs:[['calc','계산 요약'],['hist','계약 수수료 이력',rows.length],['calcrow','건별 계산 근거'],['bill','PG 청구 비교'],['memo','메모·확인',r.memos.length]],tab:DR.tab,body,
+    foot:`${can?`<span class="note">${DR.tab==='memo'?'':'메모·확인 탭에서 확인완료할 수 있어요.'}</span>`:''}${can&&DR.tab==='memo'?`<button class="btn pri" data-fea="done" ${DR.memo.trim()?'':'disabled'} id="feDone">확인완료</button>`:''}<button class="btn" data-drx>닫기</button>`});
+}
+async function feAction(a){const r=FES.find(x=>x.id===DR.id);
+  if(a==='done'){if(!DR.memo.trim())return;r.memos.push({at:stamp(),by:ME,t:(r.st==='불일치'?`[${DR.cause}] `:'')+DR.memo.trim()});r.cause=r.st==='불일치'?DR.cause:r.cause;r.st='확인완료';DR.memo='';renderDR();render4();toast('확인완료했어요.');return;}
+  if(a==='bill'){DR.busy=true;renderDR();await api.billRequest();r.billed=r.exp;r.cause='';r.st='일치';r.bill={file:`${pgOf(midOf(conOf(r.cid)).pg).id.toUpperCase()}_FEE_${r.month.replace('-','')}.csv(가상)`,at:stamp(),count:r.count};
+    r.memos.push({at:stamp(),by:'시스템',t:'PG 청구 데이터 재수신 · 예상수수료와 일치'});if(DR&&DR.id===r.id){DR.busy=false;DR.cause='';renderDR();}render4();toast('청구 데이터를 받았어요. 예상수수료와 일치해요.');}}
+function feClick(e){const t=e.target,a=t.closest('[data-fea]');if(a&&!a.disabled){feAction(a.dataset.fea);return;}
+  const g=t.closest('[data-feg]');if(g){const id=g.dataset.feg;$('dim').classList.remove('on');$('drawer').classList.remove('on');DR=null;setView('master');openCon(id,'fee');}}
+function feInput(e){const t=e.target;if(t.dataset.fed){DR[t.dataset.fed]=t.value;if($('feDone'))$('feDone').disabled=!DR.memo.trim();}}
+
+/* =========================================================
+   네비게이션, 이벤트
+   ========================================================= */
+const VIEWS=['master','history','recon','fee','policy'];
+function setView(v,anchor){
+  if(DR){$('dim').classList.remove('on');$('drawer').classList.remove('on');DR=null;}
+  VIEWS.forEach(k=>$('v-'+k).hidden=k!==v);
+  document.querySelectorAll('.side .m2').forEach(b=>b.classList.toggle('on',b.dataset.nav===v));
+  if(anchor)setTimeout(()=>{const el=$(anchor);if(el)el.scrollIntoView({behavior:'smooth'});},30);else window.scrollTo(0,0);
+}
+const FDEF={f1:[F1,S1,render1],f2:[F2,S2,render2],f3:[F3,S3,render3],f4:[F4,S4,render4]};
+const FDEFAULT={f1:{},f2:{atFrom:'2026-10-01',atTo:TODAY},f3:{},f4:{month:'2026-10'}};
+function fSearch(px){const [defs,S,r]=FDEF[px],o=readF(px,defs);
+  const bad=defs.filter(d=>d.t==='range').find(d=>o[d.k+'From']&&o[d.k+'To']&&o[d.k+'From']>o[d.k+'To']);
+  if(bad){toast(`${bad.l} 시작일이 종료일보다 늦어요.`,true);return;}S.f=o;S.page=1;r();}
+function fReset(px){const [defs,S,r]=FDEF[px];writeF(px,defs,FDEFAULT[px]);S.f={...FDEFAULT[px]};S.quick='';S.page=1;r();}
+const SS={1:S1,2:S2};const RR={1:render1,2:render2,3:render3,4:render4};const SQ={1:S1,2:S2,3:S3,4:S4};
+
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const nv=t.closest('[data-nav]');if(nv){setView(nv.dataset.nav,nv.dataset.anchor);return;}
+  if(t.closest('#modal')){if(t.id==='modal'||t.closest('[data-mclose]')){if(!(MD&&MD.busy))mdClose();return;}
+    if(!MD)return;({wiz:wizClick,status:statusClick,cancel:cancelClick,rc:rcNewClick})[MD.kind](e);return;}
+  if(t.closest('#drawer')){if(t.closest('[data-drx]')){drClose();return;}
+    const tb=t.closest('[data-tab]');if(tb){if(tb.dataset.tab!==DR.tab){if(drDirty()&&!confirm('저장하지 않은 변경이 있어요. 이동할까요?'))return;
+      Object.assign(DR,{edit:false,draft:null,feeForm:null,feeEditId:null,block:''});DR.tab=tb.dataset.tab;renderDR();}return;}
+    ({con:conClick,tx:txClick,rc:rcClick,fe:feClick})[DR.kind](e);return;}
+  if(t.id==='dim'){drClose();return;}
+  const dm=t.closest('[data-demo]');if(dm){runDemo(dm.dataset.demo);return;}
+  const fs=t.closest('[data-fsearch]');if(fs){fSearch(fs.dataset.fsearch);return;}
+  const fz=t.closest('[data-freset]');if(fz){fReset(fz.dataset.freset);return;}
+  const q=t.closest('[data-q]');if(q){const [n,k]=q.dataset.q.split(':');SQ[n].quick=k;if(SQ[n].page)SQ[n].page=1;RR[n]();return;}
+  const so=t.closest('[data-sort]');if(so){const [n,k]=so.dataset.sort.split(':'),S=SS[n];S.sort=S.sort.k===k?{k,d:-S.sort.d}:{k,d:(k==='upd'||k==='at')?-1:1};RR[n]();return;}
+  const pg=t.closest('[data-pg]');if(pg){const [n,p]=pg.dataset.pg.split(':');SS[n].page=+p;RR[n]();return;}
+  const a=t.closest('[data-act]');
+  if(a){const id=a.dataset.id;switch(a.dataset.act){case 'new':openWizard();break;case 'detail':openCon(id,'base');break;case 'fees':openCon(id,'fee');break;case 'corners':openCon(id,'corner');break;
+    case 'status':openStatus([id]);break;case 'bulkStatus':openStatus([...S1.sel]);break;case 'clearSel':S1.sel.clear();render1();break;case 'rcnew':openRcNew();break;}return;}
+  if(t.matches('[data-chk1]')){t.checked?S1.sel.add(t.dataset.chk1):S1.sel.delete(t.dataset.chk1);render1();return;}
+  const txo=t.closest('[data-txo]');if(txo){openTx(txo.dataset.txo,'order');return;}
+  if(t.closest('input,button,select'))return;
+  const r1=t.closest('[data-row1]');if(r1){openCon(r1.dataset.row1,'base');return;}
+  const r2=t.closest('[data-row2]');if(r2){openTx(r2.dataset.row2,'order');return;}
+  const r3=t.closest('[data-row3]');if(r3){openRc(r3.dataset.row3);return;}
+  const r4=t.closest('[data-row4]');if(r4){openFe(r4.dataset.row4);}
+});
+$('mbox').addEventListener('change',e=>{if(!MD)return;({wiz:wizChange,status:statusChange,cancel:cancelChange,rc:rcNewChange})[MD.kind](e);});
+$('mbox').addEventListener('input',e=>{if(!MD)return;const f={wiz:wizInput,status:statusInput,cancel:cancelInput}[MD.kind];if(f)f(e);});
+$('drawer').addEventListener('input',e=>{if(!DR)return;const f={con:conInput,rc:rcInput,fe:feInput}[DR.kind];if(f)f(e);});
+$('drawer').addEventListener('change',e=>{if(!DR)return;const f={con:conChange,tx:txChange,rc:rcInput,fe:feInput}[DR.kind];if(f)f(e);});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if($('modal').classList.contains('on')){if(!(MD&&MD.busy))mdClose();return;}if(DR){drClose();return;}}
+  if(e.key==='Enter'&&e.target.tagName==='INPUT'){const sf=e.target.closest('.sf');if(sf)fSearch(sf.id);}
+});
+$('size1').onchange=e=>{S1.size=+e.target.value;S1.page=1;render1();};
+$('size2').onchange=e=>{S2.size=+e.target.value;S2.page=1;render2();};
+
+function runDemo(k){
+  const v={A:'master',B:'master',C:'master',D:'master',E:'master',F:'history',G:'recon',H:'fee'}[k];setView(v);
+  if(k==='A')openWizard({pg:'ini'});
+  if(k==='B')openWizard({pg:'toss',mode:'new'});
+  if(k==='C')openCon('C-1001','fee');
+  if(k==='D')openWizard({pg:'ini',method:'카드',mode:'exist',mid:'m1',step:2});
+  if(k==='E'){openCon('C-1001','base');openStatus(['C-1001'],{scope:'mid',to:'일시중지'});}
+  if(k==='F'){const t=TXS.find(x=>x.st==='결과미확인'&&x.qres==='ok')||TXS.find(x=>x.bss==='반영실패');if(t)openTx(t.id,'pg');}
+  if(k==='G')openRc('RX-2611-02');
+  if(k==='H'){S4.f={month:'2026-10'};writeF('f4',F4,S4.f);render4();openFe(FES.find(x=>x.cid==='C-1007'&&x.month==='2026-10').id);}
+}
+
+/* ---------- 초기화 ---------- */
+genTx();genRc();genFe();
+['f1','f2','f3','f4'].forEach(px=>{$(px).innerHTML=filterHTML(px,FDEF[px][0]);writeF(px,FDEF[px][0],FDEFAULT[px]);});
+S1.f={};S2.f={...FDEFAULT.f2};S3.f={};S4.f={...FDEFAULT.f4};
+refreshAll();
+</script>
+</body>
+</html>
