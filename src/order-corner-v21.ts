@@ -5,36 +5,30 @@
 import "./style.css";
 import "./list.css";
 import { requireAuthentication } from "./auth";
-// 코너 데이터(PAGES · CORNERS · PSUB)는 주문 프로세스 화면과 함께 쓴다. BO 운영 설정(문구 · 순서 · 개수 · 규칙 · 원천 데이터)은 corner-bo.ts
-import { PAGES, CORNERS, PSUB } from "./order-corner-data";
+// 코너 데이터(PAGES · CORNERS)는 주문 프로세스 화면과 함께 쓴다. BO 운영 설정(문구 · 순서 · 개수 · 규칙 · 원천 데이터)은 corner-bo.ts
+import { PAGES, CORNERS } from "./order-corner-data";
 import { boSpec, boGet, boSave, boReset, boHtml, boBind, boApply, boSummary } from "./corner-bo";
 
 requireAuthentication();
 
 const KIND_D = { '주문': '주문 정보를 선택하거나 입력받는 코너입니다.', '상품 연동': '상품·요금제·사은품 등 상품 데이터를 불러와 노출하는 코너입니다.' };
 
-// 주문 프로세스(역참조용): 주문 프로세스 관리 v46 목록 기준. 구성(STR)은 화면별 코너 순서
+// 주문 프로세스(역참조용): 주문 프로세스 관리 v46 목록 기준(상품 대상 주문 유형 프로세스는 기능 삭제로 뺐다). 구성(STR)은 화면별 코너 순서
 const STR = {
- full:[['P1',['CN-PRD-0005','CN-ORD-0001','CN-ORD-0002','CN-ORD-0003','CN-ORD-0004','CN-ORD-0005','CN-ORD-0084','CN-ORD-0006','CN-ORD-0007','CN-ORD-0008','CN-PRD-0004']],['P2',['CN-ORD-0009','CN-ORD-0010','CN-ORD-0011','CN-PAY-0001','CN-PAY-0002']],['P3',['CN-ORD-0340','CN-ORD-0049','CN-ORD-0071','CN-PAY-0004','CN-PAY-0032','CN-PAY-0033','CN-PAY-0006']],['P4',['CN-PAY-0020']],['P5',['CN-ORD-0052']]],
- tab:[['P1',['CN-PRD-0005','CN-ORD-0005','CN-ORD-0006','CN-ORD-0004']],['P3',['CN-ORD-0340','CN-ORD-0049','CN-PAY-0006']],['P5',['CN-ORD-0052']]],
+ full:[['P1',['CN-ORD-0001','CN-ORD-0002','CN-ORD-0003','CN-ORD-0004','CN-ORD-0005','CN-ORD-0084','CN-ORD-0006','CN-ORD-0007','CN-ORD-0008','CN-PRD-0004']],['P2',['CN-ORD-0009','CN-ORD-0010','CN-ORD-0011','CN-PAY-0001','CN-PAY-0002']],['P3',['CN-ORD-0340','CN-ORD-0049','CN-ORD-0071','CN-PAY-0004','CN-PAY-0032','CN-PAY-0033','CN-PAY-0006']],['P4',['CN-PAY-0020']],['P5',['CN-ORD-0052']]],
+ tab:[['P1',['CN-ORD-0005','CN-ORD-0006','CN-ORD-0004']],['P3',['CN-ORD-0340','CN-ORD-0049','CN-PAY-0006']],['P5',['CN-ORD-0052']]],
  sim:[['USIM 가입하기',['CN-ORD-0006','CN-ORD-0005']],['P5',['CN-ORD-0052']]]
 };
 const PROCS = [
- ['TP-ORD-010','단말','아이폰 18 pro max 전용 프로세스','승인 완료','Y','full'],
- ['TP-ORD-009','단말','아이폰 18 전용 프로세스','승인 완료','Y','full'],
- ['TP-ORD-008','커머스','커머스 기본 프로세스','승인 완료','Y','tab'],
  ['TP-ORD-007','부가서비스','부가서비스 기본 프로세스','승인 완료','Y','sim'],
  ['TP-ORD-006','요금제','요금제 기본 프로세스','임시 저장','Y','sim'],
  ['TP-ORD-005','단말','단말 기기변경 기본 프로세스','임시 저장','Y','full'],
  ['TP-ORD-004','단말','단말 번호이동 기본 프로세스','임시 저장','Y','full'],
- ['TP-ORD-003','단말','단말 신규가입 기본 프로세스','반려','N','full'],
- ['TP-ORD-002','단말','단말 기본 프로세스','반려','N','full'],
- ['TP-ORD-001','단말','아이폰 18 pro 전용 프로세스','반려','N','full']
+ ['TP-ORD-003','단말','단말 신규가입 기본 프로세스','반려','N','full']
 ];
 // 선·후행 코너: rel=관계 설명, src=근거(req 요청 반영 · v46 조건 예시 · tbd 가안)
 const LINKS = [
  {a:'CN-ORD-0003',b:'CN-ORD-0004',rel:'가입 방식 값에 따라 선택 가능한 납부 방식이 달라짐 (예: 신규가입이면 일시불)',src:'req'},
- {a:'CN-PRD-0005',b:'CN-ORD-0005',rel:'단말 모델에 따라 노출할 요금제와 순서가 달라짐',src:'v46'},
  {a:'CN-ORD-0005',b:'CN-ORD-0084',rel:'선택한 요금제에 따라 할인 방법별 할인 금액이 달라짐',src:'tbd'},
  {a:'CN-PAY-0032',b:'CN-PAY-0033',rel:'선택한 결제 수단에 따라 현금영수증 신청 영역 노출이 달라짐',src:'tbd'}
 ];
@@ -104,8 +98,6 @@ function foBody(c) {
   switch (c.ui) {
   case 'info':
     return `<div class="fo-pimg"><div class="fo-phone"></div></div><div class="fo-note">해당 상품은 11월 16일 이후 신규 가입 중단될 예정입니다.</div><div class="fo-pinfo"><p class="fo-cp">${esc(c.sub)}</p><b class="fo-pn">${esc(c.q)}</b><div class="fo-tags"><span class="fo-bd bd-dk">장기고객 혜택</span><span class="fo-bd bd-sk">신규</span><span class="fo-bd bd-gy">바로보상</span><span class="fo-bd bd-gy">무료배송</span></div><div class="fo-warn">만 18세 이상 만 34세 미만의 고객님만 가입할 수 있는 상품이에요</div></div>`;
-  case 'pinfo':
-    return foBody({ ui: 'info', q: c.q, sub: c.sub, opts: [], it: c.it }) + PSUB.map(x => '<div class="fo-div"></div>' + foBody(x)).join('');
   case 'color':
     return foHead(c) + `<p class="fo-sm">${esc(O[0].n)}</p><div class="fo-sw">` + O.map((x, i) => `<i class="${i ? '' : 'on'}${x.b ? ' so' : ''}" style="background:${x.x}" title="${esc(x.n + (x.b ? ` (${x.b})` : ''))}"></i>`).join('') + '</div>';
   case 'list': {
@@ -192,7 +184,6 @@ const none = '<span class="faint">없음</span>';
 const tbd = t => `<span class="tbd">${t || '미확정'}</span>`;
 function optText(c) {
   const J = opts => opts.map(x => esc(x.n)).join(SEP);
-  if (c.ui === 'pinfo') return `<div class="og">${PSUB.map(x => `<div><span class="ogl">${x.ui === 'color' ? '색상' : '용량'}</span>${J(x.opts)}</div>`).join('')}<div class="faint">${esc(c.src)} 연동, 예시 값</div></div>`;
   if (!SELUI.includes(c.ui) || !c.opts.length) return none;
   return `<span>${J(c.opts)}${c.t === '상품 연동' ? `<span class="faint"> · ${esc(c.src)} 연동, 예시 값</span>` : ''}</span>`;
 }
