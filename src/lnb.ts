@@ -32,7 +32,7 @@ const MENU = [
     { label: '정책', icon: 'policy', href: 'policy.html' },
   ] },
   { label: '주문관리', items: [
-    { label: '주문 프로세스 관리', icon: 'process', href: 'order4-create.html', match: ['order5-create.html', 'order3-create.html'] },
+    { label: '주문 프로세스 관리', icon: 'process', href: 'order5-create.html', match: ['order4-create.html', 'order3-create.html'] },
     { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v21.html', match: ['order-corner-create.html'] },
     { label: '정책', icon: 'policy', href: '' },
   ] },
