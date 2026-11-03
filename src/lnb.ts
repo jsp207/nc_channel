@@ -15,6 +15,7 @@ const ICONS = {
   card: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
   history: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   reconcile: '<path d="M4 8h13l-3-3M20 16H7l3 3"/>',
+  pg: '<path d="M4 10 12 5l8 5"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8M4 20h16"/>',
   fee: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 9.5 12 15l3.5-5.5M8 12.5h8"/>',
   archive: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>',
   collapse: '<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M9 3.5v17M15.5 9.5 13 12l2.5 2.5"/>',
@@ -36,11 +37,12 @@ const MENU = [
     { label: '정책', icon: 'policy', href: '' },
   ] },
   { label: '결제관리', items: [
-    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method3.html', match: ['payment-method3-create.html', 'payment-method3-detail.html', 'payment-method2.html', 'payment-method2-create.html'] },
-    { label: '결제 이력 관리', icon: 'history', href: 'payment-history3.html', match: ['payment-history3-detail.html', 'payment-history2.html'] },
-    { label: '거래내역 대사관리', icon: 'reconcile', href: 'payment-reconciliation2.html' },
-    { label: '수수료 조회', icon: 'fee', href: '' },
-    { label: '정책', icon: 'policy', href: 'payment-policy.html' },
+    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method4.html', match: ['payment-method4-detail.html', 'payment-method4-merchant.html', 'payment-method4-create.html', 'payment-method3.html', 'payment-method3-create.html', 'payment-method3-detail.html', 'payment-method2.html', 'payment-method2-create.html'] },
+    { label: 'PG사 관리', icon: 'pg', href: 'payment-pg4.html', match: ['payment-pg4-form.html'] },
+    { label: '결제 이력 관리', icon: 'history', href: 'payment-history4.html', match: ['payment-history4-detail.html', 'payment-history3.html', 'payment-history3-detail.html', 'payment-history2.html'] },
+    { label: '거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html', match: ['payment-recon3.html', 'payment-recon3-detail.html', 'payment-reconciliation2.html'] },
+    { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html' },
+    { label: '정책', icon: 'policy', href: 'payment-policy4.html', match: ['payment-policy.html'] },
   ] },
 ];
 const BACKUP = { label: '백업', items: [{ label: '히스토리', icon: 'archive', href: 'index.html' }] };

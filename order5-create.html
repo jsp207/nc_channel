@@ -1638,6 +1638,8 @@ body:not(.authenticated) .app{display:none}
 .lfilter .lf-act .btn{height:38px}
 /* 고정 코너(단말 상품 기본 정보)와 그 컨테이너는 끌 수 없다 */
 .crow.fixed,.crow.fixed .ord{cursor:pointer}
+/* 고정 컨테이너(첫 · 마지막) 표시 */
+.bdg-fix{display:inline-flex;align-items:center;flex:none;height:20px;margin-left:8px;padding:0 7px;border-radius:4px;background:#eef0f4;color:#4b5563;font-size:11.5px;font-weight:600}
 </style>
 </head>
 <body>
@@ -1665,7 +1667,7 @@ body:not(.authenticated) .app{display:none}
       </div>
       <div class="rhead"><h2>조회 결과</h2><span class="c">총 <b id="lCnt">0</b>건</span></div>
       <div class="tbl ltbl"><table>
-        <colgroup><col style="width:70px"><col style="width:230px"><col style="width:170px"><col><col style="width:131px"><col style="width:110px"><col style="width:112px"><col style="width:150px"><col style="width:184px"><col style="width:166px"></colgroup><thead><tr><th>No.</th><th class="l">주문 유형</th><th>프로세스 ID</th><th class="l">프로세스명</th><th>연동 상품 수</th><th>승인 상태</th><th>사용 여부</th><th>구성 불러오기</th><th>최종 수정일</th><th class="l">최종 수정자</th></tr></thead>
+        <colgroup><col style="width:70px"><col style="width:230px"><col style="width:170px"><col><col style="width:131px"><col style="width:110px"><col style="width:112px"><col style="width:150px"><col style="width:184px"><col style="width:166px"></colgroup><thead><tr><th>No.</th><th class="l">주문 유형</th><th>프로세스 ID</th><th class="l">프로세스명</th><th>매핑 전시 수</th><th>승인 상태</th><th>사용 여부</th><th>구성 불러오기</th><th>최종 수정일</th><th class="l">최종 수정자</th></tr></thead>
         <tbody id="lBody"></tbody></table>
         <div class="emptyrow" id="lEmpty" hidden>조회된 프로세스가 없습니다.</div>
       </div>
@@ -1698,7 +1700,7 @@ body:not(.authenticated) .app{display:none}
           </div>
         </aside>
 
-        <!-- 우: 기본 정보(주문 유형 포함) · 적용 상품(아코디언) + 컨테이너·코너 설정 -->
+        <!-- 우: 기본 정보(주문 유형 포함) · 상품 매핑 · 상속 규칙(아코디언) + 컨테이너·코너 설정 -->
         <div class="lay-r">
           <section class="acc open" id="accBasic">
             <button class="acc-h" type="button" aria-expanded="true"><span class="acc-t">기본 정보</span><span class="acc-sum" id="basicSum"></span><span class="acc-rt"><span class="bdg b-req">필수</span><span class="bdg b-st" id="basicSt">미작성</span><svg class="car" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
@@ -1721,10 +1723,11 @@ body:not(.authenticated) .app{display:none}
             </div>
           </section>
 
-          <!-- 적용 상품: 상품 전시 관리(product-v022.html)의 연결 상품 영역과 같은 구성. 상세 보기에서는 목록만 보인다 -->
+          <!-- 상품 매핑 · 상속 규칙: 상품 일괄 매핑(적용 상품)은 없앴다. 상품은 상품 전시에서 이 프로세스를 불러와 매핑하고,
+               여기서는 매핑된 상품 전시 조회와 원 프로세스를 고쳤을 때의 반영 규칙만 정한다 (src/order5-create.ts). 기존 로직이 id accTg로 접고 펼친다 -->
           <section class="acc open" id="accTg">
-            <button class="acc-h" type="button" aria-expanded="true"><span class="acc-t">적용 상품</span><span class="acc-sum" id="tgSum"></span><span class="acc-rt"><span class="bdg b-st" id="tgSt">미지정</span><svg class="car" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-            <div class="acc-b"><div id="secTg"></div></div>
+            <button class="acc-h" type="button" aria-expanded="true"><span class="acc-t">상품 매핑 · 상속 규칙</span><span class="acc-sum" id="tgSum"></span><span class="acc-rt"><span class="bdg b-st" id="tgSt">기본값</span><svg class="car" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+            <div class="acc-b"><div id="secMap"></div></div>
           </section>
 
           <div class="card" id="leftCard"></div>
@@ -1976,10 +1979,12 @@ function allConds(c){
   if(c.opts&&c.omode==='cond') c.rules.forEach(function(r){r.groups.forEach(function(g){g.conds.forEach(function(cd){if(cd.src) o.push(cd)})})});
   return o;
 }
-/* 단말 상품 기본 정보(c.epc): 적용 상품을 쓰는 상품 대상 주문 유형일 때만, 1번째 컨테이너 1번째 코너에만 둔다. 추가하면 이동 · 삭제할 수 없다 */
+/* 단말 상품 기본 정보(c.epc): 상품 대상 주문 유형일 때만(선택지는 상품 전시에서 매핑한 상품), 1번째 컨테이너 1번째 코너에만 둔다. 추가하면 이동 · 삭제할 수 없다 */
 function infoOk(){return $('fCat').value===CAT_P}
 function stageHasInfo(i){return !!stages[i]&&stages[i].corners.some(function(c){return c.epc})}
 function stagesHaveInfo(){return stages.some(function(x,i){return stageHasInfo(i)})}
+/* 첫 컨테이너(상품 상세)와 마지막 컨테이너(주문하기 · 완료)는 고정: 이동 · 삭제할 수 없고, 다른 컨테이너도 그 바깥으로 옮길 수 없다 */
+function fixedSide(i){return i===0||stageHasInfo(i)?'first':stages.length>1&&i===stages.length-1?'last':''}
 function stripInfo(){
   var ids={}; flat().forEach(function(x){if(x.c.epc) ids[x.c.id]=1});
   stages.forEach(function(st){st.corners=st.corners.filter(function(c){return !c.epc})});
@@ -2357,10 +2362,10 @@ function ppBuy(p){
 function ppPage(p,stg,ord){
   var tabs=[['order','상품 주문'],['info','상품 정보'],['review','구매 후기']];
   var hero=p?(p.sample?foldSVG():phoneSVG(p.colors[0].c))+'<div class="pp-dots"><i class="on"></i><i></i><i></i></div>'
-    :'<div class="pp-noimg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg><small>'+($('fCat').value===CAT_P?'적용 상품을 추가하면 상품 이미지가 보여요':'상품 이미지')+'</small></div>';
+    :'<div class="pp-noimg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg><small>'+($('fCat').value===CAT_P?'미리보기 상품을 불러오면 상품 이미지가 보여요':'상품 이미지')+'</small></div>';
   return '<div class="pp"><div class="pp-hero">'+hero+'</div>'
     +'<div class="pp-info"><div class="pp-model">'+(p?esc(p.model||p.code):'모델 코드')+'</div>'
-    +(p?'<div class="pp-title">'+p.tag+'</div><div class="pp-sub">'+esc(p.n)+'</div>':'<div class="pp-title pp-ph">'+($('fCat').value===CAT_P?'적용 상품을 추가하세요':'상품명')+'</div><div class="pp-sub pp-ph">제품명</div>')
+    +(p?'<div class="pp-title">'+p.tag+'</div><div class="pp-sub">'+esc(p.n)+'</div>':'<div class="pp-title pp-ph">'+($('fCat').value===CAT_P?'미리보기 상품을 불러오세요':'상품명')+'</div><div class="pp-sub pp-ph">제품명</div>')
     +(p?'<div class="pp-bdgs">'+p.tags.map(function(t,i){return '<span'+(i?'':' class="dk"')+'>'+esc(t)+'</span>'}).join('')+'</div>':'')
     +'<div class="pp-note">'+esc(p&&p.notice||'만 18세 이상 만 34세 미만의 고객님만 가입할 수 있는 상품이에요')+'</div></div>'
     +'<div class="pp-gap"></div><div class="pp-tabs" role="tablist">'+tabs.map(function(t){return '<button type="button" role="tab" data-pptab="'+t[0]+'" class="'+(PPTAB===t[0]?'on':'')+'" aria-selected="'+(PPTAB===t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'
@@ -2541,14 +2546,15 @@ $('leftCard').addEventListener('click',function(e){
   if(t.closest('#bFold')){ if(!stages.some(function(x){return x.open})) return; stages.forEach(function(x){x.open=false}); renderLeft(); return; }
   if(t.closest('#bCopyTop')){ openCopy(); return; }
   if(t.closest('#tadd')){
-    stages.forEach(function(x){x.open=false}); stages.push({name:'',corners:[],open:true}); var ni=stages.length-1; cur=ni; sel=null; dirty(); all(true); toast('컨테이너를 추가했어요');
+    // 마지막 컨테이너(주문하기 · 완료) 바로 앞에 넣는다
+    var ni=Math.max(1,stages.length-1);
+    stages.forEach(function(x){x.open=false}); stages.splice(ni,0,{name:'',corners:[],open:true}); cur=ni; sel=null; dirty(); all(true); toast('컨테이너를 추가했어요');
     var inp=$('leftCard').querySelector('.tpl[data-s="'+ni+'"] .sname'); if(inp) inp.focus(); return;
   }
   var del=t.closest('.tdel2');
   if(del){
     var i=+del.getAttribute('data-d');
-    if(stageHasInfo(i)) return;
-    if(stages.length<=1){toast('마지막 컨테이너는 삭제할 수 없습니다.');return}
+    if(fixedSide(i)){toast('첫 컨테이너와 마지막 컨테이너는 삭제할 수 없습니다.');return}
     function doDel(){var cobj=stages[cur]; stages.splice(i,1); var ni=stages.indexOf(cobj); cur=ni>-1?ni:Math.min(i,stages.length-1); sel=null; stages.forEach(function(x){x.open=false}); if(stages[cur]) stages[cur].open=true; dirty(); all(true);}
     if(stages[i].corners.length) showAlert({title:'컨테이너를 삭제하시겠습니까?',body:'컨테이너와 코너 구성이 삭제됩니다.',cancel:true,onOk:doDel});
     else doDel();
@@ -2602,7 +2608,8 @@ $('leftCard').addEventListener('dragover',function(e){
     var h=e.target.closest&&e.target.closest('.tph'); if(!h) return;
     e.preventDefault(); e.dataTransfer.dropEffect='move';
     [].slice.call(document.querySelectorAll('.tph.dropa,.tph.dropb')).forEach(function(x){x.classList.remove('dropa','dropb')});
-    var hc=h.getBoundingClientRect(); h.classList.add(h.classList.contains('fixed')||e.clientY>hc.top+hc.height/2?'dropa':'dropb');
+    // 첫 컨테이너 위 · 마지막 컨테이너 아래로는 놓을 수 없다
+    var hc=h.getBoundingClientRect(), hs=fixedSide(+h.getAttribute('data-s')); h.classList.add(hs==='first'?'dropa':hs==='last'?'dropb':e.clientY>hc.top+hc.height/2?'dropa':'dropb');
   }
 });
 $('leftCard').addEventListener('drop',function(e){
@@ -2624,9 +2631,9 @@ $('leftCard').addEventListener('drop',function(e){
     e.preventDefault();
     var hc=h.getBoundingClientRect(), aft=e.clientY>hc.top+hc.height/2, ti=+h.getAttribute('data-s'), di=dragS;
     clearDrop(); dragS=null;
-    if(ti===di) return;
-    var old2=stages.slice(), curObj=stages[cur], so=stages[di], to=stages[ti];
-    var toFixed=to.corners.some(function(x){return x.epc}); stages.splice(stages.indexOf(so),1); stages.splice(stages.indexOf(to)+(aft||toFixed?1:0),0,so);
+    if(ti===di||fixedSide(di)) return;
+    var old2=stages.slice(), curObj=stages[cur], so=stages[di], to=stages[ti], ts=fixedSide(ti);
+    stages.splice(stages.indexOf(so),1); stages.splice(stages.indexOf(to)+(ts==='first'||(aft&&ts!=='last')?1:0),0,so);
     if(old2.every(function(x,i){return x===stages[i]})) return;
     var v2=orderViolation();
     if(v2){ stages.length=0; old2.forEach(function(x){stages.push(x)}); renderLeft(); showAlert({title:'순서를 변경할 수 없습니다',body:'선행 코너는 항상 앞에 위치해야 합니다.'}); return; }
@@ -2798,29 +2805,11 @@ function openEpc(){epcMode='pv';$('eNote').hidden=true;resetEpc();epcSel=loadedP
 function closeEpc(){show('epcDim',false)}
 function openTg(){epcMode='tg';tgTmp=tgSel.slice();$('eNote').hidden=false;$('eNote').textContent="선택한 상품 전용 프로세스로 사용됩니다.";resetEpc();renderEpcRows();show('addDim',false);show('copyDim',false);show('epcDim',true)}
 function prodOf(id){return PRODS.filter(function(x){return x.id===id})[0]}
-/* 적용 상품 섹션: 상품 전시 관리의 연결 상품처럼 [초기화] [+ 상품 추가] + 상품 표(미리보기 · 삭제). 상세 보기(RO)는 표만 */
-function renderTg(){
-  var a=tgSel.map(function(id){return prodOf(id)||{id:id,n:id,model:'',code:'-',type:'-',st:'-'}}), n=a.length;
-  var h='<div class="tg-bar"><b>적용한 상품</b><span class="tg-cnt">'+n+'건</span>'
-    +(RO?'':'<button type="button" class="btn sm" data-tg="all" style="margin-left:auto"'+(n?'':' disabled')+'>초기화</button><button type="button" class="btn primary sm" id="tgAdd">+ 상품 추가</button>')+'</div>';
-  if(n) h+='<div class="tbl tgt"><table><thead><tr><th>전시 ID</th><th class="l">모델명</th><th class="l">상품명</th><th>상품 코드</th><th>상품 유형</th><th>운영 상태</th><th>미리보기</th>'+(RO?'':'<th>삭제</th>')+'</tr></thead><tbody>'
-    +a.map(function(p){return '<tr><td class="mono">'+p.id+'</td><td class="l mono">'+esc(p.model||'-')+'</td><td class="l"><b>'+esc(p.n)+'</b></td><td class="mono">'+esc(p.code)+'</td><td>'+esc(p.type)+'</td><td><span class="stat '+(p.st==='전시중'?'ok':'wait')+'">'+esc(p.st)+'</span></td><td><button type="button" class="btn sm" data-tgpv="'+p.id+'">보기</button></td>'+(RO?'':'<td><button type="button" class="btn sm" data-tg="'+p.id+'">삭제</button></td>')+'</tr>'}).join('')
-    +'</tbody></table></div>';
-  else h+='<div class="tg-none">'+(RO?'지정된 상품이 없습니다.':'적용할 상품을 선택하세요')+'</div>';
-  $('secTg').innerHTML=h;
-  $('tgSt').textContent=n?n+'개 지정':'미지정'; $('tgSt').classList.toggle('done',!!n);
-  $('tgSum').textContent=n?a.slice(0,2).map(function(p){return p.n}).join(', ')+(n>2?' 외 '+(n-2)+'개':''):'';
-}
-$('secTg').addEventListener('click',function(e){
-  if(e.target.closest('#tgAdd')){ openTg(); return; }
-  var v=e.target.closest('[data-tgpv]');
-  if(v){ var p=prodOf(v.getAttribute('data-tgpv')); if(!p) return; loadedProd=p; applyProd(); toast(p.n+' 정보로 미리보기를 바꿨어요. 저장되지 않습니다.'); return; }
-  var b=e.target.closest('[data-tg]'); if(!b||b.disabled) return;
-  var k=b.getAttribute('data-tg');
-  if(k==='all'){ tgSel=[]; toast('적용 상품을 초기화했어요.'); } else { tgSel=tgSel.filter(function(x){return x!==k}); toast('적용 상품에서 삭제했어요.'); }
-  renderTg();
-});
-function tgOf(t){ if(t.cat!==CAT_P) return []; if(t.tg) return t.tg.slice(); if(!t.cnt) return []; return PRODS.filter(function(p){return catOk(t.cat,p)}).slice(0,Math.min(t.cnt,3)).map(function(p){return p.id}) }
+/* 상품 일괄 매핑(적용 상품)은 없앴다: tgSel은 늘 비어 있고, 이 자리는 상품 매핑 · 상속 규칙 섹션이다.
+   섹션 내용은 src/order5-create.ts의 renderMap이 그린다(모듈이 늦게 읽히므로 그 전에는 건너뛴다) */
+function renderTg(){ tgSel=[]; if(window.renderMap) window.renderMap(); }
+/* 상품 일괄 매핑을 없애 프로세스에 상품을 저장하지 않는다. cnt는 상품 전시에서 이 프로세스를 매핑한 전시 수(샘플 값)다 */
+function tgOf(){ return [] }
 $('bEpc').onclick=openEpc; $('epcX').onclick=closeEpc; $('eCancel').onclick=closeEpc;
 $('eBtn').onclick=function(){ePage=1;renderEpcRows()}; $('eReset').onclick=function(){resetEpc();epcSel=null;renderEpcRows()};
 $('eKey').addEventListener('keydown',function(e){if(e.key==='Enter'){ePage=1;renderEpcRows()}});
@@ -2904,7 +2893,7 @@ function openForm(mode,t0,copy){
     setUse(t.u,can,can?'승인 완료된 프로세스는 Y / N 선택 가능':'승인 완료 전에는 N 고정 · 승인 완료 후 Y 선택 가능');
     if(RO){
       var ver=t.ver||(t.ap==='승인 완료'?'V.1':'-');
-      $('dInfo').innerHTML=[['주문 유형',esc(t.cat===CAT_P?t.cat:CAT_O+' · '+t.cat)],['프로세스 ID',t.id],['프로세스 명',esc(t.n)],['연동 상품 수',t.cat===CAT_P?t.cnt+'개':'-'],['사용 여부',t.u?'Y':'N'],['승인 상태',t.ap],['버전 정보',ver]].map(function(x,i,a){return '<div class="th"><span>'+x[0]+'</span></div><div class="td'+(i===a.length-1&&a.length%2?' wide':'')+'">'+x[1]+'</div>'}).join('');
+      $('dInfo').innerHTML=[['주문 유형',esc(t.cat===CAT_P?t.cat:CAT_O+' · '+t.cat)],['프로세스 ID',t.id],['프로세스 명',esc(t.n)],['매핑 전시 수',(t.cnt||0)+'건'],['사용 여부',t.u?'Y':'N'],['승인 상태',t.ap],['버전 정보',ver]].map(function(x,i,a){return '<div class="th"><span>'+x[0]+'</span></div><div class="td'+(i===a.length-1&&a.length%2?' wide':'')+'">'+x[1]+'</div>'}).join('');
       var rg=t.reg||'2026.08.28 11:20';
       $('dMgmt').innerHTML=[['등록 일시',rg],['등록자',t.by],['최종 수정 일시',t.dt],['최종 수정자',t.by]].map(function(x){return '<div class="th"><span>'+x[0]+'</span></div><div class="td">'+x[1]+'</div>'}).join('');
     }
@@ -3043,14 +3032,14 @@ function updBasic(){
   $('basicSum').textContent=n||'프로세스 명 미입력';
   syncCat();
 }
-/* 주문 유형 라디오 · 상품 유형 셀렉트 ↔ 숨긴 select#fCat: 고르면 select 값을 바꾸고 change를 보낸다(적용 상품이 있으면 확인 후 변경, 취소하면 이전 값으로 돌아온다).
-   상품 대상 주문 유형일 때만 적용 상품, 주문 대상 상품 유형일 때만 상품 유형 셀렉트가 보인다 */
+/* 주문 유형 라디오 · 상품 유형 셀렉트 ↔ 숨긴 select#fCat: 고르면 select 값을 바꾸고 change를 보낸다(단말 상품 기본 정보 코너가 있으면 확인 후 변경, 취소하면 이전 값으로 돌아온다).
+   주문 대상 상품 유형일 때만 상품 유형 셀렉트가 보인다 */
 function syncCat(){
   var v=$('fCat').value, p=v===CAT_P, o=v===CAT_O||CAT_T.indexOf(v)>-1, a=$('accTg');
   [].forEach.call(document.querySelectorAll('#catRadio input'),function(r){r.checked=r.value===CAT_P?p:o;r.disabled=RO});
   $('fPtWrap').hidden=!o; $('fPt').value=o&&v!==CAT_O?v:''; $('fPt').disabled=RO;
-  if(a.hidden&&p) setAcc('accTg',true,1);
-  a.hidden=!p;
+  // 상품 매핑 · 상속 규칙은 주문 유형과 관계없이 늘 보인다(상품 전시에서 어느 유형의 프로세스든 불러와 매핑한다)
+  a.hidden=false;
 }
 function setCat(v){ if(v===$('fCat').value) return; $('fCat').value=v; $('fCat').dispatchEvent(new Event('change')); }
 $('catRadio').addEventListener('change',function(e){ if(e.target.checked) setCat(e.target.value); });
@@ -3109,7 +3098,7 @@ function svOf(c){ if(c.epc&&tgSel.length) return tgSel.map(function(id){var p=pr
 function svSub(c,v){ if(!c.epc) return ''; var p=PRODS.filter(function(x){return x.n===v})[0]; return p?(p.model||p.code):'' }
 function epcSec(c){
   var a=tgSel.map(prodOf).filter(Boolean), h='<div class="dsec"><h4>선택 상품 목록<small>'+(a.length?a.length+'개':'')+'</small></h4>';
-  if(!a.length) return h+'<p class="hint">기본 정보 › 적용 상품에서 상품을 선택하면 이 코너의 선택지로 노출됩니다.</p><p class="cap">지금은 예시 값('+svOf(c).map(esc).join(', ')+')으로 후행 코너 조건을 설정할 수 있습니다.</p></div>';
+  if(!a.length) return h+'<p class="hint">상품 전시에서 이 프로세스를 매핑하면 그 전시의 상품이 이 코너의 선택지로 노출됩니다.</p><p class="cap">지금은 예시 값('+svOf(c).map(esc).join(', ')+')으로 후행 코너 조건을 설정할 수 있습니다.</p></div>';
   h+='<div class="pl"><div class="pl-h"><span>펫네임</span><span>모델명</span><span>상품코드</span></div>'+a.map(function(p,i){return '<div class="pl-r"><span><em>'+(i+1)+'</em>'+esc(p.n)+'</span><span class="mono">'+esc(p.model||'-')+'</span><span class="mono">'+esc(p.code)+'</span></div>'}).join('')+'</div><p class="cap">기본 정보 › 적용 상품에서 선택한 상품입니다. 고객은 이 리스트에서 상품을 선택하며, 후행 코너 조건의 선택값으로도 쓰입니다.</p></div>';
   return h;
 }
@@ -3238,7 +3227,7 @@ infoSec=function(c){
 };
 epcSec=function(c){
   var a=tgSel.map(prodOf).filter(Boolean), h='<div class="dsec"><h4>선택 상품 목록 <small>'+(a.length?a.length+'개':'')+'</small></h4>';
-  if(!a.length) return h+'<p class="hint">기본 정보 › 적용 상품에서 상품을 선택하면 이 코너의 선택지로 노출됩니다.</p></div>';
+  if(!a.length) return h+'<p class="hint">상품 전시에서 이 프로세스를 매핑하면 그 전시의 상품이 이 코너의 선택지로 노출됩니다.</p></div>';
   return h+'<div class="sbthen2 alw-n"><p class="nvd">기본 정보 › 적용 상품에서 선택한 상품입니다.</p><div class="ol"><div class="ol-h g2"><span>상품명</span><span>모델명</span></div>'+a.map(function(p){return '<div class="ol-r g2"><span>'+esc(p.n)+'</span><span>'+esc(p.model||'-')+'</span></div>'}).join('')+'</div></div></div>';
 };
 function nvSec(c){
@@ -3378,7 +3367,7 @@ renderTpl=function(){
   var list=lList(), tp=Math.max(1,Math.ceil(list.length/PS)); if(LQ.page>tp) LQ.page=tp;
   var off=(LQ.page-1)*PS;
   $('lBody').innerHTML=list.slice(off,off+PS).map(function(d,i){
-    return '<tr><td>'+(list.length-off-i)+'</td><td class="l cat-c">'+d.cat+'</td><td><a data-id="'+d.id+'">'+d.id+'</a></td><td class="l">'+esc(d.n)+'</td><td>'+(d.cat===CAT_P?d.cnt:'-')+'</td><td>'+apBadge(d.ap)+'</td><td>'+(d.u?'Y':'N')+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td><td>'+ymd(d.dt)+'</td><td class="l">'+d.by+'</td></tr>';
+    return '<tr><td>'+(list.length-off-i)+'</td><td class="l cat-c">'+d.cat+'</td><td><a data-id="'+d.id+'">'+d.id+'</a></td><td class="l">'+esc(d.n)+'</td><td>'+(d.cnt||0)+'</td><td>'+apBadge(d.ap)+'</td><td>'+(d.u?'Y':'N')+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td><td>'+ymd(d.dt)+'</td><td class="l">'+d.by+'</td></tr>';
   }).join('');
   $('lCnt').textContent=list.length; $('lEmpty').hidden=!!list.length;
   $('lPager').innerHTML=pagerHTML(list.length,LQ.page);
@@ -3486,7 +3475,8 @@ $('leftCard').addEventListener('change',function(e){
 renderLeft=function(){
   var y=window.scrollY;
   $('detailHold').appendChild($('detail'));
-  if(!stages.length&&!RO){stages=[{name:'',corners:[],open:true}];cur=0;sel=null}
+  // 새로 만들 때도 고정 컨테이너 두 개(상품 상세 · 주문하기 · 완료)로 시작한다
+  if(!stages.length&&!RO){stages=[{name:'',corners:[],open:true},{name:'',corners:[]}];cur=0;sel=null}
   initPg();
   if(stages.length&&stages.every(function(x){return x.open===undefined})&&stages[cur]) stages[cur].open=true;
   stages.forEach(function(x){x.open=!!x.open});
@@ -3496,8 +3486,8 @@ renderLeft=function(){
   var h='<div class="card-h"><h3>프로세스 설정</h3><span class="rt"><button class="pillb" id="bFold2" type="button" data-m="'+(anyOpen?'fold':'unfold')+'"'+(stages.length?'':' disabled')+' style="height:40px;padding:0 20px;border-radius:8px;border:1px solid #c4c9cf;background:#fff;font-size:14px;font-weight:600;color:#1a1a1a">'+fl+'</button>'+(RO?'':'<button class="sbb pri" id="bCopyTop" type="button" style="height:32px;padding:0 14px">복사하기</button>')+'</span></div>';
   if(!stages.length){$('leftCard').innerHTML=h+'<p class="hint">구성된 컨테이너가 없습니다.</p>';return}
   h+=stages.map(function(st,i){
-    var chk=!RO&&pageChk(st);
-    var o='<div class="tpl'+(i===cur?' on':'')+(st.open?' open':'')+'" data-s="'+i+'"><div class="tph'+(stageHasInfo(i)?' fixed':'')+'" data-s="'+i+'" draggable="'+(RO||stageHasInfo(i)?'false':'true')+'">'+(RO?'':'<i class="grip"'+(stageHasInfo(i)?' style="visibility:hidden"':'')+'>⠿</i>')+'<span class="num">'+(i+1)+'</span><b class="nm'+(st.name?'':' ph')+'">'+esc(st.name||'컨테이너명 입력')+'</b><span class="rt"><span class="cn">코너 '+st.corners.length+'개</span>'+(chk?'<span class="bdg-chk">확인 필요</span>':'')+(RO||stageHasInfo(i)?'':'<button class="tdel2 tdx" data-d="'+i+'" type="button" aria-label="컨테이너 삭제">'+XSVG+'</button>')+CARET+'</span></div>';
+    var chk=!RO&&pageChk(st), fx=fixedSide(i);
+    var o='<div class="tpl'+(i===cur?' on':'')+(st.open?' open':'')+'" data-s="'+i+'"><div class="tph'+(fx?' fixed':'')+'" data-s="'+i+'" draggable="'+(RO||fx?'false':'true')+'">'+(RO?'':'<i class="grip"'+(fx?' style="visibility:hidden"':'')+'>⠿</i>')+'<span class="num">'+(i+1)+'</span><b class="nm'+(st.name?'':' ph')+'">'+esc(st.name||(fx==='first'?'상품 상세 컨테이너명 입력':fx==='last'?'주문하기 · 완료 컨테이너명 입력':'컨테이너명 입력'))+'</b>'+(fx&&!RO?'<span class="bdg-fix" title="'+(fx==='first'?'첫':'마지막')+' 컨테이너는 순서를 바꾸거나 삭제할 수 없습니다">고정</span>':'')+'<span class="rt"><span class="cn">코너 '+st.corners.length+'개</span>'+(chk?'<span class="bdg-chk">확인 필요</span>':'')+(RO||fx?'':'<button class="tdel2 tdx" data-d="'+i+'" type="button" aria-label="컨테이너 삭제">'+XSVG+'</button>')+CARET+'</span></div>';
     if(st.open){
       o+='<div class="tbody">';
       if(RO) o+='<p class="flbl">컨테이너명</p><div class="ro rotn">'+esc(sname(i))+'</div>';

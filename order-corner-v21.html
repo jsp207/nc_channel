@@ -55,7 +55,7 @@
       .thumb .fo{position:absolute;left:50%;top:6px;width:330px;transform:translateX(-50%) scale(.4);transform-origin:top center;pointer-events:none}
       .lst-tw+.empty{margin-top:8px}
 
-      /* ===== 상세 (조회 전용) ===== */
+      /* ===== 상세 (기본 정보 조회 + BO 운영 설정 편집, 설정 화면 스타일은 src/corner-bo.css) ===== */
       #v-detail>.toolbar{margin-bottom:16px}
       .dh-id{color:var(--accent);font-weight:600}
       .dh-bd{display:inline-flex;gap:4px}
@@ -231,11 +231,11 @@
   <nav class="lst-pager" id="pager" aria-label="페이지"></nav>
 </section>
 
-<!-- ===== 상세 (조회 전용) ===== -->
+<!-- ===== 상세: 기본 정보는 조회 전용, BO 운영 설정은 편집 ===== -->
 <section class="view" id="v-detail">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 주문 관리 <span aria-hidden="true">›</span> 코너 유형 관리 <span aria-hidden="true">›</span> <strong>코너 유형 상세</strong></div>
   <div class="toolbar"><h1 id="dName"></h1><span class="dh-id mono" id="dId"></span><span class="dh-bd" id="dBadges"></span><button type="button" class="btn" id="bBack" style="margin-left:auto">목록 보기</button></div>
-  <p class="ntc info"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>조회 전용 화면입니다. 코너는 원천 시스템에서 등록한 내용을 그대로 사용하며, 주문 프로세스에서는 노출 조건과 순서만 설정합니다.</p>
+  <p class="ntc info"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>코너의 화면 유형과 선택지 구조는 원천 시스템 기준이에요. 문구 · 노출 순서 · 노출 개수 · 데이터 노출 규칙 · 원천 데이터 처리 방식은 이 화면에서 정하고, 여기서 정한 값이 주문 프로세스와 상품 전시의 기본값이 돼요.</p>
   <div class="builder">
     <aside class="side">
       <section class="panel pv-panel" aria-label="미리보기">
@@ -248,11 +248,16 @@
         <header><b>기본 정보</b></header>
         <div class="body"><div class="ftbl" id="dInfo"></div></div>
       </div>
+      <!-- BO 운영 설정: 코너 기본값 + 프로세스에서 바꿀 수 있는 항목 + 상품 전시 수정 허용 기본값 (src/corner-bo.ts) -->
+      <div class="step" id="stBo">
+        <header><b>BO 운영 설정</b><small id="dBoSum"></small></header>
+        <div class="body"><div class="bo" id="dBo"></div></div>
+      </div>
       <div class="step">
         <header><b>사용 위치</b><small>이 코너를 쓰는 주문 프로세스 · 화면 · 순서</small></header>
         <div class="body" id="dUse"></div>
       </div>
-      <div class="dfoot"><button type="button" class="btn lg" id="bList">목록</button></div>
+      <div class="dfoot"><button type="button" class="btn lg" id="bList">목록</button><button type="button" class="btn lg" id="bBoReset" style="margin-left:auto">기본값으로 되돌리기</button><button type="button" class="btn lg primary" id="bBoSave" disabled>저장</button></div>
     </div>
   </div>
 </section>

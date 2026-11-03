@@ -1,0 +1,78 @@
+/* 주문 코너 BO 운영 설정 · 상품 매핑 상속 규칙 (corner-bo.ts · order5-create.ts). 코너 관리 · 주문 프로세스 화면이 함께 쓴다.
+   색은 두 화면이 모두 가진 변수(--accent · --line · --muted · --text)만 쓰고, 옅은 바탕은 값으로 둔다 */
+.bo{display:grid;gap:12px}
+.bo-it{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.bo-it>header{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;padding:10px 14px;background:#f7f8fb;border-bottom:1px solid var(--line)}
+.bo-it>header>b{font-size:13px;font-weight:700;color:var(--text)}
+.bo-it>:not(header){margin:12px 14px}
+.bo-it.dis>:not(header){opacity:.62}
+.bo-st{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:4px;background:#eef0f4;color:#4b5563;font-size:11px;font-weight:600}
+.bo-st.own{background:var(--accent-soft);color:var(--accent)}
+.bo-st.lock{background:#fff3d6;color:#9a6b00}
+.bo-tg{display:inline-flex;flex-wrap:wrap;gap:4px 14px;margin-left:auto}
+.bo-chk{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text);cursor:pointer;white-space:nowrap}
+.bo-chk input{width:15px;height:15px;margin:0;accent-color:var(--accent);cursor:pointer}
+.bo-chk:has(input:disabled){color:var(--muted);cursor:default}
+.bo-grid{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px 14px;align-items:center}
+.bo-l{font-size:12px;color:var(--muted)}
+.bo-v{display:grid;gap:4px;min-width:0;font-size:13px}
+.bo-v small{font-size:11.5px;color:var(--muted);line-height:1.5}
+.bo-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.bo-it input[type=text],.bo-it input[type=number],.bo-it select{height:34px;min-height:0;padding:0 10px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;font:inherit;font-size:13px;color:var(--text);max-width:100%}
+/* 주문 프로세스 화면은 select 화살표를 지우므로 기본 모양으로 되돌린다 */
+.bo-it select{min-width:0;padding-right:8px;-webkit-appearance:menulist;appearance:auto}
+.bo-it input:disabled,.bo-it select:disabled{background:#f3f4f7;color:var(--muted)}
+.bo-num{width:64px;text-align:center}
+.bo-ord{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.bo-ord li{display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+.bo-ord li.off b{color:var(--muted);text-decoration:line-through}
+.bo-ord b{flex:1;min-width:0;font-weight:500}
+.bo-n{width:20px;color:var(--muted);font-size:12px;text-align:center}
+.bo-mv{display:inline-flex;gap:2px}
+.bo-mv button,.bo-x{width:26px;height:26px;padding:0;border:1px solid var(--line-strong);border-radius:5px;background:#fff;color:var(--text);font-size:12px;cursor:pointer}
+.bo-mv button:disabled{opacity:.35;cursor:default}
+.bo-cap{margin:8px 0 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+.bo-tw{overflow-x:auto}
+.bo-rt{width:100%;border-collapse:collapse;font-size:12.5px}
+.bo-rt th{padding:7px 8px;background:#f7f8fb;border-bottom:1px solid var(--line);color:var(--muted);font-weight:600;text-align:left;white-space:nowrap}
+.bo-rt td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.bo-rt td select{width:100%}
+.bo-rt .bo-i{width:40px;color:var(--muted);text-align:center}
+.bo-rt .bo-empty{padding:14px;color:var(--muted);text-align:center}
+.bo-add{margin-top:8px;height:30px;padding:0 12px;border:1px dashed #b9aef0;border-radius:6px;background:#f7f5ff;color:var(--accent);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.bo-why{display:flex;gap:8px;margin:12px 14px 14px;padding:9px 12px;border-radius:8px;background:var(--accent-soft);color:var(--text);font-size:12px;line-height:1.6}
+.bo-why b{flex:none;color:var(--accent)}
+.bo-head{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+.bo-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;font-size:12px}
+.bo-flow span{padding:3px 9px;border-radius:12px;background:#eef0f4;color:#4b5563}
+.bo-flow span.on{background:var(--accent);color:#fff;font-weight:600}
+.bo-flow i{font-style:normal;color:var(--muted)}
+
+/* 주문 프로세스: 상품 매핑 · 상속 규칙 */
+.mp-note{margin:0 0 14px;padding:10px 12px;border-radius:8px;background:#f7f8fb;font-size:12px;color:var(--text);line-height:1.7}
+.mp-note b{color:var(--accent)}
+.mp-h{display:flex;align-items:center;gap:8px;margin:18px 0 10px;font-size:13px;font-weight:700;color:var(--text)}
+.mp-h:first-child{margin-top:0}
+.mp-h small{font-size:12px;font-weight:400;color:var(--muted)}
+.mp-opts{display:grid;gap:6px}
+.mp-opt{display:grid;grid-template-columns:18px minmax(0,1fr);gap:2px 8px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.mp-opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.mp-opt input{width:16px;height:16px;margin:2px 0 0;accent-color:var(--accent);cursor:pointer}
+.mp-opt b{font-size:13px;font-weight:600}
+.mp-opt b em{margin-left:6px;padding:0 6px;border-radius:4px;background:var(--accent);color:#fff;font-size:10.5px;font-style:normal;font-weight:600;vertical-align:1px}
+.mp-opt small{grid-column:2;font-size:12px;color:var(--muted);line-height:1.6}
+.mp-opt:has(input:disabled){cursor:default}
+.mp-fix{margin:0;padding-left:18px;font-size:12px;color:var(--text);line-height:1.9}
+.mp-tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.mp-t{width:100%;border-collapse:collapse;font-size:12.5px}
+.mp-t th{padding:8px 10px;background:#f7f8fb;border-bottom:1px solid var(--line);color:var(--muted);font-weight:600;text-align:center;white-space:nowrap}
+.mp-t td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.mp-t tr:last-child td{border-bottom:0}
+.mp-t td.l{text-align:left;white-space:normal}
+.mp-t .mono{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.mp-t .sub{color:var(--muted);font-size:11.5px}
+.mp-b{display:inline-block;padding:0 6px;border-radius:4px;font-size:11px;font-weight:600;line-height:1.8}
+.mp-b.ok{background:#e3f4eb;color:#1f8a5b}.mp-b.wait{background:#fff3d6;color:#9a6b00}.mp-b.pin{background:#eef0f4;color:#4b5563}
+.mp-empty{padding:18px;border:1px dashed var(--line-strong);border-radius:8px;color:var(--muted);font-size:12px;text-align:center;line-height:1.7}
+.mp-more{margin:6px 0 0;font-size:12px;color:var(--muted)}
+@media(max-width:700px){.bo-grid{grid-template-columns:1fr}.bo-tg{margin-left:0}}
