@@ -3,7 +3,7 @@
 // 값은 세 단계로 이어진다: 코너 관리(기본값) → 주문 프로세스(코너 관리가 허용한 항목만 덮어씀) → 상품 전시(프로세스가 허용한 항목만 덮어씀, 상품 전시 화면에서 작업 예정).
 // 바꿀 수 있는 항목: 문구 · 노출 순서 · 노출 개수 · 데이터 노출 규칙. 원천 데이터 연결(어디서 · 어떤 범위로 · 언제 불러올지)은 코너 관리에서만 정한다.
 import "./corner-bo.css";
-import { CORNERS, PSUB } from "./order-corner-data";
+import { CORNERS } from "./order-corner-data";
 
 export const ITEMS = [['txt', '문구'], ['order', '노출 순서'], ['cnt', '노출 개수'], ['rule', '데이터 노출 규칙']];
 const LABEL = Object.fromEntries(ITEMS);
@@ -12,8 +12,6 @@ const LABEL = Object.fromEntries(ITEMS);
 // scopes · sorts는 첫 값이 권장값, cache는 권장 조회 시점. why = 권장 이유(화면에 그대로 보인다)
 const NET = ['5G', 'LTE'], PRICE = ['100만원 미만', '100~150만원', '150만원 이상'], JOIN = ['신규가입', '번호이동', '기기변경'];
 export const SOURCES = {
-  device: { n: '단말 상품 마스터', api: 'EPC 단말 PO · 옵션(색상 · 용량) · 재고', scopes: ['상품 전시에 매핑된 상품'], filters: ['판매중만', '재고 상태 표시(일시품절 · 품절)'], cache: '실시간', empty: '코너 숨김',
-    why: '재고와 가격이 수시로 바뀌어 주문 화면을 열 때마다 조회해요. 상품은 상품 전시에서 이 프로세스를 매핑할 때 정해져요' },
   compare: { n: '단말 상품 마스터', api: 'EPC 단말 PO 조회', scopes: ['같은 LV3 · 같은 네트워크 단말', '직접 지정'], filters: ['판매중만', '재고 있는 단말만', '지금 보는 상품 제외'], sorts: ['출고가 가까운 순', '출시일 최신순', '직접 지정 순서'], cache: '캐시 10분', empty: '코너 숨김',
     why: '비교 대상은 자주 바뀌지 않아 10분 캐시로 충분해요. 가격은 고객이 고른 조건(요금제 · 약정)으로 화면에서 다시 계산해요' },
   plan: { n: '요금제 마스터', api: 'EPC 요금제 PO 조회', scopes: ['단말과 호환되는 요금제 전체', '상품 전시에 연결된 요금제만', '직접 지정'], filters: ['단말 네트워크(5G · LTE)와 같은 요금제만', '판매중만', '고른 가입 방식으로 가입 가능한 요금제만'], sorts: ['월정액 높은 순', '월정액 낮은 순', '추천순(AI)', '직접 지정 순서'], cache: '캐시 10분', empty: '안내 문구 노출',
@@ -37,7 +35,7 @@ export const SOURCES = {
     rule: { conds: [['join', '가입 방식', JOIN], ['grade', '요금제 등급', ['5GX 프라임 이상', '그 외']]], act: '맨 앞에 노출', hint: '조건에 맞으면 이 부가서비스를 맨 앞에 보여 줘요' },
     why: '부가서비스는 종류가 많아 분류로 후보를 좁히고, 고른 요금제와 함께 가입할 수 있는지 확인해요' },
 };
-const SRC_OF = { 'CN-PRD-0005': 'device', 'CN-PRD-0004': 'compare', 'CN-ORD-0005': 'plan', 'CN-ORD-0084': 'subsidy', 'CN-ORD-0007': 'gift', 'CN-ORD-0008': 'tdp', 'CN-ORD-0010': 'ins', 'CN-ORD-0011': 'addon' };
+const SRC_OF = { 'CN-PRD-0004': 'compare', 'CN-ORD-0005': 'plan', 'CN-ORD-0084': 'subsidy', 'CN-ORD-0007': 'gift', 'CN-ORD-0008': 'tdp', 'CN-ORD-0010': 'ins', 'CN-ORD-0011': 'addon' };
 // 상품 전시에서 바꿀 수 있게 기본으로 여는 항목 (요구사항 예: 할부 · 가입 유형 · 요금제 노출)
 const PROD_DEF = { 'CN-ORD-0003': ['order'], 'CN-ORD-0004': ['order', 'cnt'], 'CN-ORD-0005': ['order', 'cnt', 'rule'] };
 export const CACHES = ['실시간', '캐시 10분', '캐시 1시간'];
@@ -47,7 +45,7 @@ const SELUI = ['list', 'card', 'grid', 'chip', 'radio'];
 
 const clone = o => JSON.parse(JSON.stringify(o));
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-export const baseOf = id => CORNERS.find(c => c.id === id) || PSUB.find(c => c.id === id) || null;
+export const baseOf = id => CORNERS.find(c => c.id === id) || null;
 
 // ---------- 코너별로 바꿀 수 있는 항목 ----------
 // txt: 문구 칸 목록 · order: 'opts'(선택지 순서 · 노출) | 'sort'(원천 데이터 정렬) · cnt: 노출 개수 · rule: 데이터 노출 규칙 · src: 원천 데이터
@@ -56,8 +54,8 @@ export function boSpec(id) {
   const sk = SRC_OF[id], src = sk ? SOURCES[sk] : null;
   const real = b.opts.filter(x => x.x !== 'none' && x.x !== 'check');
   const txt = [];
-  if (b.q && b.ui !== 'pinfo') txt.push(['q', '타이틀', b.q]);
-  if (b.sub && b.ui !== 'pinfo') txt.push(['sub', '서브타이틀', b.sub]);
+  if (b.q) txt.push(['q', '타이틀', b.q]);
+  if (b.sub) txt.push(['sub', '서브타이틀', b.sub]);
   if (b.moreBtn) txt.push(['more', '더보기 버튼', b.moreBtn]);
   const none = b.opts.find(x => x.x === 'none'); if (none) txt.push(['none', '미선택 선택지', none.n]);
   const order = src ? (src.sorts ? 'sort' : null) : SELUI.includes(b.ui) && real.length > 1 ? 'opts' : null;
