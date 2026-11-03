@@ -21,14 +21,19 @@ tabs.forEach((t,i)=>{
 });
 showTab(tabs.some(t=>'#'+t.dataset.tab===location.hash)?location.hash.slice(1):'prod');
 
-// 탭 안 구분 버튼(상품: 목록 / 상세 / 정책, 주문: 코너 / 프로세스, 결제: 결제수단 기준정보 / 결제이력관리 / 거래내역관리 / 수수료조회)으로 행(data-k)을 걸러 보여 준다. 처음에는 첫 버튼
+// 탭 안 구분 버튼(상품: 목록 / 상세 / 정책, 주문: 코너 / 프로세스 / 정책, 결제: 결제수단 기준정보 / 결제이력관리 / 거래내역관리 / 수수료조회 / 정책)으로 행(data-k)을 걸러 보여 준다. 처음에는 첫 버튼
 document.querySelectorAll('[role="tabpanel"]:has(.h-seg)').forEach(panel=>{
   const segs=[...panel.querySelectorAll('.h-seg button')];
   const rows=[...panel.querySelectorAll('tbody tr')];
   segs.forEach(b=>{ b.querySelector('.h-cnt').textContent=String(rows.filter(r=>r.dataset.k===b.dataset.k).length); });
+  // 고른 구분에 행이 없으면(예: 주문 > 정책) 빈 안내 행을 보여 준다
+  const tbody=panel.querySelector('tbody'), empty=document.createElement('tr');
+  empty.innerHTML='<td colspan="4" style="padding:28px;text-align:center;color:var(--muted)">등록된 화면이 없습니다</td>';
+  tbody.appendChild(empty);
   function showKind(k){
     segs.forEach(b=>{ const on=b.dataset.k===k; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
     rows.forEach(r=>{ r.hidden=r.dataset.k!==k; });
+    empty.hidden=rows.some(r=>r.dataset.k===k);
   }
   segs.forEach(b=>b.addEventListener('click',()=>showKind(b.dataset.k)));
   showKind(segs[0].dataset.k);

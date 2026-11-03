@@ -27,22 +27,22 @@ const MENU = [
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'epc-list.html' },
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
-    { label: '상품 전시 관리', icon: 'display', href: 'display-list2.html', match: ['product-v021.html', 'product-v022.html', 'product-v023.html', 'product-display-bulk.html'] },
+    { label: '상품 전시 관리', icon: 'display', href: 'display-list2.html', match: ['product-v021.html', 'product-v022.html', 'product-v023.html', 'product-v024.html', 'product-display-bulk.html'] },
     { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content.html' },
-    { label: '정책', icon: 'policy', href: 'policy.html' },
+    // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
   ] },
   { label: '주문관리', items: [
     { label: '주문 프로세스 관리', icon: 'process', href: 'order5-create.html', match: ['order4-create.html', 'order3-create.html'] },
     { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v21.html', match: ['order-corner-create.html'] },
-    { label: '정책', icon: 'policy', href: '' },
+    // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },
   { label: '결제관리', items: [
     { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method4.html', match: ['payment-method4-detail.html', 'payment-method4-merchant.html', 'payment-method4-create.html', 'payment-method3.html', 'payment-method3-create.html', 'payment-method3-detail.html', 'payment-method2.html', 'payment-method2-create.html'] },
-    { label: 'PG사 관리', icon: 'pg', href: 'payment-pg4.html', match: ['payment-pg4-form.html'] },
     { label: '결제 이력 관리', icon: 'history', href: 'payment-history4.html', match: ['payment-history4-detail.html', 'payment-history3.html', 'payment-history3-detail.html', 'payment-history2.html'] },
-    { label: '거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html', match: ['payment-recon3.html', 'payment-recon3-detail.html', 'payment-reconciliation2.html'] },
+    { label: '결제 거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html', match: ['payment-recon3.html', 'payment-recon3-detail.html', 'payment-reconciliation2.html'] },
     { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html' },
-    { label: '정책', icon: 'policy', href: 'payment-policy4.html', match: ['payment-policy.html'] },
+    { label: 'PG 관리', icon: 'pg', href: 'payment-pg4.html', match: ['payment-pg4-form.html'] },
+    // 결제 정책서는 메뉴에서 빼고 히스토리 > 결제 > 정책으로 옮겼다
   ] },
 ];
 const BACKUP = { label: '백업', items: [{ label: '히스토리', icon: 'archive', href: 'index.html' }] };

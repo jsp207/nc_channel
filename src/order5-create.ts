@@ -11,6 +11,7 @@
 //  - 파생 상품 전시: 모 상품 전시 ID를 따른다(매핑과 덮어쓴 값을 그대로 이어받고, 파생 전시에서는 바꿀 수 없다)
 import { requireAuthentication } from "./auth";
 import { boSpec, boGet, boHtml, boBind } from "./corner-bo";
+import { publishProcs } from "./order-process-data";
 
 requireAuthentication();
 
@@ -63,3 +64,9 @@ boBind($('#detail'), () => BOST, drawBo, () => { if (W.dirty) W.dirty(); });
 
 // 모듈은 인라인 스크립트보다 늦게 읽히므로, 이미 열린 화면이 있으면 한 번 다시 그린다
 if (W.sel) W.renderDetail();
+
+// 상품 전시 관리 v0.2.4(product-v024.html)의 주문 구성안 목록으로 쓰도록 프로세스 목록을 저장소에 남긴다. 열 때 한 번, 저장할 때마다 다시 남긴다
+const publish = () => { if (Array.isArray(W.DATA)) publishProcs(W.DATA, W.NOW || ''); };
+const coreSave = W.doSave;
+if (typeof coreSave === 'function') W.doSave = function () { const r = coreSave.apply(this, arguments); publish(); return r; };
+publish();

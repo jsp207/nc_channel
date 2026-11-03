@@ -63,6 +63,7 @@
       <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
       <tbody>
         <tr data-k="list" data-latest><td>2026-10-31</td><td><a href="epc-list.html">EPC 상품 조회 v0.1</a></td><td>epc-list.html</td></tr>
+        <tr data-k="detail"><td>2026-11-03</td><td><a href="product-v024.html">상품 전시 관리 v0.2.4 (주문 프로세스 연동)</a></td><td>product-v024.html</td></tr>
         <tr data-k="detail" data-latest><td>2026-11-02</td><td><a href="product-v023.html">상품 전시 관리 v0.2.3</a></td><td>product-v023.html</td></tr>
         <tr data-k="detail"><td>2026-10-27</td><td><a href="product-v022.html">상품 전시 관리 v0.2.2</a></td><td>product-v022.html</td></tr>
         <tr data-k="list" data-latest><td>2026-10-27</td><td><a href="display-list2.html">상품 전시 목록 v0.2</a></td><td>display-list2.html</td></tr>
@@ -84,10 +85,11 @@
     </table></div>
   </div>
   <div role="tabpanel" id="panel-order" aria-labelledby="tab-order" hidden>
-    <!-- 화면 구분 버튼: 각 행의 data-k(corner | process)로 걸러 보여 준다 -->
+    <!-- 화면 구분 버튼: 각 행의 data-k(corner | process | policy)로 걸러 보여 준다 -->
     <div class="seg h-seg" role="group" aria-label="주문 화면 구분">
       <button type="button" data-k="corner">코너 <span class="h-cnt"></span></button>
       <button type="button" data-k="process">프로세스 <span class="h-cnt"></span></button>
+      <button type="button" data-k="policy">정책 <span class="h-cnt"></span></button>
     </div>
     <div class="tw"><table id="historyOrder">
       <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
@@ -105,12 +107,13 @@
     </table></div>
   </div>
   <div role="tabpanel" id="panel-pay" aria-labelledby="tab-pay" hidden>
-    <!-- 화면 구분 버튼: 각 행의 data-k(method | history | recon | fee)로 걸러 보여 준다 -->
+    <!-- 화면 구분 버튼: 각 행의 data-k(method | history | recon | fee | policy)로 걸러 보여 준다 -->
     <div class="seg h-seg" role="group" aria-label="결제 화면 구분">
       <button type="button" data-k="method">결제수단 기준정보 <span class="h-cnt"></span></button>
       <button type="button" data-k="history">결제이력관리 <span class="h-cnt"></span></button>
       <button type="button" data-k="recon">거래내역관리 <span class="h-cnt"></span></button>
       <button type="button" data-k="fee">수수료조회 <span class="h-cnt"></span></button>
+      <button type="button" data-k="policy">정책 <span class="h-cnt"></span></button>
     </div>
     <div class="tw"><table id="historyPay">
       <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
@@ -125,7 +128,7 @@
         <tr data-k="history" data-latest><td>2026-11-03</td><td><a href="payment-history4-detail.html">결제이력 관리 v0.2.2 (상세)</a></td><td>payment-history4-detail.html</td></tr>
         <tr data-k="recon" data-latest><td>2026-11-03</td><td><a href="payment-recon4.html">거래내역 대사관리 v0.2.2 (승인대사 / 입금대사)</a></td><td>payment-recon4.html</td></tr>
         <tr data-k="fee" data-latest><td>2026-11-03</td><td><a href="payment-fee4.html">PG 수수료 조회 v0.2.2</a></td><td>payment-fee4.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-policy4.html">결제관리 정책서 / IA v0.2.2</a></td><td>payment-policy4.html</td></tr>
+        <tr data-k="policy" data-latest><td>2026-11-03</td><td><a href="payment-policy4.html">결제관리 정책서 / IA v0.2.2</a></td><td>payment-policy4.html</td></tr>
         <tr data-k="recon"><td>2026-11-03</td><td><a href="payment-recon3.html">거래내역 대사관리 v0.2.1 (목록)</a></td><td>payment-recon3.html</td></tr>
         <tr data-k="recon"><td>2026-11-03</td><td><a href="payment-recon3-detail.html">거래내역 대사관리 v0.2.1 (상세)</a></td><td>payment-recon3-detail.html</td></tr>
         <tr data-k="history"><td>2026-11-01</td><td><a href="payment-history3.html">결제이력 관리 v0.2.1 (목록)</a></td><td>payment-history3.html</td></tr>
@@ -142,7 +145,7 @@
         <tr data-k="history"><td>2026-10-04</td><td><a href="payment-history.html">결제이력 관리</a></td><td>payment-history.html</td></tr>
         <tr data-k="fee"><td>2026-10-04</td><td><a href="payment-settlement.html">PG 수수료/정산 관리</a></td><td>payment-settlement.html</td></tr>
         <tr data-k="method"><td>2026-10-04</td><td><a href="payment-exposure.html">결제수단 노출 우선순위 관리</a></td><td>payment-exposure.html</td></tr>
-        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-policy.html">결제 폴리시</a></td><td>payment-policy.html</td></tr>
+        <tr data-k="policy"><td>2026-10-04</td><td><a href="payment-policy.html">결제 폴리시</a></td><td>payment-policy.html</td></tr>
         <tr data-k="method"><td>2026-10-04</td><td><a href="payment1.html">결제 1차</a></td><td>payment1.html</td></tr>
       </tbody>
     </table></div>

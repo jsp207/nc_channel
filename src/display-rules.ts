@@ -1,7 +1,8 @@
 // @ts-nocheck
 // 상품 전시 검사 · 운영 상태 규칙. product-v021.html(상품 전시 등록/수정)과 display-list2.html(상품 전시 목록)이 함께 쓴다.
 // 섹션별 필수 검사(sectionState · blocking)로 '작성 중' 여부를 정하고, 전시 여부 · 기간으로 운영 상태(status)를 정한다.
-import { TODAY, NOW, poBy, hasSel, psBy, MSG2, FLOWS, GIFT, TDP, DISPLAYS, CHS, ptOf, APP_CH, ordKind } from "./display-data";
+import { TODAY, NOW, poBy, hasSel, psBy, MSG2, FLOWS, GIFT, TDP, DISPLAYS, CHS, ptOf, APP_CH, ordKind, epcOf } from "./display-data";
+import { sameCat, procUsable } from "./order-process-data";
 
 // 전시 시작·종료 일시. 종료일없음이면 종료는 빈 값
 export const endOf=d=>d.noEnd?'':d.to;
@@ -22,14 +23,22 @@ export const activeFlows=d=>d.kind!=='po'?[]:Object.entries(FLOWS).filter(([k,f]
 // ---------- 상품 유형 · 채널 연동 ----------
 // 통합 APP · WEB 중 하나라도 고르면 주문 단계(가입 유형 · 할부 · 배송)를 이 화면에서 정한다
 export const appOn=d=>APP_CH.some(c=>d.channels.includes(c));
-// 섹션을 쓰는지: 상품 판매 전시 + 통합 APP · WEB + 상품 유형이 그 단계를 쓸 때 (k = join | inst | ship)
-export const needs=(d,k)=>d.kind==='po'&&appOn(d)&&!!ptOf(d)&&ptOf(d).need.includes(k);
+// v0.2.4: 주문 프로세스 관리(order5)의 프로세스를 구성안으로 연결하면 orderPlan.stages(컨테이너 · 코너)가 있다.
+// 주문 추가 코너(가입 유형 · 할부 · 배송)는 그 프로세스에 해당 코너가 있을 때만 쓴다. 예전 구성안(stages 없음)은 상품 유형 기준 그대로
+export const STEP_CORNER={join:'CN-ORD-0003',inst:'CN-ORD-0004',ship:'CN-ORD-0001'};
+export const planCorners=d=>d.orderPlan&&Array.isArray(d.orderPlan.stages)?d.orderPlan.stages.flatMap(s=>s.corners.map(c=>c.id)):null;
+// 섹션을 쓰는지: 상품 판매 전시 + 통합 APP · WEB + 상품 유형(또는 연결한 프로세스)이 그 단계를 쓸 때 (k = join | inst | ship)
+// noSteps: 이 화면에서 단계를 정하지 않는 전시(product-v024: 주문 프로세스에서 가져와 정할 예정)
+export const needs=(d,k)=>{ if(d.noSteps||d.kind!=='po'||!appOn(d)) return false; const pc=planCorners(d); return pc?pc.includes(STEP_CORNER[k]):!!ptOf(d)&&ptOf(d).need.includes(k); };
+// 상품 유형(LV3 조합): 연결 상품의 LV3를 연결한 순서대로 겹치지 않게 모은다
+export const lv3Combo=d=>d.kind==='po'?[...new Set(connPOs(d).map(p=>epcOf(p).lv3))]:[];
 // 상품 유형과 연결 상품이 맞지 않으면 경고 (예: 기기서비스인데 기기 상품이 없음)
 export function ptWarn(d){ const p=ptOf(d); if(!p||!p.kinds||!d.conn.length) return ''; return connPOs(d).some(x=>p.kinds.includes(x.type))?'':`연결 상품에 ${p.kn} 상품이 없어요. 상품 유형을 다시 확인하세요`; }
 // v023 대표 상품(repPo)을 쓰는 전시인지. product-v022에서 저장한 전시만 이 값을 가진다
 export const usesRep=d=>d.repPo!==undefined;
 // 연결한 주문 구성안이 지금 상품 유형의 주문 유형과 다른지
-export const planMismatch=d=>!!(d.orderPlan&&ptOf(d)&&ordKind(d.orderPlan.name)!==ptOf(d).ord);
+// order5 프로세스는 주문 유형(cat)과 상품 유형(LV3 조합)을 순서와 관계없이 비교한다
+export const planMismatch=d=>{ const p=d.orderPlan; if(!p) return false; if(p.cat&&p.stages){ const l=lv3Combo(d); return !!l.length&&!sameCat(p.cat,l.join(' + ')); } return !!(ptOf(d)&&ordKind(p.name)!==ptOf(d).ord); };
 // 받침 유무로 을/를을 고른다
 export const eul=w=>{ const c=String(w).charCodeAt(String(w).length-1); return w+(c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28?'을':'를'); };
 
@@ -104,9 +113,10 @@ export function sectionState(d){
  // 주문 구성 방식은 필수. 주문 받기 ON: 주문 구성안을 연결해야 승인요청할 수 있다 (임시저장은 된다)
  // OFF: 대체 버튼 문구를 채워야 한다 (버튼 없음 제외)
  if(d.kind==='ps') S.order={st:'na',e:[]};
- else if(d.orderOn){ const e=[!d.orderPlan&&'사용할 주문 구성안을 선택하세요',planMismatch(d)&&`연결한 구성안이 ${ptOf(d).ord}용이 아니에요`].filter(Boolean); S.order={st:!d.orderPlan?'todo':e.length?'warn':'done',e}; }
+ else if(d.orderOn){ const p=d.orderPlan, o5=p&&p.stages, e=[!p&&'사용할 주문 구성안을 선택하세요',planMismatch(d)&&(o5?`연결한 프로세스의 주문 유형(${p.cat})이 상품 유형과 달라요`:`연결한 구성안이 ${ptOf(d).ord}용이 아니에요`),o5&&!procUsable(p)&&`연결한 프로세스가 지금 ${p.u?p.ap:'사용 안 함'} 상태예요. 승인 완료 · 사용 Y 프로세스로 바꾸세요`].filter(Boolean); S.order={st:!p?'todo':e.length?'warn':'done',e}; }
  // product-v022: OFF에서 버튼 문구만 비어 있지 않으면 필수에서 빠지고, 버튼 없음은 미작성으로 보인다
- else { const o=d.off, e=[o.act!=='none'&&!o.btn.trim()&&'대체 버튼 문구를 입력하세요'].filter(Boolean); S.order=usesRep(d)?{st:e.length?'warn':o.act==='none'?'todo':'done',e,opt:!e.length}:{st:e.length?'warn':'done',e}; }
+ // v0.2.4: 주문 자동 시작을 켜면 시작 일시와 주문 구성안이 있어야 한다
+ else { const o=d.off, e=[o.act!=='none'&&!o.btn.trim()&&'대체 버튼 문구를 입력하세요',o.auto&&!o.at&&'주문 자동 시작 일시를 입력하세요',o.auto&&!d.orderPlan&&'자동으로 주문을 켜려면 주문 구성안을 미리 연결하세요'].filter(Boolean); S.order=usesRep(d)?{st:e.length?'warn':o.act==='none'?'todo':'done',e,opt:!e.length}:{st:e.length?'warn':'done',e}; }
  return S;
 }
 // [키, 이름, 필수, 짧은 이름]. 화면 순서와 같다
