@@ -1,6 +1,6 @@
 // @ts-nocheck
 // 결제 상세 (payment-history3-detail.html?id=TX...): 프로토타입 v3의 상세 드로어 기능을 v4처럼 페이지로 옮겼다.
-// 한 페이지에 PG 결제정보 / 주문정보 / 금액정보 / BSS 반영 / 거래 이력 / 담당자 표를 차례로 둔다. 처리 버튼은 맨 아래다. PG 재조회 · BSS 재반영 · 취소(V21~V25). id가 없으면 첫 거래를 보여준다(히스토리 바로가기용).
+// 한 페이지에 PG 결제정보 / 금액정보 / 주문정보 / BSS 반영 / 거래 이력 / 담당자 표를 차례로 둔다. 처리 버튼은 맨 아래다. PG 재조회 · BSS 재반영 · 취소(V21~V25). id가 없으면 첫 거래를 보여준다(히스토리 바로가기용).
 import "./admin-shell.css";
 import "./payment2.css";
 import "./payment3-history.css";
@@ -41,20 +41,20 @@ const ft = rows => `<table class="ft pm3h-grid">${COLS}<tbody>${rows}</tbody></t
 const sec = (title, inner, hint = '') => `<section class="sec"><div class="sec-h"><h3>${title}</h3>${hint ? `<span class="hint">${hint}</span>` : ''}</div>${inner}</section>`;
 function sections() {
   const t = tx, s = t.snap, can = t.amount - t.cancel;
-  return sec('PG 결제정보', ft(`<tr><th>거래번호</th><td class="pm3h-mono">${esc(t.id)}</td><th>결제일시</th><td>${t.at}</td></tr>
+  return sec('PG 결제정보', ft(`<tr><th>결제번호</th><td class="pm3h-mono"><b>${esc(t.id)}</b></td><th>결제일시</th><td>${t.at}</td></tr>
+    <tr><th>결제상태</th><td>${badge(t.st)} ${t.failMsg ? `<span style="color:var(--bad);margin-left:6px">${esc(t.failMsg)}</span>` : ''}</td><th>승인번호</th><td>${t.appr ? `<span class="pm3h-mono">${t.appr}</span>` : '<span class="dim-t">없음</span>'}</td></tr>
     <tr><th>PG</th><td>${esc(s.pg)}</td><th>MID</th><td><span class="pm3h-mono">${esc(s.mid)}</span> · ${esc(s.purpose)}</td></tr>
     <tr><th>결제수단</th><td>${esc(s.method)} · ${esc(t.detail)}</td><th>할부</th><td>${esc(t.inst)}</td></tr>
-    <tr><th>PG 거래번호</th><td class="pm3h-mono">${esc(t.pgTid)}</td><th>승인번호</th><td>${t.appr ? `<span class="pm3h-mono">${t.appr}</span>` : '<span class="dim-t">없음</span>'}</td></tr>
-    <tr><th>결제상태</th><td>${badge(t.st)} ${t.failMsg ? `<span style="color:var(--bad);margin-left:6px">${esc(t.failMsg)}</span>` : ''}</td><th>결제수단 계약</th><td><a class="lk" href="${detailUrl(t.cid)}">${t.cid}</a> <span class="dim-t">현재 기준정보로 이동</span></td></tr>`)
+    <tr><th>PG 거래번호</th><td class="pm3h-mono">${esc(t.pgTid)}</td><th>결제수단 계약</th><td><a class="lk" href="${detailUrl(t.cid)}">${t.cid}</a> <span class="dim-t">현재 기준정보로 이동</span></td></tr>`)
     + (t.st === '결과미확인' ? '<div class="call warn"><div>PG에서 결과 응답을 받지 못했어요. PG 재조회로 결제 결과를 확정해 주세요. 확정 전에는 취소할 수 없어요. (V21)</div></div>' : ''))
-  + sec('주문정보', ft(`<tr><th>주문번호</th><td class="pm3h-mono">${esc(t.order)}</td><th>주문일시</th><td>${t.at}</td></tr>
-    <tr><th>그룹 ID</th><td class="pm3h-mono">${esc(t.group)}</td><th>주문자</th><td>${esc(t.buyer)} <span class="dim-t">(가상)</span></td></tr>
-    <tr><th>상품</th><td colspan="3">${esc(t.product)}</td></tr>
-    <tr><th>주문 컨테이너</th><td>${esc(s.container)}</td><th>결제 코너</th><td>${esc(s.corner)} <span class="dim-t">(외부 도메인 참조)</span></td></tr>`))
   + sec('금액정보', ft(`<tr><th>결제금액</th><td class="num"><b>${won(t.amount)}원</b></td><th>취소금액</th><td class="num">${t.cancel ? `<span style="color:var(--bad)">${won(t.cancel)}원</span>` : '0원'}</td></tr>
     <tr><th>총금액</th><td class="num"><b style="color:var(--ac)">${won(t.st === '결제실패' ? 0 : can)}원</b></td><th>취소 가능 금액</th><td class="num">${['결제완료', '부분취소'].includes(t.st) ? `${won(can)}원` : '-'}</td></tr>
     <tr><th>적용 요율</th><td colspan="3">${esc(s.fee)} <span class="dim-t">(결제 시점)</span></td></tr>`)
     + '<div class="call warn"><div>금융수수료 계산 시 VAT 포함 여부, 반올림, 취소 수수료 처리 기준은 아직 정해지지 않았어요. (확인필요)</div></div>')
+  + sec('주문정보', ft(`<tr><th>주문번호</th><td class="pm3h-mono">${esc(t.order)}</td><th>주문일시</th><td>${t.at}</td></tr>
+    <tr><th>그룹 ID</th><td class="pm3h-mono">${esc(t.group)}</td><th>주문자</th><td>${esc(t.buyer)} <span class="dim-t">(가상)</span></td></tr>
+    <tr><th>상품</th><td colspan="3">${esc(t.product)}</td></tr>
+    <tr><th>주문 컨테이너</th><td>${esc(s.container)}</td><th>결제 코너</th><td>${esc(s.corner)} <span class="dim-t">(외부 도메인 참조)</span></td></tr>`))
   + sec('BSS 반영', ft(`<tr><th>반영상태</th><td>${badge(t.bss)}</td><th>재요청 횟수</th><td>${nre()}회</td></tr>
     <tr><th>BSS 금액</th><td>${t.bss === '불일치' ? `<b style="color:var(--bad)">${won(t.bssAmt)}원</b>` : t.bss === '반영완료' ? `${won(can)}원` : '-'}</td><th>PG 금액</th><td>${t.st === '결제실패' ? '-' : `${won(can)}원`}</td></tr>
     <tr><th>실패 사유</th><td colspan="3">${t.bss === '반영실패' && t.bssErr ? `<span style="color:var(--bad)">${esc(t.bssErr)}</span>` : '-'}</td></tr>`)
@@ -67,7 +67,7 @@ function sections() {
 function render() {
   const t = tx;
   redraw($('#view'), `<nav class="crumb" aria-label="현재 위치">홈<span aria-hidden="true">›</span>결제 관리<span aria-hidden="true">›</span>결제이력 관리<span aria-hidden="true">›</span><b>결제 상세</b></nav>
-  <div class="ph"><h1 class="h1">${esc(t.order)} ${badge(t.st)} ${t.bss === '-' ? '' : badge(t.bss)}</h1></div>
+  <div class="ph"><h1 class="h1"><span class="pm3h-mono">${esc(t.id)}</span> ${badge(t.st)} ${t.bss === '-' ? '' : badge(t.bss)}</h1><span class="dim-t">주문번호 <span class="pm3h-mono">${esc(t.order)}</span></span></div>
   ${sections()}
   <div class="foot pm3h-foot"><a class="btn lg" href="${PAGES.list}" style="text-decoration:none">목록</a>${actions()}</div>`);
 }
@@ -180,4 +180,4 @@ document.addEventListener('input', e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && md && !md.busy) closeCancel(); });
 
 if (tx) render();
-else $('#view').innerHTML = `<div class="emptybox"><h4>거래를 찾을 수 없어요</h4><p>주소의 거래번호(${esc(params.get('id'))})를 확인해 주세요.</p><a class="btn" href="${PAGES.list}" style="text-decoration:none">목록으로</a></div>`;
+else $('#view').innerHTML = `<div class="emptybox"><h4>거래를 찾을 수 없어요</h4><p>주소의 결제번호(${esc(params.get('id'))})를 확인해 주세요.</p><a class="btn" href="${PAGES.list}" style="text-decoration:none">목록으로</a></div>`;

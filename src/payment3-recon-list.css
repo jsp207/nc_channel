@@ -1,0 +1,19 @@
+/* 거래내역 대사관리 목록 (payment-recon3.html): 결제이력 관리 목록과 같은 스타일(style.css, list.css, payment3-list.css)에 대사 구분 탭 · 이 표의 열 폭 · 합계 행만 더한다. */
+.pm3r-tabs{display:flex;gap:4px;margin:0 0 20px;border-bottom:1px solid var(--line)}
+.pm3r-tabs button{position:relative;height:44px;padding:0 18px;border:0;background:none;color:var(--muted);font:inherit;font-size:15px;font-weight:500;cursor:pointer}
+.pm3r-tabs button:hover{color:var(--text)}
+.pm3r-tabs button.on{color:var(--accent);font-weight:600}
+.pm3r-tabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+.pm3-tools{flex-wrap:wrap}
+.pm3-tools .btn{height:36px;min-height:0;padding:0 14px;border-radius:6px;font-size:13px}
+
+/* 결과 표: 글자 크기와 칸 여백은 결제이력 목록과 같다. 모든 열에 폭을 줘서 넓은 화면에서는 같은 비율로 늘어나고, 좁으면 표 안에서 옆으로 스크롤한다 */
+#listTable{min-width:1196px}
+#listTable col.w-dt{width:96px}#listTable col.w-id{width:116px}#listTable col.w-pg{width:92px}#listTable col.w-mi{width:98px}#listTable col.w-md{width:80px}
+#listTable col.w-cn{width:72px}#listTable col.w-am{width:104px}#listTable col.w-ex{width:92px}#listTable col.w-ac{width:92px}#listTable col.w-df{width:84px}
+#listTable col.w-rs{width:80px}#listTable col.w-pr{width:94px}#listTable col.w-dl{width:96px}
+#listTable thead tr.tot td{height:48px;padding:8px;background:#f7f8fa;font-weight:600}
+#listTable .btn.sm{min-height:28px;padding:0 8px;border-radius:6px}
+.pm3h-dim{color:var(--muted)}
+.pm3h-bad{color:var(--bad)}
+.pm3r-neg{color:#1d6fd6}

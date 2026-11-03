@@ -44,7 +44,7 @@ function searchBox() {
   const f = st.f;
   return `<form class="lst-filter" autocomplete="off">
     <div class="lf-row">${sel('pg', 'PG', PGS.map(p => [p.id, p.name]))}${sel('method', '결제수단', METHODS)}${sel('pay', '결제상태', PAYST)}${sel('bss', 'BSS 반영', [...BSSST, ['bad', '실패·불일치']])}</div>
-    <div class="lf-row">${inp('mid', 'MID', 'MID 코드')}${inp('group', '그룹 ID', '예) G-001')}${inp('order', '주문번호', 'OD로 시작')}${inp('tid', '거래번호', 'TX로 시작')}</div>
+    <div class="lf-row">${inp('mid', 'MID', 'MID 코드')}${inp('group', '그룹 ID', '예) G-001')}${inp('order', '주문번호', 'OD로 시작')}${inp('tid', '결제번호', 'TX로 시작')}</div>
     <div class="lf-row"><span class="lf-g lf-wide"><label class="lf-l" for="f-from">결제일</label><span class="lf-range"><input type="date" id="f-from" value="${esc(f.from)}" aria-label="결제일 시작"><span aria-hidden="true">~</span><input type="date" id="f-to" value="${esc(f.to)}" aria-label="결제일 종료"></span></span>
       <span class="lf-acts"><button type="button" class="btn dark" data-a="reset">초기화</button><button type="button" class="btn primary" data-a="search">조회</button></span></div>
   </form>`;
@@ -98,10 +98,10 @@ function render() {
 }
 
 // ---------- 엑셀 ----------
-// 체크한 건만 내려받고, 체크가 없으면 조회 결과 전체를 내려받는다. 표 머리글과 같은 순서에 거래번호를 더한다
+// 체크한 건만 내려받고, 체크가 없으면 조회 결과 전체를 내려받는다. 표 머리글과 같은 순서에 결제번호를 더한다
 function excel() {
   const list = filtered(), picked = list.filter(t => st.sel.has(t.id)), rows = picked.length ? picked : list;
-  const head = ['그룹 ID', '주문번호', '거래번호', '상품명', 'PG', '결제수단', 'MID', '결제금액', '취소금액', '총금액', '결제상태', 'BSS 반영', '결제일시', '처리상태'];
+  const head = ['그룹 ID', '주문번호', '결제번호', '상품명', 'PG', '결제수단', 'MID', '결제금액', '취소금액', '총금액', '결제상태', 'BSS 반영', '결제일시', '처리상태'];
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const text = '﻿' + [head, ...rows.map(t => [t.group, t.order, t.id, t.product, t.snap.pg, t.snap.method, t.snap.mid, t.amount, t.cancel, t.st === '결제실패' ? 0 : t.amount - t.cancel, t.st, t.bss, t.at, nextAct(t)])].map(r => r.map(q).join(',')).join('\r\n');
   const a = document.createElement('a');
