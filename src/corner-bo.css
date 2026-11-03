@@ -42,6 +42,14 @@
 .bo-add{margin-top:8px;height:30px;padding:0 12px;border:1px dashed #b9aef0;border-radius:6px;background:#f7f5ff;color:var(--accent);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .bo-why{display:flex;gap:8px;margin:12px 14px 14px;padding:9px 12px;border-radius:8px;background:var(--accent-soft);color:var(--text);font-size:12px;line-height:1.6}
 .bo-why b{flex:none;color:var(--accent)}
+/* 주문 프로세스 코너 상세: 카드 없이 다른 영역(.dsec)과 같은 모양으로 */
+.bo.flat .bo-it{border:0;border-radius:0;background:none;overflow:visible}
+.bo.flat .bo-it>header{padding:0;margin:0 0 12px;background:none;border:0}
+.bo.flat .bo-it>header>b{font-size:14px;color:#1a1a1a}
+.bo.flat .bo-it>:not(header){margin:0}
+.bo.flat .bo-it .bo-cap{margin-bottom:8px}
+.bo-stack{display:grid;gap:8px}
+.bo-stack input{width:100%}
 .bo-head{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
 .bo-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;font-size:12px}
 .bo-flow span{padding:3px 9px;border-radius:12px;background:#eef0f4;color:#4b5563}

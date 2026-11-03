@@ -248,8 +248,8 @@ function openBo(c) {
 }
 function drawBo() {
   const sp = boSpec(BO.id);
-  $('#dBo').innerHTML = `<p class="bo-head">값은 <b>코너 관리 → 주문 프로세스 → 상품 전시</b> 순서로 이어져요. '프로세스에서 변경 허용'을 끄면 프로세스와 상품 전시 모두 이 값을 그대로 써요.</p>
-    <div class="bo-flow" aria-hidden="true"><span class="on">코너 관리 기본값</span><i>→</i><span>주문 프로세스 (허용 항목만)</span><i>→</i><span>상품 전시 (허용 항목만)</span></div>` + boHtml(sp, BO);
+  $('#dBo').innerHTML = `<p class="bo-head">값은 <b>코너 관리 → 주문 프로세스 → 상품 전시</b> 순서로 이어져요. '프로세스에서 변경 허용'을 끄면 주문 프로세스는 이 값을 그대로 써요. 상품 전시에서는 상품별로 언제든 고칠 수 있어요.</p>
+    <div class="bo-flow" aria-hidden="true"><span class="on">코너 관리 기본값</span><i>→</i><span>주문 프로세스 (허용 항목만)</span><i>→</i><span>상품 전시 (상품별 수정)</span></div>` + boHtml(sp, BO);
   boChanged();
 }
 // 값이 바뀌면 미리보기 · 저장 버튼 · 머리줄 요약을 맞춘다 (입력칸은 다시 그리지 않는다)

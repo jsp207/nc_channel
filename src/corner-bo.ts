@@ -133,8 +133,9 @@ export function boSummary(sp, cfg) {
 // st = { mode, cfg, ov, prod, ro } — 편집 대상은 corner 모드면 cfg, proc 모드면 ov[k](덮어쓸 때만)
 const sel = (path, list, v, dis, rec) => `<select data-bf="${path}"${dis ? ' disabled' : ''}>${list.map((x, i) => `<option value="${esc(x)}"${x === v ? ' selected' : ''}>${esc(x)}${rec != null && i === rec ? ' (권장)' : ''}</option>`).join('')}</select>`;
 const chk = (attr, on, dis, label, title) => `<label class="bo-chk"${title ? ` title="${esc(title)}"` : ''}><input type="checkbox" ${attr}${on ? ' checked' : ''}${dis ? ' disabled' : ''}>${label}</label>`;
-function itemBody(sp, k, v, dis) {
+function itemBody(sp, k, v, dis, bare) {
   const { src } = sp;
+  if (k === 'txt' && bare) return `<div class="bo-stack">${sp.txt.map(([f, l, d]) => `<input type="text" id="bo-${f}" data-bf="txt.${f}" value="${esc(v[f] ?? '')}" maxlength="40" placeholder="${esc(d)}" aria-label="${l}"${dis ? ' disabled' : ''}>`).join('')}</div>`;
   if (k === 'txt') return `<div class="bo-grid">${sp.txt.map(([f, l, d]) => `<label class="bo-l" for="bo-${f}">${l}</label><div class="bo-v"><input type="text" id="bo-${f}" data-bf="txt.${f}" value="${esc(v[f] ?? '')}" maxlength="40" placeholder="${esc(d)}"${dis ? ' disabled' : ''}><small>기준 문구: ${esc(d)}</small></div>`).join('')}</div>`;
   if (k === 'order' && v.list) return `<ol class="bo-ord">${v.list.map((x, i) => `<li class="${x.on ? '' : 'off'}"><span class="bo-n">${i + 1}</span><b>${esc(x.n)}</b>${chk(`data-bf="order.list.${i}.on"`, x.on, dis, '노출')}<span class="bo-mv"><button type="button" data-mv="${i}|-1" aria-label="${esc(x.n)} 위로"${dis || !i ? ' disabled' : ''}>↑</button><button type="button" data-mv="${i}|1" aria-label="${esc(x.n)} 아래로"${dis || i === v.list.length - 1 ? ' disabled' : ''}>↓</button></span></li>`).join('')}</ol><p class="bo-cap">노출을 끈 선택지는 고객 화면에 보이지 않아요. 미선택 선택지(예: 없이 주문 진행)는 늘 맨 아래에 있어요</p>`;
   if (k === 'order') return `<div class="bo-grid"><span class="bo-l">정렬 기준</span><div class="bo-v">${sel('order.sort', src.sorts, v.sort, dis, 0)}<small>원천 데이터(${esc(src.n)})를 이 순서로 보여 줘요. 직접 지정 순서는 상품 전시에서 고른 순서를 따라요</small></div></div>`;
@@ -142,7 +143,7 @@ function itemBody(sp, k, v, dis) {
   if (k === 'rule') {
     const R = src.rule, acts = [...new Set([...(R.catalog || []), ...sp.real.map(x => x.n)])];
     const rows = v.rows.map((r, i) => `<tr><td class="bo-i">${i + 1}</td>${R.conds.map(([ck, , vals]) => `<td>${sel(`rule.rows.${i}.c.${ck}`, ['전체', ...vals], r.c[ck] || '전체', dis)}</td>`).join('')}<td>${sel(`rule.rows.${i}.v`, acts, r.v, dis)}</td><td>${dis ? '' : `<button type="button" class="bo-x" data-delrule="${i}" aria-label="${i + 1}번 규칙 삭제">✕</button>`}</td></tr>`).join('');
-    return `<p class="bo-cap" style="margin-top:0">${esc(R.hint)}. 위에서부터 처음 맞는 규칙 하나만 적용하고, 맞는 규칙이 없으면 정렬 기준의 첫 항목부터 보여 줘요</p>
+    return `${bare ? '' : `<p class="bo-cap" style="margin-top:0">${esc(R.hint)}. 위에서부터 처음 맞는 규칙 하나만 적용하고, 맞는 규칙이 없으면 정렬 기준의 첫 항목부터 보여 줘요</p>`}
       <div class="bo-tw"><table class="bo-rt"><thead><tr><th>순서</th>${R.conds.map(([, l]) => `<th>${l}</th>`).join('')}<th>${R.act}</th><th></th></tr></thead><tbody>${rows || `<tr><td colspan="${R.conds.length + 3}" class="bo-empty">규칙이 없어요. 늘 정렬 기준의 첫 항목부터 보여 줘요</td></tr>`}</tbody></table></div>
       ${dis ? '' : '<button type="button" class="bo-add" data-addrule>+ 규칙 추가</button>'}`;
   }
@@ -158,20 +159,21 @@ function srcBody(sp, v, dis) {
     <span class="bo-l">결과가 없을 때</span><div class="bo-v">${sel('src.empty', EMPTIES, v.empty, dis, EMPTIES.indexOf(S.empty))}</div>
   </div><p class="bo-why"><b>권장 처리</b>${esc(S.why)}</p>`;
 }
+// 상품 전시에서는 늘 고칠 수 있는 정책이라 '상품 전시 수정 허용'은 따로 두지 않는다.
+// st.only = 그릴 항목만(예: ['txt']), st.noSrc = 원천 데이터 연결 숨김, st.labels = 항목 이름 바꾸기,
+// st.bare = 칸 이름 · 기준 문구 · 규칙 설명 없이 입력칸만 (주문 프로세스 코너 상세용)
 export function boHtml(sp, st) {
-  const { mode, cfg, ov, prod, ro } = st, corner = mode === 'corner';
+  const { mode, cfg, ov, ro } = st, corner = mode === 'corner';
   let h = '';
-  if (sp.src) {
+  if (sp.src && !st.noSrc) {
     h += `<section class="bo-it"><header><b>원천 데이터 연결</b><span class="bo-st ${corner ? 'own' : 'lock'}">${corner ? '코너 관리에서만 설정' : '코너 관리 값'}</span></header>${srcBody(sp, cfg.src, ro || !corner)}</section>`;
   }
-  sp.items.forEach(k => {
+  sp.items.filter(k => !st.only || st.only.includes(k)).forEach(k => {
     const allow = cfg.allow[k], mine = !corner && allow && ov && ov[k], v = corner ? cfg[k] : effVal(cfg, ov, k);
     const dis = ro || (!corner && !mine);
-    const stt = corner ? '' : !allow ? '<span class="bo-st lock">코너 관리에서 고정</span>' : mine ? '<span class="bo-st own">이 프로세스 값</span>' : '<span class="bo-st">코너 기본값</span>';
-    const tg = corner
-      ? chk(`data-allow="${k}"`, allow, ro, '프로세스에서 변경 허용') + chk(`data-prod="${k}"`, cfg.prod[k], ro || !allow, '상품 전시 수정 허용(기본)', '프로세스를 만들 때 이 값으로 시작해요')
-      : chk(`data-ov="${k}"`, !!mine, ro || !allow, '이 프로세스에서 변경') + chk(`data-prod="${k}"`, allow && prod[k], ro || !allow, '상품 전시 수정 허용');
-    h += `<section class="bo-it${dis ? ' dis' : ''}" data-it="${k}"><header><b>${LABEL[k]}</b>${stt}<span class="bo-tg">${tg}</span></header>${itemBody(sp, k, v, dis)}</section>`;
+    const stt = corner ? '' : !allow ? '<span class="bo-st lock">코너 관리에서 고정</span>' : mine ? '<span class="bo-st own">이 프로세스에만 적용</span>' : '<span class="bo-st">기본값</span>';
+    const tg = corner ? chk(`data-allow="${k}"`, allow, ro, '프로세스에서 변경 허용') : chk(`data-ov="${k}"`, !!mine, ro || !allow, '이 프로세스에서 변경');
+    h += `<section class="bo-it${dis ? ' dis' : ''}" data-it="${k}"><header><b>${(st.labels && st.labels[k]) || LABEL[k]}</b>${stt}<span class="bo-tg">${tg}</span></header>${itemBody(sp, k, v, dis, st.bare)}</section>`;
   });
   return h;
 }
