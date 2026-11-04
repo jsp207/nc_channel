@@ -134,7 +134,7 @@ function setType(k){st.type=k;st.layout=tOf().ls[0].k;st.variant=lOf().vs[0].k;r
 function setLayout(k){const s0=sKey();st.layout=k;st.variant=lOf().vs[0].k;resetAttrs();if(sKey()!==s0)resetContent();else fitItems();}
 function setVariant(k){const s0=sKey();st.variant=k;resetAttrs();if(sKey()!==s0)resetContent();else fitItems();}
 function fitItems(){if(st.items.length>st.cnt[1])st.items=st.items.slice(0,st.cnt[1]);while(st.items.length<st.cnt[0])st.items.push(sampleItems(st.items.length+1).pop());if(st.def>=st.items.length)st.def=0;}
-function fresh(){st={name:'',desc:'',use:'Y',plat:{mo:true,pc:false},type:'select'};setType('select');}
+function fresh(){st={name:'',use:'Y',type:'select'};setType('select');}
 
 /* ===== 미리보기 ===== */
 const ICO={tip:'<i class="pv-tip">i</i>',chev:'<span class="pv-chev">›</span>',chk:'✓'};
@@ -205,15 +205,20 @@ const radios=(name,list,val,dis)=>'<div class="cc-rg">'+list.map(x=>'<label clas
 const hint=t=>'<p class="cc-hint">'+t+'</p>';
 
 function basicCard(){
-  const t=tOf(),l=lOf();
-  let h='<div class="cc-tr two"><div class="cc-th">코너 ID</div><div class="cc-td"><input class="cc-inp" placeholder="자동 채번" disabled></div>'
-   +'<div class="cc-th">코너명'+req+'</div><div class="cc-td"><input class="cc-inp" data-f="name" maxlength="30" value="'+esc(st.name)+'" placeholder="코너명을 입력해 주세요"></div></div>';
-  h+=tr('코너 유형'+req,radios('ccType',TYPES.map(x=>[x.k,x.n]),st.type)+hint(esc(t.d)));
-  h+=tr('코너 형태'+req,radios('ccLayout',t.ls.map(x=>[x.k,x.n]),st.layout)+hint(esc(l.note)+' 표시 방식과 속성은 아래 코너 속성 정보에서, 상세 콘텐츠는 코너 콘텐츠에서 설정해 주세요.'));
-  const pl=st.plat,all=pl.mo&&pl.pc,cb=(k,n,c)=>'<label class="'+(c?'on':'')+'"><input type="checkbox" data-plat="'+k+'"'+(c?' checked':'')+'>'+n+'</label>';
-  h+='<div class="cc-tr two"><div class="cc-th">운영 플랫폼'+req+'</div><div class="cc-td"><div class="cc-rg">'+cb('all','전체',all)+cb('mo','모바일',pl.mo)+cb('pc','PC',pl.pc)+'</div></div><div class="cc-th">사용 여부'+req+'</div><div class="cc-td">'+radios('ccUse',[['Y','Y'],['N','N']],st.use)+'</div></div>';
-  h+=tr('코너 설명','<textarea class="cc-ta" data-f="desc" maxlength="100" placeholder="100자 이내로 설명을 입력해 주세요">'+esc(st.desc)+'</textarea>');
-  return '<section class="cc-card"><h2>코너 기본 정보</h2><div class="cc-tb">'+h+'</div></section>';
+  const t=tOf();
+  // 코너 ID는 저장 시 채번하고 상세 화면에서만 보여준다
+  let h=tr('코너명'+req,'<input class="cc-inp cc-name" data-f="name" maxlength="30" value="'+esc(st.name)+'" placeholder="코너명을 입력해 주세요">');
+  h+=tr('코너 유형'+req,radios('ccType',TYPES.map(x=>[x.k,x.n]),st.type));
+  h+=tr('코너 형태'+req,radios('ccLayout',t.ls.map(x=>[x.k,x.n]),st.layout));
+  h+=tr('사용 여부'+req,radios('ccUse',[['Y','Y'],['N','N']],st.use));
+  return acc('basic','기본 정보','<div class="cc-tb">'+h+'</div>');
+}
+/* 아코디언 섹션 : 상품 전시 등록(product-v023.html) 전시 유형 영역과 같은 테두리 · 머리줄 · 접기 */
+const fold={};
+function acc(id,title,body){
+  return '<section class="cc-acc'+(fold[id]?' closed':'')+'"><header data-fold="'+id+'"><b>'+title+'</b>'
+   +'<button type="button" class="cc-fold" aria-expanded="'+!fold[id]+'" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>'
+   +'<div class="cc-accb">'+body+'</div></section>';
 }
 function attrRow(a){
   const k=a[0],m=mark(k);if(m==='-')return '';
@@ -227,10 +232,10 @@ function attrRow(a){
 function attrCard(){
   const c=ATTRS.filter(a=>a[3]==='c').map(attrRow).join(''),i=ATTRS.filter(a=>a[3]==='i').map(attrRow).join('');
   const l=lOf(),v=vOf();
-  const mode=tr('표시 방식'+req,(l.vs.length>1?radios('ccVar',l.vs.map(x=>[x.k,x.n]),st.variant):'<b class="cc-one">'+esc(v.n)+'</b>')+hint('원본 배열: '+esc(v.src)+(l.vs.length>1?' · 표시 방식을 바꾸면 아래 속성 기본값이 이 배열 기준으로 다시 설정됩니다.':'')));
-  return '<section class="cc-card"><h2>코너 속성 정보<span class="cc-legend">필수 항목은 Y로 고정 · 표시 방식에 없는 속성은 나오지 않습니다</span></h2>'
+  const mode=tr('표시 방식'+req,l.vs.length>1?radios('ccVar',l.vs.map(x=>[x.k,x.n]),st.variant):'<b class="cc-one">'+esc(v.n)+'</b>');
+  return '<section class="cc-card"><h2>코너 속성 정보</h2>'
    +'<div class="cc-tb">'+mode+'</div>'
-   +'<h3>코너(카드)<small>카드 전체에 1개 (타이틀 · 미선택 옵션 · 더보기 등)</small></h3><div class="cc-tb">'+(c||'<div class="cc-empty">이 배열은 코너 단위 속성이 없습니다.</div>')+'</div>'
+   +'<h3>코너(카드)</h3><div class="cc-tb">'+(c||'<div class="cc-empty">이 배열은 코너 단위 속성이 없습니다.</div>')+'</div>'
    +'<h3>아이템(요소)<small>리스트에서 반복되는 요소 1개 (타이틀 · 서브 타이틀 · 가격 등)</small></h3><div class="cc-tb">'+(i||'<div class="cc-empty">이 배열은 아이템 속성이 없습니다.</div>')+'</div></section>';
 }
 const CF=[['title','코너 메인 타이틀',30],['sub','서브 타이틀',40],['tip','툴팁 문구',60],['link','우측 링크 문구',12],['tab','탭 · 필터 (쉼표로 구분)',60],['search','검색란 안내 문구',30],
@@ -262,7 +267,6 @@ function render(){$('ccForm').innerHTML=basicCard()+attrCard()+contentCard();ren
 /* ===== 저장 : 주문 코너 관리 목록에 바로 추가 ===== */
 function validate(){
   if(!st.name.trim())return '코너명을 입력해 주세요.';
-  if(!st.plat.mo&&!st.plat.pc)return '운영 플랫폼을 하나 이상 선택해 주세요.';
   if(mark('title')==='R'&&!st.c.title.trim())return '코너 메인 타이틀을 입력해 주세요.';
   if(mark('cta')==='R'&&!st.c.cta.trim())return '버튼 문구를 입력해 주세요.';
   if(vOf().fam!=='html'&&vOf().m.slice(11).replace(/-/g,'').length){
@@ -286,7 +290,7 @@ function save(){
   c.sel=v.k==='check'||st.vopt==='체크박스'?'복수 선택':'단일 선택';c.lim=Math.max(1,c.opts.length);c.ds='직접 입력';c.cond={mode:'none',list:[]};
   c.ver='v1.0';c.use=st.use;c.dt=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());c.mby='김운영 (P031001)';
   // 등록 설정 원본 : 유형 · 형태 · 표시 방식 · 속성 ON/OFF · 노출 개수 · 플랫폼 · 설명
-  c.spec={type:tOf().n,form:lOf().n,mode:v.n,src:v.src,attrs:Object.fromEntries(AK.filter(k=>mark(k)!=='-').map(k=>[k,k==='count'?st.cnt.join('~'):k==='var'?st.vopt:on(k)?'Y':'N'])),plat:st.plat,desc:st.desc};
+  c.spec={type:tOf().n,form:lOf().n,mode:v.n,src:v.src,attrs:Object.fromEntries(AK.filter(k=>mark(k)!=='-').map(k=>[k,k==='count'?st.cnt.join('~'):k==='var'?st.vopt:on(k)?'Y':'N']))};
   delete c.hist;
   CORNERS.unshift(c);
   st=null;opts.onSaved(c);
@@ -308,18 +312,19 @@ function bind(){
     if(t.name==='ccUse'){st.use=t.value;render();return;}
     if(t.name==='ccVopt'){st.vopt=t.value;render();return;}
     if(t.name==='ccDef'){st.def=+t.value;render();return;}
-    if(t.dataset.plat){const k=t.dataset.plat;if(k==='all'){st.plat.mo=st.plat.pc=t.checked;}else st.plat[k]=t.checked;render();return;}
     if(t.name&&t.name.indexOf('at_')===0){const k=t.name.slice(3);st.attrs[k]=t.value;Object.keys(DEP).forEach(d=>{if(DEP[d]===k&&t.value==='N')st.attrs[d]='N';});render();return;}
     if(t.dataset.cnt!=null){let a=Math.max(1,Math.min(20,parseInt(t.value,10)||1));const i=+t.dataset.cnt;st.cnt[i]=a;if(st.cnt[0]>st.cnt[1]){if(i)st.cnt[0]=a;else st.cnt[1]=a;}fitItems();render();return;}
     if(t.dataset.it!=null&&t.tagName==='SELECT'){st.items[+t.dataset.it][t.dataset.k]=t.value;renderPv();}});
   root.addEventListener('click',e=>{
+    const hd=e.target.closest('[data-fold]');
+    if(hd){const id=hd.dataset.fold;fold[id]=!fold[id];hd.parentNode.classList.toggle('closed',fold[id]);hd.querySelector('.cc-fold').setAttribute('aria-expanded',String(!fold[id]));return;}
     const b=e.target.closest('button');if(!b||b.disabled)return;
     if(b.dataset.mv){const p=b.dataset.mv.split(':'),i=+p[0],j=i+(+p[1]);const x=st.items.splice(i,1)[0];st.items.splice(j,0,x);if(st.def===i)st.def=j;else if(st.def===j)st.def=i;render();return;}
     if(b.dataset.del!=null){const i=+b.dataset.del;st.items.splice(i,1);if(st.def>=st.items.length)st.def=0;else if(st.def>i)st.def--;render();return;}
     const a=b.dataset.cc;
     if(a==='add'){st.items.push(sampleItems(st.items.length+1).pop());render();}
-    else if(a==='reset'){const keep={name:st.name,desc:st.desc,use:st.use,plat:st.plat};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
-    else if(a==='cancel'){if(st&&(st.name||st.desc)&&!confirm('작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;st=null;opts.onClose();}
+    else if(a==='reset'){const keep={name:st.name,use:st.use};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
+    else if(a==='cancel'){if(st&&st.name&&!confirm('작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;st=null;opts.onClose();}
     else if(a==='save')save();
   });
 }
