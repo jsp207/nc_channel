@@ -429,8 +429,6 @@ table.ut{width:100%;border-collapse:collapse;font-size:12.5px}
 .reason .chg{font-size:12.5px;color:var(--muted);width:100%}
 .reason .chg b{color:var(--accent)}
 .err{color:var(--red);font-size:12.5px;width:100%}
-.dfoot{display:flex;justify-content:space-between;align-items:center;margin:24px 0 0 404px}
-#pDetail.hist .dfoot{margin-left:0}
 .dfoot .r{display:flex;gap:8px}
 .btn-pri{height:48px;min-width:96px;padding:0 26px;border:0;border-radius:10px;background:var(--accent);font-size:16px;font-weight:700;color:#fff;cursor:pointer}
 .btn-pri:hover{background:#2c10b0}
@@ -543,6 +541,24 @@ table.ctt{border:0;width:100%}
 .orow.ep.ni{grid-template-columns:22px 30px minmax(0,1fr) 30px}
 .orow.ep.ni.ro{grid-template-columns:30px minmax(0,1fr)}
 
+/* 상세 : 코너 등록(src/order-corner-create-v22.css)과 같은 미리보기 프레임 · 아코디언 · 표 형태 행 · 하단 고정 버튼 */
+#pDetail .rcol{gap:0}
+#pDetail .kvs{border-top:1px solid #cfd4dc}
+#pDetail .kv{grid-template-columns:150px minmax(0,1fr);border-bottom:1px solid var(--cc-line);min-height:52px}
+#pDetail .kv .k{padding:10px 14px;background:var(--cc-th);border-right:0;font-size:13px;font-weight:400;color:#30343c;line-height:1.4}
+#pDetail .kv .v{padding:9px 14px;font-size:13px}
+#pDetail .kv .v.ctav{padding:0}
+#pDetail .inp{border-color:#d5d9e0}
+#pDetail .inp:focus{outline:none;border-color:var(--cc-ac)}
+#pDetail #tUse,#pDetail #tHist,#pDetail #tInfo{margin-bottom:28px}
+#dPv .fo{width:100%;padding:0;border-radius:0;box-shadow:none}
+#dPv .grpv{display:grid;gap:16px}
+#dPv .gl{margin:0 0 6px;font-size:11px;color:var(--muted)}
+#pDetail .dfoot.cc-foot{justify-content:space-between;margin:auto calc(var(--sh-px)*-1) calc(var(--sh-pb)*-1)}   /* 위쪽 .dfoot 여백 규칙보다 우선 */
+#pDetail .cc-foot .btn-list,#pDetail .cc-foot .btn-pri{height:40px;min-width:64px;padding:0 18px;border-radius:8px;font-size:14px;font-weight:600}
+#pDetail .cc-foot .btn-list{border:1px solid #cfd4dc}
+/* 조회 영역 : 검색어는 다음 줄로 내린다 (조회 · 초기화 버튼은 검색어 줄 오른쪽) */
+body.ul #srch .sbr{flex-basis:100%;height:0}
 /* 공통 LNB(src/lnb.ts) 적용: 바깥 여백은 .app.with-lnb가 주므로 목업 .main 여백을 덜어냅니다 */
 .app.with-lnb .main{padding:0}
 .app.with-lnb .sheet{min-height:calc(100vh - 28px)}
@@ -572,13 +588,14 @@ body:not(.authenticated) .app{display:none}
       <div class="tt" id="topTabs"><button type="button" data-tt="전시">전시</button><button type="button" data-tt="프로모션">프로모션</button><button type="button" class="on" data-tt="상품">상품</button></div>
       <div class="srch" id="srch">
         <div class="sg"><span class="sgl">사용 여부</span><div class="rds"><label><input type="radio" name="fuse" value="" checked>전체</label><label><input type="radio" name="fuse" value="Y">Y</label><label><input type="radio" name="fuse" value="N">N</label></div></div>
+        <div class="sbr" aria-hidden="true"></div>
         <div class="sg kw"><span class="sgl">검색어</span><div class="ss w120"><select id="fKey"><option value="n">코너명</option><option value="i">코너 ID</option></select><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><div class="si"><input id="fKw" type="text" placeholder="검색어를 입력하세요" autocomplete="off"><button type="button" id="bClr" aria-label="입력값 삭제" hidden><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
         <div class="sa"><button type="button" class="sbtn" id="bReset">초기화</button><button type="button" class="sbtn pri" id="bSearch">조회</button></div>
       </div>
       <div class="rh"><h2>조회 결과<small>총 <b id="rCnt">0</b>건</small></h2><button type="button" class="sbtn pri" id="bCreate">＋ 코너 등록</button></div>
       <div id="vList">
-        <table class="lt" id="lTable"><colgroup><col style="width:52px"><col style="width:170px"><col style="width:120px"><col><col style="width:84px"><col style="width:96px"><col style="width:64px"><col style="width:70px"><col style="width:110px"><col style="width:140px"></colgroup>
-          <thead><tr><th>NO</th><th>미리보기</th><th>코너 ID</th><th>코너명</th><th>코너 그룹</th><th>사용 프로세스</th><th>버전</th><th>사용여부</th><th>최종 수정일</th><th>최종 수정자</th></tr></thead><tbody id="lBody"></tbody></table>
+        <table class="lt" id="lTable"><colgroup><col style="width:120px"><col><col style="width:96px"><col style="width:120px"><col style="width:120px"><col style="width:64px"><col style="width:70px"><col style="width:110px"><col style="width:140px"></colgroup>
+          <thead><tr><th>코너 ID</th><th>코너명</th><th>코너 유형</th><th>코너 형태</th><th>표시 방식</th><th>버전</th><th>사용여부</th><th>최근 수정일</th><th>최근 수정자</th></tr></thead><tbody id="lBody"></tbody></table>
       </div>
       <div class="empty" id="lEmpty" hidden style="margin-top:8px">조회된 코너가 없습니다.</div>
       <div class="pager" id="pager"></div>
@@ -597,22 +614,24 @@ body:not(.authenticated) .app{display:none}
     <!-- ===== 상세 / 수정 ===== -->
     <section id="pDetail" hidden>
       <div class="ph"><div class="dh2"><h1 id="dName"></h1><span class="mono did" id="dId"></span><span id="dPills"></span></div><button type="button" class="btn-sm" id="bTopList">목록 보기</button></div>
-      <div class="dtabs" id="dTabs"><button type="button" class="dtab on" data-dt="info">상세 정보</button><button type="button" class="dtab" data-dt="hist">변경/승인 이력<small id="hCnt"></small></button></div>
+      <div class="dtabs" id="dTabs"><button type="button" class="dtab on" data-dt="info">상세 정보</button><button type="button" class="dtab" data-dt="use">사용 위치<small id="uCnt"></small></button><button type="button" class="dtab" data-dt="hist">변경/승인 이력<small id="hCnt"></small></button></div>
 
       <div id="tInfo">
-        <div class="dgrid">
-          <div class="pvcol"><div class="phone"><div class="phone-h"><b>미리보기</b><span id="pvTag">FO 화면</span></div><div class="phone-s" id="dPv"></div></div></div>
+        <div class="cc-grid">
+          <aside class="cc-left"><section class="cc-pv" aria-label="미리보기"><div class="cc-pvbox"><div class="cc-phone" id="dPv"></div></div></section></aside>
           <div class="rcol" id="dRight"></div>
         </div>
       </div>
 
+      <div id="tUse" hidden><section class="cc-acc" id="useBox"></section></div>
+
       <div id="tHist" hidden>
-        <div class="card"><div class="card-h"><b>변경/승인 이력</b><span>승인 요청 단위로 기록</span></div><div class="card-b">
+        <section class="cc-acc"><header><b>변경/승인 이력</b><span class="cc-hsub">승인 요청 단위로 기록</span></header><div class="cc-accb">
           <table class="ot"><thead><tr><th>No.</th><th>상태</th><th>승인 요청자</th><th>요청 일시</th><th>요청 사유</th><th>변경 내용</th><th>승인 담당자</th><th>처리 일시</th><th>처리 사유</th><th>버전</th></tr></thead><tbody id="hBody"></tbody></table>
-        </div></div>
+        </div></section>
       </div>
 
-      <div class="dfoot"><button type="button" class="btn-list" id="bList">목록</button><div class="r" id="fBtns"></div></div>
+      <div class="dfoot cc-foot"><button type="button" class="btn-list" id="bList">목록</button><div class="r" id="fBtns"></div></div>
     </section>
   </div></main>
 </div>
