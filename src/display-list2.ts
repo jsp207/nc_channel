@@ -8,6 +8,7 @@ import "./style.css";
 import "./list.css";
 import "./product-display-bulk.css";
 import "./display-list2.css";
+import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import { DISPLAYS, SVCS, CHS, TODAY, saveList, reloadList, norm, newDisplay, nameText, dispId, nextDisplayId, nowStamp, EDITOR } from "./display-data";
 import { endAt, meta, opState, epcState, chText, connNames } from "./display-rules";

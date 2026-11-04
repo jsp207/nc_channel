@@ -16,9 +16,9 @@
     <title>상품 전시 목록 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   </head>
-  <body>
+  <body class="ul">
 <div class="app">
 <nav class="app-nav" aria-label="주 메뉴"></nav>
 <main>
@@ -59,7 +59,7 @@
       <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
     </div>
   </form>
-  <h2 class="lst-count">조회결과 <span><b id="lCount">0</b>건</span></h2>
+  <h2 class="lst-count">조회 결과 <span>총 <b id="lCount">0</b>건</span></h2>
 
   <!-- 일괄 작업 툴바: 선택 건이 있을 때만 활성 -->
   <div class="pb-bulk" id="bulkBar" aria-label="일괄 작업">
@@ -101,13 +101,15 @@
     </tr></thead>
     <tbody></tbody>
   </table></div>
+  <!-- 페이지 번호(가운데) + 엑셀 작업 · 등록(오른쪽)을 한 줄에 -->
+  <div class="lst-bottom">
   <nav class="lst-pager" id="pager" aria-label="페이지"></nav>
-  <!-- 엑셀 작업 · 등록: 목록 아래 오른쪽 -->
   <div class="lst-foot">
     <button class="btn lg" type="button" id="btnTemplate">엑셀 양식 다운로드</button>
     <button class="btn lg" type="button" id="btnExport">목록 엑셀 다운로드</button>
     <button class="btn lg" type="button" id="btnUpload">엑셀 일괄 등록·수정</button>
     <button class="btn primary lg" type="button" id="lNew">등록</button>
+  </div>
   </div>
 </section>
 

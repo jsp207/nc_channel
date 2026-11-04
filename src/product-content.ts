@@ -6,6 +6,7 @@
 import "./style.css";
 import "./list.css";
 import "./product-content.css";
+import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import { CONTENT, TPL_TYPES, TYPE_TPL, saveContent, reloadContent, reloadList, tplUsers, optUsers, nameText, dispId, nowStamp, EDITOR, CHS } from "./display-data";
 

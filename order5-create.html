@@ -16,7 +16,7 @@
 <title>주문 프로세스 관리 v0.2.3 | NC-Channel Product Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 :root{
   color-scheme:light;
@@ -1702,7 +1702,7 @@ body:not(.authenticated) .app{display:none}
 .fid-row{display:none !important}
 </style>
 </head>
-<body>
+<body class="ul">
 <div class="app">
   <nav class="app-nav" aria-label="주 메뉴" data-auto-collapse="1440"></nav>
 
@@ -1718,7 +1718,7 @@ body:not(.authenticated) .app{display:none}
           <div class="lf-i"><span class="lt">승인 상태</span><div class="chk"><label><input type="checkbox" id="lAp0" checked>전체</label><label><input type="checkbox" id="lAp1" checked>임시 저장</label><label><input type="checkbox" id="lAp2" checked>승인 대기</label><label><input type="checkbox" id="lAp3" checked>승인 완료</label><label><input type="checkbox" id="lAp4" checked>반려</label><label><input type="checkbox" id="lAp5" checked>요청 취소</label></div></div>
         </div>
         <div class="lf-row">
-          <div class="lf-i"><span class="lt">주문 유형</span><div class="sel" style="width:400px"><select id="lCat"><option value="">전체</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div></div>
+          <div class="lf-i"><span class="lt">주문 유형</span><div class="sel" style="width:300px"><select id="lCat"><option value="">전체</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div></div>
           <div class="lf-i"><span class="lt">프로세스 ID</span><div class="tf"><input type="text" id="lId" placeholder="최대 30자까지 입력 가능" maxlength="30" autocomplete="off"><button class="clr" type="button" data-clr="lId" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
           <div class="lf-i"><span class="lt">프로세스명</span><div class="tf"><input type="text" id="lNm" placeholder="최대 30자까지 입력 가능" maxlength="30" autocomplete="off"><button class="clr" type="button" data-clr="lNm" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
           <div class="lf-i"><span class="lt">등록 기간</span><div class="dt"><input type="text" id="lFrom" placeholder="0000.00.00" maxlength="10" autocomplete="off"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></div><span>-</span><div class="dt"><input type="text" id="lTo" placeholder="0000.00.00" maxlength="10" autocomplete="off"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></div></div>

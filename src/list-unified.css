@@ -1,0 +1,158 @@
+/* 목록 화면 공통 v2: 상품관리 · 주문관리 · 결제관리 하위 목록의 글꼴 · 여백 · 조회 조건 · 결과 표 · 페이지 번호를 한곳에서 맞춘다.
+   기준은 프로모션 목록 시안(ref). 목록 페이지는 <body class="ul">로 이 규칙을 켜고, 이 파일은 각 화면 CSS보다 뒤에 둔다.
+   화면 계열마다 클래스 이름이 달라 같은 규칙을 계열별 선택자에 함께 건다.
+   - 상품(list.css):              .breadcrumb .lst-title .lst-filter .lf-g .lst-count .lst-tw/.lst-table .lst-pager .lst-foot
+   - 결제(payment4.ts):           .crumb .lst-title .lst-filter .lf-g .pm3-bar .tw/.tbl .pager .lst-foot
+   - 주문 프로세스(order5-create): .crumb h1+.hr .lfilter .lf-i .rhead .ltbl .lpg(#lPager)
+   - 주문 코너(order-corner-v22):  .crumb2 .ph h1 .srch .sg .rh table.lt #pager
+   가로 스크롤은 되도록 만들지 않는다: 표는 본문 폭에 맞추고, 긴 글은 줄을 바꾸거나 … 처리한다. */
+
+body.ul{
+  --ul-ac:#4320d4; --ul-text:#20293b; --ul-muted:#707c91; --ul-faint:#a3a9b5;
+  --ul-line:#e8eaf0; --ul-line2:#d5d9e3; --ul-head:#f4f5f7; --ul-box:#f7f8fa;
+  --ul-chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2320293b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --font:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  font-family:var(--font);letter-spacing:-.2px;
+}
+body.ul :is(button,input,select,textarea){font-family:inherit}
+
+/* ---------- 본문 카드 여백 ---------- */
+body.ul .app>main:not(.main),body.ul .work,body.ul .sheet{padding:40px 32px 56px}
+
+/* ---------- 위치 표시 · 제목 ---------- */
+body.ul :is(.breadcrumb,.crumb,.crumb2){display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;font-size:13px;line-height:20px;color:var(--ul-muted)}
+body.ul :is(.breadcrumb strong,.crumb b,.crumb .cur,.crumb2 span:last-child){color:var(--ul-text);font-weight:500}
+body.ul :is(.breadcrumb,.crumb) span[aria-hidden]{color:#b2b9c9}
+body.ul .crumb svg{width:10px;height:10px;color:#b2b9c9}
+body.ul .crumb2 span+span::before{margin-right:8px;color:#b2b9c9}
+
+body.ul :is(.lst-title,#scrList>h1,#pList .ph h1){margin:8px 0 0;font-size:24px;font-weight:700;line-height:1.4;letter-spacing:-.4px;color:var(--ul-text)}
+body.ul .lst-title{padding:0 0 24px;border-bottom:1px solid var(--ul-line);margin-bottom:28px}
+body.ul .lst-title+.desc{margin:-12px 0 24px}
+body.ul #scrList>.hr{height:1px;margin:24px 0 28px;background:var(--ul-line)}
+body.ul #pList .ph{margin:8px 0 24px}
+
+/* ---------- 조회 조건: 회색 박스, 항목(라벨 + 입력)은 짧은 세로선으로 나누고 버튼은 마지막 줄 오른쪽 ---------- */
+body.ul :is(.lst-filter,.lfilter,.srch){margin:0 0 48px;padding:24px;border:0;border-radius:16px;background:var(--ul-box);box-shadow:none}
+body.ul :is(.lst-filter,.lfilter){display:flex;flex-direction:column;gap:12px}
+body.ul .srch{display:flex;flex-wrap:wrap;align-items:center;gap:12px 0;min-height:0}
+body.ul :is(.lst-filter,.lfilter) .lf-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 0}
+
+body.ul :is(.lf-g,.lf-i,.srch .sg){display:inline-flex;align-items:center;gap:8px;min-width:0;padding:0;border:0;font-size:14px}
+body.ul :is(.lf-row>.lf-g+.lf-g,.lf-row>.lf-i+.lf-i,.srch .sg+.sg)::before{content:"";flex:none;width:1px;height:16px;margin:0 4px 0 12px;background:var(--ul-line2)}
+body.ul :is(.lf-l,.lf-i .lt,.sgl){flex:none;width:auto;margin:0 8px 0 0;font-size:14px;font-weight:500;color:var(--ul-text);white-space:nowrap}
+
+/* 입력칸: 높이 40 · 모서리 4 · 글자 14 */
+body.ul :is(.lst-filter,.lfilter,.srch) :is(select,input[type=text],input[type=date],input[type=search]){height:40px;padding-left:12px;border:1px solid var(--ul-line2);border-radius:4px;background-color:#fff;font-size:14px;color:var(--ul-text)}
+body.ul :is(.lst-filter,.lfilter,.srch) :is(input,select):focus{border-color:var(--ul-ac);outline:none}
+body.ul :is(.lst-filter,.lfilter,.srch) input::placeholder{color:var(--ul-faint)}
+body.ul :is(.lst-filter,.lfilter) select{appearance:none;-webkit-appearance:none;padding-right:36px;background:#fff var(--ul-chev) no-repeat right 12px center/16px;cursor:pointer}
+body.ul .srch .ss select{height:40px;font-size:14px}
+body.ul .lst-filter .lf-g>:is(select,input[type=text]){flex:none;width:200px}
+body.ul .lst-filter .lf-g>select.sm{width:130px}
+body.ul .lst-filter .lf-wide>input[type=text]{width:420px}
+body.ul .lst-filter .lf-range{display:inline-flex;flex:none;align-items:center;gap:4px}
+body.ul .lst-filter .lf-range input{width:150px;padding:0 10px}
+body.ul .lst-filter .lf-range>span,body.ul .lf-i>span{color:var(--ul-muted)}
+body.ul .lf-i :is(.sel,.tf){width:200px}
+body.ul .lf-i :is(.sel,.tf) :is(select,input){width:100%}
+body.ul .lf-i .tf .clr{top:12px}
+body.ul .lst-filter .lf-g>input[type=text]{padding-right:12px}
+body.ul .lf-i :is(.tf,.dt) input{padding-right:36px}
+body.ul .lf-i .dt svg{right:12px}
+body.ul .srch .ss{width:200px}
+body.ul .srch .ss.w120{width:120px}
+body.ul .srch .si{margin-left:0}
+body.ul .srch .si input{height:40px;font-size:14px}
+
+/* 라디오 · 체크박스: 글자 14, 강조색 */
+body.ul :is(.rad,.rds,.chk,.lf-g .ck) label,body.ul .lf-g label.ck{font-size:14px}
+body.ul :is(.lst-filter,.lfilter,.srch) :is(input[type=radio],input[type=checkbox]){accent-color:var(--ul-ac)}
+body.ul .rds input{width:18px;height:18px}
+
+/* 초기화(흰 바탕 · 진한 테두리) · 조회(강조색) */
+body.ul :is(.lf-acts,.lf-act,.srch .sa){display:flex;flex:none;gap:8px;margin-left:auto;padding-left:16px}
+body.ul :is(.lf-acts,.lf-act,.srch .sa) :is(.btn,.sbtn){display:inline-flex;align-items:center;justify-content:center;width:auto;height:40px;min-width:64px;padding:0 16px;border:1px solid var(--ul-text);border-radius:4px;background:#fff;color:var(--ul-text);font-size:14px;font-weight:500}
+body.ul :is(.lf-acts,.lf-act,.srch .sa) :is(.btn.primary,.btn.pri,.sbtn.pri){border-color:var(--ul-ac);background:var(--ul-ac);color:#fff}
+body.ul :is(.lf-acts,.lf-act,.srch .sa) :is(.btn,.sbtn):hover{filter:brightness(.97)}
+
+/* ---------- 결과 머리줄: "조회 결과 총 N건" ---------- */
+body.ul :is(.lst-count,.rhead,.rh){display:flex;align-items:baseline;gap:12px;margin:0 0 16px}
+body.ul :is(.lst-count,.rhead h2,.rh h2){margin:0;font-size:20px;font-weight:700;line-height:1.4;letter-spacing:-.4px;color:var(--ul-text)}
+body.ul :is(.lst-count>span,.rhead .c,.rh h2 small){font-size:14px;font-weight:400;color:var(--ul-text);letter-spacing:-.2px}
+body.ul .rh h2 small{margin-left:12px}
+body.ul :is(.lst-count>span b,.rhead .c b,.rh h2 b){color:var(--ul-ac);font-weight:500}
+body.ul .pm3-bar{margin:0 0 16px}
+body.ul .pm3-bar .lst-count{margin:0}
+
+/* ---------- 결과 표: 위 테두리 · 회색 머리줄 · 행 48 · 글자 14 ---------- */
+body.ul :is(.lst-tw,.work .tw,.ltbl){overflow-x:auto;border:0;border-top:1px solid var(--ul-line2);border-radius:0}
+body.ul table.lt{border-top:1px solid var(--ul-line2)}
+body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt){width:100%;min-width:0;border-collapse:collapse;border-top:0;font-size:14px;color:var(--ul-text)}
+body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) th{height:48px;padding:0 12px;border-top:0;border-bottom:1px solid var(--ul-line);background:var(--ul-head);font-size:14px;font-weight:600;line-height:1.4;color:var(--ul-text);vertical-align:middle}
+body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) td{height:48px;padding:8px 12px;border-bottom:1px solid var(--ul-line);font-size:14px;line-height:1.5;color:var(--ul-text);vertical-align:middle}
+body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) tbody tr:hover td{background:#fafaff}
+body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) td.empty{height:auto;padding:48px 12px;text-align:center;color:var(--ul-muted)}
+body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--ul-ac);vertical-align:middle}
+body.ul .work .tbl thead tr.tot td{height:48px;padding:8px 12px;background:var(--ul-box);border-bottom:1px solid var(--ul-line);font-weight:600}
+body.ul .work .tbl tbody tr.sel td{background:#f7f4ff}
+body.ul :is(.lst-table,.work .tbl) .btn.sm{height:28px;padding:0 8px;border-radius:4px;font-size:12.5px}
+
+/* 가로 스크롤 줄이기: 결제 · 주문 표는 칸 폭을 내용에 맞추되 글은 줄을 바꾼다. 숫자 · 코드 · 배지 · 버튼은 한 줄 */
+body.ul :is(.work .tbl,.ltbl table,table.lt) :is(th,td){white-space:normal;word-break:keep-all;overflow-wrap:break-word}
+body.ul :is(.work .tbl,.ltbl table,table.lt) td:is(.num,.mid,.acts,.ck,.mono,.dt,.vr){white-space:nowrap}
+body.ul .work .tbl td{min-width:0!important}
+body.ul .work .tbl td.l{min-width:120px!important}
+body.ul .work .tbl .acts .lk+.lk{margin-left:2px}
+
+/* 상태 배지: 네모(모서리 4) · 글자 12 · 굵게 */
+body.ul :is(.lst-table .lb,.work .tbl .bdg,.ltbl .pill,.ltbl .stat,table.lt .pill){display:inline-flex;align-items:center;justify-content:center;height:24px;min-width:44px;padding:0 8px;border:0;border-radius:4px;font-size:12px;font-weight:600;line-height:1;white-space:nowrap}
+body.ul .work .tbl .bdg.ok{background:#e0f6e9;color:#1f8a5b}
+body.ul .work .tbl .bdg.warn{background:#fff0c2;color:#b86a00}
+body.ul .work .tbl .bdg.bad{background:#ffe5e3;color:#d2382b}
+body.ul .work .tbl .bdg.ac{background:#ebe8ff;color:#5a3fd8}
+body.ul .work .tbl .bdg:is(.gray,:not(.ok):not(.warn):not(.bad):not(.ac)){background:#eceef3;color:#5c6577}
+
+/* ---------- 페이지 번호(가운데) + 하단 버튼(오른쪽)을 한 줄에 ---------- */
+body.ul .lst-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;min-height:44px;margin-top:24px}
+body.ul .lst-bottom>:is(.lst-pager,.pager){grid-column:2;margin:0}
+body.ul .lst-bottom>.lst-foot{grid-column:3;justify-self:end;margin:0}
+body.ul .lpg{position:relative;display:flex;justify-content:center;align-items:center;min-height:44px;margin-top:24px}
+body.ul .lpg .lfoot{position:absolute;right:0;top:50%;margin:0;transform:translateY(-50%)}
+body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager){display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:24px 0 0;padding:0;border:0}
+body.ul :is(.lst-bottom,.lpg) :is(.lst-pager,.pager),body.ul #lPager .pager{margin-top:0}
+body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button{display:inline-grid;place-items:center;width:auto;min-width:28px;height:28px;padding:0 4px;border:0;border-radius:4px;background:none;color:var(--ul-text);font-size:14px;font-weight:400;cursor:pointer}
+body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button:hover:not(:disabled):not(.on):not([aria-current]){background:#f2f3f7}
+body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button:is(.on,[aria-current="page"]){background:var(--ul-ac);color:#fff;font-weight:600}
+body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button:disabled{background:none;color:#c3c8d3;cursor:default;opacity:1}
+
+/* 하단 버튼: 높이 44 · 모서리 4 · 글자 14 (엑셀 다운로드 · 등록) */
+body.ul :is(.lst-foot,.lfoot){display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+body.ul :is(.lst-foot,.lfoot) .btn{display:inline-flex;align-items:center;justify-content:center;width:auto;height:44px;min-width:72px;min-height:0;padding:0 18px;border-radius:4px;font-size:14px;font-weight:500}
+body.ul :is(.lst-foot,.lfoot) .btn:not(.primary):not(.pri){border:1px solid var(--ul-line2);background:#fff;color:var(--ul-text)}
+body.ul :is(.lst-foot,.lfoot) .btn:is(.primary,.pri){border:1px solid var(--ul-ac);background:var(--ul-ac);color:#fff;font-weight:600}
+
+/* 좁은 화면: 가로 스크롤이 생기지 않도록 셀 여백 · 글자를 단계적으로 줄인다 */
+@media(max-width:1680px){
+  body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) :is(th,td){padding-left:8px;padding-right:8px}
+  body.ul :is(.work .tbl,.ltbl table,table.lt) :is(th,td){font-size:13px}
+  body.ul .work .tbl td.l{min-width:96px!important}
+}
+@media(max-width:1440px){
+  body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) :is(th,td){padding-left:6px;padding-right:6px}
+  body.ul :is(.lst-table,.work .tbl,.ltbl table,table.lt) :is(th,td){font-size:12.5px}
+  body.ul .work .tbl td.l{min-width:80px!important}
+  body.ul .work .tbl .acts .lk{padding:2px 1px}
+}
+@media(max-width:1100px){
+  body.ul .lst-bottom{grid-template-columns:minmax(0,1fr)}
+  body.ul .lst-bottom>*{grid-column:auto!important;justify-self:center}
+  body.ul .lst-bottom>.lst-foot{justify-self:end}
+  body.ul .lpg{flex-direction:column;gap:16px}
+  body.ul .lpg .lfoot{position:static;transform:none;align-self:flex-end}
+  body.ul :is(.lf-acts,.lf-act,.srch .sa){margin-left:0;padding-left:0;width:100%;justify-content:flex-end}
+}
+@media(max-width:900px){
+  body.ul .app>main:not(.main),body.ul .work,body.ul .sheet{padding:24px 16px 40px}
+  body.ul .lst-filter .lf-g>:is(select,input[type=text]),body.ul .lst-filter .lf-wide>input[type=text]{width:auto;flex:1 1 160px}
+}
