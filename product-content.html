@@ -16,9 +16,9 @@
     <title>상품 콘텐츠 관리 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   </head>
-  <body>
+  <body class="ul">
 <div class="app">
 <nav class="app-nav" aria-label="주 메뉴"></nav>
 <main>
@@ -34,10 +34,12 @@
 
   <!-- 조회 조건: 상품 전시 목록 · 일괄 관리와 같은 구성. 항목은 탭마다 다르고 [조회]를 눌러야 반영된다 -->
   <form class="lst-filter" id="lFilter" autocomplete="off"></form>
-  <h2 class="lst-count">조회결과 <span><b id="lCount">0</b>건</span></h2>
+  <h2 class="lst-count">조회 결과 <span>총 <b id="lCount">0</b>건</span></h2>
   <div class="lst-tw"><table class="lst-table" id="lTable"></table></div>
-  <nav class="lst-pager" id="lPager" aria-label="페이지"></nav>
-  <div class="lst-foot"><button type="button" class="btn primary lg" id="lNew">등록</button></div>
+  <div class="lst-bottom">
+    <nav class="lst-pager" id="lPager" aria-label="페이지"></nav>
+    <div class="lst-foot"><button type="button" class="btn primary lg" id="lNew">등록</button></div>
+  </div>
 </section>
 
 <!-- ===== 상세 · 등록 ===== -->

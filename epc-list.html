@@ -16,9 +16,9 @@
     <title>EPC 상품 조회 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   </head>
-  <body>
+  <body class="ul">
 <div class="app">
 <nav class="app-nav" aria-label="주 메뉴"></nav>
 <main>
@@ -45,7 +45,7 @@
       <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
     </div>
   </form>
-  <h2 class="lst-count">조회 결과 <span><b id="lCount">0</b>건</span></h2>
+  <h2 class="lst-count">조회 결과 <span>총 <b id="lCount">0</b>건</span></h2>
 
   <div class="lst-tw"><table class="lst-table" id="listTable">
     <colgroup><col class="w-id"><col class="w-ver"><col><col class="w-gb"><col class="w-ty"><col class="w-st"><col class="w-n"><col class="w-ord"><col class="w-at"></colgroup>

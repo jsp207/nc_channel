@@ -4,6 +4,7 @@
 import "./admin-shell.css";
 import "./payment2.css";
 import "./payment4.css";
+import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 
 requireAuthentication();
@@ -390,8 +391,8 @@ function vBase(){
   <td class="l"><button class="lk mid" data-a="merDetail" data-id="${m.id}">${esc(m.mid)}</button></td><td class="l">${esc(m.name)}</td><td class="l" style="font-size:12.5px">${esc(m.settle)||'<span class="dim-t">-</span>'}</td>
   <td class="l num"><button class="lk" style="color:var(--ink);padding:0;text-align:left" data-a="feeModal" data-id="${c.id}">${feeLine(c)}</button></td><td>${badge(m.keyStatus)}</td><td>${badge(ctrSt2(c))}</td>
   <td>${lp?`<button class="lk" data-a="ctrDetail" data-id="${c.id}" data-tab="promo" title="진행중 프로모션">${lp}</button>`:'<span class="dim-t">-</span>'}</td>
-  <td class="acts"><button class="lk" data-a="ctrDetail" data-id="${c.id}">상세</button><button class="lk" data-a="ctrModal" data-id="${c.id}">수정</button><button class="lk" data-a="feeModal" data-id="${c.id}">수수료</button></td></tr>`}).join('')||'<tr><td colspan="11" class="empty">조건에 맞는 결제수단이 없습니다. 조회 조건을 줄여 보세요.</td></tr>'}</tbody></table></div>${pg.html}
- <div class="lst-foot">${mk('4')}<button class="btn pri lg" data-a="regNew">결제수단 등록</button></div>`}
+  <td class="acts"><button class="lk" data-a="ctrDetail" data-id="${c.id}">상세</button><button class="lk" data-a="ctrModal" data-id="${c.id}">수정</button><button class="lk" data-a="feeModal" data-id="${c.id}">수수료</button></td></tr>`}).join('')||'<tr><td colspan="11" class="empty">조건에 맞는 결제수단이 없습니다. 조회 조건을 줄여 보세요.</td></tr>'}</tbody></table></div>
+ <div class="lst-bottom">${pg.html}<div class="lst-foot">${mk('4')}<button class="btn pri lg" data-a="regNew">결제수단 등록</button></div></div>`}
 
 /* ---------- SCR-02 결제수단 계약 상세 ---------- */
 function vCtr(){

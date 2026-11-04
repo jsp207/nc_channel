@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="zzangsoo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주문 코너 그룹 관리 정책서 v0.1 | NC-Channel Product Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--ac:#4320d4;--text:#20293b;--sub:#454f59;--muted:#707c91;--line:#e3e7ef;--head:#f4f5f7;--box:#f7f8fa;--red:#d2382b;--green:#1f8a5b;--blue:#2d5fd9;--orange:#b86a00}
+*{box-sizing:border-box}
+body{margin:0;background:#ebeef6;color:var(--text);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-size:14px;line-height:1.7;letter-spacing:-.2px}
+.wrap{max-width:1080px;margin:32px auto;padding:0 20px 60px}
+.doc{background:#fff;border-radius:20px;padding:44px 52px 52px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:2px solid var(--text);padding-bottom:22px;margin-bottom:8px}
+.top h1{margin:6px 0 0;font-size:26px;letter-spacing:-.5px}
+.top .cat{font-size:12.5px;color:var(--muted)}
+.meta{border-collapse:collapse;font-size:12.5px;flex:none}
+.meta th,.meta td{border:1px solid var(--line);padding:5px 12px;text-align:left}
+.meta th{background:var(--head);font-weight:600;color:var(--sub)}
+.toc{margin:24px 0 8px;padding:16px 22px;background:var(--box);border-radius:12px;columns:2;column-gap:40px;font-size:13px}
+.toc a{color:var(--sub);text-decoration:none;display:block;padding:2px 0}
+.toc a:hover{color:var(--ac)}
+h2{font-size:19px;margin:44px 0 14px;padding-left:10px;border-left:4px solid var(--ac);line-height:1.3;scroll-margin-top:20px}
+h3{font-size:15px;margin:24px 0 8px}
+p{margin:0 0 10px}
+ol,ul{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+table.t{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 14px}
+.t th,.t td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+.t thead th{background:var(--head);border-top:1px solid #d5d9e3;font-weight:600;white-space:nowrap}
+.t td.c,.t th.c{text-align:center}
+.t td.nw{white-space:nowrap}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:#f1f2f6;border-radius:4px;padding:1px 5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:4px;padding:0 6px;white-space:nowrap}
+.g{background:#e0f6e9;color:var(--green)}.b{background:#e6efff;color:var(--blue)}.r{background:#ffe5e3;color:var(--red)}.o{background:#fff0c2;color:var(--orange)}.k{background:#eceef3;color:#5c6577}
+.note{background:#f5f8ff;border:1px solid #d6e2fb;border-radius:10px;padding:12px 16px;margin:8px 0 14px;font-size:13px}
+.warn{background:#fff8ec;border:1px solid #f6dcb0;border-radius:10px;padding:12px 16px;margin:8px 0 14px;font-size:13px}
+.flow{display:flex;align-items:stretch;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
+.flow div{flex:1 1 150px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--box);font-size:12.5px}
+.flow div b{display:block;font-size:13.5px;margin-bottom:2px}
+.flow div.on{border:1.5px solid var(--ac);background:#f3f0ff}
+.flow i{align-self:center;font-style:normal;color:var(--muted)}
+.ex{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:8px 0 14px}
+.ex .cs{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px}
+.ex .cs b{display:block;margin-bottom:6px;font-size:13px}
+.ex ol{margin:0;padding-left:18px}
+.foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+@media(max-width:760px){.doc{padding:26px 18px}.top{flex-direction:column}.toc{columns:1}.ex{grid-template-columns:1fr}.t{display:block;overflow-x:auto}}
+@media print{body{background:#fff}.wrap{margin:0;max-width:none;padding:0}.doc{padding:0;border-radius:0}h2{break-after:avoid}table,.note,.warn,.ex{break-inside:avoid}.toc a{color:#000}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="doc">
+
+<div class="top">
+  <div><span class="cat">NC-Channel Product Admin · 주문관리</span><h1>주문 코너 그룹 관리 정책서</h1></div>
+  <table class="meta"><tr><th>문서 버전</th><td>v0.1 (검토용)</td></tr><tr><th>작성일</th><td>2026.11.04</td></tr><tr><th>화면</th><td>order-corner-group-v22.html</td></tr><tr><th>상위 기준</th><td>객체 기반 주문 구성요소 관리 정책</td></tr></table>
+</div>
+
+<nav class="toc">
+  <a href="#s1">1. 목적과 범위</a><a href="#s2">2. 관리 구조와 그룹의 책임</a><a href="#s3">3. 데이터 구성</a><a href="#s4">4. 재정의 허용 범위</a><a href="#s5">5. 노출 조건(선행/후행) 정책</a><a href="#s6">6. 상태와 버전</a><a href="#s7">7. 저장·승인·발행</a><a href="#s8">8. 검증 규칙</a><a href="#s9">9. 삭제·폐기·연결 해제</a><a href="#s10">10. 변경 전파</a><a href="#s11">11. 화면 구성</a><a href="#s12">12. 이력 관리</a><a href="#s13">13. 협의 필요 사항</a>
+</nav>
+
+<h2 id="s1">1. 목적과 범위</h2>
+<p>주문 코너 그룹은 자주 함께 쓰는 코너를 정해진 순서로 묶어 주문 프로세스에 한 번에 배치하기 위한 객체다. 프로세스마다 같은 코너 묶음을 반복 구성하는 작업을 없애고, 묶음 단위로 버전을 관리해 변경 영향을 통제한다.</p>
+<p>이 문서는 코너 그룹의 등록, 수정, 승인, 발행, 폐기 규칙과 코너 노출 조건을 그룹 안에서 다루는 방식을 정의한다. 코너 원본 관리는 주문 코너 관리, 그룹 배치는 주문 프로세스 관리의 범위이며 이 문서에서는 두 화면과 맞닿는 부분만 다룬다.</p>
+
+<h2 id="s2">2. 관리 구조와 그룹의 책임</h2>
+<div class="flow">
+  <div><b>코너</b>원본 속성, 선택 항목, 노출 조건, 검증 규칙</div><i>→</i>
+  <div class="on"><b>코너 그룹</b>코너 참조, 순서, 그룹 단위 표시 설정</div><i>→</i>
+  <div><b>주문 프로세스(컨테이너)</b>코너와 그룹 배치, 프로세스 버전</div><i>→</i>
+  <div><b>상품 전시</b>상품별 프로세스 연결과 표시 설정</div>
+</div>
+<p>각 객체는 상속이 아니라 참조로 연결한다. 그룹은 코너를 복사하지 않고 코너 ID와 참조 버전만 가진다. 코너는 그룹을 거치지 않고 프로세스에 직접 배치될 수도 있다.</p>
+<table class="t">
+  <thead><tr><th style="width:180px">구분</th><th>코너 그룹이 하는 일</th><th>코너 그룹이 하지 않는 일</th></tr></thead>
+  <tbody>
+    <tr><td>구성</td><td>코너 추가, 연결 해제, 노출 순서 지정</td><td>코너 원본 속성, 선택 항목, CTA 수정</td></tr>
+    <tr><td>표시</td><td>그룹 안에서의 타이틀 재정의, 노출/숨김</td><td>필수 코너 숨김, 코너 유형 변경</td></tr>
+    <tr><td>조건</td><td>코너 노출 조건이 그룹 안에서 성립하는지 검증, 외부 의존 기록</td><td>노출 조건 생성, 수정, 재정의</td></tr>
+    <tr><td>버전</td><td>그룹 신규 버전 발행, 코너 참조 버전 고정과 갱신</td><td>프로세스의 그룹 참조 버전 자동 교체</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s3">3. 데이터 구성</h2>
+<h3>3.1 그룹 기본 속성</h3>
+<table class="t">
+  <thead><tr><th style="width:150px">항목</th><th style="width:90px" class="c">필수</th><th>규칙</th></tr></thead>
+  <tbody>
+    <tr><td>그룹 ID</td><td class="c">자동</td><td><code>CG-ORD-0000</code> 형식, 저장 시 채번. 결제 성격 그룹은 <code>CG-PAY</code>를 쓴다. 한 번 채번하면 바꾸지 않는다.</td></tr>
+    <tr><td>그룹명</td><td class="c">Y</td><td>최대 30자. 같은 이름 중복은 허용하되 목록에서 ID로 구분한다.</td></tr>
+    <tr><td>설명</td><td class="c">N</td><td>최대 60자. 그룹 용도를 적는다. FO에 노출되지 않는다.</td></tr>
+    <tr><td>사용 여부</td><td class="c">Y</td><td>Y/N. N이면 새 프로세스에 연결할 수 없다. 기존 연결은 유지된다.</td></tr>
+    <tr><td>운영 버전</td><td class="c">자동</td><td>승인되어 발행된 최신 버전. 발행 전이면 없음(-).</td></tr>
+    <tr><td>작업 버전</td><td class="c">자동</td><td>승인 전 변경본. 그룹당 1개만 존재한다.</td></tr>
+  </tbody>
+</table>
+<h3>3.2 구성 코너(멤버) 속성</h3>
+<table class="t">
+  <thead><tr><th style="width:150px">항목</th><th>규칙</th></tr></thead>
+  <tbody>
+    <tr><td>배치 ID</td><td>그룹 안에서 멤버를 식별하는 ID(<code>BI-0000</code>). 코너 원본 ID와 분리해 관리하며 순서를 바꿔도 유지된다.</td></tr>
+    <tr><td>코너 ID</td><td>참조하는 코너 원본 ID. 한 그룹에 같은 코너는 한 번만 넣을 수 있다.</td></tr>
+    <tr><td>참조 버전</td><td>추가 시점의 코너 최신 버전으로 고정한다. 코너가 새 버전을 내도 자동으로 바뀌지 않는다.</td></tr>
+    <tr><td>순서</td><td>FO 노출 순서. 위에서부터 1번.</td></tr>
+    <tr><td>타이틀 재정의</td><td>비우면 코너 원본의 메인 타이틀을 쓴다. 최대 40자.</td></tr>
+    <tr><td>노출 여부</td><td>노출/숨김. 필수 코너와 다른 멤버의 조건 대상 코너는 숨길 수 없다.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s4">4. 재정의 허용 범위</h2>
+<p>표시 속성은 상품별 재정의 → 프로세스 설정 → 그룹 설정 → 코너 기본값 순서로 적용한다. 그룹 단계에서 바꿀 수 있는 속성은 아래 표의 허용 항목뿐이다.</p>
+<table class="t">
+  <thead><tr><th style="width:200px">속성</th><th style="width:120px" class="c">그룹 재정의</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td>코너 ID, 코너 유형</td><td class="c"><span class="tag r">불가</span></td><td>원본 고유 값</td></tr>
+    <tr><td>선택 항목, CTA, 검증, API 연동</td><td class="c"><span class="tag r">불가</span></td><td>코너 원본에서 버전 관리</td></tr>
+    <tr><td>노출 조건(선행/후행)</td><td class="c"><span class="tag r">불가</span></td><td>5장 참조. 그룹은 검증만 한다</td></tr>
+    <tr><td>메인 타이틀</td><td class="c"><span class="tag g">허용</span></td><td>그룹 안에서만 적용, 원본 불변</td></tr>
+    <tr><td>서브 타이틀, 안내 문구</td><td class="c"><span class="tag o">협의</span></td><td>1차 범위 제외. 13장 참조</td></tr>
+    <tr><td>노출 여부</td><td class="c"><span class="tag g">조건부</span></td><td>필수 코너, 조건 대상 코너는 숨김 불가</td></tr>
+    <tr><td>노출 순서</td><td class="c"><span class="tag g">허용</span></td><td>노출 조건 순서 규칙을 지켜야 저장 가능</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s5">5. 노출 조건(선행/후행) 정책</h2>
+<h3>5.1 소유 원칙</h3>
+<p>노출 조건은 코너 원본이 소유한다. 그룹은 조건을 만들거나 고치지 않고, 조건이 그룹 안에서 깨지지 않는지 검증하는 역할만 한다. 조건을 그룹에서 덮어쓰게 하면 같은 코너가 그룹마다 다르게 동작하고, 원본만 보고 노출 여부를 판단할 수 없어 운영 장애 추적이 어려워진다.</p>
+<p>코너 조건은 두 종류다. 선행 코너의 선택값을 보는 <b>코너 조건</b>과 주문 유형, 선택 EPC 상품 같은 <b>상품 정보 조건</b>이다. 상품 정보 조건은 그룹 구성과 무관하므로 표시만 하고 검증 대상에서 뺀다.</p>
+
+<h3>5.2 조건 상태 판정</h3>
+<p>그룹 저장 시 멤버마다 코너 조건의 참조 대상이 그룹 안 어디에 있는지 보고 상태를 판정한다.</p>
+<table class="t">
+  <thead><tr><th style="width:150px">상태</th><th>판정 기준</th><th style="width:240px">처리</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag g">그룹 내 충족</span></td><td>참조 대상 코너가 그룹 안에 있고, 조건을 쓰는 코너보다 앞에 있고, 노출 상태</td><td>정상</td></tr>
+    <tr><td><span class="tag b">외부 의존</span></td><td>참조 대상 코너가 그룹 밖에 있음</td><td>저장 허용. 외부 의존 목록에 기록하고 프로세스 배치 시 검증</td></tr>
+    <tr><td><span class="tag r">순서 오류</span></td><td>참조 대상 코너가 그룹 안에 있지만 조건을 쓰는 코너보다 뒤에 있음</td><td>승인 요청 차단</td></tr>
+    <tr><td><span class="tag r">참조 코너 숨김</span></td><td>참조 대상 코너가 그룹 안에서 숨김 상태. 선택값이 생기지 않아 조건이 영원히 성립하지 않음</td><td>승인 요청 차단</td></tr>
+    <tr><td><span class="tag k">상품 정보</span></td><td>상품 정보 조건</td><td>표시만 함</td></tr>
+  </tbody>
+</table>
+<div class="ex">
+  <div class="cs"><b>예시 1. 그룹 내 충족</b>CG-PAY-0001 결제 정보 입력<ol><li>요금 납부 수단 등록</li><li>결제수단</li><li>결제 증빙 수단 (조건: 결제수단 = 계좌이체)</li></ol></div>
+  <div class="cs"><b>예시 2. 외부 의존</b>CG-ORD-0004 단말 혜택 선택<ol><li>바로 보상 신청 (조건: 가입 방식 선택 = 기기변경)</li><li>T 기프트 선택</li><li>티다팩 쿠폰 선택</li></ol>가입 방식 선택(CN-ORD-0003)이 프로세스에서 이 그룹보다 앞에 있어야 한다.</div>
+</div>
+<p>순서 규칙만 지키면 순환 참조는 구조적으로 생기지 않는다. A가 B보다 앞이면서 B도 A보다 앞인 배치는 존재할 수 없으므로 순환 참조 검사를 따로 두지 않는다.</p>
+
+<h3>5.3 그룹은 프로세스 안에서 하나의 블록이다</h3>
+<ol>
+  <li>그룹 내부 순서는 고정이다. 주문 프로세스 관리에서 그룹 멤버 사이에 다른 코너를 끼워 넣을 수 없다.</li>
+  <li>그룹은 저장 시 외부 의존 목록(코너 ID와 조건 값)을 함께 저장한다. 프로세스 관리는 그룹을 배치할 때 이 목록의 코너가 그룹보다 앞에 있는지만 확인한다. 없거나 뒤에 있으면 프로세스 승인 요청을 막는다.</li>
+  <li>후행 방향에는 제약이 없다. 그룹 뒤에 오는 코너가 그룹 멤버의 선택값을 조건으로 쓰는 것은 일반 코너 간 관계와 같다.</li>
+  <li>프로세스에서 그룹 멤버를 조건 대상으로 쓰는 뒤쪽 코너가 있다면, 그 멤버를 그룹에서 숨기거나 연결 해제하는 그룹 버전은 해당 프로세스에 적용할 수 없다. 적용 판단은 프로세스 관리에서 한다.</li>
+</ol>
+
+<h3>5.4 그룹 자체 조건과 그룹 노출 규칙</h3>
+<p>1차 범위에서는 그룹 단위 노출 조건을 두지 않는다. 같은 효과는 멤버 코너 조건으로 낼 수 있고, 그룹 조건이 생기면 노출 판단이 그룹 조건과 코너 조건의 2단 구조가 되어 운영자가 결과를 예측하기 어렵다. 그룹은 노출 가능한 멤버가 하나 이상이면 보이고, 모든 멤버가 숨김이거나 조건 불충족이면 영역 전체가 FO에서 빠진다.</p>
+
+<h3>5.5 조건 변경 시 처리</h3>
+<p>코너 원본의 조건이 바뀌면 코너 새 버전이 발행된다. 그룹은 참조 버전을 고정하고 있으므로 운영 중인 그룹은 영향을 받지 않는다. 운영자가 그룹 수정 화면에서 최신 버전 적용을 누르는 시점에 5.2 판정을 다시 수행하고, 순서 오류나 참조 코너 숨김이 생기면 승인 요청을 막는다.</p>
+
+<h2 id="s6">6. 상태와 버전</h2>
+<h3>6.1 진행 상태</h3>
+<table class="t">
+  <thead><tr><th style="width:130px">상태</th><th>정의</th><th style="width:210px">가능한 작업</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag g">운영중</span></td><td>발행된 운영 버전만 있고 작업 버전이 없음</td><td>수정, 폐기</td></tr>
+    <tr><td><span class="tag k">임시 저장</span></td><td>작업 버전이 저장만 된 상태. 운영에 반영되지 않음</td><td>수정, 승인 요청, 삭제(발행 전 그룹만)</td></tr>
+    <tr><td><span class="tag o">승인 대기</span></td><td>작업 버전에 대해 승인 요청함</td><td>요청 취소. 수정 불가</td></tr>
+    <tr><td><span class="tag r">반려</span></td><td>승인 담당자가 반려함. 반려 사유 표시</td><td>수정 후 재요청</td></tr>
+    <tr><td><span class="tag k">폐기</span></td><td>종료된 그룹. 조회만 가능</td><td>없음</td></tr>
+  </tbody>
+</table>
+<h3>6.2 버전 번호</h3>
+<ol>
+  <li>신규 그룹은 <code>v1.0</code>으로 발행한다.</li>
+  <li>수정은 운영 버전의 끝자리를 1 올린다. v1.2 운영 중 수정하면 작업 버전은 v1.3이다.</li>
+  <li>작업 버전 번호는 승인 전까지 유지된다. 반려 후 다시 수정해도 번호는 같다.</li>
+  <li>발행된 버전은 삭제하거나 덮어쓰지 않는다.</li>
+</ol>
+
+<h2 id="s7">7. 저장·승인·발행</h2>
+<table class="t">
+  <thead><tr><th style="width:130px">단계</th><th>처리</th></tr></thead>
+  <tbody>
+    <tr><td>임시 저장</td><td>그룹명만 있으면 저장한다. 검증 규칙은 적용하지 않는다. 이력에 남지 않는다.</td></tr>
+    <tr><td>승인 요청</td><td>8장 검증을 수행하고 결과, 변경 내용, 영향 범위를 한 화면에 보여준다. 차단 항목이 있으면 요청 버튼을 노출하지 않는다. 요청 사유는 필수다.</td></tr>
+    <tr><td>승인</td><td>작업 버전을 운영 버전으로 발행한다. 기존 운영 버전은 보존한다. 사용 중인 프로세스의 참조 버전은 바꾸지 않는다.</td></tr>
+    <tr><td>반려</td><td>작업 버전을 반려 상태로 돌린다. 반려 사유는 필수이며 상세 화면과 이력에 표시한다.</td></tr>
+    <tr><td>요청 취소</td><td>요청자가 승인 대기 건을 회수한다. 작업 버전은 임시 저장 상태로 남는다.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s8">8. 검증 규칙</h2>
+<table class="t">
+  <thead><tr><th style="width:70px">코드</th><th>규칙</th><th style="width:90px" class="c">결과</th></tr></thead>
+  <tbody>
+    <tr><td class="nw">V-01</td><td>그룹명이 입력되어 있다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-02</td><td>구성 코너가 2개 이상이다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-03</td><td>같은 코너가 중복으로 들어가 있지 않다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-04</td><td>사용 여부 N인 코너가 포함되어 있지 않다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-05</td><td>필수 코너가 노출 상태다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-06</td><td>노출 상태인 코너가 1개 이상이다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-07</td><td>노출 조건의 참조 대상 코너가 조건을 쓰는 코너보다 앞에 있다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-08</td><td>노출 조건의 참조 대상 코너가 노출 상태다</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-09</td><td>운영 버전 대비 변경 사항이 있다 (수정 시)</td><td class="c"><span class="tag r">차단</span></td></tr>
+    <tr><td class="nw">V-10</td><td>모든 코너가 최신 버전을 참조한다</td><td class="c"><span class="tag o">경고</span></td></tr>
+    <tr><td class="nw">V-11</td><td>외부 의존 코너가 있다. 목록을 표시하고 프로세스 배치 시 검증</td><td class="c"><span class="tag o">경고</span></td></tr>
+  </tbody>
+</table>
+<p>경고는 승인 요청을 막지 않는다. 이전 버전 참조는 운영 판단으로 유지할 수 있다.</p>
+
+<h2 id="s9">9. 삭제·폐기·연결 해제</h2>
+<table class="t">
+  <thead><tr><th style="width:170px">작업</th><th>조건</th><th>결과</th></tr></thead>
+  <tbody>
+    <tr><td>멤버 연결 해제</td><td>그룹 수정 중 언제든 가능</td><td>그룹에서만 빠지고 코너 원본은 유지된다. 해제한 코너를 조건으로 쓰던 멤버는 외부 의존으로 바뀌고 안내 메시지를 띄운다.</td></tr>
+    <tr><td>사용 여부 N</td><td>그룹 수정 후 승인</td><td>새 프로세스 연결 불가. 기존 프로세스 연결과 노출은 유지된다.</td></tr>
+    <tr><td>폐기</td><td>사용 중인 프로세스가 0개</td><td>상태 폐기, 사용 여부 N. 조회만 가능하고 되돌릴 수 없다. 버전과 이력은 보존한다.</td></tr>
+    <tr><td>폐기 불가</td><td>사용 중인 프로세스가 1개 이상</td><td>연결된 프로세스 목록을 보여주고 주문 프로세스 관리에서 연결 해제를 먼저 하도록 안내한다.</td></tr>
+    <tr><td>삭제</td><td>한 번도 발행되지 않은 그룹(임시 저장, 반려)</td><td>물리 삭제. 발행 이력이 있는 그룹은 삭제할 수 없다.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s10">10. 변경 전파</h2>
+<ol>
+  <li>코너 원본이 새 버전을 내도 그룹의 참조 버전은 자동으로 바뀌지 않는다. 그룹 상세의 참조 버전 옆에 최신 버전을 표시한다.</li>
+  <li>그룹 수정 화면에서 코너별 최신 적용 또는 일괄 적용으로 참조 버전을 올린다. 적용 즉시 5.2 판정과 미리보기를 갱신한다.</li>
+  <li>그룹이 새 버전을 발행해도 프로세스의 그룹 참조 버전은 자동으로 바뀌지 않는다. 그룹 상세의 사용 위치에 프로세스별 참조 버전과 최신/이전 버전 여부를 표시한다.</li>
+  <li>프로세스별 새 버전 적용은 주문 프로세스 관리에서 검증 후 수행한다.</li>
+</ol>
+
+<h2 id="s11">11. 화면 구성</h2>
+<table class="t">
+  <thead><tr><th style="width:150px">화면</th><th>구성</th></tr></thead>
+  <tbody>
+    <tr><td>목록</td><td>검색 조건은 사용 여부, 상태, 검색어(그룹명, 그룹 ID, 포함 코너). 목록 항목은 그룹 ID, 그룹명과 설명, 구성 코너(노출 순서, 숨김은 취소선), 사용 프로세스 수, 운영 버전, 상태(작업 버전 번호 병기), 사용 여부, 최종 수정일, 최종 수정자. 사용 프로세스 수를 누르면 상세의 사용 위치로 이동한다.</td></tr>
+    <tr><td>상세</td><td>왼쪽 FO 미리보기, 오른쪽 기본 정보, 구성 코너(배치 ID, 참조 버전, 타이틀, 노출, 노출 조건 상태), 외부 의존 목록, 사용 위치. 운영 버전과 작업 버전이 함께 있으면 상단에서 전환해 본다.</td></tr>
+    <tr><td>등록/수정</td><td>상세와 같은 배치. 구성 코너 표에서 드래그 순서 변경, 타이틀 재정의, 노출 선택, 최신 버전 적용, 연결 해제를 한다. 입력 내용은 미리보기에 바로 반영한다. 하단 버튼은 취소, 임시 저장, 승인 요청.</td></tr>
+    <tr><td>코너 추가 팝업</td><td>코너 구분, 검색어로 조회. 이미 추가된 코너와 사용 여부 N인 코너는 선택할 수 없다. 추가 시 코너 최신 버전으로 참조한다.</td></tr>
+    <tr><td>승인 요청 팝업</td><td>검증 결과(차단/경고), 변경 내용, 영향 범위, 요청 사유 입력.</td></tr>
+    <tr><td>변경/승인 이력</td><td>상세의 별도 탭. 8번 이력 항목을 표로 보여준다.</td></tr>
+  </tbody>
+</table>
+<div class="note">저장하지 않은 입력이 있는 상태에서 목록, 취소를 누르면 확인 팝업을 띄운다. 승인 대기 중에는 수정 버튼을 막고, 다른 운영자의 동시 수정은 작업 버전 1개 원칙으로 차단한다.</div>
+
+<h2 id="s12">12. 이력 관리</h2>
+<p>이력은 승인 요청 단위로 남긴다. 임시 저장은 남기지 않는다.</p>
+<table class="t">
+  <thead><tr><th style="width:150px">항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>상태</td><td>승인 대기, 승인 완료, 반려, 요청 취소, 폐기</td></tr>
+    <tr><td>요청자, 요청 일시, 요청 사유</td><td>승인 요청 시점 기록</td></tr>
+    <tr><td>변경 내용</td><td>운영 버전 대비 자동 산출. 그룹명, 설명, 사용 여부, 코너 추가 N개, 연결 해제 N개, 노출 순서, 타이틀 재정의 N건, 노출 여부 N건, 참조 버전 N건</td></tr>
+    <tr><td>승인 담당자, 처리 일시, 처리 사유</td><td>승인, 반려 시점 기록. 반려는 사유 필수</td></tr>
+    <tr><td>버전</td><td>요청 또는 발행 대상 버전</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s13">13. 협의 필요 사항</h2>
+<table class="t">
+  <thead><tr><th style="width:44px" class="c">No</th><th>안건</th><th style="width:300px">현재 가정</th></tr></thead>
+  <tbody>
+    <tr><td class="c">1</td><td>그룹 최소 구성 코너 수</td><td>2개 이상 (V-02)</td></tr>
+    <tr><td class="c">2</td><td>서브 타이틀, 안내 문구 그룹 재정의 허용 여부</td><td>1차 제외, 메인 타이틀만 허용</td></tr>
+    <tr><td class="c">3</td><td>그룹 단위 노출 조건 도입 여부</td><td>1차 제외, 요구 반복 시 2차 검토</td></tr>
+    <tr><td class="c">4</td><td>그룹 승인 권한자와 프로세스 승인 권한자 분리 여부</td><td>동일 승인 담당자</td></tr>
+    <tr><td class="c">5</td><td>프로세스에서 그룹 신규 버전 일괄 적용 허용 여부</td><td>프로세스별 개별 적용</td></tr>
+    <tr><td class="c">6</td><td>그룹을 다른 그룹에 넣는 중첩 허용 여부</td><td>불허. 그룹 멤버는 코너만 가능</td></tr>
+  </tbody>
+</table>
+<div class="warn">6번은 중첩을 허용하면 조건 판정과 블록 규칙이 재귀 구조가 되어 검증과 화면 복잡도가 크게 올라간다. 불허로 확정하는 쪽을 권한다.</div>
+
+<div class="foot">주문 코너 그룹 관리 정책서 v0.1 · 2026.11.04 · 세부 권한과 예외 조건은 이해관계자 협의 후 확정</div>
+</div></div>
+</body>
+</html>
