@@ -83,9 +83,11 @@ table.lt{width:100%;border-collapse:collapse;font-size:13px}
 .lt td{border-bottom:1px solid var(--line);padding:8px;text-align:center;vertical-align:middle;color:var(--sub)}
 .lt td.l{text-align:left;min-width:150px}
 .lt td.mono{white-space:nowrap}
-.lt tbody tr{cursor:pointer}.lt tbody tr:hover td{background:#fafaff}
+.lt tbody tr:hover td{background:#fafaff}
 .lt .lnk{color:var(--text);font-weight:500}
-.lt tr:hover .lnk{color:var(--accent);text-decoration:underline}
+/* 상세 이동은 코너 ID 링크로만 */
+.lt a.cid{color:var(--accent);text-decoration:none;cursor:pointer}
+.lt a.cid:hover{text-decoration:underline}
 .lt td.dt{white-space:nowrap;color:var(--muted)}
 .pc{display:inline-block;min-width:24px;padding:0 7px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:12px}
 .pill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:5px;padding:1px 7px;white-space:nowrap}

@@ -71,7 +71,7 @@ function renderList(){
     var nm='<b class="lnk">'+esc(c.n)+'</b>'+(isGrp(c)?DEFN+'<small class="q">구성 코너 '+c.members.length+'개</small>':'');
     // 코너 그룹은 유형 칸에 '코너 그룹'만, 비화면 코너처럼 맞는 표시 방식이 없으면 '-'
     var sp=isGrp(c)?{type:'코너 그룹',form:'-',mode:'-'}:specOf(c)||{type:'-',form:'-',mode:'-'};
-    return '<tr data-id="'+c.id+'"><td class="mono">'+c.id+'</td><td class="l">'+nm+'</td><td>'+esc(sp.type)+'</td><td>'+esc(sp.form)+'</td><td>'+esc(sp.mode)+'</td><td class="vr">'+c.ver+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
+    return '<tr data-id="'+c.id+'"><td class="mono"><a class="cid" href="#" data-id="'+c.id+'">'+c.id+'</a></td><td class="l">'+nm+'</td><td>'+esc(sp.type)+'</td><td>'+esc(sp.form)+'</td><td>'+esc(sp.mode)+'</td><td class="vr">'+c.ver+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
   }).join('');
   $('lEmpty').hidden=!!L.length;
   $('pager').innerHTML=pagerHTML(L.length,Q.page);
@@ -346,7 +346,8 @@ $('bClr').onclick=function(){$('fKw').value='';this.hidden=true;$('fKw').focus()
 $('pager').addEventListener('click',function(e){var b=e.target.closest('[data-g]');if(!b)return;Q.page=+b.getAttribute('data-g');renderList()});
 $('lBody').addEventListener('click',function(e){
   var u=e.target.closest('[data-use]');if(u){openDetail(u.getAttribute('data-use'),'use');return}
-  var tr=e.target.closest('tr[data-id]');if(tr)openDetail(tr.getAttribute('data-id'));
+  // 행 전체가 아니라 코너 ID를 눌렀을 때만 상세로 이동
+  var a=e.target.closest('a[data-id]');if(a){e.preventDefault();openDetail(a.getAttribute('data-id'))}
 });
 $('topTabs').addEventListener('click',function(e){var b=e.target.closest('[data-tt]');if(!b)return;if(b.getAttribute('data-tt')!=='상품')toast(b.getAttribute('data-tt')+' 탭은 전시팀 목업에서 관리합니다. 통합 시 연결됩니다.')});
 function goList(){if(mode==='edit')toast('수정 중인 내용은 저장되지 않았습니다.');mode='view';dr=null;openList()}
