@@ -634,14 +634,13 @@ a.lk-btn{display:inline-flex;align-items:center;text-decoration:none;color:var(-
         <div class="sg kw"><span class="sgl">검색어</span><div class="ss w120"><select id="fKey"><option value="n">그룹명</option><option value="i">그룹 ID</option><option value="c">포함 코너</option></select><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><div class="si"><input id="fKw" type="text" placeholder="검색어를 입력하세요" autocomplete="off"><button type="button" id="bClr" aria-label="입력값 삭제" hidden><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
         <div class="sa"><button type="button" class="sbtn" id="bReset">초기화</button><button type="button" class="sbtn pri" id="bSearch">조회</button></div>
       </div>
-      <div class="rh"><h2>조회 결과<small>총 <b id="rCnt">0</b>건</small></h2></div>
+      <div class="rh"><h2>조회 결과<small>총 <b id="rCnt">0</b>건</small></h2><button type="button" class="sbtn pri" data-act="create">＋ 그룹 등록</button></div>
       <div id="vList">
         <table class="lt" id="lTable"><colgroup><col style="width:52px"><col style="width:120px"><col style="width:22%"><col><col style="width:96px"><col style="width:84px"><col style="width:104px"><col style="width:70px"><col style="width:110px"><col style="width:140px"></colgroup>
           <thead><tr><th>NO</th><th>그룹 ID</th><th>그룹명</th><th>구성 코너 (노출 순서)</th><th>사용 프로세스</th><th>운영 버전</th><th>상태</th><th>사용여부</th><th>최종 수정일</th><th>최종 수정자</th></tr></thead><tbody id="lBody"></tbody></table>
       </div>
       <div class="empty" id="lEmpty" hidden style="margin-top:8px">조회된 코너 그룹이 없습니다.</div>
-      <!-- 목록 아래 : 가운데 페이지 번호 + 오른쪽 등록 버튼 (list-unified .lst-bottom) -->
-      <div class="lst-bottom"><div class="pager" id="pager"></div><div class="lst-foot"><button type="button" class="btn pri" data-act="create">코너 그룹 등록</button></div></div>
+      <div class="pager" id="pager"></div>
     </section>
 
     <!-- ===== 상세 / 등록 / 수정 ===== -->

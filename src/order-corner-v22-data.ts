@@ -1,6 +1,8 @@
 // @ts-nocheck
-// 주문 코너 원본 데이터와 FO 미리보기 렌더러. 주문 코너 관리(order-corner-v22.ts)와 주문 코너 그룹 관리(order-corner-group-v22.ts)가 함께 쓴다.
+// 주문 코너 원본 데이터와 FO 미리보기 렌더러. 주문 코너 관리(order-corner-v22.ts)와 주문 코너 그룹 관리(order-corner-group-v22.ts · v23.ts)가 함께 쓴다.
 // 코너를 바꾸면 그룹의 코너 추가 목록 · 구성 코너 · 미리보기에도 그대로 반영된다.
+// 주문 코너 관리 목록 · 상세의 최근 수정자 (등록 · 수정 저장 시에도 이 값)
+export const CORNER_EDITOR='김코너 (P000300)';
 
 var PAGES={P1:{n:'상품상세_기기상품_메인',s:'NC-PRD-005-0'},P2:{n:'상품상세_기기상품_선택 상품 선택',s:'NC-PRD-030-0'},P3:{n:'기기 가입하기',s:'NC-ORD-031-0'},P4:{n:'기기 최종 약관 동의',s:'NC-PAY-021-0'},P5:{n:'주문 완료',s:'NC-ORD-033-0'}};
 var UI={info:'상품 정보형',ai:'추천 요약형',color:'컬러칩 선택형',list:'리스트 선택형',card:'카드 선택형',grid:'이미지 그리드형',hscroll:'가로 스크롤형',chip:'버튼 선택형',radio:'라디오 선택형',form:'입력 폼형',sum:'정보 요약형',terms:'약관 동의형',done:'결과 안내형',nv:'비화면'};
@@ -113,8 +115,8 @@ PROCS.sort(function(a,b){return a[0]<b[0]?1:-1});
 
 /* 코너 그룹 : 기존 선·후행 설정 예시를 그룹으로 표기 (정의 중) */
 var GROUPS=[
- {id:'CG-PRD-0001',n:'단말 옵션 선택 그룹',t:'코너 그룹',members:['CN-PRD-0005','CN-PRD-0002','CN-PRD-0003'],desc:'단말 상품 기본 정보 아래에 색상, 용량 선택을 붙여 한 영역으로 노출',use:'Y',dt:'2026-10-27 10:20',ver:'v0.1',mby:'김지훈 (P032210)'},
- {id:'CG-ORD-0001',n:'요금제·할인 방법 묶음',t:'코너 그룹',members:['CN-ORD-0005','CN-ORD-0084'],desc:'요금제 선택 바로 다음에 할인 방법 선택을 이어서 노출',use:'Y',dt:'2026-10-27 11:05',ver:'v0.1',mby:'김지훈 (P032210)'}
+ {id:'CG-PRD-0001',n:'단말 옵션 선택 그룹',t:'코너 그룹',members:['CN-PRD-0005','CN-PRD-0002','CN-PRD-0003'],desc:'단말 상품 기본 정보 아래에 색상, 용량 선택을 붙여 한 영역으로 노출',use:'Y',dt:'2026-10-27 10:20',ver:'v0.1',mby:CORNER_EDITOR},
+ {id:'CG-ORD-0001',n:'요금제·할인 방법 묶음',t:'코너 그룹',members:['CN-ORD-0005','CN-ORD-0084'],desc:'요금제 선택 바로 다음에 할인 방법 선택을 이어서 노출',use:'Y',dt:'2026-10-27 11:05',ver:'v0.1',mby:CORNER_EDITOR}
 ];
 /* 데이터 소스 : 상품 연동은 상품 시스템, 그 외 직접 입력. 앞 단계 값을 모아 보여주는 코너는 주문 정보 */
 var DS_OVR={};
@@ -128,7 +130,7 @@ CORNERS.forEach(function(c,i){
   c.opts.forEach(function(x){x.lk=linked&&x.x!=='none'});
   var nl=c.opts.filter(function(x){return x.lk}).length;
   c.ds=DS_OVR[c.id]||(c.t==='상품 연동'?(nl&&nl<c.opts.length?'혼합':'상품 시스템'):'직접 입력');
-  c.ver='v1.'+(i%4); c.mby=i%3?'김수정 (P038817)':'김등록 (P033121)';
+  c.ver='v1.'+(i%4); c.mby=CORNER_EDITOR;
   c.opts.forEach(function(x,j){x.k=c.id+'-'+j});
   c.sort=SORTS[c.id==='CN-ORD-0005'?2:1];c.lim=c.opts.length||3;
   c.cond={mode:'none',list:[]};
@@ -138,8 +140,12 @@ CORNERS.forEach(function(c,i){
   set('CN-ORD-0001',[{kind:'product',key:'ordertype',values:['단말+회선','USIM/eSIM+회선']}]);
   set('CN-ORD-0005',[{kind:'product',key:'ordertype',values:['단말+회선','USIM/eSIM+회선']}]);
   set('CN-ORD-0006',[{kind:'product',key:'ordertype',values:['단말+회선','USIM/eSIM+회선']}]);
-  set('CN-ORD-0009',[{kind:'corner',key:'CN-ORD-0003',values:['기기변경']},{kind:'product',key:'ordertype',values:['단말+회선']}]);
-  set('CN-PAY-0033',[{kind:'corner',key:'CN-PAY-0032',values:['계좌이체','가상 계좌']}]);
+  // 코너 원본에는 상품 정보 조건만 둔다. 코너끼리의 흐름(앞 코너 선택값에 따라 나오는 코너)은 코너 그룹 분기형에서 정한다 (정책서 v0.2)
+  //  - 바로 보상 신청 : 가입 방식 = 기기변경 → CG-ORD-0008 가입 방식별 추가 선택
+  //  - 결제 증빙 수단 : 결제수단 = 계좌이체 · 가상 계좌 → CG-PAY-0001 결제 정보 입력
+  set('CN-ORD-0009',[{kind:'product',key:'ordertype',values:['단말+회선']}]);
+  // 그룹 전용 코너 : 혼자 두면 흐름이 맞지 않아 주문 프로세스에 단독 배치할 수 없고 그룹으로만 배치한다
+  CORNERS.forEach(function(c){if(c.id==='CN-ORD-0009'||c.id==='CN-PAY-0033')c.grpOnly=true});
 })();
 
 /* 구분 '결제' : 결제수단, 결제 증빙, 요금 납부 수단 코너 */
@@ -328,4 +334,31 @@ function pvCorner(c){
   return h;
 }
 
-export { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner };
+/* ===== 주문 코너 변경 저장 (브라우저 localStorage) =====
+   주문 코너 관리에서 등록 · 수정 · 삭제한 코너를 저장해 두고, 이 데이터를 쓰는 화면(주문 코너 관리 · 주문 코너 그룹 관리의 코너 추가 팝업)이 열릴 때 다시 적용한다.
+   처음부터 있던 코너는 바뀐 값(edited) · 삭제(deleted)로, 새로 등록한 코너는 통째로(added) 둔다. 저장소를 못 쓰면 이 화면 안에서만 반영된다 */
+var LS_KEY='nova.orderCorner.v22';
+var BASE_IDS={};CORNERS.forEach(function(c){BASE_IDS[c.id]=1});
+function lsRead(){try{var v=JSON.parse(localStorage.getItem(LS_KEY)||'null');return v&&typeof v==='object'?v:null}catch(e){return null}}
+function lsWrite(v){try{localStorage.setItem(LS_KEY,JSON.stringify(v))}catch(e){}}
+function lsState(){var v=lsRead()||{};v.added=v.added||[];v.edited=v.edited||{};v.deleted=v.deleted||[];return v}
+(function(){
+  var v=lsRead();if(!v)return;
+  (v.deleted||[]).forEach(function(id){var k=CORNERS.findIndex(function(c){return c.id===id});if(k>-1)CORNERS.splice(k,1)});
+  Object.keys(v.edited||{}).forEach(function(id){var c=CORNERS.find(function(x){return x.id===id});if(c){Object.keys(c).forEach(function(k){delete c[k]});Object.assign(c,v.edited[id])}});
+  (v.added||[]).slice().reverse().forEach(function(c){if(!CORNERS.some(function(x){return x.id===c.id}))CORNERS.unshift(c)});
+})();
+function persistCorner(c){
+  var v=lsState(),o=JSON.parse(JSON.stringify(c));
+  if(BASE_IDS[c.id])v.edited[c.id]=o;
+  else{var k=v.added.findIndex(function(x){return x.id===c.id});if(k>-1)v.added[k]=o;else v.added.unshift(o)}
+  lsWrite(v);
+}
+function forgetCorner(id){
+  var v=lsState();
+  if(BASE_IDS[id]){delete v.edited[id];if(v.deleted.indexOf(id)<0)v.deleted.push(id)}
+  else v.added=v.added.filter(function(x){return x.id!==id});
+  lsWrite(v);
+}
+
+export { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner, persistCorner, forgetCorner };

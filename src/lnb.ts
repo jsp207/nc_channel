@@ -34,9 +34,9 @@ const MENU = [
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
   ] },
   { label: '주문관리', items: [
-    { label: '주문 프로세스 관리', icon: 'process', href: 'order5-create.html', match: ['order4-create.html', 'order3-create.html'] },
-    { label: '주문 코너 그룹 관리', icon: 'corner', href: '', pending: 'TBD 입니다.' },
-    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v21.html', match: ['order-corner-v22.html', 'order-corner-create.html'] },
+    { label: '주문 프로세스 관리', icon: 'process', href: 'order6-create.html', match: ['order5-create.html', 'order4-create.html', 'order3-create.html'] },
+    { label: '주문 코너 그룹 관리', icon: 'corner', href: 'order-corner-group-v23.html', match: ['order-corner-group-v22.html'] },
+    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v22.html', match: ['order-corner-v21.html', 'order-corner-create.html'] },
     // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },
   { label: '결제관리', items: [

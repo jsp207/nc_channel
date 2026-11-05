@@ -3,7 +3,7 @@
 // 목록(조회 · 사용 위치) · 상세(기본 정보 · 코너 구성 · CTA 버튼 · 조건 설정 · 사용 위치) · 수정(승인 요청) · 변경/승인 이력 · 상품 조회 팝업(EPC 요금제 · T 기프트 · 티다팩 · 단말 · 부가서비스)
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
-import { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner } from "./order-corner-v22-data";
+import { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner, CORNER_EDITOR, persistCorner, forgetCorner } from "./order-corner-v22-data";
 import { openCornerCreate, openCornerEdit, cornerView, specOf, setFold } from "./order-corner-create-v22";
 
 requireAuthentication();
@@ -330,8 +330,9 @@ function save(){
   if(bad){toast('노출 조건 값을 선택하세요.');return}
   if(ctaList(dr).some(function(a){return a.on&&!String(a.label).trim()})){toast('노출할 CTA 버튼명을 입력하세요.');return}
   var h=cur.hist;for(var k in dr)cur[k]=dr[k];cur.hist=h;
-  cur.pending=true;cur.dt=nowStr();cur.mby='김운영 (P031001)';
+  cur.pending=true;cur.dt=nowStr();cur.mby=CORNER_EDITOR;
   cur.hist.unshift({st:'승인 대기',req:'김운영 (SSP1001)',rqt:nowStr(true),why:'코너 정보 수정',chg:d.join(', '),apr:'정지솔 (SSP12344)',apt:'',ar:'',ver:''});
+  persistCorner(cur);   // 주문 코너 그룹 관리 코너 추가 팝업에도 반영
   mode='view';dr=null;renderDetail();window.scrollTo(0,0);
   toast('승인을 요청했습니다.');
 }
@@ -361,7 +362,7 @@ function editCorner(){
 function delCorner(){
   var n=refsAny(cur).length?'이 코너를 사용하는 주문 프로세스가 있습니다. ':'';
   if(!confirm(n+'「'+cur.n+'」 코너를 삭제할까요? 삭제하면 되돌릴 수 없습니다.'))return;
-  var i=CORNERS.indexOf(cur);if(i>-1)CORNERS.splice(i,1);
+  var i=CORNERS.indexOf(cur);if(i>-1)CORNERS.splice(i,1);forgetCorner(cur.id);
   var nm=cur.n;cur=null;openList();toast('「'+nm+'」 코너를 삭제했습니다.');
 }
 function goList(){if(mode==='edit')toast('수정 중인 내용은 저장되지 않았습니다.');mode='view';dr=null;openList()}
