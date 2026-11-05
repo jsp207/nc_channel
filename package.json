@@ -7,6 +7,7 @@
     "dev": "concurrently -k \"node server.mjs\" \"vite\"",
     "build": "tsc -b && vite build",
     "export:corner-group": "vite build --config vite.export.config.ts",
+    "export:epc": "node scripts/export-epc.mjs",
     "preview": "concurrently -k \"node server.mjs\" \"vite preview\"",
     "start": "node server.mjs --serve"
   },

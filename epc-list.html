@@ -33,36 +33,40 @@
     <div class="lf-row">
       <span class="lf-g">
         <label class="lf-l" for="fKey">조회 조건</label>
-        <select id="fKey"><option value="all">전체</option><option value="name">EPC 상품명</option><option value="po">PO ID</option><option value="spec">Spec ID</option></select>
-        <input type="text" id="fQ" placeholder="EPC 상품명 또는 PO ID, Spec ID 입력" aria-label="검색어">
+        <select id="fKey"><option value="all">전체</option><option value="name">EPC 상품명</option><option value="epc">EPC 상품ID</option><option value="spec">Product Spec</option></select>
+        <input type="text" id="fQ" placeholder="EPC 상품명, EPC 상품ID 또는 Product Spec 입력" aria-label="검색어">
       </span>
+      <span class="lf-g"><label class="lf-l" for="fLv2">LV2</label><select id="fLv2"></select></span>
     </div>
     <div class="lf-row">
-      <span class="lf-g"><label class="lf-l" for="fGroup">상품 구분</label><select id="fGroup"></select></span>
-      <span class="lf-g"><label class="lf-l" for="fType">상품 유형</label><select id="fType"></select></span>
-      <span class="lf-g"><label class="lf-l" for="fSt">상품 상태</label><select id="fSt"></select></span>
-      <span class="lf-g"><label class="lf-l" for="fOrd">주문 유형</label><select id="fOrd"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fLv3">LV3</label><select id="fLv3"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fSt">EPC 상태</label><select id="fSt"></select></span>
       <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
     </div>
   </form>
   <h2 class="lst-count">조회 결과 <span>총 <b id="lCount">0</b>건</span></h2>
 
   <div class="lst-tw"><table class="lst-table" id="listTable">
-    <colgroup><col class="w-id"><col class="w-ver"><col><col class="w-gb"><col class="w-ty"><col class="w-st"><col class="w-n"><col class="w-ord"><col class="w-at"></colgroup>
+    <colgroup><col class="w-id"><col class="w-ver"><col><col class="w-lv2"><col class="w-lv3"><col class="w-spec"><col class="w-st"><col class="w-at"></colgroup>
     <thead><tr>
       <th>EPC 상품ID</th>
-      <th>버전</th>
+      <th class="c">버전</th>
       <th>EPC 상품명</th>
-      <th>상품 구분</th>
-      <th>상품 유형</th>
-      <th class="c">EPC 상품상태</th>
-      <th>전시 상품수</th>
-      <th>주문 유형</th>
-      <th class="c">최종등록(수정)일시</th>
+      <th>LV2</th>
+      <th>LV3</th>
+      <th>Product Spec</th>
+      <th class="c">EPC 상태</th>
+      <th class="c">최종등록일시</th>
     </tr></thead>
     <tbody></tbody>
   </table></div>
+  <!-- 페이지 번호(가운데) + 다운로드(오른쪽)를 한 줄에. 다운로드는 조회 결과 전체를 JSON으로 -->
+  <div class="lst-bottom">
   <nav class="lst-pager" id="pager" aria-label="페이지"></nav>
+  <div class="lst-foot">
+    <button class="btn primary lg" type="button" id="btnDown">다운로드</button>
+  </div>
+  </div>
 </section>
 
 </main>
