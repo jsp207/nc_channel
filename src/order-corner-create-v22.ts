@@ -178,7 +178,7 @@ function pvItem(it,i){
   }
   return '';
 }
-function renderPv(){
+function pvHTML(){
   const v=vOf(),f=v.fam,c=st.c,its=st.items.slice(0,st.cnt[1]);let h='';
   if(on('title')&&c.title)h+='<div class="pv-h"><b>'+esc(c.title)+(on('tip')?ICO.tip:'')+'</b>'+(on('link')?'<a>'+esc(c.link)+'</a>':'')+'</div>';
   if(on('sub')&&c.sub)h+='<p class="pv-sub">'+esc(c.sub)+'</p>';
@@ -196,8 +196,9 @@ function renderPv(){
   if(on('more'))h+='<div class="pv-more">'+esc(c.more)+'</div>';
   if(on('cta'))h+='<div class="pv-cta">'+esc(c.cta)+'</div>';
   if(on('cap'))h+='<p class="pv-capt">'+esc(c.cap)+'</p>';
-  $('ccPv').innerHTML='<div class="pv'+(f==='result'?' ctr':'')+'">'+(h||'<p class="pv-sub">노출할 속성을 켜 주세요.</p>')+'</div>';
+  return '<div class="pv'+(f==='result'?' ctr':'')+'">'+(h||'<p class="pv-sub">노출할 속성을 켜 주세요.</p>')+'</div>';
 }
+function renderPv(){$('ccPv').innerHTML=pvHTML();}
 
 /* ===== 폼 ===== */
 const req='<i class="cc-req">*</i>';
@@ -254,7 +255,7 @@ const locked=k=>{const m=mark(k);return m==='R'||(m==='D'&&!on(DEP[k]));};
 const lockTip=k=>mark(k)==='R'?'필수 속성이라 항상 노출돼요':mark(k)==='D'&&!on(DEP[k])?ALAB[DEP[k]][1]+'을(를) 켜면 선택할 수 있어요':'';
 function sw(k){
   const y=on(k),lk=locked(k);
-  return '<label class="cc-sw'+(lk?' lock':'')+'" title="'+lockTip(k)+'"><input type="checkbox" name="at_'+k+'"'+(y?' checked':'')+(lk?' disabled':'')+' aria-label="'+esc(ALAB[k][1])+' 노출"><i></i><span>'+(y?'Y':'N')+'</span></label>';
+  return '<label class="cc-sw'+(lk?' lock':'')+'" title="'+lockTip(k)+'"><input type="checkbox" name="at_'+k+'"'+(y?' checked':'')+(lk?' disabled':'')+' aria-label="'+esc(ALAB[k][1])+' 노출"><i></i></label>';
 }
 function cRow(x){
   const k=x[0],m=mark(k);if(m==='-')return '';
@@ -270,6 +271,8 @@ function cornerPart(id,title,keys){
 // 라벨 글자는 두지 않고 입력란 안내 문구 · 마우스 오버로 구분한다 (lab은 이름 · 툴팁)
 const fl=(lab,inner,w)=>'<div class="cc-f'+(w?' '+w:'')+'">'+inner+'</div>';
 const iInp=(i,k,v,lab)=>'<input class="cc-inp" data-it="'+i+'" data-k="'+k+'" value="'+esc(v)+'" placeholder="'+esc(lab)+'" title="'+esc(lab)+'" aria-label="'+esc(lab)+'">';
+/* 코너 Item 제목 : 구성 확정 전이라 TBD 표시 */
+const ITEM_T='코너 Item<span class="cc-tbd">( TBD 진행중 )</span>';
 const ITEM_ROW=4;   // 한 줄에 둘 입력란 수. 넘으면 두 줄로 반씩 나눈다
 function itemCard(it,i){
   const min=st.cnt[0];
@@ -287,7 +290,7 @@ function itemCard(it,i){
 }
 function itemPart(){
   const v=vOf(),c=st.c;
-  if(v.fam==='html')return acc('contents','코너 Item','<div class="cc-tb">'+tr('본문 HTML'+req,'<textarea class="cc-ta tall" data-c="html">'+esc(c.html)+'</textarea>'+hint('본문은 HTML 에디터로 입력합니다. (에디터 연동은 개발 시 적용)'))+'</div>');
+  if(v.fam==='html')return acc('contents',ITEM_T,'<div class="cc-tb">'+tr('본문 HTML'+req,'<textarea class="cc-ta tall" data-c="html">'+esc(c.html)+'</textarea>'+hint('본문은 HTML 에디터로 입력합니다. (에디터 연동은 개발 시 적용)'))+'</div>');
   if(!v.m.slice(11).replace(/-/g,'').length)return '';
   const ik=ATTRS.filter(a=>a[3]==='i'&&a[0]!=='var'&&a[0]!=='count'&&mark(a[0])!=='-').map(a=>a[0]);
   const chips='<div class="cc-chips">'+ik.map(k=>{const y=on(k),lk=locked(k);
@@ -297,7 +300,7 @@ function itemPart(){
   if(mark('count')!=='-'){const one=SINGLE.indexOf(v.fam)>-1?' disabled':'';
     h+=tr('노출 개수 범위','<div class="cc-cnt"><input class="cc-inp sm" type="number" min="1" max="20" data-cnt="0" value="'+st.cnt[0]+'"'+one+'><span>-</span><input class="cc-inp sm" type="number" min="1" max="20" data-cnt="1" value="'+st.cnt[1]+'"'+one+'><span>개</span></div>');}
   const max=st.cnt[1];
-  return acc('contents','코너 Item','<div class="cc-tb">'+h+'</div>'
+  return acc('contents',ITEM_T,'<div class="cc-tb">'+h+'</div>'
    +'<div class="cc-items">'+st.items.map(itemCard).join('')
    +'<div class="cc-iadd"><button type="button" class="cc-xs add" data-cc="add"'+(st.items.length<max?'':' disabled')+'>+ 추가</button>'+(st.items.length>=max?'<span class="cc-sub">노출 개수 범위 최대 '+max+'개에 도달했어요</span>':'')+'</div></div>',onCnt(ik));
 }
@@ -317,12 +320,12 @@ function validate(){
 }
 function nextId(){let n=0;CORNERS.forEach(c=>{const m=c.id.match(/^CN-ORD-(\d+)$/);if(m)n=Math.max(n,+m[1]);});return 'CN-ORD-'+String(n+1).padStart(4,'0');}
 function pad(n){return ('0'+n).slice(-2)}
-function save(){
-  const err=validate();if(err){opts.toast(err[0]);if(fold[err[1]])toggleSec(err[1]);return;}
+/* 저장할 코너 객체 : 기존 FO 렌더러(ui) · 목록 · 상세가 쓰는 필드를 등록 상태(st)로 채운다 */
+function build(id){
   const v=vOf(),tpl=CORNERS.find(c=>c.ui===v.ui)||CORNERS[0],c=JSON.parse(JSON.stringify(tpl)),d=new Date();
   ['cat','subs','epcMode','more','chev','logo','link','btn','src','screens','note','qs','req'].forEach(k=>{delete c[k];});
   const its=v.fam==='html'?[]:st.items.slice(0,st.cnt[1]);
-  c.id=nextId();c.n=st.name.trim();c.t='주문';c.ui=v.ui;c.q=on('title')?st.c.title:'';c.sub=on('sub')?st.c.sub:'';
+  c.id=id;c.n=st.name.trim();c.t='주문';c.ui=v.ui;c.q=on('title')?st.c.title:'';c.sub=on('sub')?st.c.sub:'';
   c.it='T'+(on('sub')?'S':'')+(on('tip')?'I':'')+(on('isub')||on('lv')?'D':'')+(on('price')?'P':'')+(on('badge')?'B':'')+(on('img')?'M':'')+(on('none')?'N':'')+(on('more')?'R':'');
   c.opts=its.map((x,i)=>({n:on('lv')&&!on('ititle')?x.label:x.ititle,d:on('lv')?x.value:on('input')?x.input:(on('isub')?x.isub:''),p:on('price')?x.price:'',b:on('badge')?x.badge:'',x:'',lk:false,k:c.id+'-'+i}));
   if(on('none'))c.opts.push({n:st.c.none,d:'',p:'',b:'',x:'none',lk:false,k:c.id+'-n'});
@@ -331,8 +334,19 @@ function save(){
   c.ver='v1.0';c.use=st.use;c.dt=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());c.mby='김운영 (P031001)';
   // 등록 설정 원본 : 유형 · 형태 · 표시 방식 · 속성 ON/OFF · 노출 개수 · 플랫폼 · 설명
   c.spec={type:tOf().n,form:lOf().n,mode:v.n,src:v.src,attrs:Object.fromEntries(AK.filter(k=>mark(k)!=='-').map(k=>[k,k==='count'?st.cnt.join('~'):k==='var'?st.vopt:on(k)?'Y':'N']))};
-  delete c.hist;
-  CORNERS.unshift(c);
+  c.form=JSON.parse(JSON.stringify(st));   // 수정 화면을 그대로 다시 열기 위한 등록 상태 원본
+  delete c.hist;delete c.pending;
+  return c;
+}
+const bump=v=>{const m=/^v(\d+)\.(\d+)$/.exec(v||'');return m?'v'+m[1]+'.'+(+m[2]+1):'v1.0';};
+function save(){
+  const err=validate();if(err){opts.toast(err[0]);if(fold[err[1]])toggleSec(err[1]);return;}
+  if(EDIT){   // 수정 : 같은 객체를 갈아 끼워 목록 · 그룹 참조를 유지하고, 버전은 한 단계 올린다
+    const old=EDIT,c=build(old.id);c.ver=bump(old.ver);c.hist=old.hist;
+    Object.keys(old).forEach(k=>{delete old[k];});Object.assign(old,c);
+    st=null;EDIT=null;opts.onSaved(old);return;
+  }
+  const c=build(nextId());CORNERS.unshift(c);
   st=null;opts.onSaved(c);
 }
 
@@ -365,8 +379,13 @@ function bind(){
     if(b.dataset.del!=null){const i=+b.dataset.del;st.items.splice(i,1);if(st.def>=st.items.length)st.def=0;else if(st.def>i)st.def--;render();return;}
     const a=b.dataset.cc;
     if(a==='add'){st.items.push(sampleItems(st.items.length+1).pop());render();}
-    else if(a==='reset'){const keep={name:st.name,use:st.use};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
-    else if(a==='cancel'){if(st&&st.name&&!confirm('작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;st=null;opts.onClose();}
+    else if(a==='reset'){
+      if(EDIT){st=JSON.parse(ST0);render();opts.toast('저장된 설정 값으로 되돌렸어요.');return;}   // 수정 : 저장된 값으로
+      const keep={name:st.name,use:st.use};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
+    else if(a==='cancel'){
+      const dirty=EDIT?JSON.stringify(st)!==ST0:!!(st&&st.name);
+      if(dirty&&!confirm(EDIT?'수정한 내용이 있습니다. 저장하지 않고 나갈까요?':'작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;
+      st=null;EDIT=null;opts.onClose();}
     else if(a==='save')save();
   });
   // Ctrl + 1 : 모든 영역 접기
@@ -381,10 +400,77 @@ export function specOf(c){
   for(const t of TYPES)for(const l of t.ls)for(const v of l.vs)if(v.k===k)return {type:t.n,form:l.n,mode:v.n};
   return null;
 }
+/* ===== 기존 코너 → 등록 상태(st) =====
+   이 화면에서 저장한 코너는 저장해 둔 등록 상태(form)를 그대로 쓰고, 처음부터 있던 코너는 FO 렌더러 값(ui · q · opts …)에서 되살린다 */
+function locate(k){for(const t of TYPES)for(const l of t.ls)for(const v of l.vs)if(v.k===k)return [t.k,l.k,v.k];return ['select','card','radio'];}
+function stFromCorner(c){
+  if(c.form)return JSON.parse(JSON.stringify(c.form));
+  const p=locate(c.ui==='card'&&c.sel==='복수 선택'?'check':UI2V[c.ui]||'radio');
+  const prev=st;st={name:c.n,use:c.use||'Y',type:p[0],layout:p[1],variant:p[2]};resetAttrs();resetContent();
+  const os=(c.opts||[]).filter(o=>o.x!=='none'),none=(c.opts||[]).find(o=>o.x==='none'),cta=(c.ctas||[]).find(a=>a.on&&a.label);
+  const flag=(k,y)=>{if(y&&mark(k)!=='-')st.attrs[k]='Y';};
+  flag('title',c.q);flag('sub',c.sub);flag('tip',(c.it||'').indexOf('I')>-1);flag('none',none);flag('more',c.moreBtn);flag('cta',cta);
+  flag('isub',os.some(o=>o.d));flag('price',os.some(o=>o.p));flag('badge',os.some(o=>o.b));flag('img',(c.it||'').indexOf('M')>-1);
+  Object.assign(st.c,{title:c.q||'',sub:c.sub||'',none:none?none.n:st.c.none,more:c.moreBtn||st.c.more,cta:cta?cta.label:st.c.cta});
+  st.items=os.map(o=>({ititle:o.n||'',isub:o.d||'',price:o.p||'',pcap:'',icap:'',badge:o.b||'',icon:'',btn:o.cl||'',label:o.n||'',value:o.d||'',input:o.d||'',help:'',img:'',state:'default'}));
+  if(SINGLE.indexOf(vOf().fam)<0)st.cnt=[1,Math.max(st.cnt[1],st.items.length,1)];
+  fitItems();
+  const out=st;st=prev;return out;
+}
+
+/* ===== 상세(읽기 전용) : 등록 화면과 같은 영역 · 표 구성에 저장된 값만 글자로 보여준다 ===== */
+const val=v=>String(v==null?'':v).trim()?'<span class="cc-val">'+esc(v)+'</span>':'<span class="cc-val none">-</span>';
+function vAcc(id,title,body,aside,DF){   // 상세 화면 접기 상태는 주문 코너 관리(DF · data-dfold)가 관리한다
+  return '<section class="cc-acc'+(DF[id]?' closed':'')+'"><header data-dfold="'+id+'"><b>'+title+'</b>'+(aside||'')
+   +'<button type="button" class="cc-fold" aria-expanded="'+!DF[id]+'" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>'
+   +'<div class="cc-accb">'+body+'</div></section>';
+}
+function vCorner(id,title,keys,DF){
+  const xs=CF.filter(x=>keys.indexOf(x[0])>-1&&mark(x[0])!=='-');if(!xs.length)return '';
+  const on1=xs.filter(x=>on(x[0]));
+  if(!on1.length)return '';   // 상세 : 노출하는 항목이 없으면 영역을 그리지 않는다 (수정 화면에서는 항상 보인다)
+  const rows=on1.map(x=>tr(esc(ALAB[x[0]][1])+'<small>('+esc(ALAB[x[0]][2])+')</small>',val(st.c[x[0]]))).join('');
+  return vAcc(id,title,'<div class="cc-tb">'+rows+'</div>',onCnt(keys),DF);
+}
+function vItem(it,i){
+  const ps=IF.filter(x=>on(x[0])).map(x=>[x[1],it[x[0]]]);
+  if(on('lv'))ps.push(['항목명',it.label],['값',it.value]);
+  if(on('img'))ps.push(['이미지 경로',it.img]);
+  if(on('state'))ps.push(['상태',(STATES.find(s=>s[0]===it.state)||STATES[0])[1]]);
+  return '<div class="cc-it view"><span class="cc-ino">'+(i+1)+'</span>'
+   +'<dl class="cc-ivs">'+ps.map(p=>'<div><dt>'+esc(p[0])+'</dt><dd>'+val(p[1])+'</dd></div>').join('')+'</dl>'+(isSel()&&st.def===i?'<span class="cc-dtag">기본</span>':'')+'</div>';   // 기본 뱃지는 줄 맨 오른쪽
+}
+function vItems(DF){
+  const v=vOf();
+  if(v.fam==='html')return vAcc('contents',ITEM_T,'<div class="cc-tb">'+tr('본문 HTML','<pre class="cc-html">'+esc(st.c.html)+'</pre>')+'</div>','',DF);
+  if(!v.m.slice(11).replace(/-/g,'').length)return '';
+  const ik=ATTRS.filter(a=>a[3]==='i'&&a[0]!=='var'&&a[0]!=='count'&&mark(a[0])!=='-').map(a=>a[0]);
+  let h=tr('구성 요소','<div class="cc-chips">'+ik.filter(on).map(k=>'<span class="cc-chip on lock">'+esc(ALAB[k][1])+'</span>').join('')+'</div>');
+  if(mark('var')!=='-')h+=tr('형태',val(st.vopt||(v.vars||['기본'])[0]));
+  if(mark('count')!=='-')h+=tr('노출 개수 범위',val(st.cnt[0]+' ~ '+st.cnt[1]+'개'));
+  return vAcc('contents',ITEM_T,'<div class="cc-tb">'+h+'</div><div class="cc-items">'+st.items.slice(0,st.cnt[1]).map(vItem).join('')+'</div>',onCnt(ik),DF);
+}
+/* 주문 코너 관리 상세에서 호출 : {form 오른쪽 영역, pv 미리보기} */
+export function cornerView(c,DF){
+  const prev=st;st=stFromCorner(c);
+  const b=tr('코너 ID',val(c.id))+tr('코너명',val(st.name))+tr('사용 여부',val(st.use))+tr('코너 유형',val(tOf().n))+tr('코너 형태',val(lOf().n))+tr('표시 방식',val(vOf().n));
+  const out={form:vAcc('basic','기본 정보','<div class="cc-tb">'+b+'</div>','',DF)+vCorner('header','코너 Header',HEAD,DF)+vItems(DF)+vCorner('footer','코너 Footer',FOOT,DF),pv:pvHTML()};
+  st=prev;return out;
+}
+
 /* 주문 코너 관리에서 호출 : opts = {onClose, onSaved(corner), toast, setCrumb} */
-export function openCornerCreate(o){
-  opts=o;fresh();initFold();bind();
+let EDIT=null,ST0='';   // 수정 중인 코너와 처음 상태 (null이면 등록)
+function openForm(o,title){
+  opts=o;initFold();bind();
+  $('pCreate').querySelector('.ph h1').textContent=title;
   $('pCreate').hidden=false;
-  o.setCrumb(['홈','주문 관리','주문 코너 관리','주문 코너 등록']);
+  o.setCrumb(['홈','주문 관리','주문 코너 관리',title]);
   render();window.scrollTo(0,0);
+}
+export function openCornerCreate(o){EDIT=null;fresh();openForm(o,'주문 코너 등록');}
+/* 수정 : 등록 화면을 저장된 값으로 채워 연다. 처음엔 모든 영역을 펼친다 */
+export function openCornerEdit(c,o){
+  EDIT=c;st=stFromCorner(c);ST0=JSON.stringify(st);
+  openForm(o,'주문 코너 수정');
+  Object.keys(fold).forEach(k=>{fold[k]=false;});render();
 }

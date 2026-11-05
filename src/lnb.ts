@@ -22,18 +22,20 @@ const ICONS = {
 };
 
 // match: 같은 메뉴로 표시할 다른 화면 파일(등록 화면, 이전 버전 등)
+// pending: href가 빈 메뉴를 눌렀을 때 띄울 안내 문구(기본 '준비중입니다.')
 const MENU = [
   { items: [{ label: '구조도', icon: 'map', href: 'bo-intro.html' }] },
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'epc-list.html' },
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
     { label: '상품 전시 관리', icon: 'display', href: 'display-list2.html', match: ['product-v021.html', 'product-v022.html', 'product-v023.html', 'product-v024.html', 'product-display-bulk.html'] },
-    { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content.html' },
+    // 상품 콘텐츠 관리는 화면 이동 대신 TBD 안내만 띄운다
+    { label: '상품 콘텐츠 관리', icon: 'content', href: '', pending: 'TBD 입니다.' },
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
   ] },
   { label: '주문관리', items: [
     { label: '주문 프로세스 관리', icon: 'process', href: 'order5-create.html', match: ['order4-create.html', 'order3-create.html'] },
-    { label: '주문 코너 그룹 관리', icon: 'corner', href: '' },
+    { label: '주문 코너 그룹 관리', icon: 'corner', href: '', pending: 'TBD 입니다.' },
     { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v21.html', match: ['order-corner-v22.html', 'order-corner-create.html'] },
     // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },
@@ -61,7 +63,7 @@ const svg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}<
 
 function item(it) {
   const label = `${svg(it.icon)}<span class="app-nav-text">${it.label}</span>`;
-  if (!it.href) return `<li><a class="app-nav-item" href="#" data-pending title="${it.label}">${label}</a></li>`;
+  if (!it.href) return `<li><a class="app-nav-item" href="#" data-pending="${it.pending || '준비중입니다.'}" title="${it.label}">${label}</a></li>`;
   const on = it.href === current || (it.match || []).includes(current);
   return `<li><a class="app-nav-item${on ? ' on' : ''}" href="${it.href}" title="${it.label}"${on ? ' aria-current="page"' : ''}>${label}</a></li>`;
 }
@@ -94,7 +96,7 @@ function renderLnb(nav) {
   // 아직 화면이 없는 메뉴는 이동하지 않고 안내만 띄웁니다.
   nav.querySelectorAll('[data-pending]').forEach(a => a.addEventListener('click', e => {
     e.preventDefault();
-    alert('준비중입니다.');
+    alert(a.dataset.pending);
   }));
 
   const btn = nav.querySelector('.app-nav-toggle');
