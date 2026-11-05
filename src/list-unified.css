@@ -121,6 +121,7 @@ body.ul .lpg{position:relative;display:flex;justify-content:center;align-items:c
 body.ul .lpg .lfoot{position:absolute;right:0;top:50%;margin:0;transform:translateY(-50%)}
 body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager){display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:24px 0 0;padding:0;border:0}
 body.ul :is(.lst-bottom,.lpg) :is(.lst-pager,.pager),body.ul #lPager .pager{margin-top:0}
+body.ul #pList .lst-bottom>.pager{margin:0}   /* 주문 코너 · 코너 그룹 : 페이지 번호와 등록 버튼을 한 줄 가운데 높이로 */
 body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button{display:inline-grid;place-items:center;width:auto;min-width:28px;height:28px;padding:0 4px;border:0;border-radius:4px;background:none;color:var(--ul-text);font-size:14px;font-weight:400;cursor:pointer}
 body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button:hover:not(:disabled):not(.on):not([aria-current]){background:#f2f3f7}
 body.ul :is(.lst-pager,.work .pager,#lPager .pager,#pList .pager) button:is(.on,[aria-current="page"]){background:var(--ul-ac);color:#fff;font-weight:600}

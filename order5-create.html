@@ -1504,6 +1504,9 @@ body:not(.ro-mode) #accBasic .acc-rt .bdg{display:inline-flex}
 .tg-none{padding:18px;border:1px dashed var(--line-strong);border-radius:6px;color:var(--muted);font-size:12px;text-align:center}
 /* 전시 유형 섹션: product-v022 전시 유형 라디오(.srch-radio)와 같은 모양 */
 .ltbl td.cat-c{white-space:normal;word-break:keep-all;line-height:1.4}
+/* 목록 : 화면이 좁아지면 표를 줄이지 않고 가로 스크롤 (고정 열 합계 1180px + 프로세스명 최소 220px) */
+body.ul .ltbl.lhscroll{overflow-x:auto;overflow-y:hidden}
+body.ul .ltbl.lhscroll>table{width:max(100%,1400px);min-width:1400px}   /* list-unified의 width:100% · min-width:0 보다 우선 */
 .lfilter .lf-i #lCat{width:100%}
 #catTd{flex-wrap:wrap;gap:8px 20px}
 .cat-pt{width:400px;max-width:100%}
@@ -1726,8 +1729,8 @@ body:not(.authenticated) .app{display:none}
         </div>
       </div>
       <div class="rhead"><h2>조회 결과</h2><span class="c">총 <b id="lCnt">0</b>건</span></div>
-      <div class="tbl ltbl"><table>
-        <colgroup><col style="width:70px"><col style="width:170px"><col style="width:320px"><col><col style="width:110px"><col style="width:100px"><col style="width:90px"><col style="width:150px"><col style="width:140px"><col style="width:100px"></colgroup><thead><tr><th>No</th><th>프로세스ID</th><th class="l">주문유형</th><th class="l">프로세스명</th><th>승인상태</th><th>사용여부</th><th>전시수</th><th>최종 수정일</th><th class="l">최종 수정자</th><th>복사</th></tr></thead>
+      <div class="tbl ltbl lhscroll"><table>
+        <colgroup><col style="width:170px"><col style="width:320px"><col><col style="width:110px"><col style="width:100px"><col style="width:90px"><col style="width:150px"><col style="width:140px"><col style="width:100px"></colgroup><thead><tr><th>프로세스ID</th><th class="l">주문유형</th><th class="l">프로세스명</th><th>승인상태</th><th>사용여부</th><th>전시수</th><th>최종 수정일</th><th class="l">최종 수정자</th><th>복사</th></tr></thead>
         <tbody id="lBody"></tbody></table>
         <div class="emptyrow" id="lEmpty" hidden>조회된 프로세스가 없습니다.</div>
       </div>
@@ -2937,7 +2940,7 @@ function renderTpl(){
   var list=lList(), tp=Math.max(1,Math.ceil(list.length/PS)); if(LQ.page>tp) LQ.page=tp;
   var off=(LQ.page-1)*PS, tb=$('lBody');
   tb.innerHTML=list.slice(off,off+PS).map(function(d,i){
-    return '<tr><td>'+(list.length-off-i)+'</td><td><a data-id="'+d.id+'">'+d.id+'</a></td><td>'+d.cat+'</td><td>'+esc(d.n)+'</td><td>'+d.ap+'</td><td>'+(d.u?'Y':'N')+'</td><td>'+d.cnt+'건</td><td>'+d.dt+'</td><td>'+d.by+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td></tr>';
+    return '<tr><td><a data-id="'+d.id+'">'+d.id+'</a></td><td>'+d.cat+'</td><td>'+esc(d.n)+'</td><td>'+d.ap+'</td><td>'+(d.u?'Y':'N')+'</td><td>'+d.cnt+'건</td><td>'+d.dt+'</td><td>'+d.by+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td></tr>';
   }).join('');
   $('lCnt').textContent=list.length; $('lEmpty').hidden=!!list.length;
   $('lPager').innerHTML=pagerHTML(list.length,LQ.page);
@@ -3448,7 +3451,7 @@ renderTpl=function(){
   var list=lList(), tp=Math.max(1,Math.ceil(list.length/PS)); if(LQ.page>tp) LQ.page=tp;
   var off=(LQ.page-1)*PS;
   $('lBody').innerHTML=list.slice(off,off+PS).map(function(d,i){
-    return '<tr><td>'+(list.length-off-i)+'</td><td><a data-id="'+d.id+'">'+d.id+'</a></td><td class="l cat-c">'+d.cat+'</td><td class="l">'+esc(d.n)+'</td><td>'+apBadge(d.ap)+'</td><td>'+(d.u?'Y':'N')+'</td><td>'+(d.cnt||0)+'</td><td>'+ymd(d.dt)+'</td><td class="l">'+d.by+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td></tr>';
+    return '<tr><td><a data-id="'+d.id+'">'+d.id+'</a></td><td class="l cat-c">'+d.cat+'</td><td class="l">'+esc(d.n)+'</td><td>'+apBadge(d.ap)+'</td><td>'+(d.u?'Y':'N')+'</td><td>'+(d.cnt||0)+'</td><td>'+ymd(d.dt)+'</td><td class="l">'+d.by+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td></tr>';
   }).join('');
   $('lCnt').textContent=list.length; $('lEmpty').hidden=!!list.length;
   $('lPager').innerHTML=pagerHTML(list.length,LQ.page);

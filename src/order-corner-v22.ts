@@ -3,8 +3,8 @@
 // 목록(조회 · 사용 위치) · 상세(기본 정보 · 코너 구성 · CTA 버튼 · 조건 설정 · 사용 위치) · 수정(승인 요청) · 변경/승인 이력 · 상품 조회 팝업(EPC 요금제 · T 기프트 · 티다팩 · 단말 · 부가서비스)
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
-import { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner } from "./order-corner-v22-data";
-import { openCornerCreate, specOf, setFold } from "./order-corner-create-v22";
+import { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner, CORNER_EDITOR, persistCorner, forgetCorner } from "./order-corner-v22-data";
+import { openCornerCreate, openCornerEdit, cornerView, specOf, setFold } from "./order-corner-create-v22";
 
 requireAuthentication();
 
@@ -244,32 +244,33 @@ function renderPreview(){
     el.innerHTML='<div class="grpv">'+ms.map(function(id){var c=cById(id);return '<div><p class="gl">'+c.id+' '+esc(c.n)+'</p>'+pvCorner(c)+'</div>'}).join('')+'</div>';
     return;
   }
-  el.innerHTML=pvCorner(cv());
+  el.innerHTML=cornerView(cur,DF).pv;   // 등록 화면과 같은 미리보기
 }
 function useRefs(){var seen={},R=[];refsAny(cur).forEach(function(r){if(!seen[r.pid]){seen[r.pid]=1;R.push(r)}});return R}
-function useHTML(){
-  var R=useRefs();
-  var tp=Math.max(1,Math.ceil(R.length/UPS));if(U.page>tp)U.page=tp;
-  var rows=R.slice((U.page-1)*UPS,U.page*UPS);
-  var head='<header><b>사용 위치<em>'+R.length+'개 프로세스</em></b><span class="cc-hsub">이 코너를 쓰는 주문 프로세스</span></header>';
-  if(!R.length) return head+'<div class="cc-accb"><div class="empty sm">이 코너를 사용 중인 주문 프로세스가 없습니다.</div></div>';
-  var h=head+'<div class="cc-accb"><div class="utw"><table class="ut"><colgroup><col style="width:140px"><col style="width:100px"><col><col style="width:110px"><col style="width:90px"></colgroup><thead><tr><th>프로세스 ID</th><th>구분</th><th>프로세스명</th><th>승인 상태</th><th>사용여부</th></tr></thead><tbody>'+
-    rows.map(function(r){return '<tr><td class="mono">'+r.pid+'</td><td>'+esc(r.cat)+'</td><td class="l">'+esc(r.pn)+'</td><td>'+apPill(r.ap)+'</td><td>'+r.u+'</td></tr>'}).join('')+
-    '</tbody></table></div>';
-  if(tp>1){
-    var pg='<button type="button" data-up="'+(U.page-1)+'"'+(U.page===1?' disabled':'')+' aria-label="이전">‹</button>';
-    for(var i=1;i<=tp;i++)pg+='<button type="button" data-up="'+i+'" class="'+(i===U.page?'on':'')+'">'+i+'</button>';
-    pg+='<button type="button" data-up="'+(U.page+1)+'"'+(U.page===tp?' disabled':'')+' aria-label="다음">›</button>';
-    h+='<div class="ufoot" style="justify-content:center"><div class="upg">'+pg+'</div></div>';
-  }
-  return h+'</div>';
+/* 상세 탭 공통 : 상태 배지 · 페이지 번호 (처음 · 이전 · 번호 · 다음 · 마지막) */
+var HPILL={'승인 완료':'ok','승인완료':'ok','승인 대기':'wt','승인대기':'wt','임시 저장':'tmp','임시저장':'tmp','반려':'no','승인 반려':'no','승인반려':'no','요청 취소':'cc','요청취소':'cc'};
+function hPill(s){return '<span class="dh-pill '+(HPILL[s]||'tmp')+'">'+esc(s)+'</span>'}
+function dhPager(n,page,per,attr){
+  var tp=Math.max(1,Math.ceil(n/per)),b=function(p,lab,cls,dis,al){return '<button type="button" '+attr+'="'+p+'"'+(cls?' class="'+cls+'"':'')+(dis?' disabled':'')+(al?' aria-label="'+al+'"':'')+'>'+lab+'</button>'};
+  var s=Math.max(1,Math.min(page-4,tp-8)),e=Math.min(tp,s+8),h=b(1,'⇤','ar',page===1,'처음')+b(page-1,'‹','ar',page===1,'이전');
+  for(var i=s;i<=e;i++)h+=b(i,i,i===page?'on':'',false);
+  if(e<tp)h+='<span class="dot">···</span>'+b(tp,tp,'',false);
+  return h+b(page+1,'›','ar',page===tp,'다음')+b(tp,'⇥','ar',page===tp,'마지막');
 }
-function renderUse(){var el=$('useBox');if(el)el.innerHTML=useHTML()}
+var UPS2=10,HPS=10,HP=1;
+function renderUse(){
+  var R=useRefs(),tp=Math.max(1,Math.ceil(R.length/UPS2));if(U.page>tp)U.page=tp;
+  var off=(U.page-1)*UPS2;
+  $('uBody').innerHTML=R.length?R.slice(off,off+UPS2).map(function(r,i){return '<tr><td>'+(R.length-off-i)+'</td><td class="mono">'+r.pid+'</td><td>'+esc(r.cat)+'</td><td class="l">'+esc(r.pn)+'</td><td>'+hPill(r.ap)+'</td><td>'+r.u+'</td></tr>'}).join('')
+    :'<tr><td colspan="6" class="dh-empty">이 코너를 사용 중인 주문 프로세스가 없습니다.</td></tr>';
+  $('uPg').innerHTML=R.length?dhPager(R.length,U.page,UPS2,'data-up'):'';
+}
 function reasonHTML(){
   return '<div class="card-h"><b>변경 요청</b><span>저장하면 승인 요청이 올라갑니다</span></div><div class="card-b"><div class="reason"><label for="rsn">변경 요청 사유<i>*</i></label><input class="inp" id="rsn" type="text" maxlength="100" placeholder="승인 담당자가 확인할 변경 사유를 입력하세요 (최대 100자)"><div class="chg" id="chgSum"></div><div class="err" id="rsnErr" hidden></div></div></div>';
 }
 function renderRight(){
-  $('dRight').innerHTML=isGrp(cur)?groupRight():cornerRight();
+  // 코너 : 등록 화면과 같은 영역 · 표에 저장된 값만 보여준다 (수정은 [수정] → 등록 화면을 수정 모드로)
+  $('dRight').innerHTML=isGrp(cur)?groupRight():cornerView(cur,DF).form;
   renderUse();
 }
 function renderHead(){
@@ -285,16 +286,18 @@ function renderHead(){
 function renderFoot(){
   var b='';
   if(!isGrp(cur)&&DT==='info'){
-    if(mode==='edit') b='<button type="button" class="btn-list" id="bCancel">취소</button><button type="button" class="btn-pri" id="bSave">저장</button>';
-    else b=cur.pending?'<button type="button" class="btn-list" disabled style="opacity:.5;cursor:default">승인 대기 중</button>':'<button type="button" class="btn-pri" id="bEdit">수정</button>';
+    b='<button type="button" class="btn-list" id="bDel">삭제</button>'+(cur.pending?'<button type="button" class="btn-list" disabled style="opacity:.5;cursor:default">승인 대기 중</button>':'<button type="button" class="btn-pri" id="bEdit">수정</button>');
   }
   $('fBtns').innerHTML=b;
   $('bList').textContent=mode==='edit'?'목록으로':'목록';
 }
 function renderHist(){
-  $('hBody').innerHTML=cur.hist.map(function(r,i){
-    return '<tr><td>'+(cur.hist.length-i)+'</td><td>'+apPill(r.st)+'</td><td>'+esc(r.req)+'</td><td>'+r.rqt+'</td><td class="l">'+esc(r.why)+'</td><td class="l">'+esc(r.chg)+'</td><td>'+esc(r.apr)+'</td><td>'+(r.apt||'-')+'</td><td class="l">'+(r.ar?esc(r.ar):'<span class="faint">-</span>')+'</td><td>'+(r.ver||'<span class="faint">-</span>')+'</td></tr>';
-  }).join('');
+  var H=cur.hist,tp=Math.max(1,Math.ceil(H.length/HPS));if(HP>tp)HP=tp;
+  var off=(HP-1)*HPS,d=function(v){return v?esc(v):'-'};
+  $('hBody').innerHTML=H.length?H.slice(off,off+HPS).map(function(r,i){var n=off+i;
+    return '<tr><td>'+(H.length-n)+'</td><td class="l">'+hPill(r.st)+'</td><td class="l">'+(r.ver?esc(r.ver):'')+'</td><td class="l">'+d(r.req)+'</td><td>'+d(r.rqt)+'</td><td class="l">'+(r.why?esc(r.why):'')+'</td><td>'+d(r.apr)+'</td><td>'+d(r.apt)+'</td><td class="l">'+(r.ar?esc(r.ar):'')+'</td><td><button type="button" class="dh-btn" data-hchg="'+n+'">변경 내용</button></td></tr>'}).join('')
+    :'<tr><td colspan="10" class="dh-empty">변경/승인 이력이 없습니다.</td></tr>';
+  $('hPg').innerHTML=H.length?dhPager(H.length,HP,HPS,'data-hp'):'';
 }
 function diffs(){
   var d=[],L={n:'코너명',q:'메인 타이틀',sub:'서브 타이틀',use:'사용 여부',ds:'데이터 출처',sort:'정렬 기준',lim:'노출 개수'};
@@ -312,7 +315,7 @@ function renderChg(){
 function renderDetail(){renderHead();renderPreview();renderRight();renderHist();renderFoot()}
 function showPage(p){$('pList').hidden=p!=='list';$('pDetail').hidden=p!=='detail';$('pCreate').hidden=p!=='create'}
 function openDetail(id,opt){
-  cur=anyById(id);mode='view';dr=null;DT=opt==='use'?'use':'info';U={st:'',kw:'',raw:'',page:1};DF={};
+  cur=anyById(id);mode='view';dr=null;DT=opt==='use'?'use':'info';U={st:'',kw:'',raw:'',page:1};DF={};HP=1;
   if(!cur.hist)cur.hist=histOf(cur);
   renderDetail();showPage('detail');window.scrollTo(0,0);
 }
@@ -327,8 +330,9 @@ function save(){
   if(bad){toast('노출 조건 값을 선택하세요.');return}
   if(ctaList(dr).some(function(a){return a.on&&!String(a.label).trim()})){toast('노출할 CTA 버튼명을 입력하세요.');return}
   var h=cur.hist;for(var k in dr)cur[k]=dr[k];cur.hist=h;
-  cur.pending=true;cur.dt=nowStr();cur.mby='김운영 (P031001)';
+  cur.pending=true;cur.dt=nowStr();cur.mby=CORNER_EDITOR;
   cur.hist.unshift({st:'승인 대기',req:'김운영 (SSP1001)',rqt:nowStr(true),why:'코너 정보 수정',chg:d.join(', '),apr:'정지솔 (SSP12344)',apt:'',ar:'',ver:''});
+  persistCorner(cur);   // 주문 코너 그룹 관리 코너 추가 팝업에도 반영
   mode='view';dr=null;renderDetail();window.scrollTo(0,0);
   toast('승인을 요청했습니다.');
 }
@@ -349,7 +353,18 @@ $('lBody').addEventListener('click',function(e){
   // 행 전체가 아니라 코너 ID를 눌렀을 때만 상세로 이동
   var a=e.target.closest('a[data-id]');if(a){e.preventDefault();openDetail(a.getAttribute('data-id'))}
 });
-$('topTabs').addEventListener('click',function(e){var b=e.target.closest('[data-tt]');if(!b)return;if(b.getAttribute('data-tt')!=='상품')toast(b.getAttribute('data-tt')+' 탭은 전시팀 목업에서 관리합니다. 통합 시 연결됩니다.')});
+/* 수정 : 등록 화면을 저장된 값으로 채워 수정 모드로 연다. 취소하면 상세로, 저장하면 갱신된 상세로 돌아온다 */
+function backToDetail(){showPage('detail');mode='view';dr=null;renderDetail();window.scrollTo(0,0)}
+function editCorner(){
+  showPage('create');
+  openCornerEdit(cur,{setCrumb:setCrumb,toast:toast,onClose:backToDetail,onSaved:function(c){cur=c;if(!cur.hist)cur.hist=histOf(cur);backToDetail();toast('「'+c.n+'」 코너를 수정했습니다. ('+c.ver+')')}});
+}
+function delCorner(){
+  var n=refsAny(cur).length?'이 코너를 사용하는 주문 프로세스가 있습니다. ':'';
+  if(!confirm(n+'「'+cur.n+'」 코너를 삭제할까요? 삭제하면 되돌릴 수 없습니다.'))return;
+  var i=CORNERS.indexOf(cur);if(i>-1)CORNERS.splice(i,1);forgetCorner(cur.id);
+  var nm=cur.n;cur=null;openList();toast('「'+nm+'」 코너를 삭제했습니다.');
+}
 function goList(){if(mode==='edit')toast('수정 중인 내용은 저장되지 않았습니다.');mode='view';dr=null;openList()}
 $('bList').onclick=goList;$('bTopList').onclick=goList;
 $('dTabs').addEventListener('click',function(e){
@@ -359,13 +374,17 @@ $('dTabs').addEventListener('click',function(e){
 });
 $('fBtns').addEventListener('click',function(e){
   var b=e.target.closest('button');if(!b)return;
-  if(b.id==='bEdit')startEdit();else if(b.id==='bCancel')cancelEdit();else if(b.id==='bSave')save();
+  if(b.id==='bEdit')editCorner();else if(b.id==='bDel')delCorner();
 });
 /* 수정 입력 */
 $('tUse').addEventListener('click',function(e){
   var t=e.target;
   var c=t.closest('[data-ust]');if(c){U.st=c.getAttribute('data-ust');U.page=1;renderUse();return}
   var p=t.closest('[data-up]');if(p&&!p.disabled){U.page=+p.getAttribute('data-up');renderUse();}
+});
+$('tHist').addEventListener('click',function(e){
+  var p=e.target.closest('[data-hp]');if(p&&!p.disabled){HP=+p.getAttribute('data-hp');renderHist();return}
+  var c=e.target.closest('[data-hchg]');if(c){var r=cur.hist[+c.getAttribute('data-hchg')];toast('변경 내용 : '+(r&&r.chg?r.chg:'없음'))}
 });
 var R$=$('dRight');
 R$.addEventListener('input',function(e){

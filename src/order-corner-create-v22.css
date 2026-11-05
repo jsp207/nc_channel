@@ -60,7 +60,7 @@
 .cc-line .cc-cin{flex:1}
 .cc-tr.off .cc-th{color:var(--cc-faint)}
 .cc-tr.off .cc-th small{color:#c3c8d1}
-.cc-sw{position:relative;display:inline-flex;align-items:center;gap:6px;flex:none;width:52px;font-size:12px;font-weight:600;color:var(--cc-faint);cursor:pointer}
+.cc-sw{position:relative;display:inline-flex;align-items:center;gap:6px;flex:none;width:34px;font-size:12px;font-weight:600;color:var(--cc-faint);cursor:pointer}
 #pCreate .cc-sw input,#pCreate .cc-chip input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
 .cc-sw i{position:relative;flex:none;width:34px;height:20px;border-radius:10px;background:#cfd4dc;transition:background .2s}
 .cc-sw i:after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s}
@@ -105,7 +105,9 @@
 .cc-xs.add{align-self:flex-start}
 /* 하단 · 왼쪽 */
 /* 취소 · 저장 : 상품 전시 등록(product-v023.html) .dock처럼 화면 아래에 붙여 둔다. 시트 좌우 · 아래 여백(30px 32px 40px)만큼 바깥으로 넓혀 시트 끝까지 채운다 */
-#pCreate,#pDetail{--sh-px:32px;--sh-pb:40px;--foot-h:68px}
+/* 하단 버튼 영역을 흰 시트 맨 아래 · 좌우 끝에 붙이려면 시트 안쪽 여백(list-unified .sheet : 40px 32px 56px)과 같아야 한다 */
+#pCreate,#pDetail{--sh-px:32px;--sh-pb:56px;--foot-h:68px}
+@media(max-width:900px){#pCreate,#pDetail{--sh-px:16px;--sh-pb:40px}}
 /* 내용이 짧아도 버튼이 시트 맨 아래에 오도록 시트를 세로 flex로 (상세 화면도 같은 하단 바) */
 .sheet:has(>#pCreate:not([hidden])),.sheet:has(>#pDetail:not([hidden])){display:flex;flex-direction:column}
 #pCreate:not([hidden]),#pDetail:not([hidden]){flex:1;display:flex;flex-direction:column}
@@ -193,3 +195,46 @@
 .pv-cta{padding:12px;border-radius:8px;background:var(--cc-ac);color:#fff;text-align:center;font-weight:600}
 .pv-capt{margin:0;font-size:11.5px;color:var(--cc-faint)}
 @media (max-width:1280px){.cc-grid{grid-template-columns:1fr}.cc-left{position:static}.cc-tr.two{grid-template-columns:150px minmax(0,1fr)}}
+/* 상세(읽기 전용) : 등록 화면과 같은 표에 저장된 값을 글자로 보여준다 */
+.cc-val{font-size:13px;color:#20293b;line-height:1.5;word-break:break-all}
+.cc-val.none{color:var(--cc-faint)}
+#pDetail .cc-chip{cursor:default}
+.cc-it.view{align-items:flex-start;gap:10px;padding:12px 14px}
+.cc-ino{flex:none;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#f1f2f5;color:var(--cc-muted);font-size:11px;font-weight:600}
+.cc-dtag{flex:none;margin-left:auto;align-self:center;padding:2px 8px;border-radius:4px;background:#f1eefe;color:var(--cc-ac);font-size:11px;font-weight:600;line-height:18px}
+.cc-ivs{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:6px 22px;margin:0}
+.cc-ivs>div{display:flex;gap:8px;align-items:baseline;min-width:0}
+.cc-ivs dt{flex:none;font-size:12px;color:var(--cc-muted)}
+.cc-ivs dd{margin:0;min-width:0}
+.cc-html{margin:0;padding:10px 12px;border-radius:8px;background:#f7f8fa;font:12px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+
+/* 상세 탭 · 사용 위치 · 변경/승인 이력 : 설문 상세 변경/승인 이력 화면 기준 (큰 글자 탭 + 회색 머리줄 표 + 가운데 페이지 번호) */
+#pDetail .dtabs{gap:0;margin:0 0 44px;border-bottom:1px solid #e5e7ee}
+#pDetail .dtab{padding:0 22px 16px;margin-bottom:-1px;border-bottom:2px solid transparent;font-size:18px;font-weight:500;color:#707c91}
+#pDetail .dtab:hover{color:#20293b}
+#pDetail .dtab.on{color:#4320d4;border-color:#4320d4;font-weight:700}
+#pDetail .dtab small{margin-left:5px;font-size:13px;font-weight:600;color:inherit;opacity:.75}
+.dh-tw{overflow-x:auto}
+table.dh-t{width:100%;min-width:900px;border-collapse:collapse;font-size:14px;color:#20293b}
+.dh-t th{height:52px;padding:0 12px;background:#f2f3f5;border-top:1px solid #e1e4ea;border-bottom:1px solid #e1e4ea;font-weight:500;text-align:center;white-space:nowrap}
+.dh-t td{height:53px;padding:0 12px;border-bottom:1px solid #e8eaf0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dh-t :is(th,td).l{text-align:left}
+.dh-t td.mono{color:#4320d4;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+.dh-t td.dh-empty{height:120px;color:#a3a9b5;text-align:center}
+.dh-pill{display:inline-block;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:500;line-height:18px}
+.dh-pill.ok{background:#e3f6ea;color:#1f8a4c}
+.dh-pill.wt{background:#e6efff;color:#2d5fd9}
+.dh-pill.tmp{background:#eceef3;color:#5d6275}
+.dh-pill.no{background:#ffe9ea;color:#e03c4a}
+.dh-pill.cc{background:#fff0de;color:#c46a0b}
+.dh-btn{height:30px;padding:0 12px;border:1px solid #cfd4dc;border-radius:15px;background:#fff;font-size:12px;color:#4b5160;cursor:pointer;white-space:nowrap}
+.dh-btn:hover{border-color:#4320d4;color:#4320d4}
+.dh-pg{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:28px}
+.dh-pg button{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 4px;border:0;border-radius:4px;background:none;font-size:14px;color:#20293b;cursor:pointer}
+.dh-pg button.ar{font-size:16px;color:#4b5160}
+.dh-pg button:hover:not(:disabled):not(.on){background:#f2f3f7}
+.dh-pg button.on{background:#4320d4;color:#fff;font-weight:600}
+.dh-pg button:disabled{color:#c3c8d3;cursor:default}
+.dh-pg .dot{color:#707c91;letter-spacing:1px}
+/* 코너 Item 제목 옆 TBD 표시 */
+.cc-acc>header .cc-tbd{margin-left:6px;font-size:12px;font-weight:500;color:#c46a0b}
