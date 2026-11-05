@@ -1,11 +1,15 @@
 /* EPC 상품 조회 (epc-list.html): list.css(목록 공통) · list-unified.css(상품·주문·결제 목록 통일) 위에 이 화면의 열 폭만 더한다. */
-#fKey{width:154px}
-#fQ{width:226px}
+#fKey{width:140px}
+#fQ{width:320px}
 
 /* 결과 표: 가로 스크롤 없이 본문 폭에 맞춘다. EPC 상품명이 남는 폭을 쓴다 */
-#listTable col.w-id{width:140px}#listTable col.w-ver{width:72px}#listTable col.w-gb{width:120px}#listTable col.w-ty{width:140px}
-#listTable col.w-st{width:112px}#listTable col.w-n{width:104px}#listTable col.w-ord{width:160px}#listTable col.w-at{width:168px}
+#listTable col.w-id{width:128px}#listTable col.w-ver{width:80px}#listTable col.w-lv2{width:110px}#listTable col.w-lv3{width:190px}
+#listTable col.w-spec{width:240px}#listTable col.w-st{width:120px}#listTable col.w-at{width:190px}
+/* 시안처럼 ID는 본문 글자색으로 두고, 누를 수 있는 것만 밑줄로 알린다 */
+body.ul #listTable .lid{color:var(--ul-text)}
+/* 페이지 번호를 다운로드 버튼과 같은 높이에 둔다 (list-unified.css의 #lPager 규칙이 위 여백을 남겨서 덮어쓴다) */
+body.ul .lst-bottom>nav#pager.lst-pager{margin:0}
 @media(max-width:1440px){
-  #listTable col.w-id{width:104px}#listTable col.w-ver{width:56px}#listTable col.w-gb{width:96px}#listTable col.w-ty{width:110px}
-  #listTable col.w-st{width:96px}#listTable col.w-n{width:84px}#listTable col.w-ord{width:136px}#listTable col.w-at{width:148px}
+  #listTable col.w-id{width:96px}#listTable col.w-ver{width:60px}#listTable col.w-lv2{width:84px}#listTable col.w-lv3{width:150px}
+  #listTable col.w-spec{width:180px}#listTable col.w-st{width:96px}#listTable col.w-at{width:156px}
 }
