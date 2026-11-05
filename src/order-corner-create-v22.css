@@ -1,11 +1,22 @@
 /* 주문 코너 등록 (주문 코너 관리 v0.2.2) : 왼쪽 미리 보기 + 오른쪽 기본 정보 · 속성 정보 · 콘텐츠 카드 */
 .rh>.sbtn{margin-left:auto;align-self:center}
-#pCreate{--cc-ac:#3617ce;--cc-line:#e5e8ee;--cc-th:#f7f8fa;--cc-muted:#6b7280;--cc-faint:#a3a9b5}
+#pCreate,#pDetail{--cc-ac:#3617ce;--cc-line:#e5e8ee;--cc-th:#f7f8fa;--cc-muted:#6b7280;--cc-faint:#a3a9b5}
 #pCreate .ph{padding-bottom:18px;border-bottom:1px solid var(--cc-line);margin-bottom:28px}
-.cc-grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:24px;align-items:start}
+.cc-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px;align-items:start}
 .cc-left{position:sticky;top:20px;display:grid;gap:14px}
 .cc-card{background:#fff;border:1px solid var(--cc-line);border-radius:14px;padding:24px 20px 20px}
 .cc-card+.cc-card{margin-top:20px}
+/* 아코디언 섹션 : 상품 전시 등록(product-v023.html) 전시 유형 영역과 같은 테두리 · 머리줄 · 접기. 안쪽 표는 그대로 두고 여백은 연관 상품 영역과 같은 18px 20px */
+.cc-acc{border:1px solid #3617ce;border-radius:10px;overflow:hidden;margin-bottom:20px;background:#fff}
+.cc-acc>header{display:flex;align-items:center;gap:8px;padding:15px 20px;background:#f7f8fb;border-bottom:1px solid #e5e7f0;cursor:pointer;user-select:none;transition:border-color .3s}
+.cc-acc>header b{font-size:13px;font-weight:600;color:#20293b}
+.cc-fold{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;margin-left:auto;padding:0;border:0;border-radius:6px;background:none;color:#707c91;cursor:pointer}
+.cc-fold:hover{background:#fff;color:#4320d4}
+.cc-fold svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.cc-acc.closed>header{border-bottom-color:transparent}
+.cc-acc.closed>header .cc-fold svg{transform:rotate(-90deg)}
+.cc-acc.closed>.cc-accb{display:none}
+.cc-accb{padding:18px 20px}
 .cc-card h2{display:flex;align-items:baseline;gap:10px;margin:0 0 18px;font-size:18px;font-weight:700}
 .cc-legend{font-size:12px;font-weight:400;color:var(--cc-faint)}
 .cc-card h3{display:flex;align-items:baseline;gap:10px;margin:18px 0 0;padding:0 14px 12px;font-size:14px;font-weight:700;border-bottom:1px solid #cfd4dc}
@@ -25,6 +36,7 @@
 .cc-inp:focus,.cc-sel:focus,.cc-ta:focus{outline:none;border-color:var(--cc-ac)}
 .cc-inp:disabled{background:#eceef2;color:var(--cc-faint)}
 .cc-inp.sm{width:96px}
+.cc-inp.cc-name{width:100%}
 .cc-ta{height:76px;padding:10px 12px;resize:vertical;width:100%;font-family:inherit}
 .cc-ta.tall{height:160px;font-family:ui-monospace,Consolas,monospace}
 .cc-rg{display:flex;flex-wrap:wrap;gap:6px 20px}
@@ -35,14 +47,55 @@
 .cc-hint{align-self:flex-start;margin:0;padding:6px 12px;border-radius:6px;background:#eef0fb;color:#2b2f3a;font-size:12.5px;line-height:1.5}
 .cc-sub{font-size:12px;color:var(--cc-faint)}
 .cc-cnt{display:flex;align-items:center;gap:8px;font-size:13px}
-.cc-cin{position:relative;max-width:460px}
+.cc-cin{position:relative;width:100%}
 .cc-cin .cc-inp{width:100%;padding-right:56px}
 .cc-len{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--cc-faint)}
-/* 아이템 행 */
-.cc-item{display:flex;align-items:center;gap:10px}
-.cc-if{flex:1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
-.cc-if .w1{width:150px}.cc-if .w2{flex:1;min-width:200px}.cc-if .ws{width:110px}
-.cc-def{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cc-faint);margin-left:6px;white-space:nowrap}
+/* 코너 구성 : 속성 스위치 + 입력란을 한 줄에. N이면 입력란은 자리만 남기고 비활성 */
+.cc-acc>header .cc-hsub{font-size:12px;color:var(--cc-faint)}
+.cc-acc>header b em{margin-left:6px;font-style:normal;font-size:12px;color:var(--cc-ac)}
+.cc-acc>header:not([data-fold]):not([data-dfold]){cursor:default}   /* 접기 없는 섹션 (사용 위치 · 이력) */
+.cc-acc>header .cc-on{margin-left:auto;font-size:12px;font-weight:600;color:var(--cc-ac)}
+.cc-acc>header .cc-on+.cc-fold{margin-left:4px}
+.cc-line{display:flex;align-items:center;gap:14px}
+.cc-line .cc-cin{flex:1}
+.cc-tr.off .cc-th{color:var(--cc-faint)}
+.cc-tr.off .cc-th small{color:#c3c8d1}
+.cc-sw{position:relative;display:inline-flex;align-items:center;gap:6px;flex:none;width:52px;font-size:12px;font-weight:600;color:var(--cc-faint);cursor:pointer}
+#pCreate .cc-sw input,#pCreate .cc-chip input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.cc-sw i{position:relative;flex:none;width:34px;height:20px;border-radius:10px;background:#cfd4dc;transition:background .2s}
+.cc-sw i:after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s}
+.cc-sw input:checked+i{background:var(--cc-ac)}
+.cc-sw input:checked+i:after{transform:translateX(14px)}
+.cc-sw input:checked~span{color:var(--cc-ac)}
+.cc-sw input:focus-visible+i{outline:2px solid var(--cc-ac);outline-offset:2px}
+.cc-sw.lock{cursor:default}
+.cc-sw.lock i{opacity:.5}
+/* 아이템 구성 요소 칩 */
+.cc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cc-chip{position:relative;display:inline-flex;align-items:center;height:30px;padding:0 12px;border:1px solid #d5d9e0;border-radius:15px;background:#fff;font-size:12.5px;color:#4b5160;cursor:pointer;user-select:none}
+.cc-chip:hover{border-color:#a9a0ee}
+.cc-chip.on{border-color:var(--cc-ac);background:#f1eefe;color:var(--cc-ac);font-weight:600}
+.cc-chip.on:before{content:'✓';margin-right:5px;font-size:11px}
+.cc-chip.lock{cursor:default}
+.cc-chip.lock.on{border-color:#c9bff5;background:#f4f2fd;color:#6a58d8}
+.cc-chip.lock:not(.on){border-style:dashed;background:#f6f7f9;color:var(--cc-faint)}
+.cc-chip:has(input:focus-visible){outline:2px solid var(--cc-ac);outline-offset:1px}
+/* 아이템 카드 : 켠 구성 요소만 라벨 + 입력란으로 */
+.cc-items{display:grid;gap:10px;padding-top:14px}
+.cc-it{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;border:1px solid var(--cc-line);border-radius:10px;background:#fff}
+.cc-it>.cc-def{flex:none}
+.cc-ictl{display:flex;align-items:center;gap:4px;flex:none}
+/* 아이템 입력란은 한 줄에 나란히, 줄 너비를 나눠 100% 채운다 */
+.cc-ifs{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:8px}
+.cc-ibr{flex-basis:100%;height:0}   /* 입력란이 많으면 여기서 둘째 줄로 */
+.cc-ifs>.cc-f{flex:1 1 0}
+/* 첫 입력란(타이틀)과 마지막 셀렉트(상태)는 같은 고정 너비, 나머지가 남은 너비를 나눈다 */
+.cc-ifs>.cc-f:first-child,.cc-ifs>.cc-f:last-child:has(>select){flex:0 0 140px}
+.cc-f{display:grid;min-width:0}
+.cc-f .cc-inp,.cc-f .cc-sel{width:100%}
+.cc-inone{flex:1;margin:0}
+.cc-iadd{display:flex;align-items:center;gap:10px}
+.cc-def{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cc-faint);white-space:nowrap}
 .cc-def.on{color:#1a1a1a;font-weight:600}
 .cc-mv{display:inline-flex}
 .cc-mv button{border:0;background:none;font-size:15px;color:#555;cursor:pointer;padding:2px 4px}
@@ -51,14 +104,20 @@
 .cc-xs:disabled{color:var(--cc-faint);cursor:default;background:#f6f7f9}
 .cc-xs.add{align-self:flex-start}
 /* 하단 · 왼쪽 */
-.cc-foot{display:flex;justify-content:space-between;margin-top:28px;padding-top:20px;border-top:1px solid var(--cc-line)}
+/* 취소 · 저장 : 상품 전시 등록(product-v023.html) .dock처럼 화면 아래에 붙여 둔다. 시트 좌우 · 아래 여백(30px 32px 40px)만큼 바깥으로 넓혀 시트 끝까지 채운다 */
+#pCreate,#pDetail{--sh-px:32px;--sh-pb:40px;--foot-h:68px}
+/* 내용이 짧아도 버튼이 시트 맨 아래에 오도록 시트를 세로 flex로 (상세 화면도 같은 하단 바) */
+.sheet:has(>#pCreate:not([hidden])),.sheet:has(>#pDetail:not([hidden])){display:flex;flex-direction:column}
+#pCreate:not([hidden]),#pDetail:not([hidden]){flex:1;display:flex;flex-direction:column}
+#pCreate .cc-grid{margin-bottom:28px}
+.cc-foot{position:sticky;bottom:0;z-index:40;display:flex;justify-content:space-between;align-items:center;height:var(--foot-h);margin:auto calc(var(--sh-px)*-1) calc(var(--sh-pb)*-1);padding:0 20px;border-top:1px solid var(--cc-line);border-radius:16px 16px 19px 19px;background:#fff;box-shadow:0 -6px 24px #2934591a}
 .cc-btn{height:40px;padding:0 18px;border:1px solid #cfd4dc;border-radius:8px;background:#fff;font-size:14px;font-weight:600;cursor:pointer}
 .cc-btn.pri{background:var(--cc-ac);border-color:var(--cc-ac);color:#fff;min-width:64px}
 .cc-reset{height:40px;border:1px solid #cfd4dc;border-radius:8px;background:#fff;font-size:13.5px;font-weight:600;cursor:pointer}
-.cc-pv h2{margin-bottom:16px}
-.cc-phone{border:1px solid var(--cc-line);border-radius:12px;padding:18px 16px;background:#fff;max-height:620px;overflow:auto}
-.cc-note{margin:14px 0 0;padding:0 0 0 2px;list-style:none;font-size:12px;color:var(--cc-muted);line-height:1.7}
-.cc-note li:before{content:'• '}
+/* 미리보기 : 상품 전시 등록(product-v023.html)과 같은 휴대폰 프레임 (검은 테두리 3px). 높이는 내용에 맞춰 늘고 줄며, 화면 높이(하단 버튼 제외)를 넘으면 프레임 안만 스크롤 */
+.cc-pv{min-height:240px;max-height:calc(100vh - 94px - var(--foot-h));max-height:calc(100dvh - 94px - var(--foot-h));display:flex;flex-direction:column;overflow:hidden;border:3px solid #1d1e2c;border-radius:30px;background:#fff}
+.cc-pvbox{flex:1;min-height:0;display:flex;padding:26px 8px}
+.cc-phone{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:6px 10px 10px;border-radius:14px;background:#fff}
 /* FO 미리보기 */
 .pv{display:grid;gap:10px;font-size:13px;color:#1a1a1a}
 .pv.ctr{text-align:center}

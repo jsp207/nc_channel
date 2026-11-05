@@ -1,7 +1,7 @@
 // @ts-nocheck
 // 주문 코너 등록 (주문 코너 관리 v0.2.2 안에서 여는 등록 화면)
-// 기준: FO 코너 유형 매트릭스(35개 배열 × 26개 속성). 유형은 고객 행동(선택 · 입력 · 확인) 3개로 줄이고, UI가 같거나 일부만 다른 배열은
-// 하나의 '코너 형태'로 묶었다. 원래 배열은 '표시 방식'으로 남겨 속성 기본값을 그대로 가져온다. 35개 배열 → 3개 유형 · 12개 형태 · 35개 표시 방식
+// 기준: FO 코너 유형 매트릭스(35개 배열 × 26개 속성). 유형은 고객 행동(선택 · 입력 · 확인) 3개 + 배너/HTML형으로 나누고, UI가 같거나 일부만 다른 배열은
+// 하나의 '코너 형태'로 묶었다. 원래 배열은 '표시 방식'으로 남겨 속성 기본값을 그대로 가져온다. 35개 배열 → 4개 유형 · 12개 형태 · 35개 표시 방식
 // 속성 표기: R 필수(Y 고정) · O 선택(ON/OFF) · D 종속(가격 Y일 때만 선택) · V 설정값(형태 선택, 노출 개수 범위) · - 해당 없음(숨김)
 import "./order-corner-create-v22.css";
 import { CORNERS, esc } from "./order-corner-v22-data";
@@ -26,54 +26,55 @@ const V=(k,n,src,m,fam,ui,x)=>Object.assign({k,n,src,m:m.replace(/\s/g,''),fam,u
 const L=(k,n,note,s,vs)=>({k,n,note,s,vs});
 const TYPES=[
  {k:'select',n:'선택형',d:'고객이 보기 중에서 하나 또는 여러 개를 고릅니다.',ls:[
-  L('card','카드 선택','카드 라디오형 · 카드 체크형 · 오퍼형을 묶었습니다. 카드 한 장에 타이틀, 설명, 가격이 들어가는 구조가 같고 선택 방식과 CTA 여부만 다릅니다.','select',[
+  L('card','목록 선택형','카드 라디오형 · 카드 체크형 · 오퍼형 · 텍스트 리스트형 · 검색 리스트형 · 필터 리스트형 · 약관 리스트형을 묶었습니다. 보기를 위에서 아래로 나열해 고르는 구조가 같고, 카드/한 줄 행 모양과 선택 방식, 상단 도구(검색란, 탭), CTA · 전체 동의 여부만 다릅니다.','select',[
    V('radio','단일 선택','카드 라디오형','ROOO--OO--- --ROOD-O-O---RV','card','card'),
    V('check','복수 선택','카드 체크형','ROOO--OO--- -ORRR-ROOO----V','check','card'),
-   V('offer','오퍼','오퍼형','RO-------R- -RRRR-----O--O-','offer','card',{s:'reco'})]),
-  L('thumb','이미지 카드','썸네일 카드형 · 상품 카드형 · 비교형을 묶었습니다. 이미지가 있는 카드를 2열로 나열하는 구조가 같습니다.','reco',[
-   V('thumb','썸네일 카드','썸네일 카드형','RO-O------- -RRRR--O-O----V','thumb','grid'),
-   V('pcard','상품 추천','상품 카드형','RO-----O-O- -RROR---------V','pcard','card'),
-   V('compare','비교','비교형','RO--------- -OR-O-----R---V','compare','card')]),
-  L('list','리스트 선택','텍스트 리스트형 · 검색 리스트형 · 필터 리스트형 · 약관 리스트형을 묶었습니다. 한 줄짜리 행을 나열하고 상단 도구(검색란, 탭)와 전체 동의만 다릅니다.','select',[
+   V('offer','오퍼','오퍼형','RO-------R- -RRRR-----O--O-','offer','card',{s:'reco'}),
    V('tlist','텍스트 리스트','텍스트 리스트형','OO----O---- VOR----------OV','tlist','radio',{vars:['라디오','체크박스']}),
    V('search','검색 리스트','검색 리스트형','OO--OR-OR-O --RO----------V','slist','list',{s:'search'}),
    V('filter','필터 리스트','필터 리스트형','O---R--OR-- -ORO---O------V','slist','list',{s:'search'}),
    V('terms','약관 동의','약관 리스트형','O---------- V-RO-----O---RV','terms','terms',{s:'terms',vars:['전체 동의 사용','전체 동의 미사용']})]),
-  L('simple','간단 선택','칩형 · 드롭다운형을 묶었습니다. 색상, 용량처럼 짧은 값을 고르고 펼침 방식만 다릅니다.','short',[
+  L('thumb','이미지 카드형','썸네일 카드형 · 상품 카드형 · 비교형을 묶었습니다. 이미지가 있는 카드를 2열로 나열하는 구조가 같습니다.','reco',[
+   V('thumb','썸네일 카드','썸네일 카드형','RO-O------- -RRRR--O-O----V','thumb','grid'),
+   V('pcard','상품 추천','상품 카드형','RO-----O-O- -RROR---------V','pcard','card'),
+   V('compare','비교','비교형','RO--------- -OR-O-----R---V','compare','card')]),
+  L('simple','칩/드롭다운형','칩형 · 드롭다운형을 묶었습니다. 색상, 용량처럼 짧은 값을 고르고 펼침 방식만 다릅니다.','short',[
    V('chip','칩','칩형','RO--------- --R----------RV','chip','chip'),
    V('drop','드롭다운','드롭다운형','O---------- --R----------RV','drop','list')])]},
  {k:'input',n:'입력형',d:'고객이 값을 직접 입력하거나 등록합니다.',ls:[
-  L('field','입력란','기본 입력란형 · 인증형 · 일정 선택형 · 조회 폼형을 묶었습니다. 입력란에 버튼, 도움말, 캘린더, 조회 버튼이 붙는지만 다릅니다.','input',[
+  L('field','기본 입력형','기본 입력란형 · 인증형 · 일정 선택형 · 조회 폼형을 묶었습니다. 입력란에 버튼, 도움말, 캘린더, 조회 버튼이 붙는지만 다릅니다.','input',[
    V('basic','기본 입력','기본 입력란형','OOO-------O V-R------O-RO-V','input','form',{vars:['텍스트','셀렉트','아이템']}),
    V('auth','인증','인증형','OO--------- --R------R-RROV','auth','form'),
    V('date','일정 선택','일정 선택형','R---------- --R--------RO--','date','form'),
    V('query','조회','조회 폼형','RO-------RO --R--------R--V','query','form')]),
-  L('addr','주소 입력','주소형입니다. 주소 검색 버튼, 상세 주소 입력란, 등록된 주소 목록으로 구성합니다.','addr',[
+  L('addr','주소 입력형','주소형입니다. 주소 검색 버튼, 상세 주소 입력란, 등록된 주소 목록으로 구성합니다.','addr',[
    V('addr','주소','주소형','ROO-----O-- --R------ROR-O-','addr','form')]),
-  L('reg','등록·첨부 리스트','등록 리스트형 · 첨부 리스트형을 묶었습니다. 항목마다 버튼(삭제, 파일 찾기)이 붙는 목록 구조가 같습니다.','input',[
+  L('reg','등록/첨부형','등록 리스트형 · 첨부 리스트형을 묶었습니다. 항목마다 버튼(삭제, 파일 찾기)이 붙는 목록 구조가 같습니다.','input',[
    V('reg','등록 리스트','등록 리스트형','ROOO----R-- --R------RRO--V','reg','form'),
    V('file','파일 첨부','첨부 리스트형','R---------O --RR-----RR---V','file','form',{s:'file'})])]},
- {k:'info',n:'정보·안내형',d:'고객이 고르거나 입력하지 않고 내용을 확인만 합니다. 기존 정보 요약형 · 금액 확인형 · 결과 안내형 · 안내형을 합쳤습니다.',ls:[
-  L('kv','항목·값 요약','테이블형 · 최종 금액형 · 정산 안내형을 묶었습니다. 항목명 : 값 행을 나열하고, 금액 방식은 마지막 행(합계)을 강조합니다.','summary',[
+ {k:'info',n:'콘텐츠형',d:'고객이 고르거나 입력하지 않고 내용을 확인만 합니다. 기존 정보 요약형 · 금액 확인형 · 결과 안내형 · 안내형을 합쳤습니다.',ls:[
+  L('kv','정보 콘텐츠형','테이블형 · 최종 금액형 · 정산 안내형을 묶었습니다. 항목명 : 값 행을 나열하고, 금액 방식은 마지막 행(합계)을 강조합니다.','summary',[
    V('table','테이블','테이블형','RO--------O ----O-----R---V','table','sum'),
    V('final','최종 금액','최종 금액형','R---------O ---OR---O-R---V','amount','sum',{s:'amount'}),
    V('settle','정산 안내','정산 안내형','RR--------O ----R---O-O----','amount','sum',{s:'amount'})]),
-  L('prod','상품 정보','주문 상품형 · 상품 기본 정보형을 묶었습니다. 상품 대표 정보 아래 항목명 : 값을 붙이는 구조가 같습니다.','prod',[
+  L('prod','상품 콘텐츠형','주문 상품형 · 상품 기본 정보형을 묶었습니다. 상품 대표 정보 아래 항목명 : 값을 붙이는 구조가 같습니다.','prod',[
    V('order','주문 상품','주문 상품형','R---------- -OR-R---R-O--R-','prod','sum'),
    V('base','상품 기본 정보','상품 기본 정보형','R---------O -RR-R---O-O----','prod','sum')]),
-  L('ilist','안내 목록','텍스트형 · 아코디언형 · 스텝형 · 링크 리스트형 · 고객센터형 · 등록 내역형을 묶었습니다. 타이틀과 설명 행을 나열하고 표시 방식만 다릅니다.','guide',[
+  L('ilist','안내 콘텐츠형','텍스트형 · 아코디언형 · 스텝형 · 링크 리스트형 · 고객센터형 · 등록 내역형을 묶었습니다. 타이틀과 설명 행을 나열하고 표시 방식만 다릅니다.','guide',[
    V('bullet','불릿 텍스트','텍스트형','O---------- -O-R----------V','text','list'),
    V('accordion','아코디언','아코디언형','O---O------ --RR-----O----V','accordion','list'),
    V('step','스텝','스텝형','RO--O------ -ORR-----O----V','step','list'),
    V('link','링크','링크 리스트형','O---------- --RO----O-----V','link','list'),
    V('call','고객센터','고객센터형','R---------- --RO----RO----V','call','list'),
    V('hist','등록 내역','등록 내역형','R-------R-O --RO-----O-----','hist','list',{s:'hist'})]),
-  L('result','결과 안내','완료형 · 진행형 · 결과 분기형을 묶었습니다. 아이콘 + 타이틀 + 설명 구조가 같고 아이콘과 버튼만 다릅니다.','result',[
+  L('result','결과 콘텐츠형','완료형 · 진행형 · 결과 분기형을 묶었습니다. 아이콘 + 타이틀 + 설명 구조가 같고 아이콘과 버튼만 다릅니다.','result',[
    V('done','완료','완료형','---------O- -ORO----R-O----','result','done'),
    V('ing','진행 중','진행형','----------O --RR----R------','result','done'),
-   V('branch','결과 분기','결과 분기형','---------O- VORR----R------','result','done',{vars:['성공','실패','보류']})]),
-  L('media','배너·HTML','배너형 · html형을 묶었습니다. 이미지 한 장 또는 HTML 본문 하나만 노출합니다.','guide',[
-   V('banner','배너','배너형','----------- -R------------V','banner','grid'),
+   V('branch','결과 분기','결과 분기형','---------O- VORR----R------','result','done',{vars:['성공','실패','보류']})])]},
+ {k:'media',n:'배너/HTML형',d:'이미지 배너 한 장 또는 HTML 본문 하나만 노출합니다.',ls:[
+  L('banner','배너','배너형입니다. 이미지 배너 한 장을 노출합니다.','guide',[
+   V('banner','배너','배너형','----------- -R------------V','banner','grid')]),
+  L('html','HTML','html형입니다. 본문을 HTML 에디터로 입력합니다.','guide',[
    V('html','HTML','html형','O---------- ---------------','html','list')])]}
 ];
 
@@ -134,7 +135,7 @@ function setType(k){st.type=k;st.layout=tOf().ls[0].k;st.variant=lOf().vs[0].k;r
 function setLayout(k){const s0=sKey();st.layout=k;st.variant=lOf().vs[0].k;resetAttrs();if(sKey()!==s0)resetContent();else fitItems();}
 function setVariant(k){const s0=sKey();st.variant=k;resetAttrs();if(sKey()!==s0)resetContent();else fitItems();}
 function fitItems(){if(st.items.length>st.cnt[1])st.items=st.items.slice(0,st.cnt[1]);while(st.items.length<st.cnt[0])st.items.push(sampleItems(st.items.length+1).pop());if(st.def>=st.items.length)st.def=0;}
-function fresh(){st={name:'',desc:'',use:'Y',plat:{mo:true,pc:false},type:'select'};setType('select');}
+function fresh(){st={name:'',use:'N',type:'select'};setType('select');}
 
 /* ===== 미리보기 ===== */
 const ICO={tip:'<i class="pv-tip">i</i>',chev:'<span class="pv-chev">›</span>',chk:'✓'};
@@ -205,76 +206,119 @@ const radios=(name,list,val,dis)=>'<div class="cc-rg">'+list.map(x=>'<label clas
 const hint=t=>'<p class="cc-hint">'+t+'</p>';
 
 function basicCard(){
-  const t=tOf(),l=lOf();
-  let h='<div class="cc-tr two"><div class="cc-th">코너 ID</div><div class="cc-td"><input class="cc-inp" placeholder="자동 채번" disabled></div>'
-   +'<div class="cc-th">코너명'+req+'</div><div class="cc-td"><input class="cc-inp" data-f="name" maxlength="30" value="'+esc(st.name)+'" placeholder="코너명을 입력해 주세요"></div></div>';
-  h+=tr('코너 유형'+req,radios('ccType',TYPES.map(x=>[x.k,x.n]),st.type)+hint(esc(t.d)));
-  h+=tr('코너 형태'+req,radios('ccLayout',t.ls.map(x=>[x.k,x.n]),st.layout)+hint(esc(l.note)+' 표시 방식과 속성은 아래 코너 속성 정보에서, 상세 콘텐츠는 코너 콘텐츠에서 설정해 주세요.'));
-  const pl=st.plat,all=pl.mo&&pl.pc,cb=(k,n,c)=>'<label class="'+(c?'on':'')+'"><input type="checkbox" data-plat="'+k+'"'+(c?' checked':'')+'>'+n+'</label>';
-  h+='<div class="cc-tr two"><div class="cc-th">운영 플랫폼'+req+'</div><div class="cc-td"><div class="cc-rg">'+cb('all','전체',all)+cb('mo','모바일',pl.mo)+cb('pc','PC',pl.pc)+'</div></div><div class="cc-th">사용 여부'+req+'</div><div class="cc-td">'+radios('ccUse',[['Y','Y'],['N','N']],st.use)+'</div></div>';
-  h+=tr('코너 설명','<textarea class="cc-ta" data-f="desc" maxlength="100" placeholder="100자 이내로 설명을 입력해 주세요">'+esc(st.desc)+'</textarea>');
-  return '<section class="cc-card"><h2>코너 기본 정보</h2><div class="cc-tb">'+h+'</div></section>';
-}
-function attrRow(a){
-  const k=a[0],m=mark(k);if(m==='-')return '';
-  const lab=esc(a[1])+(m==='R'?req:'')+'<small>('+esc(a[2])+')</small>';
-  if(k==='count')return tr(lab,'<div class="cc-cnt"><input class="cc-inp sm" type="number" min="1" max="20" data-cnt="0" value="'+st.cnt[0]+'"'+(SINGLE.indexOf(vOf().fam)>-1?' disabled':'')+'><span>-</span><input class="cc-inp sm" type="number" min="1" max="20" data-cnt="1" value="'+st.cnt[1]+'"'+(SINGLE.indexOf(vOf().fam)>-1?' disabled':'')+'><span>개</span></div>');
-  if(k==='var'){const vs=vOf().vars||['기본'];return tr(lab,radios('ccVopt',vs.map(x=>[x,x]),st.vopt||vs[0]));}
-  const dep=DEP[k],lock=m==='R'||(m==='D'&&!on(dep));
-  const val=m==='R'?'Y':lock?'N':st.attrs[k];
-  return tr(lab,'<div data-attr="'+k+'">'+radios('at_'+k,[['Y','Y'],['N','N']],val,lock)+'</div>'+(m==='D'?'<span class="cc-sub">'+(lock?'가격을 Y로 켜면 선택할 수 있어요':'가격에 종속된 속성')+'</span>':''));
-}
-function attrCard(){
-  const c=ATTRS.filter(a=>a[3]==='c').map(attrRow).join(''),i=ATTRS.filter(a=>a[3]==='i').map(attrRow).join('');
+  const t=tOf();
+  // 코너 ID는 저장 시 채번하고 상세 화면에서만 보여준다
+  let h=tr('코너명','<input class="cc-inp cc-name" data-f="name" maxlength="30" value="'+esc(st.name)+'" placeholder="코너명을 입력해 주세요">');
+  h+=tr('사용 여부',radios('ccUse',[['N','N'],['Y','Y']],st.use));
+  h+=tr('코너 유형',radios('ccType',TYPES.map(x=>[x.k,x.n]),st.type));
+  h+=tr('코너 형태',radios('ccLayout',t.ls.map(x=>[x.k,x.n]),st.layout));
   const l=lOf(),v=vOf();
-  const mode=tr('표시 방식'+req,(l.vs.length>1?radios('ccVar',l.vs.map(x=>[x.k,x.n]),st.variant):'<b class="cc-one">'+esc(v.n)+'</b>')+hint('원본 배열: '+esc(v.src)+(l.vs.length>1?' · 표시 방식을 바꾸면 아래 속성 기본값이 이 배열 기준으로 다시 설정됩니다.':'')));
-  return '<section class="cc-card"><h2>코너 속성 정보<span class="cc-legend">필수 항목은 Y로 고정 · 표시 방식에 없는 속성은 나오지 않습니다</span></h2>'
-   +'<div class="cc-tb">'+mode+'</div>'
-   +'<h3>코너(카드)<small>카드 전체에 1개 (타이틀 · 미선택 옵션 · 더보기 등)</small></h3><div class="cc-tb">'+(c||'<div class="cc-empty">이 배열은 코너 단위 속성이 없습니다.</div>')+'</div>'
-   +'<h3>아이템(요소)<small>리스트에서 반복되는 요소 1개 (타이틀 · 서브 타이틀 · 가격 등)</small></h3><div class="cc-tb">'+(i||'<div class="cc-empty">이 배열은 아이템 속성이 없습니다.</div>')+'</div></section>';
+  h+=tr('표시 방식',l.vs.length>1?radios('ccVar',l.vs.map(x=>[x.k,x.n]),st.variant):'<b class="cc-one">'+esc(v.n)+'</b>');
+  return acc('basic','기본 정보','<div class="cc-tb">'+h+'</div>');
 }
+/* 아코디언 섹션 : 상품 전시 등록(product-v023.html) 전시 유형 영역과 같은 테두리 · 머리줄 · 접기. 영역마다 따로 펼치고 접는다 (처음엔 기본 정보만 펼침) */
+const fold={};
+function initFold(){Object.keys(fold).forEach(k=>delete fold[k]);Object.assign(fold,{header:true,contents:true,footer:true});}
+function toggleSec(id){const hd=$('ccForm').querySelector('[data-fold="'+id+'"]');if(!hd)return;fold[id]=!fold[id];setFold(hd.parentNode,!fold[id]);}
+function foldAll(){$('ccForm').querySelectorAll('.cc-acc>header[data-fold]').forEach(h=>{const k=h.dataset.fold;if(!fold[k]){fold[k]=true;setFold(h.parentNode,false);}});}
+function acc(id,title,body,aside){
+  return '<section class="cc-acc'+(fold[id]?' closed':'')+'"><header data-fold="'+id+'"><b>'+title+'</b>'+(aside||'')
+   +'<button type="button" class="cc-fold" aria-expanded="'+!fold[id]+'" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>'
+   +'<div class="cc-accb">'+body+'</div></section>';
+}
+/* 접기/펼치기 애니메이션 : 상품 전시 등록(display-create-v25.ts) setFold와 같은 높이 · 여백 · 투명도 전환 */
+const FOLD_MS=300,FOLD_EASE='cubic-bezier(.4,0,.2,1)';
+export function setFold(sec,open){
+  const body=sec.querySelector(':scope>.cc-accb'),was=!sec.classList.contains('closed');
+  sec.querySelector('.cc-fold').setAttribute('aria-expanded',String(open));
+  if(body._fold){body._fold.cancel();body._fold=null;body.style.display='';body.style.overflow='';}
+  sec.classList.toggle('closed',!open);
+  if(was===open||matchMedia('(prefers-reduced-motion: reduce)').matches||!body.animate)return;
+  // 접을 때는 '접힘' 상태로 먼저 바꾸고, 애니메이션이 끝날 때까지 본문을 잠시 보이게 둔다
+  body.style.overflow='hidden';if(!open)body.style.display='block';
+  const h=body.scrollHeight,cs=getComputedStyle(body),full={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,opacity:1},none={height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0};
+  const a=body._fold=body.animate(open?[none,full]:[full,none],{duration:open?FOLD_MS:FOLD_MS-40,easing:FOLD_EASE});
+  a.onfinish=()=>{if(body._fold!==a)return;body._fold=null;body.style.display='';body.style.overflow='';};
+}
+/* ===== 코너 구성 : 코너 Header · 코너 Item · 코너 Footer 아코디언 (표시 방식은 기본 정보의 코너 형태 아래) =====
+   속성 Y/N과 콘텐츠 입력을 같은 영역에 둔다. 예전에는 '코너 속성 정보'에서 Y/N을 바꾸고 아래 '코너 콘텐츠'로 내려가 입력해야 했다.
+   Header · Footer 속성은 스위치 바로 옆 입력란이 켜지고 꺼지며(N이어도 자리는 남겨 화면이 흔들리지 않게), Contents의 아이템 속성은 칩으로 켜고 끄면 바로 아래 아이템 카드에 입력란이 생긴다.
+   표시 방식에 해당 속성이 하나도 없는 영역은 그리지 않는다 */
+const ALAB=Object.fromEntries(ATTRS.map(a=>[a[0],a]));
+const HEAD=['title','sub','tip','link','tab','search'],FOOT=['none','more','empty','cta','cap'];   // 아이템 위(타이틀 · 탭 · 검색) / 아래(미선택 · 더보기 · 버튼 · 안내)
 const CF=[['title','코너 메인 타이틀',30],['sub','서브 타이틀',40],['tip','툴팁 문구',60],['link','우측 링크 문구',12],['tab','탭 · 필터 (쉼표로 구분)',60],['search','검색란 안내 문구',30],
   ['none','미선택 옵션 문구',20],['more','더보기 버튼 문구',20],['empty','빈 상태 문구',30],['cta','버튼 문구',12],['cap','하단 안내 문구',60]];
-const IF=[['ititle','타이틀','w1'],['isub','서브 타이틀','w2'],['price','가격','w1'],['pcap','가격 캡션','w1'],['icap','캡션','w1'],['badge','배지','ws'],['btn','버튼 라벨','ws'],['input','입력 안내 문구','w2'],['help','도움말','w2']];
-function contentCard(){
-  const c=st.c,v=vOf();
-  let ch=CF.filter(x=>on(x[0])).map(x=>tr(esc(x[1])+(mark(x[0])==='R'?req:''),'<div class="cc-cin"><input class="cc-inp" data-c="'+x[0]+'" maxlength="'+x[2]+'" value="'+esc(c[x[0]])+'"><span class="cc-len" id="len_'+x[0]+'">'+String(c[x[0]]).length+'/'+x[2]+'</span></div>')).join('');
-  let ih='';
-  if(v.fam==='html')ih=tr('본문 HTML'+req,'<textarea class="cc-ta tall" data-c="html">'+esc(c.html)+'</textarea>'+hint('본문은 HTML 에디터로 입력합니다. (에디터 연동은 개발 시 적용)'));
-  else if(v.m.slice(11).replace(/-/g,'').length){
-    const max=st.cnt[1],min=st.cnt[0];
-    ih=st.items.map((it,i)=>{
-      let f=IF.filter(x=>on(x[0])).map(x=>'<input class="cc-inp '+x[2]+'" data-it="'+i+'" data-k="'+x[0]+'" value="'+esc(it[x[0]])+'" placeholder="'+esc(x[1])+'" title="'+esc(x[1])+'">').join('');
-      if(on('lv'))f+='<input class="cc-inp w1" data-it="'+i+'" data-k="label" value="'+esc(it.label)+'" placeholder="항목명" title="항목명"><input class="cc-inp w1" data-it="'+i+'" data-k="value" value="'+esc(it.value)+'" placeholder="값" title="값">';
-      if(on('img'))f+='<input class="cc-inp w1" data-it="'+i+'" data-k="img" value="'+esc(it.img)+'" placeholder="이미지 경로" title="이미지 경로">';
-      if(on('state'))f+='<select class="cc-sel" data-it="'+i+'" data-k="state" title="상태">'+STATES.map(s=>'<option value="'+s[0]+'"'+(it.state===s[0]?' selected':'')+'>'+s[1]+'</option>').join('')+'</select>';
-      if(isSel())f+='<label class="cc-def'+(st.def===i?' on':'')+'"><input type="radio" name="ccDef" value="'+i+'"'+(st.def===i?' checked':'')+'>기본 선택</label>';
-      const ctl='<span class="cc-mv"><button type="button" data-mv="'+i+':-1"'+(i?'':' disabled')+' aria-label="위로">↑</button><button type="button" data-mv="'+i+':1"'+(i<st.items.length-1?'':' disabled')+' aria-label="아래로">↓</button></span><button type="button" class="cc-xs" data-del="'+i+'"'+(st.items.length>min?'':' disabled')+'>삭제</button>';
-      return tr('아이템 '+(i+1)+(i<min?req:''),'<div class="cc-item"><div class="cc-if">'+f+'</div>'+ctl+'</div>');}).join('')
-     +tr('','<button type="button" class="cc-xs add" data-cc="add"'+(st.items.length<max?'':' disabled')+'>+ 아이템 추가</button>'+(st.items.length>=max?'<span class="cc-sub">노출 개수 범위 최대 '+max+'개에 도달했어요</span>':''));
-  }
-  return '<section class="cc-card"><h2>코너 콘텐츠</h2>'
-   +(ch?'<h3>코너(카드)</h3><div class="cc-tb">'+ch+'</div>':'')
-   +(ih?'<h3>아이템(요소)<small>노출 개수 범위 내에서 추가 ('+st.cnt[0]+' ~ '+st.cnt[1]+'개)</small></h3><div class="cc-tb">'+ih+'</div>':'')+'</section>';
+const IF=[['ititle','타이틀',''],['isub','서브 타이틀','w2'],['price','가격',''],['pcap','가격 캡션',''],['icap','캡션',''],['badge','배지',''],['btn','버튼 라벨',''],['input','입력 안내 문구','w2'],['help','도움말','w2']];
+// 잠김 : 필수(R)는 Y 고정, 종속(D)은 부모가 N이면 N 고정
+const locked=k=>{const m=mark(k);return m==='R'||(m==='D'&&!on(DEP[k]));};
+const lockTip=k=>mark(k)==='R'?'필수 속성이라 항상 노출돼요':mark(k)==='D'&&!on(DEP[k])?ALAB[DEP[k]][1]+'을(를) 켜면 선택할 수 있어요':'';
+function sw(k){
+  const y=on(k),lk=locked(k);
+  return '<label class="cc-sw'+(lk?' lock':'')+'" title="'+lockTip(k)+'"><input type="checkbox" name="at_'+k+'"'+(y?' checked':'')+(lk?' disabled':'')+' aria-label="'+esc(ALAB[k][1])+' 노출"><i></i><span>'+(y?'Y':'N')+'</span></label>';
 }
-function render(){$('ccForm').innerHTML=basicCard()+attrCard()+contentCard();renderPv();}
+function cRow(x){
+  const k=x[0],m=mark(k);if(m==='-')return '';
+  const y=on(k),a=ALAB[k];
+  const inp='<div class="cc-cin"><input class="cc-inp" data-c="'+k+'" maxlength="'+x[2]+'" value="'+esc(st.c[k])+'" placeholder="'+esc(x[1])+'"'+(y?'':' disabled')+'><span class="cc-len" id="len_'+k+'">'+String(st.c[k]).length+'/'+x[2]+'</span></div>';
+  return tr(esc(a[1])+(m==='R'?req:'')+'<small>('+esc(a[2])+')</small>','<div class="cc-line">'+sw(k)+inp+'</div>',y?'':'off');
+}
+const onCnt=keys=>{const ks=keys.filter(k=>mark(k)!=='-');return ks.length?'<span class="cc-on">노출 '+ks.filter(on).length+' / '+ks.length+'</span>':'';};
+function cornerPart(id,title,keys){
+  const rows=CF.filter(x=>keys.indexOf(x[0])>-1).map(cRow).join('');
+  return rows?acc(id,title,'<div class="cc-tb">'+rows+'</div>',onCnt(keys)):'';
+}
+// 라벨 글자는 두지 않고 입력란 안내 문구 · 마우스 오버로 구분한다 (lab은 이름 · 툴팁)
+const fl=(lab,inner,w)=>'<div class="cc-f'+(w?' '+w:'')+'">'+inner+'</div>';
+const iInp=(i,k,v,lab)=>'<input class="cc-inp" data-it="'+i+'" data-k="'+k+'" value="'+esc(v)+'" placeholder="'+esc(lab)+'" title="'+esc(lab)+'" aria-label="'+esc(lab)+'">';
+const ITEM_ROW=4;   // 한 줄에 둘 입력란 수. 넘으면 두 줄로 반씩 나눈다
+function itemCard(it,i){
+  const min=st.cnt[0];
+  const fs=IF.filter(x=>on(x[0])).map(x=>fl(x[1],iInp(i,x[0],it[x[0]],x[1]),x[2]));
+  if(on('lv'))fs.push(fl('항목명',iInp(i,'label',it.label,'항목명')),fl('값',iInp(i,'value',it.value,'값')));
+  if(on('img'))fs.push(fl('이미지 경로',iInp(i,'img',it.img,'이미지 경로')));
+  if(on('state'))fs.push(fl('상태','<select class="cc-sel" data-it="'+i+'" data-k="state" title="상태" aria-label="상태">'+STATES.map(s=>'<option value="'+s[0]+'"'+(it.state===s[0]?' selected':'')+'>'+s[1]+'</option>').join('')+'</select>'));
+  if(fs.length>ITEM_ROW)fs.splice(Math.ceil(fs.length/2),0,'<i class="cc-ibr"></i>');
+  const f=fs.join('');
+  const def=isSel()?'<label class="cc-def'+(st.def===i?' on':'')+'"><input type="radio" name="ccDef" value="'+i+'"'+(st.def===i?' checked':'')+'>기본</label>':'';
+  const ctl='<span class="cc-mv"><button type="button" data-mv="'+i+':-1"'+(i?'':' disabled')+' aria-label="위로">↑</button><button type="button" data-mv="'+i+':1"'+(i<st.items.length-1?'':' disabled')+' aria-label="아래로">↓</button></span><button type="button" class="cc-xs" data-del="'+i+'"'+(st.items.length>min?'':' disabled')+'>삭제</button>';
+  // 기본 | 입력란(1~2줄) | 순서 · 삭제
+  return '<div class="cc-it">'+def
+   +(f?'<div class="cc-ifs">'+f+'</div>':'<p class="cc-sub cc-inone">켜진 구성 요소 중 입력할 문구가 없어요</p>')+'<div class="cc-ictl">'+ctl+'</div></div>';
+}
+function itemPart(){
+  const v=vOf(),c=st.c;
+  if(v.fam==='html')return acc('contents','코너 Item','<div class="cc-tb">'+tr('본문 HTML'+req,'<textarea class="cc-ta tall" data-c="html">'+esc(c.html)+'</textarea>'+hint('본문은 HTML 에디터로 입력합니다. (에디터 연동은 개발 시 적용)'))+'</div>');
+  if(!v.m.slice(11).replace(/-/g,'').length)return '';
+  const ik=ATTRS.filter(a=>a[3]==='i'&&a[0]!=='var'&&a[0]!=='count'&&mark(a[0])!=='-').map(a=>a[0]);
+  const chips='<div class="cc-chips">'+ik.map(k=>{const y=on(k),lk=locked(k);
+    return '<label class="cc-chip'+(y?' on':'')+(lk?' lock':'')+'" title="'+esc(ALAB[k][2])+(lockTip(k)?' · '+lockTip(k):'')+'"><input type="checkbox" name="at_'+k+'"'+(y?' checked':'')+(lk?' disabled':'')+'>'+esc(ALAB[k][1])+(mark(k)==='R'?req:'')+'</label>';}).join('')+'</div>';
+  let h=tr('구성 요소',chips);
+  if(mark('var')!=='-'){const vs=v.vars||['기본'];h+=tr('형태',radios('ccVopt',vs.map(x=>[x,x]),st.vopt||vs[0]));}
+  if(mark('count')!=='-'){const one=SINGLE.indexOf(v.fam)>-1?' disabled':'';
+    h+=tr('노출 개수 범위','<div class="cc-cnt"><input class="cc-inp sm" type="number" min="1" max="20" data-cnt="0" value="'+st.cnt[0]+'"'+one+'><span>-</span><input class="cc-inp sm" type="number" min="1" max="20" data-cnt="1" value="'+st.cnt[1]+'"'+one+'><span>개</span></div>');}
+  const max=st.cnt[1];
+  return acc('contents','코너 Item','<div class="cc-tb">'+h+'</div>'
+   +'<div class="cc-items">'+st.items.map(itemCard).join('')
+   +'<div class="cc-iadd"><button type="button" class="cc-xs add" data-cc="add"'+(st.items.length<max?'':' disabled')+'>+ 추가</button>'+(st.items.length>=max?'<span class="cc-sub">노출 개수 범위 최대 '+max+'개에 도달했어요</span>':'')+'</div></div>',onCnt(ik));
+}
+function render(){$('ccForm').innerHTML=basicCard()+cornerPart('header','코너 Header',HEAD)+itemPart()+cornerPart('footer','코너 Footer',FOOT);renderPv();}
 
 /* ===== 저장 : 주문 코너 관리 목록에 바로 추가 ===== */
+/* 오류 문구와 그 입력이 있는 영역 [문구, 영역 id] */
 function validate(){
-  if(!st.name.trim())return '코너명을 입력해 주세요.';
-  if(!st.plat.mo&&!st.plat.pc)return '운영 플랫폼을 하나 이상 선택해 주세요.';
-  if(mark('title')==='R'&&!st.c.title.trim())return '코너 메인 타이틀을 입력해 주세요.';
-  if(mark('cta')==='R'&&!st.c.cta.trim())return '버튼 문구를 입력해 주세요.';
+  if(!st.name.trim())return ['코너명을 입력해 주세요.','basic'];
+  if(mark('title')==='R'&&!st.c.title.trim())return ['코너 메인 타이틀을 입력해 주세요.','header'];
+  if(mark('cta')==='R'&&!st.c.cta.trim())return ['버튼 문구를 입력해 주세요.','footer'];
   if(vOf().fam!=='html'&&vOf().m.slice(11).replace(/-/g,'').length){
-    if(st.items.length<st.cnt[0])return '아이템을 '+st.cnt[0]+'개 이상 등록해 주세요.';
-    if(on('ititle')&&mark('ititle')==='R'&&st.items.some(x=>!x.ititle.trim()))return '아이템 타이틀을 모두 입력해 주세요.';
+    if(st.items.length<st.cnt[0])return ['아이템을 '+st.cnt[0]+'개 이상 등록해 주세요.','contents'];
+    if(on('ititle')&&mark('ititle')==='R'&&st.items.some(x=>!x.ititle.trim()))return ['아이템 타이틀을 모두 입력해 주세요.','contents'];
   }
-  return '';
+  return null;
 }
 function nextId(){let n=0;CORNERS.forEach(c=>{const m=c.id.match(/^CN-ORD-(\d+)$/);if(m)n=Math.max(n,+m[1]);});return 'CN-ORD-'+String(n+1).padStart(4,'0');}
 function pad(n){return ('0'+n).slice(-2)}
 function save(){
-  const err=validate();if(err){opts.toast(err);return;}
+  const err=validate();if(err){opts.toast(err[0]);if(fold[err[1]])toggleSec(err[1]);return;}
   const v=vOf(),tpl=CORNERS.find(c=>c.ui===v.ui)||CORNERS[0],c=JSON.parse(JSON.stringify(tpl)),d=new Date();
   ['cat','subs','epcMode','more','chev','logo','link','btn','src','screens','note','qs','req'].forEach(k=>{delete c[k];});
   const its=v.fam==='html'?[]:st.items.slice(0,st.cnt[1]);
@@ -286,7 +330,7 @@ function save(){
   c.sel=v.k==='check'||st.vopt==='체크박스'?'복수 선택':'단일 선택';c.lim=Math.max(1,c.opts.length);c.ds='직접 입력';c.cond={mode:'none',list:[]};
   c.ver='v1.0';c.use=st.use;c.dt=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());c.mby='김운영 (P031001)';
   // 등록 설정 원본 : 유형 · 형태 · 표시 방식 · 속성 ON/OFF · 노출 개수 · 플랫폼 · 설명
-  c.spec={type:tOf().n,form:lOf().n,mode:v.n,src:v.src,attrs:Object.fromEntries(AK.filter(k=>mark(k)!=='-').map(k=>[k,k==='count'?st.cnt.join('~'):k==='var'?st.vopt:on(k)?'Y':'N'])),plat:st.plat,desc:st.desc};
+  c.spec={type:tOf().n,form:lOf().n,mode:v.n,src:v.src,attrs:Object.fromEntries(AK.filter(k=>mark(k)!=='-').map(k=>[k,k==='count'?st.cnt.join('~'):k==='var'?st.vopt:on(k)?'Y':'N']))};
   delete c.hist;
   CORNERS.unshift(c);
   st=null;opts.onSaved(c);
@@ -308,25 +352,38 @@ function bind(){
     if(t.name==='ccUse'){st.use=t.value;render();return;}
     if(t.name==='ccVopt'){st.vopt=t.value;render();return;}
     if(t.name==='ccDef'){st.def=+t.value;render();return;}
-    if(t.dataset.plat){const k=t.dataset.plat;if(k==='all'){st.plat.mo=st.plat.pc=t.checked;}else st.plat[k]=t.checked;render();return;}
-    if(t.name&&t.name.indexOf('at_')===0){const k=t.name.slice(3);st.attrs[k]=t.value;Object.keys(DEP).forEach(d=>{if(DEP[d]===k&&t.value==='N')st.attrs[d]='N';});render();return;}
+    if(t.name&&t.name.indexOf('at_')===0){const k=t.name.slice(3),y=t.checked?'Y':'N';st.attrs[k]=y;Object.keys(DEP).forEach(d=>{if(DEP[d]===k&&y==='N')st.attrs[d]='N';});render();
+      // 코너 속성을 켜면 옆 입력란으로 바로 이동
+      const inp=root.querySelector('[data-c="'+k+'"]');if(y==='Y'&&inp)inp.focus();else{const s=root.querySelector('[name="at_'+k+'"]');if(s)s.focus();}return;}
     if(t.dataset.cnt!=null){let a=Math.max(1,Math.min(20,parseInt(t.value,10)||1));const i=+t.dataset.cnt;st.cnt[i]=a;if(st.cnt[0]>st.cnt[1]){if(i)st.cnt[0]=a;else st.cnt[1]=a;}fitItems();render();return;}
     if(t.dataset.it!=null&&t.tagName==='SELECT'){st.items[+t.dataset.it][t.dataset.k]=t.value;renderPv();}});
   root.addEventListener('click',e=>{
+    const hd=e.target.closest('[data-fold]');
+    if(hd){toggleSec(hd.dataset.fold);return;}
     const b=e.target.closest('button');if(!b||b.disabled)return;
     if(b.dataset.mv){const p=b.dataset.mv.split(':'),i=+p[0],j=i+(+p[1]);const x=st.items.splice(i,1)[0];st.items.splice(j,0,x);if(st.def===i)st.def=j;else if(st.def===j)st.def=i;render();return;}
     if(b.dataset.del!=null){const i=+b.dataset.del;st.items.splice(i,1);if(st.def>=st.items.length)st.def=0;else if(st.def>i)st.def--;render();return;}
     const a=b.dataset.cc;
     if(a==='add'){st.items.push(sampleItems(st.items.length+1).pop());render();}
-    else if(a==='reset'){const keep={name:st.name,desc:st.desc,use:st.use,plat:st.plat};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
-    else if(a==='cancel'){if(st&&(st.name||st.desc)&&!confirm('작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;st=null;opts.onClose();}
+    else if(a==='reset'){const keep={name:st.name,use:st.use};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
+    else if(a==='cancel'){if(st&&st.name&&!confirm('작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;st=null;opts.onClose();}
     else if(a==='save')save();
   });
+  // Ctrl + 1 : 모든 영역 접기
+  document.addEventListener('keydown',e=>{if(root.hidden||!st||!e.ctrlKey||e.altKey||e.shiftKey||e.code!=='Digit1')return;e.preventDefault();foldAll();});
 }
 
+/* 목록의 코너 유형 · 코너 형태 · 표시 방식 : 등록한 코너는 spec 그대로, 기존 코너는 FO 렌더러(ui)에 가까운 표시 방식으로 맞춘다 */
+const UI2V={pinfo:'base',info:'base',ai:'pcard',color:'chip',list:'tlist',card:'radio',grid:'thumb',hscroll:'compare',chip:'chip',radio:'tlist',form:'basic',sum:'table',terms:'terms',done:'done'};
+export function specOf(c){
+  if(c.spec)return {type:c.spec.type,form:c.spec.form,mode:c.spec.mode};
+  const k=c.ui==='card'&&c.sel==='복수 선택'?'check':UI2V[c.ui];
+  for(const t of TYPES)for(const l of t.ls)for(const v of l.vs)if(v.k===k)return {type:t.n,form:l.n,mode:v.n};
+  return null;
+}
 /* 주문 코너 관리에서 호출 : opts = {onClose, onSaved(corner), toast, setCrumb} */
 export function openCornerCreate(o){
-  opts=o;fresh();bind();
+  opts=o;fresh();initFold();bind();
   $('pCreate').hidden=false;
   o.setCrumb(['홈','주문 관리','주문 코너 관리','주문 코너 등록']);
   render();window.scrollTo(0,0);

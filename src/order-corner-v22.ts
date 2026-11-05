@@ -4,7 +4,7 @@
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner } from "./order-corner-v22-data";
-import { openCornerCreate } from "./order-corner-create-v22";
+import { openCornerCreate, specOf, setFold } from "./order-corner-create-v22";
 
 requireAuthentication();
 
@@ -35,7 +35,6 @@ function isGrp(x){return !!x&&x.t==='코너 그룹'}
 function catOf(id){var m=id.split('-')[1];return CAT[m]||m}
 function grpOf(id){return GROUPS.filter(function(g){return g.members.indexOf(id)>-1})}
 function refsAny(x){return isGrp(x)?refsOf(x.members[0]):refsOf(x.id)}
-function procCntAny(x){var s={};refsAny(x).forEach(function(r){s[r.pid]=1});return Object.keys(s).length}
 var EXT='<svg class="ext" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 var DEFN='<span class="defn">정의 중</span>';
 function kindPill(t){var cls=t==='상품 연동'?'p-gr':(t==='코너 그룹'?'p-grp':(t==='결제'?'p-pay':'p-bl'));return '<span class="pill '+cls+'">'+t+'</span>'}
@@ -45,10 +44,6 @@ function pad(n){return ('0'+n).slice(-2)}
 function nowStr(full){var d=new Date();return full?d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()):d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function setCrumb(arr){$('crumb').innerHTML=arr.map(function(s){return '<span>'+s+'</span>'}).join('')}
-function grpCell(x){
-  if(isGrp(x)) return '<span class="faint">-</span>';
-  return grpOf(x.id).length?'Y':'N';
-}
 
 /* ===== 목록 ===== */
 var Q={use:'',kind:'',ds:'',key:'n',kw:'',page:1};
@@ -67,16 +62,16 @@ function baseList(){
     return true;
   });
 }
-function thumbOf(x){return pvCorner(isGrp(x)?cById(x.members[0]):x)}
 function renderList(){
   var L=baseList(), tp=Math.max(1,Math.ceil(L.length/PS)); if(Q.page>tp) Q.page=tp;
   var off=(Q.page-1)*PS, rows=L.slice(off,off+PS);
   $('rCnt').textContent=L.length;
   $('vList').hidden=!L.length;
   $('lBody').innerHTML=rows.map(function(c,i){
-    var pc=procCntAny(c);
     var nm='<b class="lnk">'+esc(c.n)+'</b>'+(isGrp(c)?DEFN+'<small class="q">구성 코너 '+c.members.length+'개</small>':'');
-    return '<tr data-id="'+c.id+'"><td>'+(off+i+1)+'</td><td><div class="thumb">'+thumbOf(c)+'</div></td><td class="mono">'+c.id+'</td><td class="l">'+nm+'</td><td>'+grpCell(c)+'</td><td>'+(pc?'<span class="pc" data-use="'+c.id+'" title="사용 위치 보기">'+pc+'</span>':'<span class="faint">0</span>')+'</td><td class="vr">'+c.ver+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
+    // 코너 그룹은 유형 칸에 '코너 그룹'만, 비화면 코너처럼 맞는 표시 방식이 없으면 '-'
+    var sp=isGrp(c)?{type:'코너 그룹',form:'-',mode:'-'}:specOf(c)||{type:'-',form:'-',mode:'-'};
+    return '<tr data-id="'+c.id+'"><td class="mono"><a class="cid" href="#" data-id="'+c.id+'">'+c.id+'</a></td><td class="l">'+nm+'</td><td>'+esc(sp.type)+'</td><td>'+esc(sp.form)+'</td><td>'+esc(sp.mode)+'</td><td class="vr">'+c.ver+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
   }).join('');
   $('lEmpty').hidden=!!L.length;
   $('pager').innerHTML=pagerHTML(L.length,Q.page);
@@ -97,7 +92,9 @@ function histOf(c){
   ];
 }
 function row(k,v,col){return '<div class="kv"><div class="k">'+k+'</div><div class="v'+(col==='cta'?' ctav':(col?' col':''))+'">'+v+'</div></div>'}
-function card(t,inner,sub,id,bodyCls){return '<div class="card"'+(id?' id="'+id+'"':'')+'><div class="card-h"><b>'+t+'</b>'+(sub?'<span>'+sub+'</span>':'')+'</div><div class="card-b'+(bodyCls?' '+bodyCls:'')+'">'+inner+'</div></div>'}
+/* 상세 영역 : 코너 등록(order-corner-create-v22)과 같은 아코디언 섹션. 접힘 상태는 다시 그려도 유지 */
+var DF={};
+function card(t,inner,sub,id,bodyCls){var k=id||t;return '<section class="cc-acc'+(DF[k]?' closed':'')+'"'+(id?' id="'+id+'"':'')+'><header data-dfold="'+esc(k)+'"><b>'+t+'</b>'+(sub?'<span class="cc-hsub">'+sub+'</span>':'')+'<button type="button" class="cc-fold" aria-expanded="'+!DF[k]+'" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>'+'</header><div class="cc-accb'+(bodyCls?' '+bodyCls:'')+'">'+inner+'</div></section>'}
 function kvs(inner){return '<div class="kvs">'+inner+'</div>'}
 function inp(f,val,ph){return '<input class="inp" data-f="'+f+'" value="'+esc(val)+'" placeholder="'+esc(ph||'')+'" maxlength="40">'}
 function optNames(c){return c.opts.map(function(x){return esc(x.n)}).join('<span class="sl"> / </span>')}
@@ -245,19 +242,18 @@ function renderPreview(){
   if(isGrp(cur)){
     var ms=cur.members.filter(function(id){return cById(id)});
     el.innerHTML='<div class="grpv">'+ms.map(function(id){var c=cById(id);return '<div><p class="gl">'+c.id+' '+esc(c.n)+'</p>'+pvCorner(c)+'</div>'}).join('')+'</div>';
-    $('pvTag').textContent='FO 화면';return;
+    return;
   }
   el.innerHTML=pvCorner(cv());
-  $('pvTag').textContent=mode==='edit'?'FO 화면 · 수정 내용 반영':'FO 화면';
 }
+function useRefs(){var seen={},R=[];refsAny(cur).forEach(function(r){if(!seen[r.pid]){seen[r.pid]=1;R.push(r)}});return R}
 function useHTML(){
-  var x=cur,seen={},R=[];
-  refsAny(x).forEach(function(r){if(!seen[r.pid]){seen[r.pid]=1;R.push(r)}});
+  var R=useRefs();
   var tp=Math.max(1,Math.ceil(R.length/UPS));if(U.page>tp)U.page=tp;
   var rows=R.slice((U.page-1)*UPS,U.page*UPS);
-  var head='<div class="card-h"><b>사용 위치<em>'+R.length+'개 프로세스</em></b><span>이 코너를 쓰는 주문 프로세스</span></div>';
-  if(!R.length) return head+'<div class="card-b"><div class="empty sm">이 코너를 사용 중인 주문 프로세스가 없습니다.</div></div>';
-  var h=head+'<div class="card-b"><div class="utw"><table class="ut"><colgroup><col style="width:140px"><col style="width:100px"><col><col style="width:110px"><col style="width:90px"></colgroup><thead><tr><th>프로세스 ID</th><th>구분</th><th>프로세스명</th><th>승인 상태</th><th>사용여부</th></tr></thead><tbody>'+
+  var head='<header><b>사용 위치<em>'+R.length+'개 프로세스</em></b><span class="cc-hsub">이 코너를 쓰는 주문 프로세스</span></header>';
+  if(!R.length) return head+'<div class="cc-accb"><div class="empty sm">이 코너를 사용 중인 주문 프로세스가 없습니다.</div></div>';
+  var h=head+'<div class="cc-accb"><div class="utw"><table class="ut"><colgroup><col style="width:140px"><col style="width:100px"><col><col style="width:110px"><col style="width:90px"></colgroup><thead><tr><th>프로세스 ID</th><th>구분</th><th>프로세스명</th><th>승인 상태</th><th>사용여부</th></tr></thead><tbody>'+
     rows.map(function(r){return '<tr><td class="mono">'+r.pid+'</td><td>'+esc(r.cat)+'</td><td class="l">'+esc(r.pn)+'</td><td>'+apPill(r.ap)+'</td><td>'+r.u+'</td></tr>'}).join('')+
     '</tbody></table></div>';
   if(tp>1){
@@ -273,16 +269,16 @@ function reasonHTML(){
   return '<div class="card-h"><b>변경 요청</b><span>저장하면 승인 요청이 올라갑니다</span></div><div class="card-b"><div class="reason"><label for="rsn">변경 요청 사유<i>*</i></label><input class="inp" id="rsn" type="text" maxlength="100" placeholder="승인 담당자가 확인할 변경 사유를 입력하세요 (최대 100자)"><div class="chg" id="chgSum"></div><div class="err" id="rsnErr" hidden></div></div></div>';
 }
 function renderRight(){
-  $('dRight').innerHTML=(isGrp(cur)?groupRight():cornerRight())+'<div class="card" id="useBox"></div>';
+  $('dRight').innerHTML=isGrp(cur)?groupRight():cornerRight();
   renderUse();
 }
 function renderHead(){
   $('dId').textContent=cur.id;$('dName').textContent=cur.n;
   var t=isGrp(cur)?cur.t:(cur.t==='결제'?'결제':(isLinkedDs(cur.ds)?'상품 연동':'주문'));
   $('dPills').innerHTML='<span class="pill '+(cur.use==='Y'?'p-gr':'p-gy')+'">'+(cur.use==='Y'?'사용':'미사용')+'</span> <span class="ver">'+cur.ver+'</span>'+(cur.pending?' '+apPill('승인 대기'):'')+(mode==='edit'?' <span class="pill p-pu">수정 중</span>':'');
-  $('hCnt').textContent=' '+cur.hist.length;
+  $('hCnt').textContent=' '+cur.hist.length;$('uCnt').textContent=' '+useRefs().length;
   [].forEach.call(document.querySelectorAll('#dTabs .dtab'),function(b){b.classList.toggle('on',b.getAttribute('data-dt')===DT)});
-  $('tInfo').hidden=DT!=='info';$('tHist').hidden=DT!=='hist';
+  $('tInfo').hidden=DT!=='info';$('tUse').hidden=DT!=='use';$('tHist').hidden=DT!=='hist';
   $('pDetail').classList.toggle('hist',DT==='hist');
   setCrumb(['홈','주문 관리','코너 유형 관리',mode==='edit'?'코너 유형 수정':'코너 유형 상세']);
 }
@@ -316,10 +312,9 @@ function renderChg(){
 function renderDetail(){renderHead();renderPreview();renderRight();renderHist();renderFoot()}
 function showPage(p){$('pList').hidden=p!=='list';$('pDetail').hidden=p!=='detail';$('pCreate').hidden=p!=='create'}
 function openDetail(id,opt){
-  cur=anyById(id);mode='view';dr=null;DT='info';U={st:'',kw:'',raw:'',page:1};
+  cur=anyById(id);mode='view';dr=null;DT=opt==='use'?'use':'info';U={st:'',kw:'',raw:'',page:1};DF={};
   if(!cur.hist)cur.hist=histOf(cur);
-  renderDetail();showPage('detail');
-  if(opt==='use') setTimeout(function(){$('useBox').scrollIntoView({behavior:'smooth'})},50); else window.scrollTo(0,0);
+  renderDetail();showPage('detail');window.scrollTo(0,0);
 }
 function openList(){showPage('list');setCrumb(['홈','주문 관리','코너 유형 관리']);renderList();window.scrollTo(0,0)}
 function startEdit(){mode='edit';dr=clone(cur);delete dr.hist;renderDetail()}
@@ -351,14 +346,15 @@ $('bClr').onclick=function(){$('fKw').value='';this.hidden=true;$('fKw').focus()
 $('pager').addEventListener('click',function(e){var b=e.target.closest('[data-g]');if(!b)return;Q.page=+b.getAttribute('data-g');renderList()});
 $('lBody').addEventListener('click',function(e){
   var u=e.target.closest('[data-use]');if(u){openDetail(u.getAttribute('data-use'),'use');return}
-  var tr=e.target.closest('tr[data-id]');if(tr)openDetail(tr.getAttribute('data-id'));
+  // 행 전체가 아니라 코너 ID를 눌렀을 때만 상세로 이동
+  var a=e.target.closest('a[data-id]');if(a){e.preventDefault();openDetail(a.getAttribute('data-id'))}
 });
 $('topTabs').addEventListener('click',function(e){var b=e.target.closest('[data-tt]');if(!b)return;if(b.getAttribute('data-tt')!=='상품')toast(b.getAttribute('data-tt')+' 탭은 전시팀 목업에서 관리합니다. 통합 시 연결됩니다.')});
 function goList(){if(mode==='edit')toast('수정 중인 내용은 저장되지 않았습니다.');mode='view';dr=null;openList()}
 $('bList').onclick=goList;$('bTopList').onclick=goList;
 $('dTabs').addEventListener('click',function(e){
   var b=e.target.closest('[data-dt]');if(!b)return;
-  if(mode==='edit'&&b.getAttribute('data-dt')==='hist'){toast('수정 중에는 이력 탭으로 이동할 수 없습니다.');return}
+  if(mode==='edit'&&b.getAttribute('data-dt')!=='info'){toast('수정 중에는 다른 탭으로 이동할 수 없습니다.');return}
   DT=b.getAttribute('data-dt');renderHead();renderFoot();
 });
 $('fBtns').addEventListener('click',function(e){
@@ -366,6 +362,11 @@ $('fBtns').addEventListener('click',function(e){
   if(b.id==='bEdit')startEdit();else if(b.id==='bCancel')cancelEdit();else if(b.id==='bSave')save();
 });
 /* 수정 입력 */
+$('tUse').addEventListener('click',function(e){
+  var t=e.target;
+  var c=t.closest('[data-ust]');if(c){U.st=c.getAttribute('data-ust');U.page=1;renderUse();return}
+  var p=t.closest('[data-up]');if(p&&!p.disabled){U.page=+p.getAttribute('data-up');renderUse();}
+});
 var R$=$('dRight');
 R$.addEventListener('input',function(e){
   if(mode!=='edit')return;var t=e.target;
@@ -389,16 +390,13 @@ R$.addEventListener('change',function(e){
 });
 R$.addEventListener('click',function(e){
   var t=e.target;
+  var fh=t.closest('[data-dfold]');
+  if(fh){var k=fh.getAttribute('data-dfold');DF[k]=!DF[k];setFold(fh.parentNode,!DF[k]);return}
   var go=t.closest('[data-go]');
   if(go){var id=go.getAttribute('data-go');if(mode==='edit'){toast('수정 중에는 다른 코너로 이동할 수 없습니다.');return}
     if(!cById(id)&&!GROUPS.some(function(g){return g.id===id})){toast('하위 코너('+id+')는 단말 상품 기본 정보 상세에서 확인합니다.');return}
     toast('「'+anyById(id).n+'」 상세로 이동합니다.');setTimeout(function(){openDetail(id)},500);return}
-  var ub=t.closest('#useBox');
-  if(ub){
-    var c=t.closest('[data-ust]');if(c){U.st=c.getAttribute('data-ust');U.page=1;renderUse();return}
-    var p=t.closest('[data-up]');if(p&&!p.disabled){U.page=+p.getAttribute('data-up');renderUse();}
-    return;
-  }
+
   if(mode!=='edit')return;
   if(t.id==='catOpen'){openCat(dr.cat);return}
   if(t.id==='oAdd'){
