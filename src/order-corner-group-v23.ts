@@ -176,7 +176,8 @@ function goList(){
 /* ===== 상세 / 등록 / 수정 ===== */
 const kv=(k,v)=>'<div class="kv"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
 const card=(title,body,sub,act,id)=>'<div class="card"'+(id?' id="'+id+'"':'')+'><div class="card-h"><b>'+title+'</b>'+(act||(sub?'<span>'+sub+'</span>':''))+'</div><div class="card-b">'+body+'</div></div>';
-const cname=c=>'<span class="cid">'+c.id+'</span><b class="cn">'+esc(c.n)+'</b>'+(c.req?'<span class="ctag2 tg-req">필수</span>':'')+(c.use==='N'?'<span class="ctag2 tg-off">미사용</span>':'');
+// 코너 칸 : 코너명(+ 필수 · 미사용 태그) 아래에 코너 ID
+const cname=c=>'<b class="cn">'+esc(c.n)+'</b>'+(c.req?'<span class="ctag2 tg-req">필수</span>':'')+(c.use==='N'?'<span class="ctag2 tg-off">미사용</span>':'')+'<span class="cid">'+c.id+'</span>';
 
 function membersView(d){
   if(!d.members.length)return '<div class="empty sm">구성 코너가 없습니다.</div>';
@@ -206,33 +207,57 @@ function viewCards(){
     +card('구성 코너<em>'+d.members.length+'개</em>',membersView(d),'위에서부터 FO 노출 순서')
     +usesCard();
 }
+/* 등록 · 수정 구성 코너 표 : 순서 | 코너 | 코너 ID | 타이틀 | 노출 | 해제 (노출 조건은 추후 추가)
+   순서 칸의 ⋮⋮ 를 드래그해 순서를 바꾼다. 분기형이면 대표 코너 선택값을 고르는 분기 조건 칸이 노출 뒤에 붙는다 */
 function membersEdit(w){
   const br=isBr(w);
-  return '<table class="ot mt2"><colgroup><col style="width:30px"><col style="width:44px"><col><col style="width:112px"><col style="width:'+(br?'18':'24')+'%"><col style="width:86px">'+(br?'<col style="width:210px">':'')+'<col style="width:196px"><col style="width:44px"></colgroup><thead><tr><th></th><th>순서</th><th>코너</th><th>참조 버전</th><th>타이틀 재정의</th><th>노출</th>'+(br?'<th>분기 조건</th>':'')+'<th>노출 조건</th><th>해제</th></tr></thead><tbody id="mBody">'
+  return '<table class="ot mt2 g6-mt"><colgroup><col style="width:72px"><col style="width:200px"><col style="width:130px"><col><col style="width:96px">'+(br?'<col style="width:200px">':'')+'<col style="width:56px"></colgroup><thead><tr><th>순서</th><th class="l">코너</th><th>코너 ID</th><th>타이틀</th><th>노출</th>'+(br?'<th>분기 조건</th>':'')+'<th>해제</th></tr></thead><tbody id="mBody">'
    +w.members.map((m,i)=>{const c=C(m.cid)||{id:m.cid,n:m.cid,ver:m.cv,q:''};
-     return '<tr class="er" data-i="'+i+'"><td><span class="hdl" title="드래그로 순서 변경">⋮⋮</span></td><td>'+(i+1)+'</td><td class="l">'+cname(c)+'</td>'
-       +'<td>'+m.cv+(c.ver!==m.cv?'<button type="button" class="mini" data-latest="'+i+'" title="코너 최신 버전으로 참조 변경">'+c.ver+' 적용</button>':'')+'</td>'
-       +'<td><input class="inp sm" data-mt="'+i+'" value="'+esc(m.title)+'" placeholder="'+esc(c.q||'')+'" maxlength="40"></td>'
+     return '<tr class="er" data-i="'+i+'"><td><span class="hdl" title="드래그로 순서 변경">⋮⋮</span><span class="g6-no">'+(i+1)+'</span></td>'
+       +'<td class="l"><b class="cn">'+esc(c.n)+'</b>'+(c.req?'<span class="ctag2 tg-req">필수</span>':'')+(c.use==='N'?'<span class="ctag2 tg-off">미사용</span>':'')+'</td>'
+       +'<td class="mono g6-cid">'+c.id+'</td>'
+       +'<td><input class="inp sm" data-mt="'+i+'" value="'+esc(m.title)+'" placeholder="'+esc(c.q||'원본 타이틀 없음')+'" maxlength="40"></td>'
        +'<td><select class="sel" data-ms="'+i+'"'+(c.req?' disabled title="필수 코너는 숨길 수 없습니다"':'')+'><option value="Y"'+(m.show?' selected':'')+'>노출</option><option value="N"'+(m.show?'':' selected')+'>숨김</option></select></td>'
-       +(br?'<td class="l">'+brEdit(w,m,i)+'</td>':'')+'<td class="l">'+condCell(w.members,i)+'</td><td><button type="button" class="xbtn" data-mdel="'+i+'" aria-label="연결 해제" title="그룹에서 연결 해제">✕</button></td></tr>';}).join('')+'</tbody></table>';
+       +(br?'<td class="l">'+brEdit(w,m,i)+'</td>':'')+'<td><button type="button" class="xbtn" data-mdel="'+i+'" aria-label="연결 해제" title="그룹에서 연결 해제">✕</button></td></tr>';}).join('')+'</tbody></table>';
 }
+/* 등록 · 수정 : 주문 프로세스 관리 등록(order6-create.html)과 같은 아코디언 영역 · 표 · 점선 코너 추가 버튼
+   그룹 ID · 버전은 상세에서만 보인다. 설명은 받지 않는다 */
+const G6F={};   // 접힌 영역
+const G6CAR='<svg class="g6-car" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const g6acc=(id,title,body)=>'<section class="g6-acc'+(G6F[id]?' closed':'')+'"><header data-g6="'+id+'"><b class="g6-t">'+title+'</b><span class="g6-rt">'+G6CAR+'</span></header><div class="g6-b">'+body+'</div></section>';
+/* 접기/펼치기 : order6 등록 화면(foldBody)과 같은 높이 · 위아래 여백 · 투명도 전환 */
+const G6MS=300,G6EASE='cubic-bezier(.4,0,.2,1)';
+function g6Fold(sec,open){
+  const body=sec.querySelector(':scope>.g6-b'),was=!sec.classList.contains('closed');
+  if(body._fold){body._fold.cancel();body._fold=null;body.style.display='';body.style.overflow='';}
+  sec.classList.toggle('closed',!open);
+  if(was===open||!body.animate||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  body.style.overflow='hidden';if(!open)body.style.display='block';   // 접을 때는 끝날 때까지 본문을 잠시 보이게 둔다
+  const h=body.scrollHeight,cs=getComputedStyle(body),full={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,opacity:1},none={height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0};
+  const a=body._fold=body.animate(open?[none,full]:[full,none],{duration:open?G6MS:G6MS-40,easing:G6EASE});
+  a.onfinish=()=>{if(body._fold!==a)return;body._fold=null;body.style.display='';body.style.overflow='';};
+}
+const g6row=(k,v)=>'<div class="g6-th">'+k+'</div><div class="g6-td">'+v+'</div>';
+const g6rad=(name,list,val)=>'<div class="g6-rad">'+list.map(x=>'<label><input type="radio" name="'+name+'" value="'+x[0]+'"'+(x[0]===val?' checked':'')+'>'+x[1]+'</label>').join('')+'</div>';
+function g6Status(){if(work)renderSum();}
 function formCards(){
-  const w=work,isC=mode==='create',nv=isC?'v1.0':(cur.draft?cur.draft.ver:nextVer(cur.live.ver));
-  const b=kv('그룹명<i class="req">•</i>','<input class="inp" data-f="n" value="'+esc(w.n)+'" placeholder="그룹명을 입력하세요" maxlength="30">')
-    +kv('그룹 ID',isC?'<span class="faint">저장 시 자동 생성</span>':'<span class="mono">'+cur.id+'</span>')
-    +kv('설명','<input class="inp" data-f="desc" value="'+esc(w.desc)+'" placeholder="그룹 용도를 짧게 적어 주세요 (선택)" maxlength="60">')
-    +kv('사용 여부','<div class="rgrp"><label><input type="radio" name="guse" value="Y"'+(w.use==='Y'?' checked':'')+'>Y</label><label><input type="radio" name="guse" value="N"'+(w.use==='N'?' checked':'')+'>N</label></div>')
-    +kv('그룹 유형','<div class="rgrp"><label><input type="radio" name="gkind" value="seq"'+(isBr(w)?'':' checked')+'>순차형</label><label><input type="radio" name="gkind" value="branch"'+(isBr(w)?' checked':'')+'>분기형</label></div><span class="kd1">'+(isBr(w)?'대표 코너 선택값에 따라 이어지는 코너가 달라집니다':'구성 코너를 정해진 순서대로 모두 노출합니다')+'</span>')
-    +(isBr(w)?kv('대표 코너<i class="req">•</i>','<select class="sel" data-rep>'+'<option value="">대표 코너 선택</option>'+w.members.map(m=>{const c=C(m.cid);return repOk(c)?'<option value="'+m.cid+'"'+(w.rep===m.cid?' selected':'')+'>'+esc(c.n)+' ('+repVals(m.cid).length+'개 선택값)</option>':'';}).join('')+'</select><span class="kd1">단일 선택 코너만 대표 코너가 될 수 있습니다</span>'):'')
-    +kv('버전',(!isC&&cur.live?cur.live.ver+'<span class="sl"> → </span>'+nv+'<span class="kd1">승인 후 발행, 기존 버전은 보존</span>':nv+'<span class="kd1">승인 후 발행</span>'));
+  const w=work,isC=mode==='create';
+  // 기본 정보 : 그룹명 · 사용 여부 · 그룹 유형 (분기형이면 대표 코너)
+  const basic=g6row('그룹명','<input class="g6-inp" data-f="n" value="'+esc(w.n)+'" placeholder="그룹명을 입력하세요" maxlength="30">')
+    +g6row('사용 여부',g6rad('guse',[['N','N'],['Y','Y']],w.use))
+    +g6row('그룹 유형',g6rad('gkind',[['seq','순차형'],['branch','분기형']],isBr(w)?'branch':'seq'))
+    +(isBr(w)?g6row('대표 코너','<select class="sel g6-sel" data-rep><option value="">대표 코너 선택</option>'+w.members.map(m=>{const c=C(m.cid);return repOk(c)?'<option value="'+m.cid+'"'+(w.rep===m.cid?' selected':'')+'>'+esc(c.n)+' ('+repVals(m.cid).length+'개 선택값)</option>':'';}).join('')+'</select><span class="g6-hint">단일 선택 코너만 대표 코너가 될 수 있습니다</span>'):'');
   const out=w.members.filter(m=>{const c=C(m.cid);return c&&c.ver!==m.cv;}).length;
-  const act='<div class="cardh-act">'+(out?'<button type="button" class="obtn" data-act="latestAll">최신 버전 일괄 적용 ('+out+')</button>':'')+'<button type="button" class="obtn" data-act="pick">＋ 코너 추가</button></div>';
-  const mem=w.members.length?membersEdit(w)+extNote(w.members):'<div class="infobox">구성 코너가 없습니다. [코너 추가]로 묶을 코너를 선택하세요.</div>';
-  let h=card('기본 정보','<div class="kvs">'+b+'</div>')
-    +card('구성 코너<em>'+w.members.length+'개</em>',mem+'<p class="hint">행을 드래그해 노출 순서를 바꿉니다. 타이틀 재정의, 노출 여부, 분기 조건은 이 그룹에만 적용되고 코너 원본은 바뀌지 않습니다. 코너끼리의 흐름(앞 코너 선택값에 따라 나오는 코너)은 분기형으로 정하고, 코너 원본에는 상품 정보 조건만 있습니다. 필수 코너와 대표 코너는 숨길 수 없습니다. 코너 원본 수정은 <a href="order-corner-v22.html">주문 코너 관리</a>에서 합니다.</p>','',act);
+  // 구성 코너 : order6 '프로세스 설정'처럼 제목 줄 오른쪽에 코너 추가 버튼 (복사하기 버튼 스타일)
+  const head='<div class="g6-sh"><h3>구성 코너<em id="g6-cnt">'+w.members.length+'개</em></h3><span class="rt">'+(out?'<button type="button" class="g6-pill" data-act="latestAll">최신 버전 일괄 적용 ('+out+')</button>':'')+'<button type="button" class="g6-sbb pri" data-act="pick">코너 추가</button></span></div>';
+  const mem=w.members.length?'<div class="g6-card">'+membersEdit(w)+'</div>':'<div class="g6-empty">구성 코너가 없습니다. [코너 추가]로 묶을 코너를 선택하세요.</div>';
+  let h=g6acc('basic','기본 정보','<div class="g6-bt">'+basic+'</div>')+'<div class="g6-mem">'+head+mem+'</div>';
   if(!isC&&cur.procs.length)h+='<div class="ronote">ⓘ 이 그룹을 쓰는 프로세스 '+cur.procs.length+'개는 저장, 승인 후에도 기존 버전을 그대로 씁니다. 새 버전 적용은 주문 프로세스 관리에서 합니다.</div>';
   return h;
 }
+/* 하단 고정 바 왼쪽 요약 : 구성 코너 수 · 그룹 유형 */
+function renderSum(){const e=$('fSum');if(!e)return;if(mode==='view'||!work){e.innerHTML='';return;}
+  e.innerHTML='<span class="g6-k">구성 코너<b>'+work.members.length+'</b><small>개</small></span><span class="g6-k">그룹 유형<b class="t">'+(isBr(work)?'분기형':'순차형')+'</b></span>';}
 /* 대표 코너 미리보기의 선택지(카드 · 리스트 · 라디오 · 칩)를 대표 코너 값과 연결하고, 고른 값을 선택 상태로 표시한다 */
 function bindRepPv(){
   const d=shownData(),box=$('dPv').querySelector('.pvrep');if(!box||!isBr(d))return;
@@ -246,7 +271,7 @@ function bindRepPv(){
   });
 }
 function renderPv(){$('dPv').innerHTML=pvHTML(shownData());bindRepPv();}
-function reForm(){$('dRight').innerHTML=formCards();renderPv();}
+function reForm(){$('dRight').innerHTML=formCards();renderPv();renderSum();}
 function renderHist(){
   const h=cur.hist;
   $('hBody').innerHTML=h.length?h.map((x,i)=>'<tr><td>'+(h.length-i)+'</td><td>'+stBadge(x.st)+'</td><td>'+esc(x.req)+'</td><td>'+x.rqt+'</td><td class="l">'+esc(x.why)+'</td><td class="l">'+esc(x.chg)+'</td><td>'+esc(x.apr||'-')+'</td><td>'+(x.apt||'-')+'</td><td class="l">'+(x.ar?esc(x.ar):'<span class="faint">-</span>')+'</td><td>'+(x.ver||'-')+'</td></tr>').join('')
@@ -254,16 +279,17 @@ function renderHist(){
 }
 function renderFoot(){
   let h='';
-  if(mode!=='view')h='<button type="button" class="btn-list" data-act="cancel">취소</button><button type="button" class="btn-list" data-act="saveTmp">임시 저장</button><button type="button" class="btn-pri" data-act="submit">승인 요청</button>';
+  if(mode!=='view')h='<button type="button" class="btn-list" data-act="cancel">취소</button><button type="button" class="btn-list line" data-act="saveTmp">임시 저장</button><button type="button" class="btn-pri" data-act="submit">승인 요청</button>';
   else if(tab==='info'&&!cur.disc){
     if(gStatus(cur)==='승인 대기')h='<button type="button" class="btn-list" data-act="withdraw">요청 취소</button><button type="button" class="btn-list" data-act="reject">반려<span class="demo">시연</span></button><button type="button" class="btn-pri" data-act="approve">승인<span class="demo">시연</span></button>';
     else h=(cur.live?'<button type="button" class="btn-list" data-act="discard">폐기</button>':'<button type="button" class="btn-list" data-act="del">삭제</button>')+'<button type="button" class="btn-pri" data-act="edit">수정</button>';
   }
-  $('fBtns').innerHTML=h;
+  $('fBtns').innerHTML=h;renderSum();
 }
 function render(){
   const form=mode!=='view';
   $('pList').hidden=true;$('pDetail').hidden=false;
+  $('pDetail').classList.toggle('form',form);   // 등록 · 수정 : order6 등록 화면과 같은 영역 · 하단 고정 바
   if(mode==='create'){$('dName').textContent='코너 그룹 등록';$('dId').textContent='';$('dPills').innerHTML='';}
   else{$('dName').textContent=form?(work.n||'(그룹명 없음)'):shownData().n;$('dId').textContent=cur.id;$('dPills').innerHTML=stBadge(gStatus(cur))+(form?' <span class="pill p-pu">수정 중</span>':'');}
   $('dVer').innerHTML=(!form&&cur.live&&cur.draft)?'<div class="vbar"><div class="seg"><button type="button" data-act="vlive" class="'+(viewVer==='live'?'on':'')+'">운영 '+cur.live.ver+'</button><button type="button" data-act="vwork" class="'+(viewVer!=='live'?'on':'')+'">작업 '+cur.draft.ver+' · '+cur.draft.st+'</button></div><span>'+(viewVer==='live'?'지금 프로세스가 쓰는 버전입니다.':'승인 전 작업 버전입니다. 운영에는 반영되지 않았습니다.')+'</span></div>':'';
@@ -280,7 +306,7 @@ function openDetail(id,toUse){
   cur=G(id);mode='view';work=null;tab='info';viewVer='work';PVV='';render();
   if(toUse)setTimeout(()=>{const b=$('useBox');if(b)b.scrollIntoView({behavior:'smooth'});},60);else window.scrollTo(0,0);
 }
-function startCreate(){cur=null;mode='create';work={n:'',desc:'',use:'Y',members:[]};work0=JSON.stringify(work);tab='info';render();window.scrollTo(0,0);}
+function startCreate(){cur=null;mode='create';work={n:'',desc:'',use:'N',members:[]};work0=JSON.stringify(work);tab='info';render();window.scrollTo(0,0);}
 function startEdit(){
   if(gStatus(cur)==='승인 대기'){toast('승인 대기 중에는 수정할 수 없습니다. 요청을 취소한 뒤 수정하세요.');return;}
   const d=clone(gData(cur));delete d.ver;work=d;work0=JSON.stringify(work);mode='edit';tab='info';render();window.scrollTo(0,0);
@@ -420,7 +446,7 @@ $('lBody').addEventListener('click',e=>{const a=e.target.closest('a[data-id]');i
 /* 등록/수정 입력 */
 const dR=$('dRight');
 dR.addEventListener('input',e=>{if(mode==='view')return;const t=e.target;
-  if(t.dataset.f){work[t.dataset.f]=t.value;if(t.dataset.f==='n'&&mode==='edit')$('dName').textContent=t.value||'(그룹명 없음)';}
+  if(t.dataset.f){work[t.dataset.f]=t.value;if(t.dataset.f==='n'&&mode==='edit')$('dName').textContent=t.value||'(그룹명 없음)';g6Status();}
   else if(t.dataset.mt!=null){work.members[+t.dataset.mt].title=t.value;renderPv();}});
 dR.addEventListener('change',e=>{if(mode==='view')return;const t=e.target;
   if(t.name==='guse')work.use=t.value;
@@ -430,6 +456,8 @@ dR.addEventListener('change',e=>{if(mode==='view')return;const t=e.target;
     const vs=repVals(work.rep);a.sort((x,y)=>vs.indexOf(x)-vs.indexOf(y));reForm();}
   else if(t.dataset.ms!=null){work.members[+t.dataset.ms].show=t.value==='Y';reForm();}});
 dR.addEventListener('click',e=>{if(mode==='view')return;
+  // 영역 머리줄 : 접기 / 펼치기 (머리줄 안 버튼은 제외)
+  const hd=e.target.closest('[data-g6]');if(hd&&!e.target.closest('button,select,input')){const id=hd.dataset.g6;G6F[id]=!G6F[id];g6Fold(hd.parentNode,!G6F[id]);return;}
   const l=e.target.closest('[data-latest]');if(l){const m=work.members[+l.dataset.latest];m.cv=C(m.cid).ver;reForm();return;}
   const d=e.target.closest('[data-mdel]');if(d){const m=work.members.splice(+d.dataset.mdel,1)[0];if(work.rep===m.cid){delete work.rep;work.members.forEach(x=>{delete x.when;});}const dep=work.members.filter(x=>{const c=C(x.cid);return c&&condOf(c).some(k=>k.kind==='corner'&&k.key===m.cid);});reForm();const nm=(C(m.cid)||{n:m.cid}).n;toast(dep.length?'「'+nm+'」 연결을 해제했습니다. '+dep.map(x=>C(x.cid).n).join(', ')+'의 조건은 외부 의존으로 바뀝니다.':'「'+nm+'」 연결을 해제했습니다. 코너 원본은 그대로입니다.');}});
 /* 분기 미리보기 : 대표 코너 값 고르기 (상세 · 등록 · 수정 공통) */
