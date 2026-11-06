@@ -584,6 +584,7 @@ body:not(.authenticated) .app{display:none}
 table.mt2 td{padding:9px 8px}
 .mt2 .cid{display:block;color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px}
 .mt2 .cn{font-weight:600;color:var(--text)}
+.mt2 .cid{white-space:nowrap}   /* 코너 칸 : 코너명 아래 코너 ID 한 줄 */
 .mt2 .sel{min-width:0;width:100%;height:34px}
 .mt2 .inp.sm{max-width:none}
 .mt2 tr.er td{background:#fff}
@@ -640,6 +641,76 @@ table.mt2 td{padding:9px 8px}
 .extd p b{color:var(--blue-fg)}.extd p span{color:var(--muted)}
 .extd .mono{color:var(--accent);margin-right:8px}
 .extd .kd1{margin-left:8px}
+
+/* ===== 등록 · 수정 (#pDetail.form) : 주문 프로세스 관리 등록(order6-create.html)과 같은 영역 · 여백 · 하단 고정 바 ===== */
+#pDetail.form{--g6-px:32px;--g6-pb:56px;--g6-ac:#4320d4;--g6-line:#e5e7f0;--g6-sur:#f7f8fb;--g6-lb:#4f5e77;--g6-text:#20293b}
+@media(max-width:900px){#pDetail.form{--g6-px:16px;--g6-pb:40px}}
+.sheet:has(>#pDetail.form:not([hidden])){display:flex;flex-direction:column}
+#pDetail.form:not([hidden]){flex:1;display:flex;flex-direction:column}
+#pDetail.form .ph{margin:6px 0 26px;padding-bottom:18px;border-bottom:1px solid var(--g6-line)}
+#pDetail.form .ph h1{font-size:22px;font-weight:700}
+#pDetail.form .ph [data-act="list"]{display:none}
+#pDetail.form .dgrid{grid-template-columns:340px minmax(0,1fr);gap:24px;margin-bottom:26px}
+#pDetail.form #dRight{display:flex;flex-direction:column;gap:20px}
+.g6-acc{border:1px solid var(--g6-line);border-radius:10px;background:#fff;overflow:hidden}
+.g6-acc>header{display:flex;align-items:center;gap:10px;min-height:56px;padding:15px 20px;background:var(--g6-sur);border-bottom:1px solid var(--g6-line);cursor:pointer;user-select:none}
+.g6-t{font-size:14px;font-weight:600;color:var(--g6-text)}
+.g6-t em{margin-left:6px;font-style:normal;font-size:13px;color:var(--g6-ac)}
+.g6-rt{display:flex;align-items:center;gap:6px;margin-left:auto}
+.g6-car{width:16px;height:16px;margin-left:4px;fill:none;stroke:#707c91;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transform:rotate(180deg);transition:transform .25s}
+.g6-acc.closed>header{border-bottom-color:transparent}
+.g6-acc.closed .g6-car{transform:none}
+.g6-acc.closed>.g6-b{display:none}
+.g6-b{padding:18px 20px}
+.g6-bt{display:grid;grid-template-columns:130px minmax(0,1fr);border-top:1px solid var(--g6-line)}
+.g6-th{display:flex;align-items:center;min-height:56px;padding:0 12px;background:var(--g6-sur);border-bottom:1px solid var(--g6-line);font-size:12px;font-weight:500;color:var(--g6-lb)}
+.g6-td{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;min-height:56px;padding:12px;border-bottom:1px solid var(--g6-line);font-size:13px}
+.g6-inp{width:100%;max-width:630px;height:38px;padding:0 12px;border:1px solid #d5d9e7;border-radius:8px;font:inherit;font-size:13px;color:var(--g6-text)}
+.g6-inp:focus{outline:none;border-color:var(--g6-ac)}
+.g6-sel{min-width:260px}
+.g6-rad{display:flex;gap:20px}
+.g6-rad label{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--g6-text);cursor:pointer}
+.g6-rad input{width:16px;height:16px;margin:0;accent-color:var(--g6-ac)}
+.g6-hint{font-size:12px;color:#707c91}
+.g6-empty{padding:16px;border:1px dashed var(--g6-line);border-radius:8px;background:var(--g6-sur);color:#707c91;font-size:12.5px}
+/* 구성 코너 : order6 '프로세스 설정' 제목 줄 + 복사하기 버튼(.sbb.pri) 스타일 */
+.g6-mem{margin-top:6px}
+.g6-sh{display:flex;align-items:center;gap:8px;min-height:32px;margin:0 0 12px}
+.g6-sh h3{margin:0;font-size:15px;font-weight:700;color:#1d1e2c;letter-spacing:-.3px}
+.g6-sh h3 em{margin-left:6px;font-style:normal;font-size:13px;color:var(--g6-ac)}
+.g6-sh .rt{display:flex;align-items:center;gap:8px;margin-left:auto}
+.g6-sbb{height:32px;padding:0 14px;border:1px solid #d5d9e7;border-radius:6px;background:#fff;font:inherit;font-size:14px;font-weight:600;color:#1a1a1a;cursor:pointer;white-space:nowrap}
+.g6-sbb.pri{border-color:var(--g6-ac);background:var(--g6-ac);color:#fff}
+.g6-sbb.pri:hover{filter:brightness(1.08)}
+.g6-card{padding:18px 20px;border:1px solid var(--g6-line);border-radius:10px;background:#fff}
+.g6-pill{height:28px;padding:0 10px;border:1px solid #d5d9e7;border-radius:8px;background:#fff;font:inherit;font-size:12px;font-weight:600;color:var(--g6-text);cursor:pointer}
+/* 하단 고정 바 : 흰 시트 맨 아래 · 좌우 끝에 붙는다 */
+#pDetail.form .dfoot{position:sticky;bottom:0;z-index:40;display:flex;align-items:center;gap:16px;height:68px;margin:auto calc(var(--g6-px)*-1) calc(var(--g6-pb)*-1);padding:0 16px 0 20px;border-top:1px solid var(--g6-line);border-radius:16px 16px 19px 19px;background:#fff;box-shadow:0 -6px 24px #2934591a}
+#pDetail.form .dfoot>[data-act="list"]{display:none}
+#pDetail.form .dfoot .r{gap:8px;margin-left:auto}
+#pDetail.form .dfoot :is(.btn-list,.btn-pri){height:38px;min-width:64px;padding:0 17px;border-radius:8px;font-size:12px;font-weight:600}
+#pDetail.form .dfoot .btn-list{border:1px solid #d5d9e7;background:#fff;color:var(--g6-text)}
+#pDetail.form .dfoot .btn-list.line{border-color:#1a1a1a;color:#1a1a1a}
+#pDetail.form .dfoot .btn-pri{border:1px solid var(--g6-ac);background:var(--g6-ac);color:#fff}
+.g6-sum{display:flex;align-items:center;gap:20px}
+.g6-k{font-size:13px;font-weight:600;color:var(--g6-text);white-space:nowrap}
+.g6-k b{margin:0 3px 0 7px;font-size:20px;font-weight:700;color:var(--g6-ac)}
+.g6-k b.t{font-size:14px}
+.g6-k small{font-size:11px;font-weight:500;color:#707c91}
+#pDetail:not(.form) .g6-sum{display:none}
+
+/* 등록 · 수정 구성 코너 표 */
+.g6-mt td{vertical-align:middle}
+.g6-mt th.l{text-align:left}
+.g6-mt .hdl{margin-right:8px}
+.g6-mt .g6-no{display:inline-block;min-width:14px}
+.g6-mt td.g6-cid{color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;white-space:nowrap}
+.g6-mt .inp.sm{width:100%}
+/* 미리보기 : 상품 전시 등록(product-v023.html) · 주문 프로세스 등록(order6-create.html)과 같은 높이 800px 고정.
+   화면이 낮으면 하단 고정 바(68px)와 여백을 뺀 높이까지 줄고, 내용이 넘치면 프레임 안만 스크롤 (스크롤바는 숨김) */
+.pvcol .cc-pv{height:800px;min-height:0;max-height:calc(100vh - 68px - 40px);max-height:calc(100dvh - 68px - 40px)}
+.pvcol .cc-phone{scrollbar-width:none;-ms-overflow-style:none}
+.pvcol .cc-phone::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body class="ul">
@@ -687,7 +758,7 @@ table.mt2 td{padding:9px 8px}
         </div></div>
       </div>
 
-      <div class="dfoot"><button type="button" class="btn-list" data-act="list">목록</button><div class="r" id="fBtns"></div></div>
+      <div class="dfoot"><button type="button" class="btn-list" data-act="list">목록</button><div class="g6-sum" id="fSum"></div><div class="r" id="fBtns"></div></div>
     </section>
   </div></main>
 </div>
