@@ -7,7 +7,7 @@
 // - 고객 선택 방식: 상품 유형은 LV3 조합 배지만 보여 준다(주문 유형 · 프로세스 수 안내는 뺐다).
 // - T기프트 · 티다팩 섹션(자동 배지 · 미리보기 포함)도 뺐다. 주문(주문 프로세스의 코너)에서 다시 적용할 예정.
 // - 구성안을 연결하면 주문 구성 방식 아래에 order5-create.html과 같은 '컨테이너·코너 설정' 카드가 생긴다. 컨테이너는 아코디언(한 번에 하나), 펼치면 왼쪽 코너 목록 · 오른쪽 코너 설정.
-// - 주문 받기 OFF: 이동할 전시 · 안내 문구 · 주문 자동 시작(시작 일시 + 미리 연결할 구성안) · 고객 화면 하단 미리보기(ref).
+// - 주문 받기 OFF: 대체 버튼 · 버튼 문구 · 이동할 전시만 정한다(안내 문구 · 주문 자동 시작 · 고객 화면 하단 미리보기는 뺐다).
 // v0.2.3: ref/product-admin-prototype-v024-1.html 반영:
 // EPC 상품을 LV2(서비스 도메인) · LV3(서비스 유형) · Product Spec으로 조회하고, 연결 상품 목록도 같은 기준으로 보여 준다. 상세 팝업에 LV3 계약 · 회선 · 가입 속성을 보여 준다.
 // 대표 상품을 없앴다: 화면의 상품 유형은 연결 상품 LV3의 조합으로 보여 주고, 주문 구성안 · 주문 단계를 정하는 값(svc)은 연결 상품 구성에서 계산한다.
@@ -19,6 +19,8 @@
 import "./style.css";
 // 컨테이너 · 코너 영역은 order5-create.html 스타일을 그대로 옮긴 파일을 쓴다
 import "./order5-container.css";
+// 코너 구성 목록은 주문 프로세스 등록(order6-create.html)과 같은 공통 모듈로 그린다
+import { listHTML as pclList } from "./process-corner-list";
 import { requireAuthentication } from "./auth";
 // EPC 샘플 상품 · 샘플 전시 · 저장소는 display-data.ts (상품 전시 일괄 관리와 함께 쓴다)
 import {
@@ -101,8 +103,9 @@ function openEdit(id){
  E=d?clone(d):newDisplay();
  // v0.2.2: 새 전시는 주문 구성 방식(주문 받기)을 꺼 둔 채로 시작한다. 저장된 전시는 저장 값을 따른다
  if(!d){ E.orderOn=false; E.off={act:'none',btn:''}; }
- // v0.2.4: 주문 받기 OFF 항목(이동할 전시 · 안내 문구 · 자동 시작) 기본값, 연결한 주문 프로세스는 저장소의 최신 값으로 다시 읽는다
- E.off=Object.assign({act:'none',btn:'',go:null,note:'',auto:false,at:''},E.off);
+ // v0.2.4: 주문 받기 OFF 항목(이동할 전시) 기본값, 연결한 주문 프로세스는 저장소의 최신 값으로 다시 읽는다
+ // 안내 문구 · 주문 자동 시작은 화면에서 뺐다. 예전에 저장한 값이 검사 · 미리보기에 남지 않도록 비운다
+ E.off=Object.assign({act:'none',btn:'',go:null},E.off,{note:'',auto:false,at:''});
  E.noSteps=true;
  PROCS=loadProcs(); livePlan(); CT.open=0; CT.sel={}; PVC=0;
  // 추가설정(검색 노출 설정 · 오퍼링 문구)은 끄는 스위치 없이 항상 사용한다
@@ -216,7 +219,7 @@ function rCh(){
 function rKind(){
  const T=[['po','PO/MP 상품 전시'],['ps','PS 상품 전시[TBD]']];
  $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
- ${ntc('',E.kind==='po'?'EPC 상품(PO)을 연결해 판매합니다. 고객 선택 방식과 주문 구성을 설정해요.':'PO 안의 서비스(PS) 하나를 소개용으로 전시합니다. 주문은 PS가 속한 PO 전시에서 진행되므로 고객 선택 방식·가입 유형·할부·티다팩·주문 구성은 쓰지 않아요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
+ ${E.kind==='po'?'':ntc('','PO 안의 서비스(PS) 하나를 소개용으로 전시합니다. 주문은 PS가 속한 PO 전시에서 진행되므로 고객 선택 방식·가입 유형·할부·티다팩·주문 구성은 쓰지 않아요.').replace('class="ntc ','style="margin:0" class="ntc ')}`;
  $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.areas=k==='po'?[newArea('','fixed')]:[]; E.method='fixed'; syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefits(E); renderAll(); }));
 }
 
@@ -683,11 +686,11 @@ function rCvm(){
 const ntc0=t=>ntc('',t).replace('class="ntc ','style="margin:0 0 12px" class="ntc ');
 
 // ---------- 8. 주문 구성 방식 ----------
-// 머리줄 스위치 = 주문 받기. ON: 주문 프로세스 관리(order5)의 프로세스를 주문 구성안으로 연결한다. OFF: 주문 버튼 대신 보일 대체 버튼 · 안내 문구 · 자동 시작을 정한다
+// 머리줄 스위치 = 주문 받기. ON: 주문 프로세스 관리(order5)의 프로세스를 주문 구성안으로 연결한다. OFF: 주문 버튼 대신 보일 대체 버튼을 정한다
 $('#odOn').addEventListener('change',e=>{ E.orderOn=e.target.checked; setFold($('#sec-order'),true); onOrderChange(); toast(E.orderOn?'주문을 다시 받아요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
 // [키, 이름, 설명, 기본 버튼 문구]
 const OFF_ACT=[['none','버튼 없음','안내 문구만 보여요',''],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['notify','출시 · 입고 알림 신청','신청자에게 알림을 보내요','출시 알림 받기'],['link','다른 전시로 이동','고른 전시 상품으로 보내요','다른 상품 보러가기']];
-const OFF_BTN=14, OFF_NOTE=30;
+const OFF_BTN=14;
 const offBtn=o=>o.act==='none'?'':(o.btn||(OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0])[3]);
 
 // ---------- 8-1. 주문 프로세스 (order5-create.html 목록) ----------
@@ -754,8 +757,10 @@ function toggleCtn(i){
 }
 function ctnBody(st,i){
  const sel=st.corners.find(c=>c.id===CT.sel[i])||st.corners[0]; if(sel) CT.sel[i]=sel.id;
- const rows=st.corners.map((c,k)=>`<div class="crow ${c===sel?'sel':''}" data-cr="${esc(c.id)}"><div class="cmid"><b class="cnm">${esc(c.n)}</b><span class="cl2">${pillOf(c)}${c.cond?'<span class="pill p-orange">옵션</span>':''}${isOv(c.id)?'<span class="pill p-ov">이 전시 변경</span>':''}</span></div></div>`).join('')||'<div class="tempty">코너 영역 설정</div>';
- return `<div class="tsplit"><div class="tcol"><div class="tcont">${rows}</div></div>
+ // 조회 전용 : 구성 · 순서는 주문 프로세스 관리 값 그대로. 그룹으로 배치한 코너는 그룹 상자로 묶인다
+ const rows=pclList(st.corners,{ro:true,isSel:c=>c===sel,rowAttrs:c=>`data-cr="${esc(c.id)}"`,
+  pills:c=>`${pillOf(c)}${c.cond?'<span class="pill p-orange">옵션</span>':''}${isOv(c.id)?'<span class="pill p-ov">이 전시 변경</span>':''}`});
+ return `<div class="tsplit"><div class="tcol pcl"><div class="tcont">${rows}</div></div>
  <div class="dcol"><div class="o5det">${sel?cornerDetail(sel,st):'<div class="dempty">코너를 선택하면<br>상세 설정이 이곳에 표시됩니다.</div>'}</div></div></div>`;
 }
 function cornerDetail(c,st){
@@ -834,25 +839,14 @@ function rOrder(){
  if(o.act==='link'&&!others.some(d=>d.id===o.go)) o.go=others[0]?others[0].id:null;
  box.innerHTML=`${ntc0('주문을 받지 않는 동안 고객 화면의 <b>주문 버튼이 아래 버튼으로 바뀌어요.</b> 출시 전 사전 안내 · 일시 품절 · 판매 재개 대기 같은 경우에 써요. 전시 자체를 숨기려면 전시 정보의 <b>전시 여부</b>를 바꾸세요')}
  <div class="oacts" role="radiogroup" aria-label="대체 버튼">${OFF_ACT.map(([k,t,d])=>`<label class="oact"><input type="radio" name="oAct" value="${k}" ${o.act===k?'checked':''}><b>${t}</b><small>${d}</small></label>`).join('')}</div>
- <div class="ordoff"><div>
-  ${o.act!=='none'?`<div class="row"><label class="fl" for="oBtn">버튼 문구</label><input type="text" id="oBtn" value="${esc(o.btn)}" maxlength="${OFF_BTN}" placeholder="${esc(A[3])}" style="flex:1"><span class="pill len" id="oBtnC">${o.btn.length}/${OFF_BTN}</span></div>`:''}
+ ${o.act!=='none'?`<div class="ordoff">
+  <div class="row"><label class="fl" for="oBtn">버튼 문구</label><input type="text" id="oBtn" value="${esc(o.btn)}" maxlength="${OFF_BTN}" placeholder="${esc(A[3])}" style="flex:1"><span class="pill len" id="oBtnC">${o.btn.length}/${OFF_BTN}</span></div>
   ${o.act==='link'?`<div class="row"><label class="fl" for="oGo">이동할 전시</label><select id="oGo" style="flex:1" ${others.length?'':'disabled'}>${others.map(d=>`<option value="${d.id}" ${o.go===d.id?'selected':''}>${esc(nameText(d.name)||'이름 없음')} · ${dispId(d.id)}</option>`).join('')||'<option>이동할 전시가 없어요</option>'}</select></div>`:''}
-  <div class="row" style="margin-bottom:0"><label class="fl" for="oNote">안내 문구</label><input type="text" id="oNote" value="${esc(o.note)}" maxlength="${OFF_NOTE}" placeholder="예: 11월 10일 오전 10시 주문 시작" style="flex:1"><span class="pill len" id="oNoteC">${o.note.length}/${OFF_NOTE}</span></div>
-  <p class="hl">버튼 위에 작게 보여요</p>
-  <div class="row" style="margin-top:12px"><label class="fl">주문 자동 시작</label><label class="chkl"><input type="checkbox" id="oAuto" ${o.auto?'checked':''}>정한 시각에 주문을 켜요</label><input type="datetime-local" id="oAt" value="${esc(o.at)}" aria-label="주문 자동 시작 일시" ${o.auto?'':'disabled'}></div>
-  ${o.auto?`<p class="hl" style="margin-bottom:10px">자동으로 켜지려면 주문 구성안을 미리 연결해 두어야 해요</p>${planBox()}${!E.orderPlan?'<div class="op-err" role="alert">자동 시작에 쓸 주문 구성안을 선택해 주세요</div>':''}`:''}
- </div>
- <div class="cpv" aria-label="고객 화면 하단 미리보기"><div class="lb">고객 화면 하단</div><div class="nt" id="cpvN"></div><div class="bt" id="cpvB"></div><div class="lb" style="margin:10px 0 0">가입 유형 · 할부 · 배송 단계는 나오지 않아요</div></div></div>`;
- const cpv=()=>{ $('#cpvN').textContent=o.note?'● '+o.note:''; const b=$('#cpvB'); b.textContent=o.act==='none'?'버튼 없음':offBtn(o); b.className='bt'+(o.act==='none'?' no':''); };
- cpv();
+ </div>`:''}`;
  // 버튼을 바꿀 때 문구가 비었거나 이전 기본 문구 그대로면 새 기본 문구로 바꾼다
  $$('#sb-order input[name=oAct]').forEach(r=>r.addEventListener('change',()=>{ if(!o.btn||o.btn===A[3]) o.btn=OFF_ACT.find(x=>x[0]===r.value)[3]; o.act=r.value; rOrder(); refresh(); }));
- const ob=$('#oBtn'); if(ob) ob.addEventListener('input',e=>{ o.btn=e.target.value; $('#oBtnC').textContent=`${o.btn.length}/${OFF_BTN}`; cpv(); refresh(); });
+ const ob=$('#oBtn'); if(ob) ob.addEventListener('input',e=>{ o.btn=e.target.value; $('#oBtnC').textContent=`${o.btn.length}/${OFF_BTN}`; refresh(); });
  const og=$('#oGo'); if(og) og.addEventListener('change',e=>{ o.go=+e.target.value; });
- $('#oNote').addEventListener('input',e=>{ o.note=e.target.value; $('#oNoteC').textContent=`${o.note.length}/${OFF_NOTE}`; cpv(); renderPreview(); });
- $('#oAuto').addEventListener('change',e=>{ o.auto=e.target.checked; rOrder(); refresh(); });
- $('#oAt').addEventListener('change',e=>{ o.at=e.target.value; refresh(); });
- if(o.auto) bindPlan();
 }
 
 // ---------- 모달 공통 ----------
@@ -868,7 +862,7 @@ const foot=(txt,n,label)=>`<span class="pill" style="margin-right:auto">${txt}</
 // 검색어 입력 중 다시 그려도 커서 위치를 지킨다
 function keepQ(id,set,draw){ $(id).addEventListener('input',e=>{ set(e.target.value.trim()); const p=e.target.selectionStart; draw(); const n=$(id); n.focus(); n.setSelectionRange(p,p); }); }
 
-// EPC 상품 조회(연결 상품 추가): 위 조회 조건 → 검색결과 표 → 취소/추가하기
+// EPC 상품 조회(연결 상품 추가): 위 조회 조건 → 검색결과 표 → 취소/추가
 // LV3 선택지는 고른 LV2에 속한 값만 보여 준다
 const lv3Of=g=>Object.keys(LV3S).filter(k=>g==='전체'||LV3S[k].lv2===g);
 // f: 입력 중인 조건, a: 조회 버튼으로 적용한 조건
@@ -891,7 +885,7 @@ function drawConn(){
  $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
  $('#cmForm').addEventListener('submit',e=>{ e.preventDefault(); CM.a={...f,q:f.q.trim()}; drawConnRows(); });
  $('#cmReset').addEventListener('click',()=>{ CM.f={g:'전체',k:'전체',q:''}; CM.a={...CM.f}; drawConn(); $('#cq').focus(); });
- $('#mFoot').innerHTML=`<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>추가하기</button>`;
+ $('#mFoot').innerHTML=`<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>추가</button>`;
  $('#mc').addEventListener('click',closeModal);
  $('#mo').addEventListener('click',()=>{ const add=[...CM.sel]; E.conn.push(...add); closeModal(); const n=onConnChange(); toast(`${add.length}개 상품을 연결했어요${n?` · 상품 템플릿 ${n}개를 콘텐츠 정보에 넣었어요`:''}`); });
  drawConnRows();
@@ -906,7 +900,7 @@ function drawConnRows(){
   ||'<tr class="empty-row"><td colspan="8">검색 결과가 없어요</td></tr>';
  // 전체 선택: 지금 검색결과 중 이미 연결된 상품을 뺀 나머지를 한 번에 고르거나 푼다
  const pick=L.filter(p=>!E.conn.includes(p.id)).map(p=>p.id), all=$('#cmAll');
- const sync=()=>{ const n=CM.sel.size, b=$('#mo'); b.disabled=!n; b.textContent=n?`추가하기 (${n})`:'추가하기';
+ const sync=()=>{ const n=CM.sel.size, b=$('#mo'); b.disabled=!n; b.textContent=n?`추가 (${n})`:'추가';
   const k=pick.filter(id=>CM.sel.has(id)).length; all.disabled=!pick.length; all.checked=!!pick.length&&k===pick.length; all.indeterminate=k>0&&k<pick.length; };
  all.onchange=()=>{ const on=all.checked; pick.forEach(id=>{ on?CM.sel.add(id):CM.sel.delete(id); const tr=$(`#cmRows [data-row="${id}"]`); tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
  const toggle=(id,on)=>{ on?CM.sel.add(id):CM.sel.delete(id); const tr=$(`#cmRows [data-row="${id}"]`); tr.classList.toggle('on',on); tr.querySelector('input').checked=on; sync(); };

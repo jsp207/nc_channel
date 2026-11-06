@@ -13,6 +13,8 @@ import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import { boSpec, boGet, boHtml, boBind } from "./corner-bo";
 import { publishProcs } from "./order-process-data";
+// 코너 구성 목록 공통 모듈 : 인라인 스크립트가 window.PCL 로 쓴다 (상품 전시 관리와 같은 목록)
+import "./process-corner-list";
 import { placeableGroups, groupOnlyIds } from "./order-corner-groups";
 
 requireAuthentication();

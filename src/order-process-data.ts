@@ -82,7 +82,7 @@ export function loadProcs() {
 export function publishProcs(data, at) {
  const corner = c => { const o = (c.sv || c.opts || []).slice(), vis = c.oelse || [];
   return { id: c.id, n: c.n, t: c.t, o, off: o.map((_, i) => i).filter(i => vis[i] === false), ...(c.omode === 'cond' && c.rules && c.rules.length ? { cond: '조건에 따라 선택지 노출' } : {}),
-   ...(c.grp ? { grp: { gid: c.grp.gid, ver: c.grp.ver } } : {}) }; };   // 코너 그룹으로 배치한 코너 (주문 코너 그룹 관리의 사용 위치)
+   ...(c.grp ? { grp: { gid: c.grp.gid, ver: c.grp.ver, n: c.grp.n || '', k: c.grp.k || c.grp.gid, kind: c.grp.kind || 'seq' } } : {}) }; };   // 코너 그룹으로 배치한 코너 (주문 코너 그룹 관리의 사용 위치 · 상품 전시의 그룹 상자)
  const rows = data.map(d0 => { const d = d0.det ? Object.assign({}, d0, d0.det) : d0;
   let st = []; try { st = d.mk ? d.mk() : []; } catch {}
   return { id: d0.id, n: d.n, cat: d.cat, cnt: d.cnt, ap: d.ap, u: !!d.u, dt: d.dt || d0.dt, by: d.by || d0.by || '', ver: d.ver || '',

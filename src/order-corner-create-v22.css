@@ -238,3 +238,8 @@ table.dh-t{width:100%;min-width:900px;border-collapse:collapse;font-size:14px;co
 .dh-pg .dot{color:#707c91;letter-spacing:1px}
 /* 코너 Item 제목 옆 TBD 표시 */
 .cc-acc>header .cc-tbd{margin-left:6px;font-size:12px;font-weight:500;color:#c46a0b}
+
+/* 코너 조건 (TBD) */
+.cc-condtbd{display:flex;align-items:center;gap:12px;padding:16px 18px;border:1px dashed #f0c48f;border-radius:8px;background:#fff8ef}
+.cc-condtbd b{flex:none;padding:2px 8px;border-radius:4px;background:#fff0de;color:#c46a0b;font-size:12px}
+.cc-condtbd p{margin:0;font-size:12.5px;color:#6b7280;line-height:1.5}

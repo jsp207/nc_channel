@@ -162,7 +162,7 @@ function basicCard(){
 }
 /* 아코디언 섹션 : 상품 전시 등록(product-v023.html) 전시 유형 영역과 같은 테두리 · 머리줄 · 접기. 영역마다 따로 펼치고 접는다 (처음엔 기본 정보만 펼침) */
 const fold={};
-function initFold(){Object.keys(fold).forEach(k=>delete fold[k]);Object.assign(fold,{header:true,contents:true,footer:true});}
+function initFold(){Object.keys(fold).forEach(k=>delete fold[k]);Object.assign(fold,{header:true,contents:true,footer:true,cond:true});}
 function toggleSec(id){const hd=$('ccForm').querySelector('[data-fold="'+id+'"]');if(!hd)return;fold[id]=!fold[id];setFold(hd.parentNode,!fold[id]);}
 function foldAll(){$('ccForm').querySelectorAll('.cc-acc>header[data-fold]').forEach(h=>{const k=h.dataset.fold;if(!fold[k]){fold[k]=true;setFold(h.parentNode,false);}});}
 function acc(id,title,body,aside){
@@ -216,6 +216,9 @@ const fl=(lab,inner,w)=>'<div class="cc-f'+(w?' '+w:'')+'">'+inner+'</div>';
 const iInp=(i,k,v,lab)=>'<input class="cc-inp" data-it="'+i+'" data-k="'+k+'" value="'+esc(v)+'" placeholder="'+esc(lab)+'" title="'+esc(lab)+'" aria-label="'+esc(lab)+'">';
 /* 코너 Item 제목 : 구성 확정 전이라 TBD 표시 */
 const ITEM_T='코너 Item<span class="cc-tbd">( TBD 진행중 )</span>';
+/* 코너 조건 : 코너 Footer 아래. 상품 정보 조건(주문 유형 · 선택 EPC 상품)을 정할 자리. 설정 방식이 정해지기 전이라 TBD로만 보여준다 (등록 · 수정 · 상세 공통) */
+const COND_T='코너 조건<span class="cc-tbd">( TBD )</span>';
+const COND_B='<div class="cc-condtbd"><b>TBD</b><p>코너 노출 조건(주문 유형 · 선택 EPC 상품 등 상품 정보 조건) 설정 영역입니다. 설정 방식은 확정 후 반영합니다.</p></div>';
 const ITEM_ROW=4;   // 한 줄에 둘 입력란 수. 넘으면 두 줄로 반씩 나눈다
 function itemCard(it,i){
   const min=st.cnt[0];
@@ -247,7 +250,7 @@ function itemPart(){
    +'<div class="cc-items">'+st.items.map(itemCard).join('')
    +'<div class="cc-iadd"><button type="button" class="cc-xs add" data-cc="add"'+(st.items.length<max?'':' disabled')+'>+ 추가</button>'+(st.items.length>=max?'<span class="cc-sub">노출 개수 범위 최대 '+max+'개에 도달했어요</span>':'')+'</div></div>',onCnt(ik));
 }
-function render(){$('ccForm').innerHTML=basicCard()+cornerPart('header','코너 Header',HEAD)+itemPart()+cornerPart('footer','코너 Footer',FOOT);renderPv();}
+function render(){$('ccForm').innerHTML=basicCard()+cornerPart('header','코너 Header',HEAD)+itemPart()+cornerPart('footer','코너 Footer',FOOT)+acc('cond',COND_T,COND_B);renderPv();}
 
 /* ===== 저장 : 주문 코너 관리 목록에 바로 추가 ===== */
 /* 오류 문구와 그 입력이 있는 영역 [문구, 영역 id] */
@@ -389,7 +392,7 @@ function vItems(DF){
 export function cornerView(c,DF){
   const prev=st;st=stFromCorner(c);
   const b=tr('코너 ID',val(c.id))+tr('코너명',val(st.name))+tr('사용 여부',val(st.use))+tr('코너 유형',val(tOf().n))+tr('코너 형태',val(lOf().n))+tr('표시 방식',val(vOf().n));
-  const out={form:vAcc('basic','기본 정보','<div class="cc-tb">'+b+'</div>','',DF)+vCorner('header','코너 Header',HEAD,DF)+vItems(DF)+vCorner('footer','코너 Footer',FOOT,DF),pv:pvHTML()};
+  const out={form:vAcc('basic','기본 정보','<div class="cc-tb">'+b+'</div>','',DF)+vCorner('header','코너 Header',HEAD,DF)+vItems(DF)+vCorner('footer','코너 Footer',FOOT,DF)+vAcc('cond',COND_T,COND_B,'',DF),pv:pvHTML()};
   st=prev;return out;
 }
 /* 주문 코너 관리에서 호출 : opts = {onClose, onSaved(corner), toast, setCrumb} */
