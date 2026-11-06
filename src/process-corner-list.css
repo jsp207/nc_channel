@@ -1,0 +1,46 @@
+/* 주문 프로세스 '코너 구성' 목록 공통 스타일 (src/process-corner-list.ts)
+   주문 프로세스 등록(order6-create.html) · 상품 전시 관리(product-v024.html)가 함께 쓴다. 두 화면 모두 목록을 감싸는 .tcol 에 'pcl' 클래스를 붙인다.
+   두 화면에는 예전 스타일(#leftCard …, #ctnSecs … : order5-container.css)이 남아 있어,
+   ':not(#_)'를 두 번 붙여 ID 두 개만큼 우선하게 한다 (#_ 요소는 없으므로 범위는 그대로 .pcl 아래). */
+
+/* 목록 폭 : 왼쪽 코너 목록 260px + 오른쪽 상세 */
+.tsplit:has(>.tcol.pcl):not(#_):not(#_){grid-template-columns:260px minmax(0,1fr)}
+@media (max-width:1200px){.tsplit:has(>.tcol.pcl):not(#_):not(#_){grid-template-columns:1fr}}
+
+/* 코너 한 줄 */
+.pcl:not(#_):not(#_) .crow{display:flex;align-items:center;gap:8px;box-sizing:border-box;height:60px;min-height:60px;margin:0 0 8px;padding:8px 10px 8px 8px;border:1px solid #e5e7f0;border-radius:8px;background:#fff;cursor:pointer;position:static;width:auto}
+.pcl:not(#_):not(#_) .crow:hover{border-color:#d5d9e7}
+.pcl:not(#_):not(#_) .crow.sel{border:1.5px solid #4320d4;background:#f3f2ff;padding:7.5px 9.5px 7.5px 7.5px}
+.pcl:not(#_):not(#_) .crow.dragging{opacity:.35}
+.pcl:not(#_):not(#_) .crow.dropb{box-shadow:0 -3px 0 0 #4320d4}
+.pcl:not(#_):not(#_) .crow.dropa{box-shadow:0 3px 0 0 #4320d4}
+.pcl:not(#_):not(#_) .ord{display:flex;align-items:center;gap:6px;flex:none;color:#2a2f3a;cursor:grab}
+.pcl:not(#_):not(#_) .crow[draggable="false"] .ord{cursor:default}
+.pcl:not(#_):not(#_) .grip{flex:none;width:10px;font-size:15px;font-style:normal;line-height:15px;letter-spacing:-1px;color:#9aa0a6}
+.pcl:not(#_):not(#_) .ord em{display:grid;place-items:center;min-width:22px;height:22px;border-radius:6px;background:#eef0f6;color:#555;font-size:13px;font-weight:500;font-style:normal}
+.pcl:not(#_):not(#_) .crow.sel .ord em{background:#4320d4;color:#fff}
+.pcl:not(#_):not(#_) .cmid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.pcl:not(#_):not(#_) .cnm{margin:0;font-size:14px;font-weight:700;line-height:1.3;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcl:not(#_):not(#_) .cl2{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.pcl:not(#_):not(#_) :is(.cl2,.cgrp-h) .pill{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:4px;font-size:11px;font-weight:500;line-height:1;white-space:nowrap}
+.pcl:not(#_):not(#_) .p-blue{background:#dbeafe;color:#2563eb}
+.pcl:not(#_):not(#_) .p-green,.pcl:not(#_):not(#_) .p-grp{background:#ebe8ff;color:#3617ce}
+.pcl:not(#_):not(#_) .p-nv{background:#e8eaed;color:#4b5159;box-shadow:none}
+.pcl:not(#_):not(#_) .p-orange{background:#ffedd5;color:#c2570c}
+.pcl:not(#_):not(#_) .xb{flex:none;display:grid;place-items:center;width:18px;height:18px;margin:2px 0 0 auto;padding:0;border:0;background:none;color:#8b9199;cursor:pointer;align-self:flex-start}
+.pcl:not(#_):not(#_) .xb:hover{color:#e5333a}
+.pcl:not(#_):not(#_) .xb svg{width:14px;height:14px}
+
+/* 코너 그룹 상자 : 머리줄(손잡이 · 그룹명 · 삭제) + 멤버 코너. 그룹 배지 · 그룹 코드 · 코너 수는 넣지 않는다 */
+.pcl:not(#_):not(#_) .cgrp{margin:0 0 8px;padding:0 0 1px;border:1px solid #d9d3fb;border-radius:10px;background:#f7f6ff}
+.pcl:not(#_):not(#_) .cgrp.dragging{opacity:.35}
+.pcl:not(#_):not(#_) .cgrp.dropb{box-shadow:0 -3px 0 0 #4320d4}
+.pcl:not(#_):not(#_) .cgrp.dropa{box-shadow:0 3px 0 0 #4320d4}
+.pcl:not(#_):not(#_) .cgrp-h{display:flex;align-items:center;gap:8px;height:42px;padding:0 11px 0 10px;cursor:grab}
+.pcl:not(#_):not(#_) .cgrp-h[draggable="false"]{cursor:default}
+.pcl:not(#_):not(#_) .cgrp-n{min-width:0;font-size:14px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcl:not(#_):not(#_) .cgrp-h .xb{margin:0 0 0 auto;align-self:center}
+/* 멤버 코너 : 그룹 상자 안에서 좌우 8px 띄우고, 손잡이를 빼 그 폭만큼 왼쪽 여백으로 코너명 · 번호를 단일 코너와 같은 세로줄에 맞춘다 */
+.pcl:not(#_):not(#_) .crow.gm{margin:0 8px 8px;padding-left:15px}
+.pcl:not(#_):not(#_) .crow.gm.sel{padding-left:14.5px}
+.pcl:not(#_):not(#_) .crow.gm .grip{display:none}

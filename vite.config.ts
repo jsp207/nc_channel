@@ -71,6 +71,7 @@ export default defineConfig({
         orderCornerGroupV23: 'order-corner-group-v23.html',
         orderCornerGroupPolicy: 'order-corner-group-policy.html',
         orderCornerGroupPolicyV02: 'order-corner-group-policy-v02.html',
+        orderCornerGroupPolicyV021: 'order-corner-group-policy-v021.html',
         orderCornerCreate: 'order-corner-create.html',
         orderContainerLayout: 'order_container_layout.html',
       },

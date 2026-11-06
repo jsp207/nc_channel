@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J45JDGG545"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-J45JDGG545');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>주문 코너 그룹 정책 v0.2.1 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      /* 상품 기준(policy.html) 신규 정책과 같은 구성 : 좌측 목차 + 본문 (#panel-new 스타일 그대로) */
+      #panel-new{display:grid;grid-template-columns:180px minmax(0,1fr);gap:40px;padding-top:16px;line-height:1.7}
+      #panel-new[hidden]{display:none}
+      .np-toc{position:sticky;top:24px;align-self:start}
+      .np-toc p{font-size:12px;color:var(--muted);margin:0 0 10px;font-weight:600}
+      .np-toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;border-left:1px solid var(--line)}
+      .np-toc a{display:block;padding:4px 0 4px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--muted);text-decoration:none;font-size:13px}
+      .np-toc a:hover,.np-toc a:focus-visible{color:var(--text);border-left-color:var(--accent);outline:none}
+      .np-body{min-width:0}
+      .np-doc{padding-bottom:24px;border-bottom:1px solid var(--line)}
+      .np-eyebrow{font-size:12px;color:var(--accent);margin:0 0 6px}
+      #panel-new .np-title{font-size:20px;font-weight:700;margin:0 0 10px}
+      .np-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--muted);margin:0}
+      .np-meta b{color:var(--text);font-weight:500}
+      .np-lead{max-width:72ch;font-size:14px;margin:16px 0 0}
+      #panel-new section{padding-top:32px;scroll-margin-top:24px}
+      #panel-new section h2{font-size:16px;font-weight:600;margin:0 0 12px;display:flex;gap:10px;align-items:baseline}
+      #panel-new h2 .np-no{font-size:13px;color:var(--accent);font-weight:500}
+      #panel-new h3{font-size:13px;margin:18px 0 8px}
+      #panel-new section>p,#panel-new section>ul{max-width:76ch;margin:0 0 12px}
+      .np-rules{padding-left:20px;display:grid;gap:5px}
+      .np-rules li::marker{color:var(--muted)}
+      .np-sub{color:var(--muted);font-size:12px}
+      .np-tbl{overflow-x:auto;margin:6px 0 16px;border:1px solid var(--line);border-radius:6px}
+      .np-tbl th{white-space:nowrap}
+      .np-tbl tr:last-child td{border-bottom:0}
+      td.np-k{font-weight:600;white-space:nowrap}
+      .np-pill{display:inline-block;font-size:12px;font-weight:600;padding:1px 9px;border-radius:999px;white-space:nowrap}
+      .np-pill.np-ok{background:var(--ok-soft);color:var(--ok)}
+      .np-pill.np-no{background:var(--bad-soft);color:var(--bad)}
+      .np-pill.np-wait{background:var(--warn-soft);color:var(--warn)}
+      .np-tag{font-size:11px;font-weight:600;color:var(--ok);background:var(--ok-soft);border-radius:4px;padding:0 6px;margin-left:4px;white-space:nowrap}
+      .np-trees{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:8px 0 14px}
+      .np-tree{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+      #panel-new .np-tree h3{margin:0 0 10px}
+      .np-node{border-left:2px solid var(--line);padding-left:12px;margin-left:4px;display:grid;gap:6px}
+      .np-n{font-size:13px}
+      .np-n b{font-weight:600}
+      .np-lbl{font-size:12px;color:var(--muted)}
+      .np-n.np-pick{color:var(--accent);font-weight:600}
+      .np-foot{margin:12px 0 0;font-size:12px;color:var(--muted)}
+      .np-group{border:1px solid var(--line);border-radius:6px;padding:4px 18px 8px;margin:0 0 12px}
+      #panel-new .np-group h3{margin:14px 0 6px;color:var(--muted)}
+      .np-group ul{padding-left:18px;margin:0 0 6px;display:grid;gap:5px;font-size:13px}
+      .np-qlist{display:grid;gap:10px;margin:6px 0 16px}
+      .np-q{border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:6px;padding:12px 16px;font-size:13px}
+      .np-q b{color:var(--warn);margin-right:8px}
+      .np-q p{margin:4px 0 0;color:var(--muted)}
+      @media (max-width:860px){#panel-new{grid-template-columns:minmax(0,1fr);gap:16px}.np-toc{position:static}.np-toc ol{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));border-left:0}.np-toc a{padding-left:0;border-left:0}}
+      .np-tree .np-when{font-size:12px;color:var(--accent)}
+    </style>
+  </head>
+  <body>
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴"></nav>
+<main>
+
+<!-- 주문 코너 그룹 정책 v0.2.1 (2026-11-06 : 프로세스 조건 다시 허용, v0.2는 order-corner-group-policy-v02.html에 그대로 둔다) : 상품 기준(policy.html)과 같은 구성. 이 페이지의 내용은 아래 HTML에서 직접 수정하세요. 이전 버전은 order-corner-group-policy.html(v0.1) -->
+<section class="view on" id="v-base">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 주문 관리 <span aria-hidden="true">›</span> <strong>주문 코너 그룹 정책</strong></div>
+  <h1>주문 코너 그룹 정책</h1>
+
+  <div id="panel-new">
+    <nav class="np-toc" aria-label="목차">
+      <p>목차</p>
+      <ol>
+        <li><a href="#np-s1">1. 역할</a></li>
+        <li><a href="#np-s2">2. 그룹 유형</a></li>
+        <li><a href="#np-s3">3. 데이터</a></li>
+        <li><a href="#np-s4">4. 조건 규칙</a></li>
+        <li><a href="#np-s5">5. 프로세스 배치 규칙</a></li>
+        <li><a href="#np-s6">6. 상태 · 버전 · 승인</a></li>
+        <li><a href="#np-s7">7. 검증</a></li>
+        <li><a href="#np-s8">8. 삭제 · 폐기</a></li>
+        <li><a href="#np-s9">9. v0.1 대비 변경</a></li>
+        <li><a href="#np-s10">10. 협의 필요</a></li>
+      </ol>
+    </nav>
+    <div class="np-body">
+
+    <header class="np-doc">
+      <p class="np-eyebrow">주문 · 코너 그룹</p>
+      <h2 class="np-title">흐름은 그룹 · 프로세스, 내용은 코너, 배치는 프로세스</h2>
+      <p class="np-meta"><span>버전 <b>v0.2.1</b></span><span>기준일 <b>2026-11-06</b></span><span>이전 버전 <a href="order-corner-group-policy-v02.html">v0.2 (2026-11-05)</a> · <a href="order-corner-group-policy.html">v0.1 (2026-11-04)</a></span><span>화면 <a href="order-corner-group-v23.html">주문 코너 그룹 관리 v0.2.3</a> · <a href="order6-create.html">주문 프로세스 관리 v0.2.4</a></span></p>
+      <p class="np-lead">앞 코너 선택값에 따라 다음에 어떤 코너가 나오는지는 코너 그룹(분기형)과 프로세스(노출 조건)에서 정한다. 그룹 안의 흐름은 그룹이, 그룹 밖 코너 사이의 흐름은 프로세스가 맡는다. 코너는 자기 내용만 정한다. 그룹은 코너를 복사하지 않고 [코너 ID + 참조 버전]으로 참조하며, 코너 원본은 그룹에서 바뀌지 않는다.</p>
+    </header>
+
+    <section id="np-s1">
+      <h2><span class="np-no">01</span>역할</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>화면</th><th>정하는 것</th><th>조건</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">주문 코너 관리</td><td>코너가 무엇인지 : 선택지, 문구, 표시 방식, 그룹 전용 여부</td><td>상품 정보 조건만 (주문 유형, 선택 EPC 상품)</td></tr>
+          <tr><td class="np-k">주문 코너 그룹 관리</td><td>다음에 어떤 코너가 나오는지 : 구성 코너, 순서, 분기</td><td><b>그룹 안 코너끼리의 흐름 조건</b> (분기형)</td></tr>
+          <tr><td class="np-k">주문 프로세스 관리</td><td>코너 · 그룹을 어느 컨테이너에 어떤 순서로 놓는지, 선택지 노출/숨김, 노출 조건</td><td><b>코너 노출 조건 · 선택지 노출 규칙(옵션 설정 규칙)</b> : 이 프로세스 안에서만 적용</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s2">
+      <h2><span class="np-no">02</span>그룹 유형</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>유형</th><th>쓰는 경우</th><th>예시</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">순차형</td><td>단독 코너 여러 개가 항상 연속으로 나와야 할 때. 구성 코너를 정해진 순서대로 모두 노출</td><td>요금제·할인 방법 묶음 (CG-ORD-0001)</td></tr>
+          <tr><td class="np-k">분기형</td><td>대표 코너 하나의 선택값(케이스)에 따라 이어지는 코너가 달라질 때</td><td>가입 방식별 추가 선택 (CG-ORD-0008)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="np-trees">
+        <div class="np-tree">
+          <h3>순차형 · 요금제·할인 방법 묶음</h3>
+          <div class="np-n"><b>요금제 선택</b></div>
+          <div class="np-node"><div class="np-n"><b>할인 방법 선택</b> <span class="np-lbl">항상</span></div></div>
+          <p class="np-foot">분기 없이 항상 이어서 노출한다.</p>
+        </div>
+        <div class="np-tree">
+          <h3>분기형 · 가입 방식별 추가 선택</h3>
+          <div class="np-n np-pick">가입 방식 선택 <span class="np-lbl">대표 코너</span></div>
+          <div class="np-node">
+            <div class="np-n"><b>대리 가입 여부 선택</b> <span class="np-when">신규가입 · 번호이동일 때</span></div>
+            <div class="np-n"><b>바로 보상 신청</b> <span class="np-when">기기변경일 때</span></div>
+          </div>
+          <p class="np-foot">대표 코너에서 고른 값에 따라 이어지는 코너가 바뀐다.</p>
+        </div>
+      </div>
+      <h3>분기형 규칙</h3>
+      <ul class="np-rules">
+        <li>대표 코너는 그룹 멤버 중 단일 선택 코너 1개다. 대표 코너는 숨길 수 없다.</li>
+        <li>대표 코너가 아닌 멤버마다 노출할 대표 코너 선택값을 고른다(여러 개 가능). 고르지 않으면 항상 노출한다.</li>
+        <li>분기 값을 고른 멤버는 대표 코너보다 뒤에 둔다.</li>
+        <li>미리보기에서 대표 코너 선택지를 눌러 분기 결과를 확인한다. 미리보기 선택값은 저장하지 않는다.</li>
+      </ul>
+    </section>
+
+    <section id="np-s3">
+      <h2><span class="np-no">03</span>데이터</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>항목</th><th>규칙</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">그룹 ID</td><td><code>CG-ORD-0000</code> (결제 성격은 <code>CG-PAY</code>). 저장 시 채번, 바꾸지 않는다.</td></tr>
+          <tr><td class="np-k">그룹명 · 설명</td><td>그룹명 필수 30자, 설명 선택 60자(FO 미노출).</td></tr>
+          <tr><td class="np-k">사용 여부</td><td>N이면 새 프로세스에 배치할 수 없다. 기존 배치는 유지.</td></tr>
+          <tr><td class="np-k">그룹 유형 · 대표 코너</td><td>순차형 / 분기형. 분기형이면 대표 코너 필수. 순차형으로 바꾸면 분기 설정을 지운다.</td></tr>
+          <tr><td class="np-k">구성 코너</td><td>코너 ID, 참조 버전(추가 시점 최신, 자동으로 바뀌지 않음), 순서, 타이틀 재정의(40자), 노출/숨김, 분기 값(분기형).</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s4">
+      <h2><span class="np-no">04</span>조건 규칙</h2>
+      <ul class="np-rules">
+        <li><b>코너끼리의 흐름 조건은 그룹 분기와 프로세스 조건에서 정한다.</b> 그룹 안 멤버 사이의 흐름은 그룹 분기로, 그룹 밖 코너 사이의 흐름은 프로세스 노출 조건으로 정한다. 코너 원본에는 상품 정보 조건만 남긴다. <span class="np-tag">v0.2.1</span></li>
+        <li><b>프로세스는 조건을 설정할 수 있다.</b> 코너마다 노출 방식(항상 노출 / 조건 노출)을 고르고, 조건 노출이면 같은 프로세스 안에서 앞에 있는 코너의 선택값을 조건으로 건다. 선택지는 노출 목록의 노출/숨김 · 순서와 함께 옵션 설정 규칙(조건에 따라 선택지 노출)을 쓸 수 있다. 조건은 이 프로세스 안에서만 적용되고 코너 원본은 바뀌지 않는다. <span class="np-tag">v0.2.1</span></li>
+        <li><b>조건 검증</b> : 저장할 때 구성 검증으로 조건을 확인한다. 참조한 선행 코너가 없거나 뒤에 있으면, 조건 값이 비어 있으면 저장할 수 없다. 조건을 건 선행 코너는 후행 코너보다 앞에 둔다.</li>
+        <li><b>같은 흐름을 두 곳에서 정하지 않는다.</b> 그룹 멤버 사이의 흐름은 그룹 분기로만 정하고, 프로세스 조건으로 같은 그룹 멤버끼리의 노출을 다시 정하지 않는다. 프로세스 조건은 그룹 밖 코너 사이, 또는 그룹 밖 코너가 그룹 멤버의 선택값을 참조할 때 쓴다. <span class="np-tag">협의 Q7</span></li>
+        <li>앞 코너 선택값에 따라 <b>선택지가 달라져야 하면</b> 그룹 안에서는 코너를 나눠 분기형으로 풀고, 그룹 밖에서는 프로세스 옵션 설정 규칙으로 푼다.</li>
+        <li><b>그룹 전용 코너</b> : 혼자 두면 흐름이 맞지 않는 코너는 주문 코너 관리에서 그룹 전용으로 표시하고, 프로세스에는 그룹으로만 배치한다.</li>
+        <li>실제 노출 : 코너는 [상품 정보 조건 AND 그룹 분기 AND 프로세스 노출 조건]을 모두 만족할 때, 선택지는 프로세스 노출 목록에서 보이게 한 것 중 옵션 설정 규칙을 만족하는 것만.</li>
+      </ul>
+      <div class="np-trees">
+        <div class="np-tree">
+          <h3>선택지 조건을 분기로 푸는 예</h3>
+          <div class="np-n np-pick">가입 방식 선택 <span class="np-lbl">대표 코너</span></div>
+          <div class="np-node">
+            <div class="np-n"><b>기기 납부 방식 (신규가입용)</b> <span class="np-when">신규가입일 때</span></div>
+            <div class="np-n"><b>기기 납부 방식 (기본)</b> <span class="np-when">번호이동 · 기기변경일 때</span></div>
+          </div>
+          <p class="np-foot">신규가입이면 24 · 30개월만 보여야 하는 경우, 선택지 조건 대신 코너를 나눠 분기한다.</p>
+        </div>
+        <div class="np-tree">
+          <h3>원본 조건을 그룹으로 옮긴 코너</h3>
+          <div class="np-n"><b>바로 보상 신청</b> <span class="np-lbl">그룹 전용</span></div>
+          <div class="np-node"><div class="np-n">가입 방식 = 기기변경 → CG-ORD-0008</div></div>
+          <div class="np-n"><b>결제 증빙 수단</b> <span class="np-lbl">그룹 전용</span></div>
+          <div class="np-node"><div class="np-n">결제수단 = 계좌이체 · 가상 계좌 → CG-PAY-0001</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="np-s5">
+      <h2><span class="np-no">05</span>프로세스 배치 규칙</h2>
+      <ul class="np-rules">
+        <li><b>그룹은 잠긴 한 블록이다.</b> 멤버 사이에 다른 코너나 그룹을 넣을 수 없다. 이 제약은 앞으로도 풀지 않는다. <span class="np-tag">확정</span></li>
+        <li>그룹은 머리줄을 끌어 통째로 옮기고 통째로 삭제한다. 멤버 하나만 옮기거나 빼거나 숨길 수 없다(구성 변경은 그룹 관리에서).</li>
+        <li>그룹은 한 컨테이너 안에 둔다.</li>
+        <li>같은 코너는 프로세스에 한 번만 둔다(그룹 안 · 밖 포함).</li>
+        <li>운영 중(발행된) 그룹만 배치한다. 배치 시점의 그룹 버전을 쓰고, 새 그룹 버전은 프로세스별로 적용한다.</li>
+        <li>멤버의 선택지 숨김은 할 수 있다. 단, 분기형 대표 코너에서 분기 값을 숨겨 어떤 멤버가 나올 수 없게 되면 안 된다.</li>
+      </ul>
+    </section>
+
+    <section id="np-s6">
+      <h2><span class="np-no">06</span>상태 · 버전 · 승인</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>상태</th><th>정의</th><th>가능한 작업</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">운영중</td><td>발행된 버전만 있음</td><td>수정, 폐기</td></tr>
+          <tr><td class="np-k">임시 저장</td><td>작업 버전 저장만 함. 이력 없음</td><td>수정, 승인 요청, 삭제(발행 전만)</td></tr>
+          <tr><td class="np-k">승인 대기</td><td>승인 요청함</td><td>요청 취소</td></tr>
+          <tr><td class="np-k">반려</td><td>반려 사유 표시</td><td>수정 후 재요청</td></tr>
+          <tr><td class="np-k">폐기</td><td>종료. 조회만</td><td>없음</td></tr>
+        </tbody>
+      </table></div>
+      <ul class="np-rules">
+        <li>신규는 <code>v1.0</code>, 수정은 끝자리 +1. 작업 버전은 그룹당 1개.</li>
+        <li>승인하면 새 버전을 발행하고 이전 버전은 보존한다. 프로세스의 참조 버전은 자동으로 바뀌지 않는다.</li>
+        <li>이력은 승인 요청 단위로 남기고 변경 내용(구성, 순서, 타이틀, 노출, 참조 버전, 그룹 유형 · 대표 코너 · 분기 값)을 자동으로 적는다.</li>
+      </ul>
+    </section>
+
+    <section id="np-s7">
+      <h2><span class="np-no">07</span>검증</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>시점</th><th>규칙</th><th>결과</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">그룹 승인 요청</td><td>그룹명 입력, 구성 코너 2개 이상, 같은 코너 중복 없음</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>사용 여부 N 코너 미포함, 필수 코너 노출, 노출 코너 1개 이상</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>운영 버전 대비 변경 사항 있음 (수정 시)</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>분기형 : 대표 코너 지정(단일 선택), 대표 코너 노출</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>분기형 : 분기 값을 고른 멤버가 대표 코너 뒤에 있음</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>분기형 : 분기 값을 고른 멤버가 하나도 없음 (순차형과 같음)</td><td><span class="np-pill np-wait">경고</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>분기형 : 어느 멤버에도 쓰이지 않은 대표 코너 선택값 있음</td><td><span class="np-pill np-wait">경고</span></td></tr>
+          <tr><td class="np-k">그룹 승인 요청</td><td>코너 최신 버전 참조</td><td><span class="np-pill np-wait">경고</span></td></tr>
+          <tr><td class="np-k">프로세스 배치</td><td>같은 코너가 두 번 들어 있지 않음</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">프로세스 배치</td><td>그룹 멤버 사이에 다른 코너 없음</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">프로세스 배치</td><td>그룹 전용 코너가 단독으로 있지 않음</td><td><span class="np-pill np-no">차단</span></td></tr>
+          <tr><td class="np-k">프로세스 배치</td><td>대표 코너 선택지 숨김 때문에 나올 수 없는 멤버 없음 (일부 값만 막히면 경고)</td><td><span class="np-pill np-no">차단</span></td></tr>
+        </tbody>
+      </table></div>
+      <p class="np-sub">프로세스 배치 규칙은 화면에서 애초에 만들 수 없게 막고(그룹 추가 팝업, 드래그, 코너 추가 팝업의 그룹 전용 표시), 예전 구성을 불러온 경우를 위해 검증에서 한 번 더 확인한다.</p>
+    </section>
+
+    <section id="np-s8">
+      <h2><span class="np-no">08</span>삭제 · 폐기</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>작업</th><th>조건과 결과</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">멤버 연결 해제</td><td>그룹 수정 중 언제든. 대표 코너를 해제하면 분기 설정을 지운다.</td></tr>
+          <tr><td class="np-k">폐기</td><td>사용 중인 프로세스 0개일 때. 되돌릴 수 없고 버전 · 이력은 보존. 사용 중이면 프로세스 목록을 보여 주고 연결 해제를 먼저 안내한다.</td></tr>
+          <tr><td class="np-k">삭제</td><td>한 번도 발행되지 않은 그룹만. 물리 삭제.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="np-sub">사용 중인 프로세스(사용 위치)는 주문 프로세스 관리에서 저장한 실제 배치를 기준으로 한다.</p>
+    </section>
+
+    <section id="np-s9">
+      <h2><span class="np-no">09</span>버전별 변경</h2>
+      <div class="np-tbl"><table>
+        <thead><tr><th>항목</th><th>v0.1</th><th>v0.2</th><th>v0.2.1</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">그룹 유형</td><td>순서 묶음 한 가지</td><td>순차형 / 분기형</td><td>같음</td></tr>
+          <tr><td class="np-k">코너끼리 조건</td><td>코너 원본 소유, 그룹은 검증만</td><td>그룹 분기에만. 원본은 상품 정보 조건만</td><td>그룹 안은 그룹 분기, 그룹 밖은 프로세스 조건. 원본은 상품 정보 조건만</td></tr>
+          <tr><td class="np-k">프로세스 조건</td><td>코너 · 선택지 노출 조건 있음</td><td>없음. 선택지 노출/숨김만</td><td><b>다시 허용</b>. 코너 노출 조건 · 옵션 설정 규칙 (프로세스 안에서만, 저장 시 검증)</td></tr>
+          <tr><td class="np-k">외부 의존 (그룹 밖 선행 코너)</td><td>기록 후 프로세스 배치 시 검증</td><td>없어짐 (흐름이 그룹 안에서 닫힘)</td><td>그룹 밖 코너 사이 흐름은 프로세스 조건으로 정하고 구성 검증에서 확인</td></tr>
+          <tr><td class="np-k">그룹 전용 코너</td><td>없음</td><td>신설. 단독 배치 불가</td><td>같음</td></tr>
+          <tr><td class="np-k">멤버 사이 배치</td><td>불가</td><td>불가 확정 (앞으로도 허용하지 않음)</td><td>같음</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s10">
+      <h2><span class="np-no">10</span>협의 필요</h2>
+      <div class="np-qlist">
+        <div class="np-q"><b>Q1</b>선택지 조건을 코너 분리로 풀 때 코너 수 증가 관리<p>현재 가정 : 같은 코너의 변형은 이름에 용도를 붙여 구분 (예 : 신규가입용)</p></div>
+        <div class="np-q"><b>Q2</b>그룹 전용 코너 지정 기준<p>현재 가정 : 다른 코너 선택값이 있어야 의미가 있는 코너</p></div>
+        <div class="np-q"><b>Q3</b>그룹이 여러 컨테이너에 걸치는 경우<p>현재 가정 : 불허. 한 컨테이너 안</p></div>
+        <div class="np-q"><b>Q4</b>그룹 중첩(그룹 안에 그룹)<p>현재 가정 : 불허</p></div>
+        <div class="np-q"><b>Q5</b>서브 타이틀 · 안내 문구 그룹 재정의<p>현재 가정 : 제외. 메인 타이틀만</p></div>
+        <div class="np-q"><b>Q6</b>그룹 · 코너 · 프로세스 공유 방식<p>현재 가정 : 목업은 브라우저 저장소, 개발 시 서버 API</p></div>
+        <div class="np-q"><b>Q7</b>프로세스 조건과 그룹 분기가 겹칠 때<p>현재 가정 : 그룹 멤버 사이 흐름은 그룹 분기만. 프로세스 화면에서 그룹 멤버에 조건을 거는 것을 막을지(차단) 경고만 할지(경고) 정해야 한다. 지금 화면은 막지 않는다.</p></div>
+      </div>
+    </section>
+
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+    <script type="module" src="/src/order-policy.ts"></script>
+  </body>
+</html>
