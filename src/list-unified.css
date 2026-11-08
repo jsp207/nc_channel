@@ -157,3 +157,12 @@ body.ul :is(.lst-foot,.lfoot) .btn:is(.primary,.pri){border:1px solid var(--ul-a
   body.ul .app>main:not(.main),body.ul .work,body.ul .sheet{padding:24px 16px 40px}
   body.ul .lst-filter .lf-g>:is(select,input[type=text]),body.ul .lst-filter .lf-wide>input[type=text]{width:auto;flex:1 1 160px}
 }
+
+/* ---------- 주문 관리 목록 (주문 프로세스 · 주문 코너 · 주문 코너 그룹) : ID 링크 · 이름 · 버전 칸을 한 모양으로 ----------
+   ID : 일반 글꼴 14px · 강조색 · 밑줄 없음(마우스를 올리면 밑줄) / 이름 : 보통 굵기 · 본문색 / 버전 : ID 다음 칸, v1.0 형식(각 화면 vfmt) */
+body.ul :is(table.lt,.ltbl table) td:is(.mono,.nw){font-family:inherit;font-size:14px}
+body.ul :is(table.lt,.ltbl table) td a:is(.cid,[data-id]){font-family:inherit;font-size:14px;font-weight:400;color:var(--ul-ac);text-decoration:none;cursor:pointer}
+body.ul :is(table.lt,.ltbl table) td a:is(.cid,[data-id]):hover{text-decoration:underline}
+body.ul table.lt .lnk{font-weight:400;color:var(--ul-text)}
+body.ul :is(table.lt,.ltbl table) td.vr{color:var(--ul-text)}
+

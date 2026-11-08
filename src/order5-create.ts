@@ -12,7 +12,6 @@
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import { boSpec, boGet, boHtml, boBind } from "./corner-bo";
-import { publishProcs } from "./order-process-data";
 
 requireAuthentication();
 
@@ -66,8 +65,4 @@ boBind($('#detail'), () => BOST, drawBo, () => { if (W.dirty) W.dirty(); });
 // 모듈은 인라인 스크립트보다 늦게 읽히므로, 이미 열린 화면이 있으면 한 번 다시 그린다
 if (W.sel) W.renderDetail();
 
-// 상품 전시 관리 v0.2.4(product-v024.html)의 주문 구성안 목록으로 쓰도록 프로세스 목록을 저장소에 남긴다. 열 때 한 번, 저장할 때마다 다시 남긴다
-const publish = () => { if (Array.isArray(W.DATA)) publishProcs(W.DATA, W.NOW || ''); };
-const coreSave = W.doSave;
-if (typeof coreSave === 'function') W.doSave = function () { const r = coreSave.apply(this, arguments); publish(); return r; };
-publish();
+// 상품 전시 관리 v0.2.4의 주문 구성안 목록은 주문 프로세스 관리 v0.2.4(order6-create.html)가 저장소에 남긴다. 이 화면(v0.2.3)은 남기지 않는다(덮어쓰지 않도록)

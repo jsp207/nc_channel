@@ -1516,8 +1516,6 @@ body.ul #scrList .lf-row>.lf-i+.lf-i::before{height:22px;margin:0 20px}
 body.ul #scrList .lf-i :is(.rad,.chk){gap:18px}
 body.ul #scrList .lf-i :is(.rad,.chk) label{gap:6px}
 body.ul #scrList .lf-act .btn{min-width:76px;border-radius:6px;font-weight:500}
-body.ul #scrList .ltbl td a{color:var(--accent);text-decoration:none;cursor:pointer}
-body.ul #scrList .ltbl td a:hover{text-decoration:underline}
 body.ul #scrList .ltbl td.nw{white-space:nowrap}   /* ID · 날짜 · 수정자는 한 줄 */
 /* 화면이 좁아지면 프로세스명만 0까지 줄던 문제 : 고정 레이아웃(고정 열 합계 1180px)을 코너 · 그룹 목록처럼 자동 레이아웃으로.
    고정 열 폭을 줄이고(합계 688px) 주문 유형은 비율(22%)로, 프로세스명은 최소 폭을 두고 글은 자르지 않고 줄을 바꾼다 */
@@ -1527,6 +1525,8 @@ body.ul #scrList .ltbl td:nth-child(3){min-width:160px}
 .lfilter .lf-i #lCat{width:100%}
 #catTd{flex-wrap:wrap;gap:8px 20px}
 .cat-pt{width:400px;max-width:100%}
+.pt-hint{flex-basis:100%;margin:6px 0 0;font-size:12.5px;color:#6b7280}
+.pt-hint b{color:#1a1a1a;font-weight:600}
 .kind-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;min-height:40px}
 .kind-l{min-width:84px;font-size:12px;font-weight:500;color:#4f5e77}
 .srch-radio{display:inline-flex;flex-wrap:wrap;gap:12px 20px}
@@ -1747,6 +1747,9 @@ body:not(.authenticated) .app{display:none}
 .gsep{color:#b3b8c3}
 .gext{display:block;margin-top:2px;font-size:12px;color:#c2570c}
 .gext.g2{color:#3617ce}
+.perm-tag{display:inline-flex;align-items:center;height:22px;margin-left:6px;padding:0 8px;border-radius:4px;font-size:12px;font-weight:600;white-space:nowrap}
+.perm-tag.lock{background:#eceef3;color:#5c6577}
+
 .gwhen{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:4px;background:#fff;border:1px dashed #c9bff5;color:#3617ce;font-size:12px;white-space:nowrap}
 .cgrp-h .gpv{height:28px;margin-left:4px;padding:0 24px 0 8px;border:1px solid #c9bff5;border-radius:6px;background:#fff;font-size:12px;color:#3617ce;cursor:pointer}
 .gpvh{margin:8px 12px;padding:8px 12px;border:1px dashed #c9ced8;border-radius:10px;font-size:11.5px;color:#8b9199;background:#f6f7f9}
@@ -1773,7 +1776,7 @@ body:not(.authenticated) .app{display:none}
           <div class="lf-i"><span class="lt">승인 상태</span><div class="chk"><label><input type="checkbox" id="lAp0" checked>전체</label><label><input type="checkbox" id="lAp1" checked>임시 저장</label><label><input type="checkbox" id="lAp2" checked>승인 대기</label><label><input type="checkbox" id="lAp3" checked>승인 완료</label><label><input type="checkbox" id="lAp4" checked>반려</label><label><input type="checkbox" id="lAp5" checked>요청 취소</label></div></div>
         </div>
         <div class="lf-row">
-          <div class="lf-i"><span class="lt">주문 유형</span><div class="sel" style="width:300px"><select id="lCat"><option value="">전체</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div></div>
+          <div class="lf-i"><span class="lt">주문 유형</span><div class="sel" style="width:300px"><select id="lCat"><option value="">전체</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div></div>
           <div class="lf-i"><span class="lt">프로세스 ID</span><div class="tf"><input type="text" id="lId" placeholder="최대 30자까지 입력 가능" maxlength="30" autocomplete="off"><button class="clr" type="button" data-clr="lId" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
           <div class="lf-i"><span class="lt">프로세스명</span><div class="tf"><input type="text" id="lNm" placeholder="최대 30자까지 입력 가능" maxlength="30" autocomplete="off"><button class="clr" type="button" data-clr="lNm" aria-label="지우기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
           <div class="lf-i"><span class="lt">등록 기간</span><div class="dt"><input type="text" id="lFrom" placeholder="0000.00.00" maxlength="10" autocomplete="off"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></div><span>-</span><div class="dt"><input type="text" id="lTo" placeholder="0000.00.00" maxlength="10" autocomplete="off"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></div></div>
@@ -1782,7 +1785,7 @@ body:not(.authenticated) .app{display:none}
       </div>
       <div class="rhead"><h2>조회 결과</h2><span class="c">총 <b id="lCnt">0</b>건</span></div>
       <div class="tbl ltbl"><table>
-        <colgroup><col style="width:120px"><col style="width:22%"><col><col style="width:104px"><col style="width:70px"><col style="width:64px"><col style="width:110px"><col style="width:140px"><col style="width:80px"></colgroup><thead><tr><th>프로세스ID</th><th class="l">주문유형</th><th class="l">프로세스명</th><th>승인상태</th><th>사용여부</th><th>전시수</th><th>최근 수정일</th><th>최근 수정자</th><th>복사</th></tr></thead>
+        <colgroup><col style="width:120px"><col style="width:64px"><col><col style="width:18%"><col style="width:130px"><col style="width:64px"><col style="width:104px"><col style="width:70px"><col style="width:110px"><col style="width:140px"><col style="width:80px"></colgroup><thead><tr><th>프로세스 ID</th><th>버전</th><th class="l">프로세스명</th><th class="l">주문유형</th><th>프로세스</th><th>전시수</th><th>상태</th><th>사용여부</th><th>최근 수정일</th><th>최근 수정자</th><th>복사</th></tr></thead>
         <tbody id="lBody"></tbody></table>
         <div class="emptyrow" id="lEmpty" hidden>조회된 프로세스가 없습니다.</div>
       </div>
@@ -1824,7 +1827,7 @@ body:not(.authenticated) .app{display:none}
                 <div class="bt">
                   <!-- 주문 유형: 주문 대상 상품 유형 하나뿐이라(상품 대상 주문 유형은 요구사항에서 빠져 삭제) 상품 유형 셀렉트만 둔다. 값은 숨긴 select#fCat에 두고 기존 로직이 그대로 읽는다 -->
                   <div class="th"><span>주문 유형</span></div>
-                  <div class="td wide" id="catTd"><div class="sel cat-pt" id="fPtWrap"><select id="fPt" aria-label="상품 유형"><option value="">상품 유형을 선택하세요</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div><select id="fCat" hidden aria-hidden="true" tabindex="-1"><option selected>선택</option><option>주문 대상 상품 유형</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div>
+                  <div class="td wide" id="catTd"><div class="sel cat-pt" id="fPtWrap"><select id="fPt" aria-label="상품 유형"><option value="">상품 유형을 선택하세요</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div><select id="fCat" hidden aria-hidden="true" tabindex="-1"><option selected>선택</option><option>주문 대상 상품 유형</option><option>이동전화 요금제형</option><option>휴대폰형 + 이동전화 요금제형</option><option>이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형</option><option>휴대폰형</option><option>태블릿형 + 이동전화 요금제형</option><option>웨어러블형 + 이동전화 요금제형</option><option>이동전화 base 옵션형</option><option>이동전화 base 제휴형</option><option>플랫폼형</option><option>로밍형</option></select></div>
                   <!-- 프로세스 ID는 등록 · 수정 화면에서 숨기고 상세(조회) 화면의 기본 정보에서만 보인다 -->
                   <div class="th fid-row"><span>프로세스 ID</span></div>
                   <div class="td wide fid-row"><div class="ro" id="fId">저장 시 자동 채번</div></div>
@@ -2036,38 +2039,60 @@ var mkSim=function(){return [
    {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
 /* PU02 (구성 불러오기) 목록 23건: SB 1페이지 + 나머지 */
 // CAT_P(상품 대상 주문 유형)는 요구사항에서 빠져 삭제했다. 예전 데이터를 걸러 내는 데만 쓴다
-var CAT_P='상품 대상 주문 유형', CAT_O='주문 대상 상품 유형', CAT_T=['이동전화 요금제형','휴대폰형 + 이동전화 요금제형','이동전화 요금제형 + 이동전화 base 옵션형','휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형',
+var CAT_P='상품 대상 주문 유형', CAT_O='주문 대상 상품 유형', CAT_T=['이동전화 요금제형','휴대폰형 + 이동전화 요금제형','이동전화 요금제형 + 이동전화 base 옵션형','휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형','휴대폰형',
   // 상품 유형 추가 (상품 전시의 LV3 조합 기준)
   '태블릿형 + 이동전화 요금제형','웨어러블형 + 이동전화 요금제형','이동전화 base 옵션형','이동전화 base 제휴형','플랫폼형','로밍형'];
-var COPYLIST=[];
-(function(){
-  [['001','단말','단말 기본 프로세스',mk4],['002','요금제','요금제 기본 프로세스',mkSim],['003','부가서비스','부가서비스 기본 프로세스',mkSim],['004','로밍','로밍 기본 프로세스',mkWear],['005','커머스','커머스 기본 프로세스',mkTab],['006','구독','구독 기본 프로세스',mkTab],
-   ['007','단말','iPhone pro 18 프로세스',mk4],['008','단말','iPhone pro max 18 프로세스',mk4],['009','단말','갤럭시 Z 폴드8 프로세스',mk4],['0010','단말','갤럭시 Z 폴드7 프로세스',mk4],
-   ['0011','단말','갤럭시 Z 플립8 프로세스',mk4],['0012','단말','갤럭시 S27 Ultra 프로세스',mk4],['0013','단말','iPhone 18 프로세스',mk4],['0014','단말','iPhone Air 2 프로세스',mk4],
-   ['0015','단말','태블릿 기본 프로세스',mkTab],['0016','단말','웨어러블 기본 프로세스',mkWear],['0017','요금제','유심 단독 프로세스',mkSim],['0018','단말','중고폰 보상 프로세스',mk4],
-   ['0019','단말','액세서리 기본 프로세스',mkTab],['0020','구독','구독 번들 프로세스',mkTab],['0021','로밍','로밍 데이터 프로세스',mkWear],['0022','요금제','요금제 변경 프로세스',mkSim],['0023','부가서비스','부가서비스 가입 프로세스',mkSim]
-  ].forEach(function(r){COPYLIST.push({id:'TP-ORD-'+r[0],n:r[2],cat:r[1],mk:r[3]})});
-})();
+/* 프로세스 목록 (2026-11-08 전수 정리) : 주문 유형(CAT_T)마다 1개, 이름 · 코너 구성은 상품 정책(LV3 조합)에 맞춘다.
+   예전 목록은 같은 이름이 20여 번씩 반복되고 이름과 유형이 맞지 않아(예 : 단말 기기변경 → 휴대폰형 + 요금제형) 모두 뺐다.
+   그룹 전용 코너(바로 보상 신청 · 결제 증빙 수단)는 단독으로 넣지 않는다. 구성 불러오기(COPYLIST)도 같은 목록을 쓴다 */
+var mkDev=function(){return [   // 휴대폰형 + 이동전화 요금제형 : 단말 + 요금제, 옵션(부가서비스 · 보험) 없음
+   {name:'상품상세_기기상품_메인',scr:'NC-PRD-005-0',corners:[cDeliv(),cPre(),cJoin(),cPay(),cPlan(),cCont(),cSim(),cGift(),cTda(),cCmp()]},
+   {name:'상품상세_기기상품_선택 상품 선택',scr:'NC-PRD-030-0',corners:[cCard(),cDisc()]},
+   {name:'기기 가입하기',scr:'NC-ORD-031-0',corners:[cOrdInfo(),cShip(),cBill(),cPm(),cPg(),cTot()]},
+   {name:'기기 최종 약관 동의',scr:'NC-PAY-021-0',corners:[cTerm()]},
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
+var mkDevOpt=function(){var st=mkDev();st[1].corners.unshift(cIns(),cAddv());return st;};   // + 이동전화 base 옵션형 (보험 · 부가서비스)
+var mkDevKeep=function(){return [   // 휴대폰형 : 기기변경 · 기존 요금제 유지 (요금제 · 할인 방법 · 가입 방식 코너 없음)
+   {name:'상품상세_기기상품_메인',scr:'NC-PRD-005-0',corners:[cDeliv(),cPay(),cSim(),cGift(),cTda(),cCmp()]},
+   {name:'기기 가입하기',scr:'NC-ORD-031-0',corners:[cOrdInfo(),cShip(),cPg(),cTot()]},
+   {name:'기기 최종 약관 동의',scr:'NC-PAY-021-0',corners:[cTerm()]},
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
+var mkPlan=function(){return [   // 이동전화 요금제형 : USIM · 요금제
+   {name:'요금제 가입하기',corners:[cPre(),cJoin(),cPlan(),cCont(),cSim()]},
+   {name:'가입 정보 입력',corners:[cShip(),cBill(),cPm(),cTot()]},
+   {name:'최종 약관 동의',scr:'NC-PAY-021-0',corners:[cTerm()]},
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};
+var mkPlanOpt=function(){var st=mkPlan();st[0].corners.push(cAddv());return st;};   // + 이동전화 base 옵션형 (부가서비스)
+var mkAdd=function(nm,cs){return function(){return [   // 사용 중 회선에 더하는 상품 (옵션 · 제휴 · 로밍) · 단독 구독(플랫폼)
+   {name:nm,corners:cs()},
+   {name:'최종 약관 동의',scr:'NC-PAY-021-0',corners:[cTerm()]},
+   {name:'주문 완료',scr:'NC-ORD-033-0',corners:[cDone()]}];};};
+var PROC_LIST=[   // [ID, 주문 유형(CAT_T), 프로세스명, 구성, 전시수, 등록일]
+  ['TP-ORD-001',CAT_T[0],'이동전화 요금제 가입 프로세스',mkPlan,86,'2026.10.30 10:20'],
+  ['TP-ORD-002',CAT_T[1],'휴대폰 + 요금제 가입 프로세스',mkDev,124,'2026.10.29 14:10'],
+  ['TP-ORD-003',CAT_T[2],'요금제 + 부가서비스 가입 프로세스',mkPlanOpt,41,'2026.10.28 11:00'],
+  ['TP-ORD-004',CAT_T[3],'휴대폰 + 요금제 + 부가서비스 가입 프로세스',mkDevOpt,97,'2026.10.27 16:40'],
+  ['TP-ORD-005',CAT_T[4],'휴대폰 기기변경 프로세스 (요금제 유지)',mkDevKeep,38,'2026.10.26 09:30'],
+  ['TP-ORD-006',CAT_T[5],'태블릿 + 데이터 요금제 가입 프로세스',mkTab,22,'2026.10.24 15:20'],
+  ['TP-ORD-007',CAT_T[6],'웨어러블 + 요금제 가입 프로세스 (모회선 연결)',mkWear,15,'2026.10.23 13:50'],
+  ['TP-ORD-008',CAT_T[7],'부가서비스 가입 프로세스 (사용 중 회선)',mkAdd('부가서비스 가입하기',function(){return [cAddv(),cPm(),cTot()]}),33,'2026.10.22 10:10'],
+  ['TP-ORD-009',CAT_T[8],'제휴 서비스 가입 프로세스 (사용 중 회선)',mkAdd('제휴 서비스 가입하기',function(){return [cIns(),cPm(),cTot()]}),12,'2026.10.21 17:00'],
+  ['TP-ORD-010',CAT_T[9],'T우주 구독 가입 프로세스',mkAdd('구독 가입하기',function(){return [cCard(),cPg(),cTot()]}),9,'2026.10.20 11:30'],
+  ['TP-ORD-011',CAT_T[10],'로밍 상품 가입 프로세스 (사용 중 회선)',mkAdd('로밍 가입하기',function(){return [cPm(),cTot()]}),6,'2026.10.19 14:00']
+];
+var COPYLIST=PROC_LIST.map(function(r){return {id:r[0],n:r[2],cat:r[1],mk:r[3]}});
 var DATA=[], BY='김프로(P000200)', NOW='2026.10.11 14:30';
 function T(id,n,cat,pt,cnt,ap,u,dt,mk,desc){DATA.push({id:id,n:n,cat:cat,pt:pt,t:pt,cnt:cnt,ap:ap,u:u,dt:dt,by:BY,mk:mk,desc:desc||''})}
-var SBROWS=[['010','단말','아이폰 18 pro max 전용 프로세스',45,'승인 완료','Y'],['009','단말','아이폰 18 전용 프로세스',45,'승인 완료','Y'],['008','커머스','커머스 기본 프로세스',125,'승인 완료','Y'],['007','부가서비스','부가서비스 기본 프로세스',125,'승인 완료','Y'],['006','요금제','요금제 기본 프로세스',125,'임시 저장','Y'],['005','단말','단말 기기변경 기본 프로세스',125,'임시 저장','Y'],['004','단말','단말 번호이동 기본 프로세스',125,'임시 저장','Y'],['003','단말','단말 신규가입 기본 프로세스',356,'반려','N'],['002','단말','단말 기본 프로세스',356,'반려','N'],['001','단말','아이폰 18 pro 전용 프로세스',1,'반려','N']];
+// 상세 샘플(조건 노출 예시) : 휴대폰 + 요금제 가입에서 신규가입일 때만 할부 유형에 일시불 노출
 function mkDetail(){
-  var st=mk4(), c=st[0].corners;
+  var st=mkDev(), c=st[0].corners;
   var pay=c.filter(function(x){return x.id==='CN-ORD-0004'})[0]; pay.omode='cond'; pay.rules=[{groups:[{conds:[{src:'CN-ORD-0003',ex:false,vals:['신규가입']}]}],opts:PAYOPTS.map(function(x){return x==='일시불'})}];
   return st;
 }
 (function(){
-  var P2=function(n){return ('0'+n).slice(-2)};
-  SBROWS.forEach(function(r){T('TP-ORD-'+r[0],r[2],r[1],r[1],r[3],r[4],r[5]==='Y','2026.09.01 15:00',mk4,'')});
-  var nm=['단말 기기변경','단말 번호이동','단말 신규가입','요금제 변경','부가서비스','로밍','커머스','구독'], nmType=['단말','단말','단말','요금제','부가서비스','로밍','커머스','구독'], aps=['승인 완료','승인 완료','임시 저장','승인 대기','반려','요청 취소'], mks=[mk4,mkTab,mkWear,mkSim];
-  for(var i=0;i<243;i++){
-    var no=243-i, d=new Date(2026,7,31-Math.floor(i/3)), ap=aps[i%6], disp=i%5===0;
-    var dt=d.getFullYear()+'.'+P2(d.getMonth()+1)+'.'+P2(d.getDate())+' '+P2(9+i%9)+':'+P2((i*7)%60);
-    T('TP-ORD-'+('00'+(no+10)).slice(-3),disp?('iPhone '+(10+i%9)+' 전용 프로세스'):(nm[i%8]+' 기본 프로세스'),disp?'단말':nmType[i%8],disp?'단말':nmType[i%8],1+(i*37)%400,ap,ap==='승인 완료',dt,mks[i%4],'');
-  }
-  // 상세 샘플(조건 노출 예시)은 상품 대상 주문 유형 프로세스를 지우면서 기기변경 기본 프로세스로 옮겼다
-  var r1=tById('TP-ORD-005');
-  r1.det={n:'단말 기기변경 기본 프로세스',desc:'단말 기기변경 주문 구성에 쓰이는 기본 프로세스',cnt:12,ap:'승인 완료',u:true,cat:'단말',reg:'2026.08.28 11:20',ver:'V.1',mk:mkDetail};
+  PROC_LIST.forEach(function(r){T(r[0],r[2],r[1],r[1],r[4],'승인 완료',true,r[5],r[3],'')});
+  var r1=tById('TP-ORD-002');
+  r1.det={n:r1.n,desc:'단말과 요금제를 함께 가입하는 주문 구성',cnt:r1.cnt,ap:'승인 완료',u:true,cat:r1.cat,reg:'2026.08.28 11:20',ver:'V.1',mk:mkDetail};
 })();
 function cc(d){return d.mk().reduce(function(a,s){return a+s.corners.length},0)}
 function nst(d){return d.mk().length}
@@ -3166,6 +3191,13 @@ function syncCat(){
 }
 function setCat(v){ if(v===$('fCat').value) return; $('fCat').value=v; $('fCat').dispatchEvent(new Event('change')); }
 $('fPt').addEventListener('change',function(){ setCat(this.value||CAT_O); });
+/* 주문 유형 '휴대폰형' (단독) : 상품 정책(휴대폰형 = 요금제 필수 · 기기변경은 기존 요금제 유지 가능)상 기기변경(기존 요금제 유지) 주문에만 쓴다 */
+function ptHint(){
+  var h=$('fPtHint'); if(!h){ $('fPtWrap').insertAdjacentHTML('afterend','<p class="pt-hint" id="fPtHint" hidden>휴대폰형 단독은 <b>기기변경(기존 요금제 유지)</b> 주문에만 씁니다. 요금제를 함께 가입하는 주문은 \'휴대폰형 + 이동전화 요금제형\'을 선택하세요.</p>'); h=$('fPtHint'); }
+  h.hidden=$('fPt').value!=='휴대폰형';
+}
+$('fPt').addEventListener('change',ptHint);
+(function(){ var sy=syncCat; syncCat=function(){ var r=sy.apply(this,arguments); ptHint(); return r; }; })();   // 저장된 프로세스를 열 때도 안내를 맞춘다
 $('fName').addEventListener('input',updBasic);
 $('fCat').addEventListener('change',updBasic);
 
@@ -3500,11 +3532,17 @@ resetQ=function(){
   readQ();
 };
 function ymd(dt){return dt.slice(0,10)}   // 주문 코너 목록처럼 날짜만
+/* 목록 버전 : 상세 화면 버전 정보와 같은 기준 (값이 없으면 승인 완료 V.1, 그 외 -) */
+function vfmt(v){var m=String(v||'').match(/\d+/g);if(!m)return '-';while(m.length<2)m.push('0');return 'v'+m.slice(0,2).join('.')}   // 목록 버전 표기 v1.0 (V.1 → v1.0)
+function lVer(d){var x=d.det||d;return vfmt(x.ver||d.ver||(d.ap==='승인 완료'?'V.1':''))}
+/* 목록 프로세스 칸 : 구성 요약 (컨테이너 수 · 코너 수) */
+function lShape(d){var mk=(d.det&&d.det.mk)||d.mk,st=[];try{st=mk?mk():[]}catch(e){}return '컨테이너 '+st.length+' · 코너 '+st.reduce(function(a,x){return a+x.corners.length},0)}
 renderTpl=function(){
   var list=lList(), tp=Math.max(1,Math.ceil(list.length/PS)); if(LQ.page>tp) LQ.page=tp;
   var off=(LQ.page-1)*PS;
   $('lBody').innerHTML=list.slice(off,off+PS).map(function(d,i){
-    return '<tr><td class="nw"><a data-id="'+d.id+'">'+d.id+'</a></td><td class="l cat-c">'+d.cat+'</td><td class="l">'+esc(d.n)+'</td><td>'+apBadge(d.ap)+'</td><td>'+(d.u?'Y':'N')+'</td><td>'+(d.cnt||0)+'</td><td class="nw">'+ymd(d.dt)+'</td><td class="nw">'+d.by+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td></tr>';
+    // 프로세스 ID | 버전 | 프로세스명 | 주문유형 | 프로세스(구성 : 컨테이너 · 코너 수) | 전시수 | 상태 | 사용여부 | 최근 수정일 | 최근 수정자 | 복사
+    return '<tr><td class="nw"><a data-id="'+d.id+'">'+d.id+'</a></td><td class="vr">'+lVer(d)+'</td><td class="l">'+esc(d.n)+'</td><td class="l cat-c">'+d.cat+'</td><td class="nw">'+lShape(d)+'</td><td>'+(d.cnt||0)+'</td><td>'+apBadge(d.ap)+'</td><td>'+(d.u?'Y':'N')+'</td><td class="nw">'+ymd(d.dt)+'</td><td class="nw">'+d.by+'</td><td><button class="btn sm" type="button" data-cp="'+d.id+'">복사</button></td></tr>';
   }).join('');
   $('lCnt').textContent=list.length; $('lEmpty').hidden=!!list.length;
   $('lPager').innerHTML=pagerHTML(list.length,LQ.page);
@@ -3932,6 +3970,41 @@ $('cTabs').addEventListener('click',function(e){var b=e.target.closest('[data-at
 $('cRows').addEventListener('click',function(e){var tr=e.target.closest('tr[data-g]');if(!tr||tr.classList.contains('dis'))return;var id=tr.getAttribute('data-g');GQ.sel=GQ.sel===id?null:id;renderCad();});
 /* 프로세스 조건 (정책서 v0.2.1) : 프로세스는 코너 노출 조건과 선택지 노출 규칙(옵션 설정 규칙)을 설정할 수 있다.
    v0.2에서 조건을 '항상 노출'로 바꾸고 노출 방식 선택을 지우던 처리(noCond)를 뺐다. 조건 설정 영역 · 조건 빌더 · 구성 검증은 예전 그대로 쓴다 */
+/* 노출 목록 기본값 · 설정 권한 : 주문 코너 관리 '코너 조건 > 노출 목록'이 기본값이고, 코너의 설정 권한에 따라 이 프로세스에서 바꿀 수 있는지 정한다
+   edit 수정 가능 : 기본값을 쓰고 '이 프로세스에서 변경'으로 바꿀 수 있다. 끄면 코너 관리 기본값으로 돌아간다
+   lock 변경 불가 : 기본값만 쓴다. 코너 관리 값은 모듈(src/order6-create.ts)이 window.ORDER_CORNER_DEF로 넘겨 준다 */
+function cdef(c){var d=(window.ORDER_CORNER_DEF||{})[c.id]||{perm:'edit',olist:null};return d.perm==='lock'?d:{perm:'edit',olist:d.olist}}   // 'disp'(전시에서 설정)는 뺐다 : 예전 값은 수정 가능으로
+function applyDef(c){
+  if(!c.opts) return; var o=cdef(c).olist; delete c.aord;
+  if(o&&o.mode==='cond'){ c.omode='cond'; c.oelse=c.opts.map(function(){return true});
+    c.rules=o.rules.map(function(r){return {groups:[{conds:r.conds.map(function(cd){return {src:cd.src,ex:false,vals:cd.vals.slice()}})}],opts:c.opts.map(function(n){return r.opts.indexOf(n)>-1})}}); }
+  else { c.omode='always'; c.rules=[]; c.oelse=c.opts.map(function(n){return !o||o.show.indexOf(n)>-1}); }
+  c._def=1;
+}
+function permSync(c){
+  if(!c||!c.opts) return; var p=cdef(c).perm;
+  if(p==='lock'){ if(c.ovList!==false||!c._def){ c.ovList=false; applyDef(c); } return; }
+  // 수정 가능 : 예전 구성은 바꾼 흔적(조건 노출 · 숨긴 항목)이 있으면 이 프로세스 값으로 본다
+  if(c.ovList==null){ if(c.omode==='cond'||(c.oelse&&!c.oelse.every(Boolean))) c.ovList=true; else { c.ovList=false; applyDef(c); } }
+  else if(c.ovList===false&&!c._def) applyDef(c);
+}
+(function(){
+  var core=all; all=function(){stages.forEach(function(st){st.corners.forEach(permSync)}); return core.apply(this,arguments)};
+  var rd=renderDetail; renderDetail=function(){
+    if(sel) permSync(sel); rd.apply(this,arguments);
+    var ck=document.querySelector('#detail input[data-ovlist]'); if(!sel||!ck) return;
+    var p=cdef(sel).perm, st=document.querySelector('#optsec .bo-st'), lab=ck.closest('label');
+    if(st&&!sel.ovList) st.textContent='코너 관리 기본값';
+    if(p==='lock'){ ck.checked=false; ck.disabled=true; if(lab) lab.insertAdjacentHTML('afterend','<span class="perm-tag lock" title="코너 관리 설정 권한 : 변경 불가">변경 불가</span>'); }
+  };
+  // 수정 가능 : '이 프로세스에서 변경'을 끄면 코너 관리 기본값으로 되돌린다 (기존 처리보다 먼저 받는다)
+  $('detail').addEventListener('change',function(e){
+    var t=e.target; if(!sel||!t.hasAttribute('data-ovlist')) return;
+    var p=cdef(sel).perm; if(p!=='edit'){ e.stopPropagation(); renderDetail(); return; }
+    if(t.checked) return;
+    e.stopPropagation(); sel.ovList=false; applyDef(sel); pk=null; dirty(); renderDetail(); renderList(); renderPreview(false); toast('코너 관리 기본값으로 되돌렸어요');
+  },true);
+})();
 /* 그룹 전용 코너 (정책서 v0.2) : 코너 원본의 grpOnly 코너는 단독 배치할 수 없다. 코너 추가하기 팝업에서 고를 수 없고, 단독으로 남아 있으면 검증 오류 */
 function grpOnly(){var o={};(window.ORDER_GROUP_ONLY||[]).forEach(function(id){o[id]=1});return o}
 (function(){
@@ -3948,7 +4021,6 @@ function grpOnly(){var o={};(window.ORDER_GROUP_ONLY||[]).forEach(function(id){o
    - 선택지 숨김(노출 목록)은 허용하되, 분기형 대표 코너에서 분기 값으로 쓰는 선택지를 숨겨 분기 코너가 나올 수 없게 되면 오류, 일부만 막히면 경고 */
 function visOpts(c){
   if(!c.opts) return null;
-  if(c.ovList===false) return c.opts.slice();
   return c.opts.filter(function(o,oi){
     if(c.omode==='cond') return (c.oelse&&c.oelse[oi]!==false)||(c.rules||[]).some(function(r){return r.opts&&r.opts[oi]});
     return !c.oelse||c.oelse[oi]!==false;

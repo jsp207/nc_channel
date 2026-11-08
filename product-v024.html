@@ -34,6 +34,9 @@
       /* '필수' 배지는 오른쪽 상태 배지 바로 왼쪽에 붙인다 */
       .step>header .req{margin-left:auto}
       .step>header .req+.st{margin-left:0}
+      /* v0.2.4: 상태 배지가 없는 섹션(구매 후기 · 연관 및 유사 상품 · 추가 설정 · 콘텐츠 정보 · 주문 프로세스 연동)은 접기 버튼을 오른쪽 끝에 둔다 */
+      .step>header>.fold{margin-left:auto}
+      .step>header>:is(.st,.req)~.fold{margin-left:4px}
       .step>header .chip{margin:0}
       /* 접힐 때 머리줄 아래 선이 순간적으로 사라지지 않게 색만 서서히 바꾼다 */
       .step>header{transition:border-color .3s}
@@ -51,7 +54,10 @@
       .row>label.fl{min-width:84px}
       .row label.chkl{min-width:0;color:var(--text)}
       .chkl{display:inline-flex;gap:6px;align-items:center;color:var(--text);cursor:pointer;font-size:12px}
-      .pill.len{min-width:44px;text-align:right}
+      /* 글자 수(N/N): 입력칸 바로 옆에 붙인다. 줄 간격(12px) · 대체 텍스트 줄(10px)보다 좁은 6px로 */
+      .pill.len{min-width:0;text-align:left;white-space:nowrap}
+      .row>.pill.len{margin-left:-6px}
+      .alt-row>.pill.len{margin-left:-4px}
       .sec-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
       .sec-h b{font-size:13px;font-weight:600}
       .sub-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:600;margin:18px 0 10px;color:var(--text)}
@@ -121,7 +127,8 @@
       .al{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px;align-self:start}
       .ali{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);margin-bottom:6px;cursor:pointer}
       .ali:hover{border-color:#b4a8f0}
-      .ali.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+      /* v0.2.4: 고른 구성 영역도 왼쪽 선을 따로 굵게 하지 않고 테두리 1px 그대로(색만 강조) */
+      .ali.on{border-color:var(--accent)}
       .ali.fixd{cursor:default}
       .ali.fixd:hover{border-color:var(--line)}
       /* 노출 OFF: 취소선 없이 흐리게(비활성)만 */
@@ -166,7 +173,7 @@
       .pgr.dis{opacity:.45;cursor:not-allowed}
       @media(max-width:900px){.pg{grid-template-columns:minmax(0,1fr)}}
       /* 복합형 구성 제공 조건 · 미배정 상품 */
-      .cdg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+      .cdg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
       .cdc{display:flex;gap:8px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer}
       .cdc.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 .5px var(--accent)}
       .cdc.dis{opacity:.45;cursor:not-allowed}
@@ -215,8 +222,9 @@
       .bd .x{border:0;background:none;color:inherit;padding:0;opacity:.8;font-size:14px;cursor:pointer}
       .addb{width:28px;height:28px;padding:0;border:1px dashed var(--line-strong);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;font-size:16px}
       .addb:hover{border-color:var(--accent);color:var(--accent)}
-      .bed{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface)}
-      .bed .row>.pill:first-child{width:44px}
+      /* 전시 상품 배지 한 줄 입력 */
+      .bin-w{display:inline-flex;align-items:center;gap:6px}
+      .bin-w input{width:120px;min-height:28px;padding:4px 10px}
       /* 대표이미지 대체 텍스트·등록 안내 */
       .alt-row{display:flex;align-items:center;gap:10px;margin-top:10px;max-width:520px}
       .alt-row input{flex:1;min-width:0}
@@ -281,6 +289,10 @@
       .op-err{margin:12px 0 0;padding:16px 22px;border:1px solid #f2c4c0;border-radius:10px;background:#fff6f5;color:var(--bad);font-size:12px}
       /* 검색 노출 설정(SEO): 왼쪽 회색 항목명 칸 + 오른쪽 입력 칸 표 형식 */
       .ftbl{border-top:1px solid var(--line)}
+      /* 기본 정보 표: EPC 정보 불러오기 버튼과 띄우고, 칸 안의 대체 텍스트 줄은 이미지 아래에 붙인다 */
+      .binfo{margin-top:4px}
+      .binfo .alt-row{max-width:none}
+      .binfo .img-guide{margin-bottom:0}
       .ft-row{display:grid;grid-template-columns:130px minmax(0,1fr);border-bottom:1px solid var(--line)}
       .ft-l{display:flex;flex-direction:column;justify-content:center;padding:16px;background:var(--surface);border-right:1px solid var(--line);font-size:13px;line-height:1.6;color:var(--text)}
       .ft-l br{display:none}
@@ -602,6 +614,11 @@
       .itabs button.on{color:var(--accent);font-weight:700;border-bottom-color:var(--accent)}
       .itabs small{margin-left:4px;font-size:11px;font-weight:600;color:var(--accent)}
       .itabs small.ok{color:var(--ok)}
+      /* 탭 줄 오른쪽 끝 버튼 (전시 정보: EPC 정보 불러오기) */
+      .itabs-r{margin-left:auto;align-self:center;padding-bottom:4px}
+      .itabs .itabs-r .btn{height:32px;margin:0;padding:0 12px;border:1px solid #d9d2fb;border-radius:8px;background:linear-gradient(135deg,#f4f1ff,#e9e4ff);color:var(--accent);font-size:12px;font-weight:600}
+      .itabs .itabs-r .btn:disabled{opacity:.5;cursor:not-allowed}
+      .dh .cntx{min-width:0;text-align:left}
       .itabs small.warn{color:var(--warn)}
       .olist .or .oc-d{color:var(--text)}
       .itop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;font-size:12px;color:var(--muted)}
@@ -701,6 +718,146 @@
       .ph-bdgs span.au{color:#fff}
       @media(max-width:900px){.olist .or{grid-template-columns:44px 28px 72px minmax(0,1fr);padding:6px 10px}}
       /* ===== v0.2.4 반영 (ref/product-admin-prototype-v024.html · order5-create.html 연동) ===== */
+      /* ===== v0.2.4: 선택형 옵션 값 · 디바이스별 이미지 (ref/product-admin-prototype-v026.html) ===== */
+      /* 옵션 블록: 옵션 번호 · 옵션명 · 고객 노출 방식(텍스트 · 컬러 · 이미지) · 값 칩 */
+      .axb{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--bg)}
+      .axh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+      .axh>b{font-size:12px;color:var(--muted);font-weight:500}
+      .axh .axn{width:180px;min-height:32px;font-size:13px;font-weight:600}
+      .axh .sp{flex:1}
+      .axh .lb2{font-size:12px;color:var(--muted)}
+      .seg2{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+      .seg2 button{border:0;background:var(--bg);height:30px;padding:0 12px;font:inherit;font-size:12px;color:var(--muted);cursor:pointer}
+      .seg2 button+button{border-left:1px solid var(--line-strong)}
+      .seg2 button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+      .axv{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+      .och{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid var(--line-strong);border-radius:16px;background:var(--bg);font:inherit;font-size:13px;color:var(--text);cursor:pointer}
+      .och i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.15);display:inline-block;flex:none}
+      .och.v{padding:0 2px 0 0;gap:0;cursor:default}
+      .och .ve{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 4px 0 10px;border:0;border-radius:16px;background:none;font:inherit;font-size:13px;color:var(--text);cursor:pointer}
+      .och .ve:hover{color:var(--accent)}
+      .och .vx{border:0;background:none;color:var(--muted);font-size:14px;padding:0 8px;cursor:pointer}
+      .och .vx:hover{color:var(--bad)}
+      .addo{height:32px;padding:0 12px;border:1px dashed #c9c3f6;border-radius:16px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+      .vsw{display:inline-block;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex:none}
+      .vimg{display:inline-flex;align-items:center;justify-content:center;border-radius:6px;object-fit:cover;border:1px solid var(--line-strong);flex:none;font-style:normal;font-size:12px;color:var(--muted);background:var(--surface)}
+      .vimg.no{border-style:dashed;color:var(--accent)}
+      .mono{font-family:ui-monospace,Menlo,Consolas,monospace;text-transform:uppercase}
+      /* 값 추가 팝오버 */
+      .pop{position:absolute;z-index:60;width:360px;padding:12px;border:1px solid var(--line-strong);border-radius:12px;background:var(--bg);box-shadow:0 10px 30px rgba(20,20,40,.18);font-size:13px}
+      .pop[hidden]{display:none}
+      /* 값 추가 창 한 줄: 입력칸들 + 버튼 */
+      .pline{display:flex;align-items:center;gap:6px}
+      .pline input[type=text]{flex:1;min-width:0;min-height:34px;padding:6px 10px}
+      .pline input[type=color]{width:36px;height:34px;padding:2px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);cursor:pointer;flex:none}
+      .pline #cpX{flex:none;width:86px}
+      .pline .btn{flex:none;min-height:34px}
+      .pop .er{margin-top:6px}
+      .poph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+      .poph b{font-size:14px}
+      .pop .lnk,.pop a.lnk{color:var(--accent)}
+      .pt2{margin:0 0 8px;font-size:12px;color:var(--muted)}
+      .pt2 small{color:#a3abbb}
+      .pch{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+      .pal{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px}
+      .pal button{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;padding:0;font:inherit;font-size:10px;color:var(--muted);cursor:pointer}
+      .pal button i{width:26px;height:26px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+      .pal button:hover:not(:disabled) i{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+      .pal button:disabled{opacity:.35;cursor:not-allowed}
+      .cust{display:flex;gap:6px;align-items:center}
+      .cust input[type=color]{width:36px;height:34px;padding:2px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);cursor:pointer;flex:none}
+      .cust input[type=text]{min-height:34px;padding:6px 10px}
+      .cust #cpX{width:92px;flex:none}
+      .cust #cpN{flex:1;min-width:0}
+      .pft{display:flex;align-items:center;gap:8px;margin-top:10px}
+      .pft .btn.primary{margin-left:auto}
+      .pop #tpQ,.pop #rnI{width:100%;min-height:34px;margin-bottom:8px}
+      .ml2{max-height:216px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:4px}
+      .ml2 label{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:6px;font-size:13px;cursor:pointer}
+      .ml2 label:hover{background:var(--surface)}
+      .ml2 small{margin-left:auto;font-size:11px;color:var(--accent)}
+      .ml2 small.faint{color:var(--muted)}
+      .ml2-e{padding:8px 6px;font-size:12px;color:var(--muted)}
+      .newv{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+      .phint{margin:6px 0 0;font-size:11px;color:var(--muted)}
+      /* 이미지 등록 대화상자 */
+      .drop{display:flex;align-items:center;gap:14px;min-height:96px;padding:18px;border:1.5px dashed #c9c3f6;border-radius:12px;background:var(--accent-soft);cursor:pointer}
+      .drop.over{border-color:var(--accent);background:#e9e7ff}
+      .drop b{display:block;font-size:13px;color:var(--accent)}
+      .drop small{display:block;margin-top:3px;font-size:11px;color:var(--muted)}
+      .drop img{width:72px;height:72px;border-radius:8px;object-fit:cover;border:1px solid var(--line-strong);background:var(--bg)}
+      .mbody .pt2{margin-top:14px}
+      .mbody .pt2 .rq{color:var(--bad)}
+      .igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+      .igrid button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);font:inherit;cursor:pointer;min-width:0}
+      .igrid button.on{border:2px solid var(--accent);padding:3px}
+      .igrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px}
+      .igrid span{max-width:100%;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      /* 기본 정보: 디바이스별 이미지 */
+      .fl-sub{display:block;margin-top:2px;font-size:11px;font-weight:400;color:var(--muted)}
+      .dimg{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+      .drow{padding:12px 14px;border-bottom:1px solid var(--line)}
+      .drow:last-child{border-bottom:0}
+      .dh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+      .dh b{font-size:13px;font-weight:600}
+      .dh small{font-size:11px;color:var(--muted)}
+      .dh .sp{flex:1}
+      .dh .opt{font-size:10px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:0 6px;line-height:1.6}
+      .dh .cntx{min-width:30px;font-size:12px;color:var(--muted);text-align:right}
+      .dl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+      .it{position:relative;width:96px;height:96px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);flex:none}
+      .it img{width:100%;height:100%;object-fit:cover;display:block}
+      .it.rep{border:2px solid var(--accent)}
+      .it .rb{position:absolute;left:4px;bottom:4px;padding:1px 6px;border-radius:4px;background:var(--accent);color:#fff;font-size:10px}
+      .it .mk{position:absolute;left:4px;bottom:4px;padding:1px 6px;border:0;border-radius:4px;background:rgba(20,20,30,.6);color:#fff;font:inherit;font-size:10px;cursor:pointer;opacity:0;transition:opacity .15s}
+      .it:hover .mk,.it .mk:focus-visible{opacity:1}
+      .it .rm{position:absolute;top:4px;right:4px;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:rgba(20,20,30,.65);color:#fff;font-size:13px;line-height:22px;cursor:pointer}
+      .it.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px dashed var(--line-strong);background:var(--bg);color:var(--muted);font:inherit;cursor:pointer}
+      .it.add:hover{border-color:var(--accent);color:var(--accent)}
+      .it.add b{font-size:22px;font-weight:400;line-height:1}
+      .it.add small{font-size:11px}
+      .fbk{font-size:12px;color:var(--muted)}
+      .drow:has(+.dmore){border-bottom:0}
+      .dmore{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;height:40px;border:0;border-top:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+      .dmore:hover{color:var(--accent)}
+      .dmore svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+      .dmore[aria-expanded="true"] svg{transform:rotate(180deg)}
+      /* 연관 상품: 노출 방식 · 목록(이미지 · 상품명 · 가격 · 옵션 사항 1줄) */
+      .rl-tbl td{vertical-align:middle}
+      .rl-tbl td b{display:block;font-size:13px;font-weight:600}
+      .rl-tbl .rl-id{display:block;margin-top:2px;font-size:11px;color:var(--muted)}
+      .rl-tbl .rl-pr{white-space:nowrap;font-weight:600}
+      .rl-tbl .rl-op{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+      .rl-tbl .rl-no{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:6px;background:var(--surface);font-size:12px;color:var(--muted)}
+      .rimg{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+      .rimg img{width:100%;height:100%;object-fit:cover}
+      .rimg i{font-style:normal;font-size:11px;font-weight:700;color:var(--accent)}
+      tr.rl-r.dragging{opacity:.4}
+      tr.rl-r.drop-b td{box-shadow:inset 0 3px 0 var(--accent)}
+      tr.rl-r.drop-a td{box-shadow:inset 0 -3px 0 var(--accent)}
+      .ph-sim .ph-simi{display:grid;place-items:center;aspect-ratio:1;border-radius:12px;background:var(--ph-soft);overflow:hidden}
+      .ph-sim .ph-simi img{width:100%;height:100%;object-fit:cover}
+      .ph-sim .ph-simi i{font-style:normal;font-size:14px;font-weight:700;color:var(--ph-cta)}
+      .ph-sim>div b{color:var(--ph-tx);font-size:12px;line-height:1.35}
+      .ph-sim>div em{font-style:normal;font-weight:700;color:var(--ph-tx)}
+      .ph-sim>div small{color:var(--ph-mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      /* 미리보기: 연관 상품 캐러셀 */
+      .ph-cart{display:flex;grid-template-columns:none;gap:10px;margin:0 -16px;padding:0 16px 2px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0 16px;scrollbar-width:none;cursor:grab;user-select:none}
+      .ph-cart::-webkit-scrollbar{display:none}
+      .ph-cart.drag{cursor:grabbing;scroll-snap-type:none}
+      .ph-cart>div{flex:0 0 42%;scroll-snap-align:start;min-width:0}
+      .ph-cart img{pointer-events:none}
+      .ph-dots2{display:flex;justify-content:center;gap:5px;margin-top:12px}
+      .ph-dots2 i{width:5px;height:5px;border-radius:50%;background:#c9cdd8;transition:width .2s}
+      .ph-dots2 i.on{width:14px;border-radius:3px;background:var(--ph-tx)}
+      /* 미리보기: 옵션 이미지 */
+      .ph-imgs .ph-imgt img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+      /* 주문 프로세스 연동 영역: 아래에 붙는 주문 컨테이너(order5-container.css .tpl · .tph · .tbody)와 같은 모양 — 흰 머리줄 54px · 보라 테두리 · 반경 10px */
+      #v-edit #sec-order{border:1px solid #5B3FD9;border-radius:10px;background:#fff}
+      #v-edit #sec-order>header{min-height:54px;padding:0 18px 0 14px;background:#fff;border-bottom:1px solid #e5e7f0}
+      #v-edit #sec-order.closed>header{border-bottom-color:transparent}
+      #v-edit #sec-order>header>b{font-size:14px;font-weight:600;color:var(--text)}
+      #v-edit #sec-order>.body{padding:16px 20px 22px}
       /* 컨테이너 · 코너 스타일은 src/order5-container.css (order5-create.html에서 그대로 옮김) */
       /* 미리보기: 주문 프로세스 컨테이너 이동 · 진행 막대 · 코너 선택지(가격 · 배지) */
       /* 컨테이너 전환 슬라이드: 직전 화면 복사본(.pv-ghost)을 위에 얹어 밀어 낸다 (order5-create.html과 같음) */
@@ -777,32 +934,25 @@
       <!-- 기본 정보 · 상세 설명: 콘텐츠 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
       <div class="step" id="sec-info">
         <header><b>전시 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-info"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-info"><div class="itabs" id="infoList" role="tablist" aria-label="전시 정보"></div><div id="sb-basic"></div><div id="sb-desc" hidden></div></div>
-        <input type="file" id="imgFile" accept="image/*" hidden>
-        <input type="file" id="subFile" accept="image/*" multiple hidden>
+        <div class="body" id="sb-info"><div class="itabs" id="infoList" role="tablist" aria-label="전시 정보"></div><div id="sb-basic"></div><div id="sb-desc" hidden></div><div id="sb-search" hidden></div><div id="sb-cvm" hidden></div></div>
         <input type="file" id="descFile" accept="image/*" multiple hidden>
+        <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
       <div class="step" id="sec-extra">
-        <header><b>콘텐츠 정보</b><span class="st"><span class="chip" id="st-extra"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>콘텐츠 정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-extra"></div>
       </div>
       <div class="step" id="sec-review">
-        <header><b>구매 후기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rvOn" aria-label="구매 후기 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-review"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>구매 후기</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rvOn" aria-label="구매 후기 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
       </div>
       <!-- 연관 상품: 구매후기와 같은 구성(머리줄 스위치로 고객 화면 노출) + 고객 화면 문구(타이틀 · 소타이틀) -->
       <div class="step" id="sec-rel">
-        <header><b>연관 상품</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rlOn" aria-label="연관 상품 노출"><span aria-hidden="true"></span></label><span class="st"><span class="chip" id="st-rel"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-rel"><div id="sb-sim"></div></div>
-      </div>
-      <!-- 검색 노출 설정 · 오퍼링 문구: 전시 정보와 같은 탭 구성 -->
-      <div class="step" id="sec-more">
-        <header><b>추가 설정</b><span class="st"><span class="chip" id="st-more"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-more"><div class="itabs" id="moreList" role="tablist" aria-label="추가 설정"></div><div id="sb-search"></div><div id="sb-cvm" hidden></div></div>
-        <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
+        <header><b>연관 및 유사 상품</b><label class="switch hsw" title="고객 화면 노출"><input type="checkbox" id="rlOn" aria-label="연관 및 유사 상품 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-rel"><div id="sb-sim"></div><div id="relList"></div></div>
       </div>
       <div class="step" id="sec-order">
-        <header><b>주문 설정 변경</b><label class="switch hsw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><span class="req">필수</span><span class="st"><span class="chip" id="st-order"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>주문 프로세스 연동</b><label class="switch hsw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>
       </div>
       <!-- v0.2.4: 연결한 주문 프로세스의 컨테이너 · 코너 (order5-create.html '컨테이너·코너 설정' 카드와 같은 구성 · 아코디언) -->
@@ -818,7 +968,7 @@
     </section>
     <div class="dock-bar" id="dockBar">
       <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="false" aria-controls="dockSheet"><b>연결 상품</b><span class="po" id="poCount">0<small>상품</small></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
-      <span class="dock-acts"><span class="dock-msg" id="dockMsg"></span><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>승인요청</button></span>
+      <span class="dock-acts"><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>승인요청</button></span>
     </div>
   </div>
 </section>

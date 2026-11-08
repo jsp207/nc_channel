@@ -62,16 +62,18 @@ function baseList(){
     return true;
   });
 }
+// 목록 버전 표기 v1.0 (v1.2 그대로)
+function vfmt(v){var m=String(v||'').match(/\d+/g);if(!m)return '-';while(m.length<2)m.push('0');return 'v'+m.slice(0,2).join('.')}
 function renderList(){
   var L=baseList(), tp=Math.max(1,Math.ceil(L.length/PS)); if(Q.page>tp) Q.page=tp;
   var off=(Q.page-1)*PS, rows=L.slice(off,off+PS);
   $('rCnt').textContent=L.length;
   $('vList').hidden=!L.length;
   $('lBody').innerHTML=rows.map(function(c,i){
-    var nm='<b class="lnk">'+esc(c.n)+'</b>'+(isGrp(c)?DEFN+'<small class="q">구성 코너 '+c.members.length+'개</small>':'');
+    var nm=esc(c.n)+(isGrp(c)?DEFN+'<small class="q">구성 코너 '+c.members.length+'개</small>':'');
     // 코너 그룹은 유형 칸에 '코너 그룹'만, 비화면 코너처럼 맞는 표시 방식이 없으면 '-'
     var sp=isGrp(c)?{type:'코너 그룹',form:'-',mode:'-'}:specOf(c)||{type:'-',form:'-',mode:'-'};
-    return '<tr data-id="'+c.id+'"><td class="mono"><a class="cid" href="#" data-id="'+c.id+'">'+c.id+'</a></td><td class="l">'+nm+'</td><td>'+esc(sp.type)+'</td><td>'+esc(sp.form)+'</td><td>'+esc(sp.mode)+'</td><td class="vr">'+c.ver+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
+    return '<tr data-id="'+c.id+'"><td class="mono"><a class="cid" href="#" data-id="'+c.id+'">'+c.id+'</a></td><td class="vr">'+vfmt(c.ver)+'</td><td class="l">'+nm+'</td><td>'+esc(sp.type)+'</td><td>'+esc(sp.form)+'</td><td>'+esc(sp.mode)+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
   }).join('');
   $('lEmpty').hidden=!!L.length;
   $('pager').innerHTML=pagerHTML(L.length,Q.page);

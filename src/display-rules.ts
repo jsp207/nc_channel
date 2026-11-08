@@ -86,7 +86,7 @@ export function sectionState(d){
  S.conn=d.conn.length?{st:'done',e:[]}:{st:'todo',e:['연결 상품을 1개 이상 추가하세요']};
  if(d.kind==='ps') S.method={st:'na',e:[]};
  else { const un=d.method==='complex'?d.conn.filter(id=>!d.areas.some(a=>a.pos.includes(id))):[]; const pw=ptWarn(d); const e=[...(!d.svc?[usesRep(d)?'대표 상품을 지정하세요':d.ptByConn?'연결 상품을 추가하세요':'상품 유형을 고르세요']:pw?[pw]:[]),...d.areas.flatMap((a,i)=>areaIssues(a,d).map(x=>`${d.method==='complex'?(i+1)+'번 ':''}${a.name||'영역'}: ${x}`)),...(un.length?[`구성 영역에 배정되지 않은 연결 상품 ${un.length}개`]:[])]; if(!d.areas.length) e.unshift('구성 영역을 만드세요'); S.method={st:!d.areas.some(a=>a.pos.length)&&!d.svc?'todo':(e.length?'warn':'done'),e}; }
- const be=[]; if(!d.name.trim()) be.push('전시명을 입력하세요'); if(!d.from) be.push('전시 시작일을 입력하세요'); if(!d.noEnd&&!d.to) be.push('종료일을 입력하거나 종료일없음을 선택하세요'); if(endAt(d)&&startAt(d)&&endAt(d)<=startAt(d)) be.push('전시 종료 일시가 시작 일시보다 빨라요');
+ const be=[]; if(!d.name.trim()) be.push('전시명을 입력하세요'); if(!d.from) be.push('전시 시작일을 입력하세요'); if(!d.noEnd&&!d.to) be.push('종료일을 입력하거나 종료일없음을 선택하세요'); if(d.imgs&&!d.imgs.mobile.length) be.push('모바일 대표 이미지를 등록하세요'); if(endAt(d)&&startAt(d)&&endAt(d)<=startAt(d)) be.push('전시 종료 일시가 시작 일시보다 빨라요');
  S.basic={st:be.length?(d.name||d.main||d.subs.length?'warn':'todo'):'done',e:be};
  S.desc={st:descFilled(d)?'done':'todo',e:descFilled(d)?[]:['상세 설명 본문을 입력하세요']};
  // 전시 정보 = 기본 정보 · 상세 설명을 묶은 필수 섹션

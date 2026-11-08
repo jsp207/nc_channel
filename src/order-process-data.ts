@@ -1,18 +1,18 @@
 // @ts-nocheck
-// 주문 프로세스 목록: 주문 프로세스 관리 v0.2.3(order5-create.html)과 상품 전시 관리 v0.2.4(product-v024.html)가 함께 쓴다.
-// order5-create.html이 열리면 지금 목록(등록 · 수정 반영)을 이 브라우저 저장소(PROC_KEY)에 남긴다(src/order5-create.ts).
-// 상품 전시는 저장소 값을 먼저 읽고, 아직 없으면 아래 샘플을 쓴다. 샘플은 order5-create.html 인라인 스크립트의 목록과 같은 규칙으로 만든다
-// (SBROWS + 생성 243건 → 주문 유형 변환 → '상품 대상 주문 유형' 제외). 그쪽 샘플을 바꾸면 여기도 함께 바꾼다.
+// 주문 프로세스 목록: 주문 프로세스 관리 v0.2.4(order6-create.html)와 상품 전시 관리 v0.2.4(product-v024.html)가 함께 쓴다.
+// order6-create.html이 열리면 지금 목록(등록 · 수정 반영)을 이 브라우저 저장소(PROC_KEY)에 남기고, 저장할 때마다 다시 남긴다(src/order6-create.ts).
+// 상품 전시는 저장소 값을 먼저 읽고, 아직 없으면 아래 샘플을 쓴다. 샘플은 order6-create.html 인라인 스크립트의 PROC_LIST와 같다. 그쪽 샘플을 바꾸면 여기도 함께 바꾼다.
+// 저장소 키 이름은 예전(order5) 그대로 둔다. order5-create.html(v0.2.3)은 더 이상 남기지 않는다
 // 프로세스 값: id · n(프로세스명) · cat(주문 유형 = 상품 유형 LV3 조합) · ap(승인 상태) · u(사용 여부) · cnt(전시 수) · dt · by · stages
-// stages = 컨테이너 목록 [{name, scr(화면 ID), corners:[{id, n, t(주문 | 상품 연동), o:[선택지], off:[꺼진 선택지 번호]}]}]
+// stages = 컨테이너 목록 [{name, scr(화면 ID), corners:[{id, n, t(주문 | 상품 연동), o:[선택지], off:[꺼진 선택지 번호], grp?(코너 그룹)}]}]
 export const PROC_KEY = 'nova.order5.processes';
 
 // 주문 유형 (order5 CAT_T와 같다)
-export const PROC_CATS = ['이동전화 요금제형', '휴대폰형 + 이동전화 요금제형', '이동전화 요금제형 + 이동전화 base 옵션형', '휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형',
+export const PROC_CATS = ['이동전화 요금제형', '휴대폰형 + 이동전화 요금제형', '이동전화 요금제형 + 이동전화 base 옵션형', '휴대폰형 + 이동전화 요금제형 + 이동전화 base 옵션형', '휴대폰형',
  '태블릿형 + 이동전화 요금제형', '웨어러블형 + 이동전화 요금제형', '이동전화 base 옵션형', '이동전화 base 제휴형', '플랫폼형', '로밍형'];
 export const PROC_APS = ['임시 저장', '승인 대기', '승인 완료', '반려', '요청 취소'];
 
-// ---------- 샘플 (order5-create.html과 같은 규칙) ----------
+// ---------- 샘플 (order6-create.html PROC_LIST와 같은 목록) ----------
 const PAYOPTS = ['24개월', '30개월', '일시불', '6개월', '12개월', '18개월', '36개월', '48개월'];
 const C = (n, id, t, o) => ({ id, n, t, o: o || [], off: [] });
 const cDeliv = () => C('배송 옵션 선택', 'CN-ORD-0001', '주문', ['바로도착', '행복배송', '일반배송', '바로픽업']);
@@ -40,36 +40,36 @@ const cTot = () => C('최종 금액 확인', 'CN-PAY-0006', '주문');
 const cTerm = () => C('주문 최종 약관', 'CN-PAY-0020', '주문');
 const cDone = () => C('주문 완료 확인', 'CN-ORD-0052', '주문');
 const S = (name, scr, corners) => ({ name, scr: scr || '', corners });
-const mk4 = () => [
- S('상품상세_기기상품_메인', 'NC-PRD-005-0', [cDeliv(), cPre(), cJoin(), cPay(), cPlan(), cCont(), cSim(), cGift(), cTda(), cCmp()]),
- S('상품상세_기기상품_선택 상품 선택', 'NC-PRD-030-0', [cRew(), cIns(), cAddv(), cCard(), cDisc()]),
- S('기기 가입하기', 'NC-ORD-031-0', [cOrdInfo(), cShip(), cBill(), cPm(), cPg(), cRcpt(), cTot()]),
- S('기기 최종 약관 동의', 'NC-PAY-021-0', [cTerm()]),
- S('주문 완료', 'NC-ORD-033-0', [cDone()])];
 const mkTab = () => [S('상품상세_기기상품_메인', 'NC-PRD-005-0', [cPlan(), cSim(), cPay()]), S('기기 가입하기', 'NC-ORD-031-0', [cOrdInfo(), cShip(), cTot()]), S('주문 완료', 'NC-ORD-033-0', [cDone()])];
 const mkWear = () => [S('상품상세_기기상품_메인', 'NC-PRD-005-0', [cPlan(), cSim()]), S('주문 완료', 'NC-ORD-033-0', [cDone()])];
-const mkSim = () => [S('USIM 가입하기', '', [cSim(), cPlan()]), S('주문 완료', 'NC-ORD-033-0', [cDone()])];
-// 기기변경 기본 프로세스(TP-ORD-005) 상세 샘플: 신규가입이 아니면 일시불을 숨긴다(조건 노출 예시)
-const mkDetail = () => { const st = mk4(), pay = st[0].corners.find(c => c.id === 'CN-ORD-0004'); pay.cond = '신규가입일 때만 일시불 노출'; return st; };
-
-const CAT_P = '상품 대상 주문 유형';
-const CAT_OLD = { '단말': CAT_P, '요금제': PROC_CATS[0], '부가서비스': PROC_CATS[2], '로밍': CAT_P, '구독': CAT_P, '커머스': CAT_P };
-const catOf = (n, cat) => /단말 기기변경/.test(n) ? PROC_CATS[1] : /단말 (번호이동|신규가입)/.test(n) ? PROC_CATS[3] : CAT_OLD[cat];
-const BY = '김지훈(SSP23232)';
+// 2026-11-08 전수 정리 : 주문 유형마다 1개 (order6-create.html PROC_LIST와 같은 이름 · 구성). 그룹 전용 코너(바로 보상 신청 · 결제 증빙 수단)는 단독으로 넣지 않는다
+const TERM = () => S('최종 약관 동의', 'NC-PAY-021-0', [cTerm()]), DONE = () => S('주문 완료', 'NC-ORD-033-0', [cDone()]);
+const mkDev = () => [
+ S('상품상세_기기상품_메인', 'NC-PRD-005-0', [cDeliv(), cPre(), cJoin(), cPay(), cPlan(), cCont(), cSim(), cGift(), cTda(), cCmp()]),
+ S('상품상세_기기상품_선택 상품 선택', 'NC-PRD-030-0', [cCard(), cDisc()]),
+ S('기기 가입하기', 'NC-ORD-031-0', [cOrdInfo(), cShip(), cBill(), cPm(), cPg(), cTot()]), TERM(), DONE()];
+const mkDevOpt = () => { const st = mkDev(); st[1].corners.unshift(cIns(), cAddv()); return st; };
+const mkDevKeep = () => [S('상품상세_기기상품_메인', 'NC-PRD-005-0', [cDeliv(), cPay(), cSim(), cGift(), cTda(), cCmp()]), S('기기 가입하기', 'NC-ORD-031-0', [cOrdInfo(), cShip(), cPg(), cTot()]), TERM(), DONE()];
+const mkPlan = () => [S('요금제 가입하기', '', [cPre(), cJoin(), cPlan(), cCont(), cSim()]), S('가입 정보 입력', '', [cShip(), cBill(), cPm(), cTot()]), TERM(), DONE()];
+const mkPlanOpt = () => { const st = mkPlan(); st[0].corners.push(cAddv()); return st; };
+const mkAdd = (nm, cs) => () => [S(nm, '', cs()), TERM(), DONE()];
+// 상세 샘플(TP-ORD-002) : 신규가입일 때만 일시불 노출 (조건 노출 예시)
+const mkDetail = () => { const st = mkDev(), pay = st[0].corners.find(c => c.id === 'CN-ORD-0004'); pay.cond = '신규가입일 때만 일시불 노출'; return st; };
+const PROC_LIST = [
+ ['TP-ORD-001', 0, '이동전화 요금제 가입 프로세스', mkPlan, 86, '2026.10.30 10:20'],
+ ['TP-ORD-002', 1, '휴대폰 + 요금제 가입 프로세스', mkDetail, 124, '2026.10.29 14:10'],
+ ['TP-ORD-003', 2, '요금제 + 부가서비스 가입 프로세스', mkPlanOpt, 41, '2026.10.28 11:00'],
+ ['TP-ORD-004', 3, '휴대폰 + 요금제 + 부가서비스 가입 프로세스', mkDevOpt, 97, '2026.10.27 16:40'],
+ ['TP-ORD-005', 4, '휴대폰 기기변경 프로세스 (요금제 유지)', mkDevKeep, 38, '2026.10.26 09:30'],
+ ['TP-ORD-006', 5, '태블릿 + 데이터 요금제 가입 프로세스', mkTab, 22, '2026.10.24 15:20'],
+ ['TP-ORD-007', 6, '웨어러블 + 요금제 가입 프로세스 (모회선 연결)', mkWear, 15, '2026.10.23 13:50'],
+ ['TP-ORD-008', 7, '부가서비스 가입 프로세스 (사용 중 회선)', mkAdd('부가서비스 가입하기', () => [cAddv(), cPm(), cTot()]), 33, '2026.10.22 10:10'],
+ ['TP-ORD-009', 8, '제휴 서비스 가입 프로세스 (사용 중 회선)', mkAdd('제휴 서비스 가입하기', () => [cIns(), cPm(), cTot()]), 12, '2026.10.21 17:00'],
+ ['TP-ORD-010', 9, 'T우주 구독 가입 프로세스', mkAdd('구독 가입하기', () => [cCard(), cPg(), cTot()]), 9, '2026.10.20 11:30'],
+ ['TP-ORD-011', 10, '로밍 상품 가입 프로세스 (사용 중 회선)', mkAdd('로밍 가입하기', () => [cPm(), cTot()]), 6, '2026.10.19 14:00']];
+const BY = '김프로(P000200)';
 function seedProcs() {
- const L = [], P2 = n => ('0' + n).slice(-2);
- const T = (id, n, cat, cnt, ap, u, dt, mk) => L.push({ id, n, cat: catOf(n, cat), cnt, ap, u, dt, by: BY, stages: mk() });
- [['010', '단말', '아이폰 18 pro max 전용 프로세스', 45, '승인 완료', 'Y'], ['009', '단말', '아이폰 18 전용 프로세스', 45, '승인 완료', 'Y'], ['008', '커머스', '커머스 기본 프로세스', 125, '승인 완료', 'Y'], ['007', '부가서비스', '부가서비스 기본 프로세스', 125, '승인 완료', 'Y'], ['006', '요금제', '요금제 기본 프로세스', 125, '임시 저장', 'Y'], ['005', '단말', '단말 기기변경 기본 프로세스', 125, '임시 저장', 'Y'], ['004', '단말', '단말 번호이동 기본 프로세스', 125, '임시 저장', 'Y'], ['003', '단말', '단말 신규가입 기본 프로세스', 356, '반려', 'N'], ['002', '단말', '단말 기본 프로세스', 356, '반려', 'N'], ['001', '단말', '아이폰 18 pro 전용 프로세스', 1, '반려', 'N']]
-  .forEach(r => T('TP-ORD-' + r[0], r[2], r[1], r[3], r[4], r[5] === 'Y', '2026.09.01 15:00', mk4));
- const nm = ['단말 기기변경', '단말 번호이동', '단말 신규가입', '요금제 변경', '부가서비스', '로밍', '커머스', '구독'], nmType = ['단말', '단말', '단말', '요금제', '부가서비스', '로밍', '커머스', '구독'], aps = ['승인 완료', '승인 완료', '임시 저장', '승인 대기', '반려', '요청 취소'], mks = [mk4, mkTab, mkWear, mkSim];
- for (let i = 0; i < 243; i++) {
-  const no = 243 - i, d = new Date(2026, 7, 31 - Math.floor(i / 3)), ap = aps[i % 6], disp = i % 5 === 0;
-  const dt = d.getFullYear() + '.' + P2(d.getMonth() + 1) + '.' + P2(d.getDate()) + ' ' + P2(9 + i % 9) + ':' + P2((i * 7) % 60);
-  T('TP-ORD-' + ('00' + (no + 10)).slice(-3), disp ? ('iPhone ' + (10 + i % 9) + ' 전용 프로세스') : (nm[i % 8] + ' 기본 프로세스'), disp ? '단말' : nmType[i % 8], 1 + (i * 37) % 400, ap, ap === '승인 완료', dt, mks[i % 4]);
- }
- const r1 = L.find(x => x.id === 'TP-ORD-005');
- Object.assign(r1, { cnt: 12, ap: '승인 완료', u: true, ver: 'V.1', stages: mkDetail() });
- return L.filter(x => x.cat && x.cat !== CAT_P);
+ return PROC_LIST.map(r => ({ id: r[0], n: r[2], cat: PROC_CATS[r[1]], cnt: r[4], ap: '승인 완료', u: true, dt: r[5], by: BY, ver: 'V.1', stages: r[3]() }));
 }
 
 // ---------- 읽기 · 쓰기 ----------
