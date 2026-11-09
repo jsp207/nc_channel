@@ -56,6 +56,12 @@ tr.failrow td{background:#fff8f8}
 .pm3-tools .sel{height:36px;min-width:0;width:104px}
 
 /* 결과 표 · 상태 배지 · 페이지 번호 · 하단 버튼은 list-unified.css(상품·주문·결제 목록 통일)에서 맞춘다 */
+/* 페이지 번호 사이 말줄임(…): order6-create.html 가이드와 같다 */
+.pager .el{padding:0 4px;color:#777;align-self:center}
+
+/* 거래내역 대사: 대사 구분을 바꿔도 컬럼 폭이 그대로 */
+.pm4-recon{table-layout:fixed;min-width:1340px}
+.pm4-recon td{overflow:hidden;text-overflow:ellipsis}
 
 /* 탭(거래내역 대사): v0.2.1 대사 목록처럼 제목 아래, 조회 조건 위 */
 .pm4-tabs{margin:0 0 20px}
