@@ -74,3 +74,29 @@ tr.failrow td{background:#fff8f8}
 /* 요약 띠: 항목 수(6~7개)만큼 한 줄로 나눈다 */
 .p4d .strip{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 @media(max-width:1100px){.p4d .strip{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}.p4d .strip>div+div{border-left:0}}
+
+/* ---------- 가맹점 · 결제수단 상세(payment-method4-merchant.html): 하단 고정 바 ----------
+   주문 프로세스 관리 상세(order5-create.html .bbar)와 같다. 본문 카드 좌우 · 아래 끝까지 붙고, 스크롤해도 화면 맨 아래에 남는다.
+   본문 카드(.work) 여백은 payment2.css 기준 28px 32px 80px (900px 이하 22px 18px 80px) */
+body[data-page=mer] .work{display:flex;flex-direction:column}
+body[data-page=mer] #view{flex:1;display:flex;flex-direction:column}
+.p4-bbar-sp{flex:1;min-height:26px}
+.p4-bbar{position:sticky;bottom:0;z-index:12;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px;margin:0 -32px -80px;padding:0 16px 0 20px;background:#fff;border-top:1px solid var(--line);border-radius:16px 16px 19px 19px;box-shadow:0 -6px 24px #2934591a}
+.p4-bbar .bb-l{display:flex;align-items:center;gap:22px;min-width:0}
+.p4-bbar .bb-k{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+.p4-bbar .bb-k b{font-size:20px;color:var(--ac);margin:0 3px 0 7px;font-weight:700}
+.p4-bbar .bb-k small{font-size:11px;color:var(--ink3);font-weight:500}
+.p4-bbar .bb-r{display:flex;gap:8px;flex:none}
+.p4-bbar .bb-r .btn{height:auto;min-height:38px;padding:8px 17px;border-radius:8px;font-size:12px}
+@media(max-width:900px){.p4-bbar{margin:0 -18px -80px}}
+
+/* ---------- 결제수단 기준정보 관리 목록(payment-method4.html): 주문관리 목록(order5-create.html .ltbl)과 같은 규칙 ----------
+   행을 눌러도 이동하지 않고, 결제수단 링크만 상세로 간다. 링크는 강조색 · 밑줄 없음(올리면 밑줄). 나머지 칸은 모두 같은 글자 스타일 */
+body[data-page=base] .work .tbl{font-size:13px}
+body[data-page=base] .work .tbl th{height:auto;padding:10px 8px;background:var(--table-head,#f0f2f8);font-size:13px;font-weight:600;line-height:1.4;color:var(--ink)}
+body[data-page=base] .work .tbl td{height:auto;padding:14px 8px;font-size:13px;font-weight:400;color:var(--ink);font-family:inherit;line-height:1.5}
+body[data-page=base] .work .tbl tbody tr{cursor:default}
+body[data-page=base] .work .tbl tbody tr:hover{background:none}
+body[data-page=base] .work .tbl tbody tr.sel{background:var(--ac2)}
+.p4-id{color:var(--ac);text-decoration:none;cursor:pointer}
+.p4-id:hover{text-decoration:underline}

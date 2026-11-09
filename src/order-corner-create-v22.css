@@ -243,3 +243,42 @@ table.dh-t{width:100%;min-width:900px;border-collapse:collapse;font-size:14px;co
 .cc-condtbd{display:flex;align-items:center;gap:12px;padding:16px 18px;border:1px dashed #f0c48f;border-radius:8px;background:#fff8ef}
 .cc-condtbd b{flex:none;padding:2px 8px;border-radius:4px;background:#fff0de;color:#c46a0b;font-size:12px}
 .cc-condtbd p{margin:0;font-size:12.5px;color:#6b7280;line-height:1.5}
+/* 설정 권한 (기본 정보 아래 별도 영역, 코너 전체에 적용) : 라디오 카드 3개 + 안내 + 되돌리기 */
+.cc-perm-b{display:grid;gap:10px}
+.cc-pcard{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border:1px solid #dfe3ea;border-radius:10px;background:#fff;cursor:pointer}
+.cc-pcard:hover{border-color:#b9c3d6}
+.cc-pcard.on{border-color:#8da2e6;background:#f3f6ff}
+.cc-pcard input{width:18px;height:18px;margin:1px 0 0;flex:none;accent-color:#4366d4}
+.cc-pcard span{display:grid;gap:4px}
+.cc-pcard b{font-size:14px;font-weight:700;color:#20293b}
+.cc-pcard small{font-size:13px;color:#6b7280}
+/* 코너 조건 > 노출 목록 (주문 프로세스 코너 상세 '노출 목록'과 같은 구성) */
+.cc-olbox{display:grid;gap:12px;margin:0 0 14px}
+.cc-olh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cc-olh b{font-size:14px;font-weight:700;color:#20293b}
+.cc-oln{margin:0;padding:12px 14px;border-radius:8px;background:#f7f8fa;font-size:13px;color:#4b5160}
+.cc-ol{border:1px solid #e3e7ef;border-radius:8px;overflow:hidden;background:#fff}
+.cc-ol-h,.cc-ol-r{display:grid;grid-template-columns:44px minmax(0,1fr) 80px;align-items:center;min-height:40px;padding:0 12px}
+.cc-ol-h{min-height:34px;background:#f7f8fa;font-size:12px;color:#6b7280}
+.cc-ol-h span:first-child,.cc-ol-h span:last-child,.cc-ol-n{text-align:center}
+.cc-ol-r{border-top:1px solid #eef0f4;font-size:13px;cursor:pointer}
+.cc-ol-r.off .cc-ol-t{color:#a3a9b5}
+.cc-ol-n{font-size:12px;color:var(--cc-ac,#3617ce)}
+.cc-ol-r.off .cc-ol-n{color:#a3a9b5}
+.cc-rule{display:grid;gap:10px}
+.cc-rule.multi{padding:14px;border-radius:10px;background:#f7f8fa}
+.cc-rule-h{display:flex;align-items:center;justify-content:space-between}
+.cc-rule-h b{font-size:13px}
+.cc-cond{display:grid;gap:8px;padding:12px 14px;border:1px solid #e3e7ef;border-radius:8px;background:#fff}
+.cc-cond-h{display:flex;align-items:center;gap:8px}
+.cc-cond-h b{flex:none;font-size:13px;width:52px}
+.cc-cond-h .cc-sel{flex:1;height:34px}
+.cc-vals{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.cc-vals .cc-sub{margin-right:4px}
+.cc-then{display:grid;gap:6px}
+.cc-then.dis{opacity:.55;pointer-events:none}
+.cc-then p{margin:0}
+.cc-and,.cc-or{display:flex;justify-content:center}
+.cc-and span,.cc-or span{padding:1px 10px;border-radius:10px;font-size:11px;font-weight:700}
+.cc-and span{background:#eef0f4;color:#4b5160}
+.cc-or span{background:#efe8ff;color:#5a3fd8}

@@ -16,6 +16,7 @@ import { publishProcs } from "./order-process-data";
 // 코너 구성 목록 공통 모듈 : 인라인 스크립트가 window.PCL 로 쓴다 (상품 전시 관리와 같은 목록)
 import "./process-corner-list";
 import { placeableGroups, groupOnlyIds } from "./order-corner-groups";
+import { CORNERS } from "./order-corner-v22-data";
 
 requireAuthentication();
 
@@ -23,6 +24,8 @@ requireAuthentication();
 window.ORDER_GROUPS = placeableGroups();
 // 그룹 전용 코너 : 코너 추가하기 팝업에서 단독으로 고를 수 없다
 window.ORDER_GROUP_ONLY = groupOnlyIds();
+// 코너 관리 기본값 : 설정 권한(perm) · 노출 목록(olist). 프로세스 코너 상세의 노출 목록이 이 값을 기본값으로 쓴다
+window.ORDER_CORNER_DEF = Object.fromEntries(CORNERS.map(c => [c.id, { perm: c.perm || 'edit', olist: c.olist || null }]));
 
 const W = window;
 const $ = s => document.querySelector(s);

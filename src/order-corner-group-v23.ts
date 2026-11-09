@@ -63,6 +63,8 @@ function nextId(){let n=0;GROUPS.forEach(g=>{const m=g.id.match(/^CG-ORD-(\d+)$/
    kind : seq 순차형 | branch 분기형. 분기형은 대표 코너(rep) 하나를 정하고 멤버마다 대표 코너 선택값(when)을 정한다 (비우면 항상 노출).
    그룹 분기는 코너 원본 조건 위에 얹는 조건이다. 원본은 바뀌지 않고, 실제 노출은 원본 조건과 그룹 분기를 모두 만족할 때 */
 const isBr=d=>!!d&&d.kind==='branch';
+// 목록 버전 표기 v1.0 (v1.1 그대로, V.1 → v1.0)
+const vfmt=v=>{let m=String(v||'').match(/\d+/g);if(!m)return '-';while(m.length<2)m.push('0');return 'v'+m.slice(0,2).join('.');};
 const repOk=c=>!!c&&c.sel!=='복수 선택'&&(c.opts||[]).some(o=>o.x!=='none');
 const repVals=cid=>{const c=C(cid);return c?(c.opts||[]).filter(o=>o.x!=='none').map(o=>o.n):[];};
 const whenOf=(d,m)=>isBr(d)&&m.cid!==d.rep?(m.when||[]):[];
@@ -160,7 +162,7 @@ function renderList(){
   // 구성 코너 칸 : 순차형은 첫 번째 코너, 분기형은 분기 기준인 대표 코너('대표 코너'는 분기형 대표 코너만 뜻한다)
   $('lBody').innerHTML=rows.slice(s,s+PER).map(g=>{const d=gData(g),lead=isBr(d)&&d.rep?d.members.find(m=>m.cid===d.rep):d.members[0],c0=lead?C(lead.cid):null;
     return '<tr><td class="mono"><a class="cid" href="#" data-id="'+g.id+'">'+g.id+'</a></td>'
-      +'<td class="vr">'+(g.live?g.live.ver:g.draft?g.draft.ver:'-')+'</td><td class="l">'+esc(d.n)+(isBr(d)?'<span class="ctag2 tg-br">분기형</span>':'')+'</td>'
+      +'<td class="vr">'+vfmt(g.live?g.live.ver:g.draft?g.draft.ver:'')+'</td><td class="l">'+esc(d.n)+(isBr(d)?'<span class="ctag2 tg-br">분기형</span>':'')+'</td>'
       +'<td class="l">'+(lead?esc(c0?c0.n:lead.cid)+(isBr(d)&&d.rep?'<span class="ctag2 tg-rep">대표</span>':''):'<span class="faint">-</span>')+'</td>'
       +'<td class="nw">'+stBadge(gStatus(g))+'</td>'
       +'<td>'+d.use+'</td><td class="dt">'+g.dt.slice(0,10)+'</td><td class="mb">'+esc(g.mby)+'</td></tr>';}).join('');
