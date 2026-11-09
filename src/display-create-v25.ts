@@ -347,14 +347,6 @@ function rAreaList(){
  const un=E.conn.filter(id=>!E.areas.some(a=>a.pos.includes(id)));
  $('#alUn').innerHTML=un.length?`<div class="un warn"><b>미배정 ${un.length}</b><br>${un.map(id=>esc(poBy(id).name)).join(', ')}</div>`:E.conn.length?'<div class="un ok">연결 상품이 모두 배정됐어요</div>':'';
 }
-// PO 카드: EPC의 Delivery type·Price policy를 읽기 전용으로 보여 준다
-function poCard(po,canRemove){
- const sp=selPS(po);
- const dtRows=po.dt.map(p=>`<div class="ps-r"><span class="chip ${p.req?'':'acc'}">${p.req?'필수':'선택'}</span><span class="nm"><b style="font-weight:600">${esc(p.name)}</b>${p.req?` <span class="poc-meta">${esc(p.desc||'')}</span>`:` <span class="poc-meta">후보 ${p.cands.length}개 · ${p.min===p.max?`${p.min}개 선택`:`${p.min}~${p.max}개 선택`}</span>`}</span></div>`).join('');
- const adds=sp.flatMap(p=>p.cands.map(c=>c.add)); const mx=adds.length?Math.max(...adds):0, mn=adds.length?Math.min(...adds):0;
- return `<div class="poc"><div class="poc-h"><b>${esc(po.name)}</b><span class="chip">${po.type}</span>${sp.length?'<span class="chip acc">선택 PS 있음</span>':''}<span class="poc-meta" style="margin-left:auto">${po.id} · ${po.ver}</span>${canRemove?`<button type="button" class="btn sm" data-rm="${po.id}" aria-label="${esc(po.name)} 배정 해제">해제</button>`:''}</div>
- <div class="poc-body"><div><div class="ro">Delivery type · EPC 읽기 전용</div>${dtRows}</div><div><div class="ro">Price policy · EPC 읽기 전용</div><div style="font-size:12px;padding:2px 0">기본가 <b>${priceTxt(po)}</b></div>${sp.length?`<div class="poc-meta">선택 PS 추가금 ${mn===mx?won(mx):won(mn)+' ~ '+won(mx)}</div>`:''}</div></div></div>`;
-}
 function rDetail(){
  const a=curArea(); const box=$('#ad'); if(!a){ box.innerHTML='<div class="empty">구성 영역을 추가하세요</div>'; return; }
  const i=E.areas.indexOf(a), multi=E.method==='complex', sel=areaHasSel(a);
@@ -1195,10 +1187,14 @@ function drawPs(){
 }
 // PO 상세 보기
 const EPC_ROWS=[['lv3','LV3 서비스유형'],['line','회선필수'],['contract','계약유형'],['lineKind','회선종류'],['lineState','회선상태'],['exist','기존 가입상품'],['dup','중복가입'],['combo','상품 조합'],['provider','제공주체'],['spec','Product Spec']];
-function openPoDetail(id){ const p=poBy(id), x=epcOf(p); modal(p.name,`${p.epc} · ${p.id} · ${p.ver}`,720); $('#mBody').innerHTML=`<p class="pill" style="margin:0 0 10px">${esc(p.desc)}</p><div class="ftbl" style="margin:0 0 14px">${EPC_ROWS.map(([k,l])=>`<div class="ft-row"><div class="ft-l">${l}</div><div class="ft-v">${esc(x[k])}</div></div>`).join('')}</div>${poCard(p,false)}<p class="pill" style="margin:0">대표 이미지: ${p.img.join(', ')}</p>`; $('#mFoot').innerHTML=`<span class="pill" style="margin-right:auto">EPC 읽기 전용</span><button type="button" class="btn" id="mc">닫기</button>`; $('#mc').addEventListener('click',closeModal); }
+// 코드 · 버전은 제목 옆 대신 표 맨 위에 둔다. 상품 설명 · Delivery type/Price policy 카드 · 대표 이미지 · 'EPC 읽기 전용' 표시는 뺐다
+function openPoDetail(id){ const p=poBy(id), x=epcOf(p); modal(p.name,'',720);
+ const rows=[['EPC 코드',p.epc],['PO ID',p.id],['버전',p.ver],...EPC_ROWS.map(([k,l])=>[l,x[k]])];
+ $('#mBody').innerHTML=`<div class="ftbl" style="margin:0">${rows.map(([l,v])=>`<div class="ft-row"><div class="ft-l">${l}</div><div class="ft-v">${esc(v)}</div></div>`).join('')}</div>`;
+ $('#mFoot').innerHTML=`<button type="button" class="btn" id="mc" style="margin-left:auto">닫기</button>`; $('#mc').addEventListener('click',closeModal); }
 // EPC 정보 불러오기 (항목별 선택)
 let EL={};
-function openEpcLoad(){ EL={name:-1,imgs:new Set()}; modal('EPC 정보 불러오기','항목마다 쓸 값을 고르세요. 고르지 않은 항목은 지금 값을 유지해요',720); drawEpcLoad(); }
+function openEpcLoad(){ EL={name:-1,imgs:new Set()}; modal('EPC 정보 불러오기','',720); drawEpcLoad(); }
 function drawEpcLoad(){
  const P=connPOs(E), has=f=>[E.main,...E.subs].some(m=>m&&m.n===f);
  const radio=(key,label,curv,val)=>`<div class="mrow"><div class="fl">${label}${EL[key]>=0?' <span class="chip acc">변경</span>':''}</div><div><label class="op ${EL[key]<0?'on':''}"><input type="radio" name="el${key}" data-el="${key}" value="-1" ${EL[key]<0?'checked':''}><span style="flex:1;color:${curv?'inherit':'var(--muted)'}">${esc(curv)||'미입력'}</span><span class="chip">현재 값 유지</span></label>${P.map((p,i)=>`<label class="op ${EL[key]===i?'on':''}"><input type="radio" name="el${key}" data-el="${key}" value="${i}" ${EL[key]===i?'checked':''}><span style="flex:1">${esc(val(p))}</span><span class="pill">${esc(p.name)}</span></label>`).join('')}</div></div>`;
@@ -1209,7 +1205,8 @@ function drawEpcLoad(){
  $$('#mBody [data-el]').forEach(r=>r.addEventListener('change',()=>{ EL[r.dataset.el]=+r.value; drawEpcLoad(); }));
  $$('#mBody [data-img]').forEach(c=>c.addEventListener('change',()=>{ c.checked?EL.imgs.add(c.dataset.img):EL.imgs.delete(c.dataset.img); drawEpcLoad(); }));
  const n=(EL.name>=0)+(EL.imgs.size?1:0);
- $('#mFoot').innerHTML=foot(n?`<b style="color:var(--accent)">${n}개 항목</b> 바뀜${EL.imgs.size?` · 이미지 ${EL.imgs.size}장 추가`:''}`:'바뀌는 항목 없음',n,n?n+'개 항목 적용':'적용');
+ // 하단: 바뀐 항목 요약 없이 [취소] [적용]만. 바꿀 항목이 없으면 적용은 비활성
+ $('#mFoot').innerHTML=`<button type="button" class="btn" id="mc" style="margin-left:auto">취소</button><button type="button" class="btn primary" id="mo" ${n?'':'disabled'}>적용</button>`;
  $('#mc').addEventListener('click',closeModal);
  $('#mo').addEventListener('click',()=>{ if(EL.name>=0) E.name=P[EL.name].name; const add=[...EL.imgs].map(img); if(!E.main&&add.length) E.main=add.shift(); E.subs.push(...add.slice(0,Math.max(0,SUB_MAX-E.subs.length))); E.imgs.mobile=[E.main,...E.subs].filter(Boolean).slice(0,IMG_MAX); closeModal(); rBasic(); refresh(); toast(`${n}개 항목을 적용했어요`); });
 }

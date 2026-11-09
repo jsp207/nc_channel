@@ -35,17 +35,17 @@ const MENU = [
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
   ] },
   { label: '주문관리', items: [
-    { label: '주문 프로세스 관리', icon: 'process', href: 'order6-create.html', match: ['order5-create.html', 'order4-create.html', 'order3-create.html'] },
-    { label: '주문 코너 그룹 관리', icon: 'corner', href: 'order-corner-group-v23.html', match: ['order-corner-group-v22.html'] },
-    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v22.html', match: ['order-corner-v21.html', 'order-corner-create.html'] },
+    { label: '주문 프로세스 관리', icon: 'process', href: 'order7-create.html', match: ['order6-create.html', 'order5-create.html', 'order4-create.html', 'order3-create.html'] },
+    { label: '주문 코너 그룹 관리', icon: 'corner', href: 'order-corner-group-v30.html', match: ['order-corner-group-v23.html', 'order-corner-group-v22.html'] },
+    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v30.html', match: ['order-corner-v22.html', 'order-corner-v21.html', 'order-corner-create.html'] },
     // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },
   { label: '결제관리', items: [
     { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method4.html', match: ['payment-method4-detail.html', 'payment-method4-merchant.html', 'payment-method4-create.html', 'payment-method3.html', 'payment-method3-create.html', 'payment-method3-detail.html', 'payment-method2.html', 'payment-method2-create.html'] },
     { label: '결제 이력 관리', icon: 'history', href: 'payment-history4.html', match: ['payment-history4-detail.html', 'payment-history3.html', 'payment-history3-detail.html', 'payment-history2.html'] },
     { label: '결제 거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html', match: ['payment-recon3.html', 'payment-recon3-detail.html', 'payment-reconciliation2.html'] },
-    { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html' },
-    { label: 'PG 관리', icon: 'pg', href: 'payment-pg4.html', match: ['payment-pg4-form.html'] },
+    { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html', match: ['payment-fee4-detail.html'] },
+    { label: 'PG 관리', icon: 'pg', href: 'payment-pg4.html', match: ['payment-pg4-form.html', 'payment-pg4-detail.html'] },
     // 결제 정책서는 메뉴에서 빼고 히스토리 > 결제 > 정책으로 옮겼다
   ] },
 ];
