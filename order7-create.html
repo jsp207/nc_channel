@@ -1250,6 +1250,12 @@ body.ro-mode .b-req,body.ro-mode .b-st{display:none}
 .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .fst{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--sbline);border-radius:8px;padding:6px 10px;font-size:13px}
 .fst i{font-style:normal;font-weight:700;color:#8b9199}
+.fst .fsf{font-size:11px;color:#8b9199}
+/* 선행 코너 (코너 상세) */
+.pre-l{display:grid;gap:6px}
+.pre-r{display:flex;align-items:center;gap:8px;font-size:13px}
+.pre-r .pre-id{font-size:12px;color:#8b9199}
+.pre-r .pill{margin-left:auto}
 .fst.on{border:1.5px solid var(--accent)}
 .fst.on i{color:var(--accent)}
 .fst em{font-style:normal;font-size:10.5px;font-weight:700;color:var(--accent);background:#eeebfd;border-radius:4px;padding:0 6px;line-height:16px}
@@ -1990,7 +1996,7 @@ function C(n,id,t,o){var c={u:++uid,n:n,id:id,t:t,p:0,mode:'always',cg:[{conds:[
 
 var PAYOPTS=['24개월','30개월','일시불','6개월','12개월','18개월','36개월','48개월'];
 /* FO 화면 기준 코너 (코너 구성 엑셀 261023 · 1~4번은 '단말 상품 기본 정보' 하나로 통일) */
-function cDeliv(){return C('배송 옵션 선택','CN-ORD-0001','주문',{opts:['바로도착','행복배송','일반배송','바로픽업'],screens:['배송방법 선택','고객주소 입력','배송가능여부 확인']})}
+function cDeliv(){return C('배송 옵션 선택','CN-ORD-0001','주문',{opts:['바로도착','행복배송','일반배송','바로픽업']})}
 function cPre(){return C('대리 가입 여부 선택','CN-ORD-0002','주문',{opts:['직접 사용','다른 사람이 사용']})}
 function cJoin(){return C('가입 방식 선택','CN-ORD-0003','주문',{opts:['신규가입','번호이동','기기변경']})}
 function cPay(){return C('기기 납부 방식 선택','CN-ORD-0004','주문',{opts:PAYOPTS.slice()})}
@@ -2004,7 +2010,7 @@ function cRew(){return C('바로 보상 신청','CN-ORD-0009','주문',{opts:['�
 function cIns(){return C('단말 보험 선택','CN-ORD-0010','주문',{opts:['T ALL케어 플러스 파손형','T ALL케어 플러스 분실파손형','보험 없이 주문 진행']})}
 function cAddv(){return C('보험 외 부가서비스 선택','CN-ORD-0011','주문',{opts:['Wavve 앤 데이터','FLO 앤 데이터','V 컬러링','부가서비스 없이 주문 진행']})}
 function cCard(){return C('제휴카드 선택','CN-PAY-0001','주문',{opts:['요금 할인 카드','휴대폰 할인 카드','제휴카드 없이 주문 진행']})}
-function cDisc(){return C('추가 할인 수단 영역','CN-PAY-0002','주문',{opts:['쿠폰·이용권 선택','T 모아 제휴 포인트','추가 할인 없이 주문 진행'],screens:['쿠폰·포인트 선택','쿠폰번호 직접 입력']})}
+function cDisc(){return C('추가 할인 수단 영역','CN-PAY-0002','주문',{opts:['쿠폰·이용권 선택','T 모아 제휴 포인트','추가 할인 없이 주문 진행']})}
 function cOrdInfo(){return C('기기 주문 정보','CN-ORD-0340','주문')}
 function cShip(){return C('배송 정보 입력','CN-ORD-0049','주문')}
 function cBill(){return C('통합 청구 선택','CN-ORD-0071','주문')}
@@ -2467,12 +2473,15 @@ function foBody(c,idx){
   if(sp.note) h+='<p class="fo-note">'+esc(sp.note)+'</p>';
   return h+'</div>';
 }
+/* 연결 화면 단계(c.screens · c.scr)는 주문 코너 관리 값만 쓴다 : src/order7-create.ts가 코너마다 채운다 (이 화면에서는 바꾸지 않는다) */
+function scrFormN(f){return {base:'기본 화면',sheet:'바텀시트',page:'전체 화면',result:'결과 화면'}[f]||'연결 화면'}
 function foCorner(c,i){
   var n=c.screens?c.screens.length:0, h='<div class="fo-corner'+(c===sel?' sel':'')+'" data-u="'+c.u+'">';
   if(n>1){
     var sp=FOSPEC[c.id]&&FOSPEC[c.id][c.p];
     h+='<div class="fo-bar"><b>'+esc(c.n)+'</b><div class="fo-pg"><button data-p="-1"'+(c.p===0?' disabled':'')+'>‹</button><span>'+(c.p+1)+'/'+n+'</span><button data-p="1"'+(c.p===n-1?' disabled':'')+'>›</button></div></div>';
-    h+='<div class="fo-band">'+esc(sp&&sp.kind?sp.kind:(c.p===0?'기본 화면 · 컨테이너':'연결 화면 · 컨테이너'))+'</div>';
+    var sc=c.scr&&c.scr[c.p];
+    h+='<div class="fo-band">'+esc(sc?(c.p+1)+'단계 · '+scrFormN(sc.form)+' · '+sc.n:(sp&&sp.kind?sp.kind:(c.p===0?'기본 화면 · 컨테이너':'연결 화면 · 컨테이너')))+'</div>';
   }
   h+=foBody(c,c.p)+'</div>';
   return h;
@@ -3391,7 +3400,7 @@ function nvSec(c){
   return '<div class="dsec"><h4>조건 값</h4><div class="sbthen2 alw-n"><p class="nvd">화면에 노출되지 않는 코너입니다. 아래 값은 후행 코너의 조건 설정 시 선택값으로 사용할 수 있습니다.</p><div class="ol"><div class="ol-h"><span class="b">항목</span></div>'+svOf(c).map(function(v){return '<div class="ol-r"><span class="ol-t">'+esc(v)+'</span></div>'}).join('')+'</div>'+(deps.length?'<div class="nvu"><span>이 값을 조건으로 쓰는 코너</span>'+deps.map(function(x){return '<span class="chipx">'+esc(x.n)+'</span>'}).join('')+'</div>':'')+'</div></div>';
 }
 function scrSec(c){
-  return '<div class="dsec"><h4>연결 화면</h4><div class="sbthen2 alw-n"><div class="flow">'+c.screens.map(function(s,i){return (i?'<span class="far">→</span>':'')+'<span class="fst'+(i===c.p?' on':'')+'"><i>'+(i+1)+'</i>'+esc(s)+(i===c.p?'<em>현재 미리보기</em>':'')+'</span>'}).join('')+'</div><p class="ol-cap">연결 화면은 코너 관리에서 등록합니다. 미리보기에서 화면을 넘기면 현재 표시가 함께 이동합니다.</p></div></div>';
+  return '<div class="dsec"><h4>연결 화면</h4><div class="sbthen2 alw-n"><div class="flow">'+c.screens.map(function(s,i){return (i?'<span class="far">→</span>':'')+'<span class="fst'+(i===c.p?' on':'')+'"'+(c.scr&&c.scr[i]&&c.scr[i].from?' title="여는 위치 : '+esc(c.scr[i].from)+'"':'')+'><i>'+(i+1)+'</i>'+esc(s)+(c.scr&&c.scr[i]?'<small class="fsf">'+scrFormN(c.scr[i].form)+'</small>':'')+(i===c.p?'<em>현재 미리보기</em>':'')+'</span>'}).join('')+'</div><p class="ol-cap">연결 화면 단계는 주문 코너 관리에서 등록하며 이 화면에서는 바꿀 수 없습니다. 미리보기에서 화면을 넘기면 현재 표시가 함께 이동합니다.</p></div></div>';
 }
 renderDetail=function(){
   if(RO) return renderDetailRO();
@@ -3405,7 +3414,7 @@ renderDetail=function(){
     h+='<div class="dsec bo-slot" id="slotTxt" hidden></div>';
     if(c.opts){
     var ov=listOv(c), dis=ov?'':' disabled';
-    h+='<div class="dsec'+(ov?'':' ov-off')+'" id="optsec"><div class="sech"><b>노출 목록</b><span class="bo-st'+(ov?' own':'')+'">'+(ov?'이 프로세스에만 적용':'기본값')+'</span><label class="bo-chk"><input type="checkbox" data-ovlist'+(ov?' checked':'')+'>이 프로세스에서 변경</label></div><div class="rad orad"><label><input type="radio" id="omode" name="omr" value="always"'+(c.omode==='always'?' checked':'')+dis+'>항상 노출</label><label><input type="radio" id="omode" name="omr" value="cond"'+(c.omode==='cond'?' checked':'')+dis+'>조건 노출</label></div>';
+    h+='<div class="dsec'+(ov?'':' ov-off')+'" id="optsec"><div class="sech"><b>노출 목록</b><label class="bo-chk"><input type="checkbox" data-ovlist'+(ov?' checked':'')+'>현 프로세스에서만 변경하기</label></div><div class="rad orad"><label><input type="radio" id="omode" name="omr" value="always"'+(c.omode==='always'?' checked':'')+dis+'>항상 노출</label><label><input type="radio" id="omode" name="omr" value="cond"'+(c.omode==='cond'?' checked':'')+dis+'>조건 노출</label></div>';
     if(c.omode==='cond'){c.rules.forEach(function(r,ri){if(ri) h+='<div class="cb-or"><span>OR</span></div>'; h+=ruleHTML(c,ri)}); h+='<div class="addgrp"><button class="pillb w76" type="button" data-act="addrule">그룹 추가</button></div>'}
     else h+=ov?alwEditHTML(c):alwHTML(c);
     h+='</div>';
@@ -3934,7 +3943,8 @@ function cname(id){var c=poolOf(id);return c?c.n:id}
    - 예전 상품 유형 탭(단말 · 요금제/부가서비스 …)은 없앴다. 단일코너는 프로세스 주문 유형에 맞는 코너만 보인다 (CTAB = 주문 유형 기준 그대로)
    - 그룹코너 탭은 그룹 추가 팝업(gadDim)의 목록 · 추가 로직을 그대로 쓰고, 화면만 이 팝업 표에 그린다 */
 var ATAB='single', CAD_HEAD=null;
-function cadTabs(){$('cTabs').innerHTML='<button type="button" class="'+(ATAB==='single'?'on':'')+'" data-atab="single">단일코너</button><button type="button" class="'+(ATAB==='grp'?'on':'')+'" data-atab="grp">그룹코너</button>';}
+/* v0.3 : [단일코너] · [그룹코너] 탭 영역은 없앴다. 팝업은 단일코너 목록만 보인다 (ATAB은 늘 'single') */
+function cadTabs(){ATAB='single';$('cTabs').innerHTML='';$('cTabs').style.display='none';}
 function cadGrp(){
   // 검색어 · 검색 구분은 이 팝업 입력을 그룹 목록 조건으로 넘긴다 (n 이름 · i ID)
   $('gKind').value=$('cKind').value; $('gKey').value=$('cKey').value; GQ.page=CQ.page; renderGad(); CQ.page=GQ.page;
@@ -3993,8 +4003,7 @@ function permSync(c){
   var rd=renderDetail; renderDetail=function(){
     if(sel) permSync(sel); rd.apply(this,arguments);
     var ck=document.querySelector('#detail input[data-ovlist]'); if(!sel||!ck) return;
-    var p=cdef(sel).perm, st=document.querySelector('#optsec .bo-st'), lab=ck.closest('label');
-    if(st&&!sel.ovList) st.textContent='코너 관리 기본값';
+    var p=cdef(sel).perm, lab=ck.closest('label');   // 노출 목록 옆 '코너 관리 기본값' 표시는 없앴다
     if(p==='lock'){ ck.checked=false; ck.disabled=true; if(lab) lab.insertAdjacentHTML('afterend','<span class="perm-tag lock" title="코너 관리 설정 권한 : 변경 불가">변경 불가</span>'); }
   };
   // 수정 가능 : '이 프로세스에서 변경'을 끄면 코너 관리 기본값으로 되돌린다 (기존 처리보다 먼저 받는다)
@@ -4013,7 +4022,7 @@ function grpOnly(){var o={};(window.ORDER_GROUP_ONLY||[]).forEach(function(id){o
     core.apply(this,arguments); var go=grpOnly();
     [].forEach.call(document.querySelectorAll('#cRows tr[data-i]'),function(tr){
       var c=POOL[+tr.getAttribute('data-i')]; if(!c||!go[c.id]||tr.classList.contains('dis')) return;
-      tr.classList.add('dis'); var st=tr.querySelector('.stat'); if(st){st.className='stat add';st.textContent='그룹 전용';st.title='그룹으로만 배치할 수 있는 코너입니다. [그룹코너] 탭에서 그룹으로 추가해주세요.'}
+      tr.classList.add('dis'); var st=tr.querySelector('.stat'); if(st){st.className='stat add';st.textContent='그룹 전용';st.title='그룹으로만 배치할 수 있는 코너입니다.'}
     });
   };
 })();

@@ -78,7 +78,7 @@ function setType(k){st.type=k;st.layout=tOf().ls[0].k;st.variant=lOf().vs[0].k;r
 function setLayout(k){const s0=sKey();st.layout=k;st.variant=lOf().vs[0].k;resetAttrs();if(sKey()!==s0)resetContent();else fitItems();}
 function setVariant(k){const s0=sKey();st.variant=k;resetAttrs();if(sKey()!==s0)resetContent();else fitItems();}
 function fitItems(){if(st.items.length>st.cnt[1])st.items=st.items.slice(0,st.cnt[1]);while(st.items.length<st.cnt[0])st.items.push(sampleItems(st.items.length+1).pop());if(st.def>=st.items.length)st.def=0;}
-function fresh(){st={name:'',use:'N',type:'select',perm:PERM_DEF};setType('select');}
+function fresh(){st={name:'',use:'N',type:'select',perm:PERM_DEF,scr0:'',scr:[],pre:[]};setType('select');}
 
 /* ===== 미리보기 ===== */
 const ICO={tip:'<i class="pv-tip">i</i>',chev:'<span class="pv-chev">›</span>',chk:'✓'};
@@ -168,7 +168,7 @@ function basicCard(){
 }
 /* 아코디언 섹션 : 상품 전시 등록(product-v023.html) 전시 유형 영역과 같은 테두리 · 머리줄 · 접기. 영역마다 따로 펼치고 접는다 (처음엔 기본 정보만 펼침) */
 const fold={};
-function initFold(){Object.keys(fold).forEach(k=>delete fold[k]);Object.assign(fold,{header:true,contents:true,footer:true,cond:true});}
+function initFold(){Object.keys(fold).forEach(k=>delete fold[k]);Object.assign(fold,{header:true,contents:true,footer:true,scr:true,pre:true,cond:true});}
 function toggleSec(id){const hd=$('ccForm').querySelector('[data-fold="'+id+'"]');if(!hd)return;fold[id]=!fold[id];setFold(hd.parentNode,!fold[id]);}
 function foldAll(){$('ccForm').querySelectorAll('.cc-acc>header[data-fold]').forEach(h=>{const k=h.dataset.fold;if(!fold[k]){fold[k]=true;setFold(h.parentNode,false);}});}
 function acc(id,title,body,aside){
@@ -292,6 +292,64 @@ function olText(ol){   // 상세 요약
   if(ol.mode==='always')return '항상 노출 · '+(ol.show.length?ol.show.join(', '):'노출 항목 없음');
   return ol.rules.map((r,i)=>'조건 그룹 '+(i+1)+' : '+r.conds.map(cd=>{const c=CORNERS.find(x=>x.id===cd.src);return (c?c.n:cd.src)+' = '+cd.vals.join(', ');}).join(' AND ')+' → '+r.opts.join(', ')).join(' / ');
 }
+/* ===== 연결 화면 =====
+   한 코너 안에서 이어지는 하위 화면(바텀시트 · 결과 화면 등). 1단계는 코너 자체(기본 화면), 2단계부터 연결 화면이다.
+   여기서만 등록 · 수정하고, 주문 프로세스는 이 단계 순서대로 미리보기만 넘겨 본다(프로세스에서는 바꿀 수 없다).
+   저장 : c.screens = 단계명 목록(예전 필드 그대로) · c.scr = [{n, form, from}] (form : base | sheet | page | result) */
+const SCR_FORM=[['sheet','바텀시트'],['page','전체 화면'],['result','결과 화면']];
+const SCR_MAX=5;   // 기본 화면 포함 최대 단계 수
+export const scrFormName=f=>f==='base'?'기본 화면':(SCR_FORM.find(x=>x[0]===f)||SCR_FORM[0])[1];
+const scrOf=()=>st.scr||(st.scr=[]);
+function scrFrom(c,f){   // 저장된 코너(c.scr · c.screens) → 등록 상태
+  const a=c.scr||(c.screens||[]).map((n,i)=>({n,form:i?'sheet':'base',from:''}));
+  f.scr0=a.length?a[0].n:'';
+  f.scr=a.slice(1).map(x=>({uid:newUid(),n:x.n||'',form:SCR_FORM.some(y=>y[0]===x.form)?x.form:'sheet',from:x.from||''}));
+}
+function scrPart(){
+  const L=scrOf(),n=L.length;
+  let h='<div class="cc-scrbox"><p class="cc-sub">고객이 코너 안의 버튼 · 항목을 눌러 여는 하위 화면입니다. 이 순서가 주문 프로세스 미리보기의 단계 순서이며, 프로세스에서는 바꿀 수 없습니다.</p>';
+  if(n){
+    h+='<div class="cc-scr-h"><span>단계</span><span>화면명</span><span>화면 형태</span><span>여는 위치</span><span></span></div>'
+     +'<div class="cc-scr base"><span class="cc-sno">1</span><input class="cc-inp" data-scr="-1:n" value="'+esc(st.scr0||'')+'" placeholder="'+esc(st.name||'코너명')+'" maxlength="30" aria-label="1단계 화면명"><span class="cc-sfix">기본 화면</span><span class="cc-sfix">코너 자체</span><span></span></div>'
+     +L.map((x,i)=>'<div class="cc-scr"><span class="cc-sno">'+(i+2)+'</span>'
+       +'<input class="cc-inp" data-scr="'+i+':n" value="'+esc(x.n)+'" placeholder="화면명" maxlength="30" aria-label="'+(i+2)+'단계 화면명">'
+       +'<select class="cc-sel" data-scr="'+i+':form" aria-label="'+(i+2)+'단계 화면 형태">'+SCR_FORM.map(f=>'<option value="'+f[0]+'"'+(x.form===f[0]?' selected':'')+'>'+f[1]+'</option>').join('')+'</select>'
+       +'<input class="cc-inp" data-scr="'+i+':from" value="'+esc(x.from)+'" placeholder="예) 배송주소 입력하기 버튼" maxlength="40" aria-label="'+(i+2)+'단계 여는 위치">'
+       +'<span class="cc-ictl"><span class="cc-mv"><button type="button" data-scrm="'+i+':-1"'+(i?'':' disabled')+' aria-label="위로">↑</button><button type="button" data-scrm="'+i+':1"'+(i<n-1?'':' disabled')+' aria-label="아래로">↓</button></span><button type="button" class="cc-xs" data-scrd="'+i+'">삭제</button></span></div>').join('');
+  }
+  h+='<div class="cc-iadd"><button type="button" class="cc-xs add" data-cc="sadd"'+(n+1<SCR_MAX?'':' disabled')+'>+ 연결 화면 추가</button>'+(n+1>=SCR_MAX?'<span class="cc-sub">기본 화면 포함 최대 '+SCR_MAX+'단계까지 등록할 수 있어요</span>':'')+'</div></div>';
+  return acc('scr','연결 화면',h,'<span class="cc-on">'+(n?(n+1)+'단계':'없음')+'</span>');
+}
+function scrOut(){   // 저장용 : 연결 화면이 없으면 null (단일 화면 코너)
+  const L=scrOf();if(!L.length)return null;
+  return [{n:(st.scr0||'').trim()||st.name.trim(),form:'base',from:''}].concat(L.map(x=>({n:x.n.trim(),form:x.form,from:x.from.trim()})));
+}
+function vScr(c,DF){   // 상세
+  const a=c.scr||(c.screens||[]).map((n,i)=>({n,form:i?'sheet':'base',from:''}));
+  const body=a.length?'<div class="cc-tb">'+a.map((x,i)=>tr((i+1)+'단계',val(x.n+' · '+scrFormName(x.form)+(i?(x.from?' · 여는 위치 : '+x.from:''):' · 코너 자체')))).join('')+'</div>':'<div class="cc-tb">'+tr('연결 화면',val(''))+'</div>';
+  return vAcc('scr','연결 화면',body,a.length?'<span class="cc-on">'+a.length+'단계</span>':'',DF);
+}
+/* ===== 선행 코너 =====
+   주문 프로세스에서 이 코너보다 앞에 반드시 있어야 하는 코너. 바로 앞일 필요는 없고 앞쪽 어디에든 있으면 된다(순서 무관).
+   예) 할인 방식 유형 ← 요금제 유형. 저장 : c.pre = [코너 ID]. 프로세스 구성 검증 · 순서 변경에서 확인한다 */
+const preOf=()=>st.pre||(st.pre=[]);
+const cornerN=id=>{const c=CORNERS.find(x=>x.id===id);return c?c.n:id;};
+function preLoop(id,self,seen){   // id의 선행 코너를 따라가다 self가 나오면 순환
+  if(!self||seen[id])return false;seen[id]=1;
+  const c=CORNERS.find(x=>x.id===id);return !!c&&(c.pre||[]).some(p=>p===self||preLoop(p,self,seen));
+}
+function prePart(){
+  const L=preOf(),self=EDIT&&EDIT.id,cands=CORNERS.filter(c=>c.id!==self&&L.indexOf(c.id)<0);
+  const h='<div class="cc-prebox"><p class="cc-sub">주문 프로세스에서 이 코너보다 앞에 반드시 배치해야 하는 코너입니다. 바로 앞이 아니어도 앞쪽 어디에든 있으면 됩니다.</p>'
+   +(L.length?'<div class="cc-pre-l">'+L.map((id,i)=>'<span class="cc-pre-c"><b>'+esc(cornerN(id))+'</b><small>'+esc(id)+'</small><button type="button" data-pred="'+i+'" aria-label="'+esc(cornerN(id))+' 선행 코너 삭제">×</button></span>').join('')+'</div>':'')
+   +'<select class="cc-sel cc-pre-add" data-preadd aria-label="선행 코너 추가"><option value="">선행 코너 추가</option>'
+   +cands.map(c=>{const loop=preLoop(c.id,self,{});return '<option value="'+c.id+'"'+(loop?' disabled':'')+'>'+esc(c.n)+' ('+c.id+')'+(loop?' · 이 코너를 선행으로 둔 코너':'')+'</option>';}).join('')+'</select></div>';
+  return acc('pre','선행 코너',h,'<span class="cc-on">'+(L.length?L.length+'개':'없음')+'</span>');
+}
+function vPre(c,DF){
+  const L=c.pre||[];
+  return vAcc('pre','선행 코너','<div class="cc-tb">'+tr('선행 코너',val(L.map(id=>cornerN(id)+' ('+id+')').join(', ')))+'</div>',L.length?'<span class="cc-on">'+L.length+'개</span>':'',DF);
+}
 const ITEM_ROW=4;   // 한 줄에 둘 입력란 수. 넘으면 두 줄로 반씩 나눈다
 function itemCard(it,i){
   const min=st.cnt[0];
@@ -323,7 +381,7 @@ function itemPart(){
    +'<div class="cc-items">'+st.items.map(itemCard).join('')
    +'<div class="cc-iadd"><button type="button" class="cc-xs add" data-cc="add"'+(st.items.length<max?'':' disabled')+'>+ 추가</button>'+(st.items.length>=max?'<span class="cc-sub">노출 개수 범위 최대 '+max+'개에 도달했어요</span>':'')+'</div></div>',onCnt(ik));
 }
-function render(){st.items.forEach(it=>{if(!it.uid)it.uid=newUid();});olOf();$('ccForm').innerHTML=basicCard()+permPart()+cornerPart('header','코너 Header',HEAD)+itemPart()+cornerPart('footer','코너 Footer',FOOT)+condPart();renderPv();}
+function render(){st.items.forEach(it=>{if(!it.uid)it.uid=newUid();});olOf();$('ccForm').innerHTML=basicCard()+permPart()+cornerPart('header','코너 Header',HEAD)+itemPart()+cornerPart('footer','코너 Footer',FOOT)+scrPart()+prePart()+condPart();renderPv();}
 
 /* ===== 저장 : 주문 코너 관리 목록에 바로 추가 ===== */
 /* 오류 문구와 그 입력이 있는 영역 [문구, 영역 id] */
@@ -335,6 +393,8 @@ function validate(){
     if(st.items.length<st.cnt[0])return ['아이템을 '+st.cnt[0]+'개 이상 등록해 주세요.','contents'];
     if(on('ititle')&&mark('ititle')==='R'&&st.items.some(x=>!x.ititle.trim()))return ['아이템 타이틀을 모두 입력해 주세요.','contents'];
   }
+  {const bad=scrOf().findIndex(x=>!x.n.trim());if(bad>-1)return ['연결 화면 '+(bad+2)+'단계의 화면명을 입력해 주세요.','scr'];}
+  {const self=EDIT&&EDIT.id,bad=preOf().find(p=>preLoop(p,self,{}));if(bad)return ['선행 코너 \''+cornerN(bad)+'\'은(는) 이 코너를 선행 코너로 두고 있어 서로 선행으로 지정할 수 없습니다.','pre'];}
   // 코너 조건 > 노출 목록
   if(hasOpts()){const o=olOf();
     if(o.mode==='always'&&st.items.every(it=>o.hide.indexOf(it.uid)>-1))return ['노출 목록에서 노출할 항목을 1개 이상 골라 주세요.','cond'];
@@ -347,7 +407,7 @@ function pad(n){return ('0'+n).slice(-2)}
 /* 저장할 코너 객체 : 기존 FO 렌더러(ui) · 목록 · 상세가 쓰는 필드를 등록 상태(st)로 채운다 */
 function build(id){
   const v=vOf(),tpl=CORNERS.find(c=>c.ui===v.ui)||CORNERS[0],c=JSON.parse(JSON.stringify(tpl)),d=new Date();
-  ['cat','subs','epcMode','more','chev','logo','link','btn','src','screens','note','qs','req'].forEach(k=>{delete c[k];});
+  ['cat','subs','epcMode','more','chev','logo','link','btn','src','screens','scr','pre','note','qs','req'].forEach(k=>{delete c[k];});
   const its=v.fam==='html'?[]:st.items.slice(0,st.cnt[1]);
   c.id=id;c.n=st.name.trim();c.t='주문';c.ui=v.ui;c.q=on('title')?st.c.title:'';c.sub=on('sub')?st.c.sub:'';
   c.it='T'+(on('sub')?'S':'')+(on('tip')?'I':'')+(on('isub')||on('lv')?'D':'')+(on('price')?'P':'')+(on('badge')?'B':'')+(on('img')?'M':'')+(on('none')?'N':'')+(on('more')?'R':'');
@@ -358,6 +418,8 @@ function build(id){
   c.ver='v1.0';c.use=st.use;c.dt=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());c.mby=CORNER_EDITOR;
   // 등록 설정 원본 : 유형 · 형태 · 표시 방식 · 속성 ON/OFF · 노출 개수 · 플랫폼 · 설명
   c.spec={type:tOf().n,form:lOf().n,mode:v.n,src:v.src,attrs:Object.fromEntries(AK.filter(k=>mark(k)!=='-').map(k=>[k,k==='count'?st.cnt.join('~'):k==='var'?st.vopt:on(k)?'Y':'N']))};
+  const sc=scrOut();if(sc){c.scr=sc;c.screens=sc.map(x=>x.n);}   // 연결 화면 (없으면 단일 화면 코너)
+  if(preOf().length)c.pre=preOf().slice();   // 선행 코너
   c.olist=olOut();   // 노출 목록 기본값 (주문 프로세스가 설정 권한에 따라 쓴다)
   c.perm=permOf();   // 설정 권한 (상품 전시에서 이 값으로 입력 · 수정 허용을 정한다)
   c.form=JSON.parse(JSON.stringify(st));   // 수정 화면을 그대로 다시 열기 위한 등록 상태 원본
@@ -382,6 +444,7 @@ function bind(){
   if(bound)return;bound=true;
   const root=$('pCreate');
   root.addEventListener('input',e=>{const t=e.target;
+    if(t.dataset.scr){const [i,k]=t.dataset.scr.split(':');if(+i<0)st.scr0=t.value;else scrOf()[+i][k]=t.value;return;}
     if(t.dataset.f){st[t.dataset.f]=t.value;return;}
     if(t.dataset.c){st.c[t.dataset.c]=t.value;const l=$('len_'+t.dataset.c);if(l)l.textContent=t.value.length+'/'+t.maxLength;renderPv();return;}
     if(t.dataset.it!=null&&t.tagName==='INPUT'){st.items[+t.dataset.it][t.dataset.k]=t.value;renderPv();}});
@@ -398,6 +461,7 @@ function bind(){
     if(t.name==='ccPerm'){st.perm=permNorm(t.value);render();return;}
     if(t.name==='ccOlMode'){const o=olOf();o.mode=t.value;if(o.mode==='cond'&&!o.rules.length)o.rules.push({conds:[NCOND()],show:[]});render();return;}
     if(t.dataset.olh){const o=olOf(),u=t.dataset.olh,k=o.hide.indexOf(u);if(t.checked&&k>-1)o.hide.splice(k,1);else if(!t.checked&&k<0)o.hide.push(u);render();return;}
+    if(t.dataset.preadd!=null){if(t.value&&preOf().indexOf(t.value)<0)preOf().push(t.value);render();return;}
     if(t.dataset.olsrc){const [ri,ci]=t.dataset.olsrc.split(':').map(Number),cd=olOf().rules[ri].conds[ci];cd.src=t.value;cd.vals=[];render();return;}
     if(t.dataset.olval){const [ri,ci]=t.dataset.olval.split(':').map(Number),cd=olOf().rules[ri].conds[ci],k=cd.vals.indexOf(t.value);if(t.checked&&k<0)cd.vals.push(t.value);else if(!t.checked&&k>-1)cd.vals.splice(k,1);const vs=srcVals(cd.src);cd.vals.sort((a,b)=>vs.indexOf(a)-vs.indexOf(b));render();return;}
     if(t.dataset.olshow!=null){const r=olOf().rules[+t.dataset.olshow],k=r.show.indexOf(t.value);if(t.checked&&k<0)r.show.push(t.value);else if(!t.checked&&k>-1)r.show.splice(k,1);render();return;}
@@ -413,13 +477,17 @@ function bind(){
       else if(p[0]==='addc')o.rules[ri].conds.push(NCOND());
       else if(p[0]==='delc'){const cs=o.rules[ri].conds;if(cs.length>1)cs.splice(+p[2],1);else cs[0]=NCOND();}
       render();return;}
+    if(b.dataset.scrm){const [i,d]=b.dataset.scrm.split(':').map(Number),L=scrOf(),x=L.splice(i,1)[0];L.splice(i+d,0,x);render();return;}
+    if(b.dataset.pred!=null){preOf().splice(+b.dataset.pred,1);render();return;}
+    if(b.dataset.scrd!=null){scrOf().splice(+b.dataset.scrd,1);render();return;}
     if(b.dataset.mv){const p=b.dataset.mv.split(':'),i=+p[0],j=i+(+p[1]);const x=st.items.splice(i,1)[0];st.items.splice(j,0,x);if(st.def===i)st.def=j;else if(st.def===j)st.def=i;render();return;}
     if(b.dataset.del!=null){const i=+b.dataset.del;st.items.splice(i,1);if(st.def>=st.items.length)st.def=0;else if(st.def>i)st.def--;render();return;}
     const a=b.dataset.cc;
+    if(a==='sadd'){scrOf().push({uid:newUid(),n:'',form:'sheet',from:''});render();const ins=root.querySelectorAll('[data-scr$=":n"]');if(ins.length)ins[ins.length-1].focus();return;}
     if(a==='add'){st.items.push(sampleItems(st.items.length+1).pop());render();}
     else if(a==='reset'){
       if(EDIT){st=JSON.parse(ST0);render();opts.toast('저장된 설정 값으로 되돌렸어요.');return;}   // 수정 : 저장된 값으로
-      const keep={name:st.name,use:st.use};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
+      const keep={name:st.name,use:st.use,scr0:st.scr0,scr:st.scr,pre:st.pre};setVariant(st.variant);resetContent();Object.assign(st,keep);render();opts.toast('속성과 콘텐츠를 이 배열의 기본값으로 되돌렸어요.');}
     else if(a==='cancel'){
       const dirty=EDIT?JSON.stringify(st)!==ST0:!!(st&&st.name);
       if(dirty&&!confirm(EDIT?'수정한 내용이 있습니다. 저장하지 않고 나갈까요?':'작성 중인 내용이 있습니다. 저장하지 않고 나갈까요?'))return;
@@ -434,7 +502,7 @@ function bind(){
    이 화면에서 저장한 코너는 저장해 둔 등록 상태(form)를 그대로 쓰고, 처음부터 있던 코너는 FO 렌더러 값(ui · q · opts …)에서 되살린다 */
 function locate(k){for(const t of TYPES)for(const l of t.ls)for(const v of l.vs)if(v.k===k)return [t.k,l.k,v.k];return ['select','card','radio'];}
 function stFromCorner(c){
-  if(c.form){const f=JSON.parse(JSON.stringify(c.form));f.perm=permNorm(c.perm||f.perm);return f;}
+  if(c.form){const f=JSON.parse(JSON.stringify(c.form));f.perm=permNorm(c.perm||f.perm);if(!f.scr)scrFrom(c,f);f.pre=(c.pre||[]).slice();return f;}
   const p=locate(c.ui==='card'&&c.sel==='복수 선택'?'check':UI2V[c.ui]||'radio');
   const prev=st;st={name:c.n,use:c.use||'Y',type:p[0],layout:p[1],variant:p[2],perm:permNorm(c.perm)};resetAttrs();resetContent();
   const os=(c.opts||[]).filter(o=>o.x!=='none'),none=(c.opts||[]).find(o=>o.x==='none'),cta=(c.ctas||[]).find(a=>a.on&&a.label);
@@ -444,7 +512,7 @@ function stFromCorner(c){
   Object.assign(st.c,{title:c.q||'',sub:c.sub||'',none:none?none.n:st.c.none,more:c.moreBtn||st.c.more,cta:cta?cta.label:st.c.cta});
   st.items=os.map(o=>({ititle:o.n||'',isub:o.d||'',price:o.p||'',pcap:'',icap:'',badge:o.b||'',icon:'',btn:o.cl||'',label:o.n||'',value:o.d||'',input:o.d||'',help:'',img:'',state:'default'}));
   if(SINGLE.indexOf(vOf().fam)<0)st.cnt=[1,Math.max(st.cnt[1],st.items.length,1)];
-  fitItems();
+  fitItems();scrFrom(c,st);st.pre=(c.pre||[]).slice();
   const out=st;st=prev;return out;
 }
 
@@ -484,7 +552,7 @@ function vItems(DF){
 export function cornerView(c,DF){
   const prev=st;st=stFromCorner(c);
   const b=tr('코너 ID',val(c.id))+tr('코너명',val(st.name))+tr('사용 여부',val(st.use))+tr('코너 유형',val(tOf().n))+tr('코너 형태',val(lOf().n))+tr('표시 방식',val(vOf().n));
-  const out={form:vAcc('basic','기본 정보','<div class="cc-tb">'+b+'</div>','',DF)+vAcc('perm','설정 권한','<div class="cc-tb">'+tr('설정 권한',val(permName(permOf())))+'</div>','',DF)+vCorner('header','코너 Header',HEAD,DF)+vItems(DF)+vCorner('footer','코너 Footer',FOOT,DF)+vAcc('cond',COND_T,'<div class="cc-tb">'+tr('노출 목록',val(olText(c.olist||null)))+'</div>'+COND_B,'',DF),pv:pvView(pvHTML)};
+  const out={form:vAcc('basic','기본 정보','<div class="cc-tb">'+b+'</div>','',DF)+vAcc('perm','설정 권한','<div class="cc-tb">'+tr('설정 권한',val(permName(permOf())))+'</div>','',DF)+vCorner('header','코너 Header',HEAD,DF)+vItems(DF)+vCorner('footer','코너 Footer',FOOT,DF)+vScr(c,DF)+vPre(c,DF)+vAcc('cond',COND_T,'<div class="cc-tb">'+tr('노출 목록',val(olText(c.olist||null)))+'</div>'+COND_B,'',DF),pv:pvView(pvHTML)};
   st=prev;return out;
 }
 /* 주문 코너 관리에서 호출 : opts = {onClose, onSaved(corner), toast, setCrumb} */

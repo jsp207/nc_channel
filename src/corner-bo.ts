@@ -162,6 +162,7 @@ function srcBody(sp, v, dis) {
 // 상품 전시에서는 늘 고칠 수 있는 정책이라 '상품 전시 수정 허용'은 따로 두지 않는다.
 // st.only = 그릴 항목만(예: ['txt']), st.noSrc = 원천 데이터 연결 숨김, st.labels = 항목 이름 바꾸기,
 // st.bare = 칸 이름 · 기준 문구 · 규칙 설명 없이 입력칸만 (주문 프로세스 코너 상세용)
+// st.noStat = 항목 이름 옆 '기본값' · '이 프로세스에만 적용' 표시 숨김 ('코너 관리에서 고정'은 남김), st.ovLabel = 덮어쓰기 체크 문구 바꾸기
 export function boHtml(sp, st) {
   const { mode, cfg, ov, ro } = st, corner = mode === 'corner';
   let h = '';
@@ -171,8 +172,8 @@ export function boHtml(sp, st) {
   sp.items.filter(k => !st.only || st.only.includes(k)).forEach(k => {
     const allow = cfg.allow[k], mine = !corner && allow && ov && ov[k], v = corner ? cfg[k] : effVal(cfg, ov, k);
     const dis = ro || (!corner && !mine);
-    const stt = corner ? '' : !allow ? '<span class="bo-st lock">코너 관리에서 고정</span>' : mine ? '<span class="bo-st own">이 프로세스에만 적용</span>' : '<span class="bo-st">기본값</span>';
-    const tg = corner ? chk(`data-allow="${k}"`, allow, ro, '프로세스에서 변경 허용') : chk(`data-ov="${k}"`, !!mine, ro || !allow, '이 프로세스에서 변경');
+    const stt = corner ? '' : !allow ? '<span class="bo-st lock">코너 관리에서 고정</span>' : st.noStat ? '' : mine ? '<span class="bo-st own">이 프로세스에만 적용</span>' : '<span class="bo-st">기본값</span>';
+    const tg = corner ? chk(`data-allow="${k}"`, allow, ro, '프로세스에서 변경 허용') : chk(`data-ov="${k}"`, !!mine, ro || !allow, st.ovLabel || '이 프로세스에서 변경');
     h += `<section class="bo-it${dis ? ' dis' : ''}" data-it="${k}"><header><b>${(st.labels && st.labels[k]) || LABEL[k]}</b>${stt}<span class="bo-tg">${tg}</span></header>${itemBody(sp, k, v, dis, st.bare)}</section>`;
   });
   return h;

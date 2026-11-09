@@ -25,9 +25,69 @@ window.ORDER_GROUPS = placeableGroups();
 // 그룹 전용 코너 : 코너 추가하기 팝업에서 단독으로 고를 수 없다
 window.ORDER_GROUP_ONLY = groupOnlyIds();
 // 코너 관리 기본값 : 설정 권한(perm) · 노출 목록(olist). 프로세스 코너 상세의 노출 목록이 이 값을 기본값으로 쓴다
-window.ORDER_CORNER_DEF = Object.fromEntries(CORNERS.map(c => [c.id, { perm: c.perm || 'edit', olist: c.olist || null }]));
+window.ORDER_CORNER_DEF = Object.fromEntries(CORNERS.map(c => [c.id, { perm: c.perm || 'edit', olist: c.olist || null, pre: c.pre || [], scr: c.scr || (c.screens ? c.screens.map((n, i) => ({ n, form: i ? 'sheet' : 'base', from: '' })) : null) }]));
+// 연결 화면 단계 : 주문 코너 관리 값(scr)만 쓴다. 프로세스에 저장된 예전 단계 값은 무시하고 코너 관리 값으로 맞춘다 (프로세스에서는 바꿀 수 없다)
+function applyScr(c) {
+  if (!c || !c.id) return c;
+  const d = window.ORDER_CORNER_DEF[c.id], a = d && d.scr && d.scr.length > 1 ? d.scr : null;
+  if (a) { c.screens = a.map(x => x.n); c.scr = a.map(x => ({ ...x })); } else { delete c.screens; delete c.scr; }
+  c.p = c.screens ? Math.max(0, Math.min(c.p || 0, c.screens.length - 1)) : 0;
+  return c;
+}
+{
+  const W0 = window;
+  // 새로 만드는 코너(C) · 다시 맞추는 코너(permSync : 화면 전체 · 상세를 그릴 때마다)에 적용
+  const coreC = W0.C; if (coreC) W0.C = function () { return applyScr(coreC.apply(this, arguments)); };
+  const corePs = W0.permSync; if (corePs) W0.permSync = function (c) { applyScr(c); return corePs.apply(this, arguments); };
+  (W0.POOL || []).forEach(applyScr);
+  (W0.stages || []).forEach(st => (st.corners || []).forEach(applyScr));
+  // 모듈은 인라인 스크립트보다 늦게 읽히므로, 이미 그려진 코너 구성 · 미리보기가 있으면 다시 그린다
+  if ((W0.stages || []).length && typeof W0.renderPreview === 'function') { if (typeof W0.renderLeft === 'function') W0.renderLeft(); W0.renderPreview(false); }
+}
 
 const W = window;
+
+// ---------- 선행 코너 (주문 코너 관리에서 지정) ----------
+// 코너마다 앞에 반드시 있어야 하는 코너(pre). 바로 앞일 필요는 없고 프로세스 전체 순서에서 앞쪽 어디에든 있으면 된다
+const preIds = c => ((W.ORDER_CORNER_DEF[c.id] || {}).pre || []).filter(id => id !== c.id);
+const preName = id => { const x = W.byId && W.byId(id); if (x) return x.c.n; const d = CORNERS.find(k => k.id === id); return d ? d.n : id; };
+// 선행 코너 상태 : ok(앞에 있음) · after(뒤에 있음) · none(프로세스에 없음)
+function preState(c) {
+  const f = W.flat(), me = f.findIndex(x => x.c === c);
+  return preIds(c).map(id => { const p = W.posOf(id); return { id, n: preName(id), s: p < 0 ? 'none' : p > me ? 'after' : 'ok' }; });
+}
+{
+  // 구성 검증 : 없거나 뒤에 있으면 오류
+  const coreRv = W.runVerify;
+  W.runVerify = function () {
+    coreRv.apply(this, arguments);
+    const add = [];
+    W.flat().forEach(x => preState(x.c).forEach(p => {
+      if (p.s !== 'ok') add.push({ t: 'err', m: '[선행 코너] \'' + x.c.n + '\' 코너보다 앞에 \'' + p.n + '\' 코너가 있어야 합니다. ' + (p.s === 'none' ? '\'' + p.n + '\' 코너를 앞쪽에 추가해주세요.' : '지금은 뒤에 배치되어 있습니다.') });
+    }));
+    if (!add.length) return;
+    W.vissues = add.concat(W.vissues || []);
+    W.vstate = 'fail';
+    W.renderVerify(true); if (W.updVBadge) W.updVBadge();
+  };
+  // 순서 변경 : 선행 코너가 뒤로 가는 이동은 막는다 (없는 경우는 검증에서 안내)
+  const coreOv = W.orderViolation;
+  W.orderViolation = function () {
+    const v = coreOv.apply(this, arguments); if (v) return v;
+    const f = W.flat();
+    for (const x of f) { const p = preState(x.c).find(q => q.s === 'after'); if (p) return { c: x.c, srcN: p.n }; }
+    return null;
+  };
+}
+// 코너 상세 : 선행 코너와 배치 상태 (머리줄 바로 아래)
+function drawPre(d, c) {
+  const L = preState(c); if (!L.length) return;
+  const tag = s => s === 'ok' ? '<span class="pill p-green">앞에 있음</span>' : s === 'after' ? '<span class="pill p-orange">뒤에 있음</span>' : '<span class="pill p-orange">없음</span>';
+  const el = document.createElement('div'); el.className = 'dsec pre-sec';
+  el.innerHTML = '<h4>선행 코너</h4><div class="pre-l">' + L.map(p => '<div class="pre-r"><b>' + W.esc(p.n) + '</b><span class="pre-id">' + p.id + '</span>' + tag(p.s) + '</div>').join('') + '</div><p class="ol-cap">주문 코너 관리에서 지정한 코너로, 이 코너보다 앞쪽 어디에든 있어야 합니다. 이 화면에서는 바꿀 수 없습니다.</p>';
+  const at = d.querySelector('.dhd');   // 머리줄 바로 아래
+  if (at) at.after(el); else d.prepend(el);
+}
 const $ = s => document.querySelector(s);
 
 // 코너 객체(c)에 이 프로세스 값을 담는다: c.bo = { ov: 덮어쓴 항목 값 }
@@ -42,7 +102,7 @@ function boState(c) {
   delete c.bo.ov.rule;
   // 코너 관리에서 허용을 끈 항목은 덮어쓴 값을 쓰지 않는다
   Object.keys(c.bo.ov).forEach(k => { if (!cfg.allow[k]) delete c.bo.ov[k]; });
-  return { id: c.id, mode: 'proc', cfg, ov: c.bo.ov, ro: !!W.RO, noSrc: true, bare: true, labels: LABELS };
+  return { id: c.id, mode: 'proc', cfg, ov: c.bo.ov, ro: !!W.RO, noSrc: true, bare: true, labels: LABELS, noStat: true, ovLabel: '현 프로세스에서만 변경하기' };
 }
 // 조회 화면(renderDetailRO)에는 칸이 없어 만들어 넣는다: 문구는 머리줄 바로 아래
 function ensureSlots(d) {
@@ -65,6 +125,7 @@ const coreDetail = W.renderDetail;
 W.renderDetail = function () {
   coreDetail.apply(this, arguments);
   const c = W.sel, d = $('#detail'); BOST = null;
+  if (c && d && !d.querySelector('.pre-sec')) drawPre(d, c);
   if (!c || !d || c.nv) return;
   const sp = boSpec(c.id); if (!sp || !sp.has) return;
   BOST = boState(c);

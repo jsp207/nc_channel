@@ -282,3 +282,25 @@ table.dh-t{width:100%;min-width:900px;border-collapse:collapse;font-size:14px;co
 .cc-and span,.cc-or span{padding:1px 10px;border-radius:10px;font-size:11px;font-weight:700}
 .cc-and span{background:#eef0f4;color:#4b5160}
 .cc-or span{background:#efe8ff;color:#5a3fd8}
+
+/* 연결 화면 : 단계 | 화면명 | 화면 형태 | 여는 위치 | 순서 · 삭제 (1단계는 코너 자체라 고정) */
+.cc-scrbox{display:grid;gap:10px}
+.cc-scr-h,.cc-scr{display:grid;grid-template-columns:44px minmax(0,1fr) 128px minmax(0,1.2fr) 96px;align-items:center;gap:10px}
+.cc-scr-h{min-height:34px;padding:0 12px;border-radius:8px;background:#f7f8fa;font-size:12px;color:#6b7280}
+.cc-scr-h span:first-child{text-align:center}
+.cc-scr{padding:8px 12px;border:1px solid var(--cc-line);border-radius:10px;background:#fff}
+.cc-scr.base{background:#fafbfc}
+.cc-scr .cc-inp,.cc-scr .cc-sel{width:100%;min-width:0}
+.cc-scr .cc-ictl{justify-content:flex-end}
+.cc-sno{justify-self:center;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#eef1f6;font-size:12px;font-weight:600;color:#4b5563}
+.cc-sfix{font-size:13px;color:#6b7280}
+@media (max-width:900px){.cc-scr-h{display:none}.cc-scr{grid-template-columns:32px minmax(0,1fr) 120px}.cc-scr>:nth-child(4){grid-column:2/4}.cc-scr>:last-child{grid-column:1/-1}}
+
+/* 선행 코너 : 고른 코너 칩 + 추가 셀렉트 */
+.cc-prebox{display:grid;gap:10px}
+.cc-pre-l{display:flex;flex-wrap:wrap;gap:8px}
+.cc-pre-c{display:inline-flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;border:1px solid var(--cc-line);border-radius:999px;background:#fff;font-size:13px}
+.cc-pre-c small{font-size:11px;color:#8b9199}
+.cc-pre-c button{border:0;background:none;width:22px;height:22px;border-radius:50%;color:#6b7280;font-size:15px;line-height:1;cursor:pointer}
+.cc-pre-c button:hover{background:#f1f3f6;color:#111}
+.cc-pre-add{max-width:360px}
