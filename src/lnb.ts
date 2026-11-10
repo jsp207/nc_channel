@@ -36,7 +36,7 @@ const MENU = [
   ] },
   { label: '주문관리', items: [
     { label: '주문 프로세스 관리', icon: 'process', href: 'order7-create.html', match: ['order6-create.html', 'order5-create.html', 'order4-create.html', 'order3-create.html'] },
-    { label: '주문 코너 그룹 관리', icon: 'corner', href: 'order-corner-group-v30.html', match: ['order-corner-group-v23.html', 'order-corner-group-v22.html'] },
+    // 주문 코너 그룹 관리는 메뉴에서 빼고 히스토리 > 주문 > 그룹(v0.3 latest)으로만 연다
     { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v30.html', match: ['order-corner-v22.html', 'order-corner-v21.html', 'order-corner-create.html'] },
     // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },

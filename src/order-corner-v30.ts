@@ -4,7 +4,7 @@
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import { PAGES, UI, KIND_D_OLD, ITEMS, o, CORNERS, STR, PROCS, CONDREF, COMP, LINKS, LSRC, PSUB, KIND_D, GROUPS, DS_OVR, CAT, SORTS, PKEYS, EPC, epcOpt, GIFT, TDP, DEVICE, ADDON, CATS, catOpt, pick, esc, IC, has, foHead, badge, logoBox, foBody, foCard, ctaN, ctaList, pvCorner, CORNER_EDITOR, persistCorner, forgetCorner } from "./order-corner-v22-data";
-import { openCornerCreate, openCornerEdit, cornerView, specOf, setFold } from "./order-corner-create-v30";
+import { openCornerCreate, openCornerEdit, cornerView, cornerThumb, specOf, setFold } from "./order-corner-create-v30";
 
 requireAuthentication();
 
@@ -64,17 +64,33 @@ function baseList(){
 }
 // 목록 버전 표기 v1.0 (v1.2 그대로)
 function vfmt(v){var m=String(v||'').match(/\d+/g);if(!m)return '-';while(m.length<2)m.push('0');return 'v'+m.slice(0,2).join('.')}
+/* 목록 : 코너 유형 ID | 미리보기 | 코너 유형 | 배열·레이아웃 | 사용여부 | 승인상태 | 최근 수정일 | 최근 수정자 (카드 · 리스트 보기 전환) */
+var ARR_EN={'가로형':'Horizontal','세로형':'Vertical','가로형(카테고리형)':'Horizontal (Category)','세로형(카테고리형)':'Vertical (Category)','단일형':'Single','스와이프형':'Swipe','카테고리형':'Category','리스트형':'List','프로필형':'Profile','상태 안내형':'Status','입력형':'Input','텍스트형':'Text','스텝형':'Step','아코디언형':'Accordion','비교형':'Compare','후기형':'Review'};
+var TYPE_C={'상품형':'t-prd','혜택·오퍼형':'t-ofr','배너형':'t-bnr','업무 진입형':'t-tsk','콘텐츠 안내형':'t-cnt','코너 그룹':'t-grp'};
+function arrTxt(a){return a&&a!=='-'?esc(a)+(ARR_EN[a]?' <span class="en">('+ARR_EN[a]+')</span>':''):'-'}
+function typeChip(t){return t&&t!=='-'?'<span class="tchip '+(TYPE_C[t]||'t-grp')+'">'+esc(t)+'</span>':'-'}
+function apOf(c){return isGrp(c)?'임시저장':c.pending?'승인대기':'승인완료'}
+function apChip(c){var a=apOf(c);return '<span class="apchip '+(a==='승인완료'?'ok':a==='승인대기'?'wait':'tmp')+'">'+a+'</span>'}
+function thumb(c){var h=isGrp(c)?'':cornerThumb(c);return '<div class="lthumb" aria-hidden="true">'+(h?'<div class="lphone">'+h+'</div>':'<span class="lt-na">미리보기 없음</span>')+'</div>'}
+var VIEW=(function(){try{return localStorage.getItem('nova.cornerList.view')||'list'}catch(e){return 'list'}})();
+function setView(v){VIEW=v;try{localStorage.setItem('nova.cornerList.view',v)}catch(e){}renderList()}
 function renderList(){
   var L=baseList(), tp=Math.max(1,Math.ceil(L.length/PS)); if(Q.page>tp) Q.page=tp;
   var off=(Q.page-1)*PS, rows=L.slice(off,off+PS);
   $('rCnt').textContent=L.length;
-  $('vList').hidden=!L.length;
-  $('lBody').innerHTML=rows.map(function(c,i){
-    var nm=esc(c.n)+(isGrp(c)?DEFN+'<small class="q">구성 코너 '+c.members.length+'개</small>':'');
-    // 코너 그룹은 유형 칸에 '코너 그룹'만, 비화면 코너처럼 맞는 표시 방식이 없으면 '-'
-    var sp=isGrp(c)?{type:'코너 그룹',form:'-',mode:'-'}:specOf(c)||{type:'-',form:'-',mode:'-'};
-    return '<tr data-id="'+c.id+'"><td class="mono"><a class="cid" href="#" data-id="'+c.id+'">'+c.id+'</a></td><td class="vr">'+vfmt(c.ver)+'</td><td class="l">'+nm+'</td><td>'+esc(sp.type)+'</td><td>'+esc(sp.form)+'</td><td>'+esc(sp.mode)+'</td><td>'+c.use+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
-  }).join('');
+  $('vList').hidden=!L.length||VIEW!=='list';
+  $('vCard').hidden=!L.length||VIEW!=='card';
+  [].forEach.call(document.querySelectorAll('#vTog [data-view]'),function(b){var on=b.getAttribute('data-view')===VIEW;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
+  var spOf=function(c){return isGrp(c)?{type:'코너 그룹',form:'-',mode:'-'}:specOf(c)||{type:'-',form:'-',mode:'-'}};
+  if(VIEW==='list'){
+    $('lBody').innerHTML=rows.map(function(c){var sp=spOf(c);
+      return '<tr data-id="'+c.id+'"><td class="mono"><a class="cid" href="#" data-id="'+c.id+'" title="'+esc(c.n)+'">'+c.id+'</a></td><td class="tpv">'+thumb(c)+'</td><td>'+typeChip(sp.type)+'</td><td class="l">'+arrTxt(sp.form)+'</td><td>'+c.use+'</td><td>'+apChip(c)+'</td><td class="dt">'+String(c.dt).slice(0,10)+'</td><td class="mb">'+esc(c.mby)+'</td></tr>';
+    }).join('');
+  }else{
+    $('cGrid').innerHTML=rows.map(function(c){var sp=spOf(c);
+      return '<article class="lcard" data-id="'+c.id+'"><a class="lc-pv" href="#" data-id="'+c.id+'" aria-label="'+esc(c.n)+' 상세">'+thumb(c)+'</a><div class="lc-b"><div class="lc-t">'+typeChip(sp.type)+apChip(c)+'</div><a class="cid" href="#" data-id="'+c.id+'">'+c.id+'</a><p class="lc-n">'+esc(c.n)+'</p><p class="lc-a">'+arrTxt(sp.form)+'</p><p class="lc-m"><span>사용 '+c.use+'</span><span>'+esc(c.mby)+'</span><span>'+String(c.dt).slice(0,10)+'</span></p></div></article>';
+    }).join('');
+  }
   $('lEmpty').hidden=!!L.length;
   $('pager').innerHTML=pagerHTML(L.length,Q.page);
 }
@@ -276,9 +292,8 @@ function renderRight(){
   renderUse();
 }
 function renderHead(){
-  $('dId').textContent=cur.id;$('dName').textContent=cur.n;
+  $('dName').textContent=cur.n;   // 제목 옆 코드 · 상태 · 버전은 뺐다 (주문 프로세스 상세 order7과 같은 제목)
   var t=isGrp(cur)?cur.t:(cur.t==='결제'?'결제':(isLinkedDs(cur.ds)?'상품 연동':'주문'));
-  $('dPills').innerHTML='<span class="pill '+(cur.use==='Y'?'p-gr':'p-gy')+'">'+(cur.use==='Y'?'사용':'미사용')+'</span> <span class="ver">'+cur.ver+'</span>'+(cur.pending?' '+apPill('승인 대기'):'')+(mode==='edit'?' <span class="pill p-pu">수정 중</span>':'');
   $('hCnt').textContent=' '+cur.hist.length;$('uCnt').textContent=' '+useRefs().length;
   [].forEach.call(document.querySelectorAll('#dTabs .dtab'),function(b){b.classList.toggle('on',b.getAttribute('data-dt')===DT)});
   $('tInfo').hidden=DT!=='info';$('tUse').hidden=DT!=='use';$('tHist').hidden=DT!=='hist';
@@ -355,6 +370,8 @@ $('lBody').addEventListener('click',function(e){
   // 행 전체가 아니라 코너 ID를 눌렀을 때만 상세로 이동
   var a=e.target.closest('a[data-id]');if(a){e.preventDefault();openDetail(a.getAttribute('data-id'))}
 });
+$('cGrid').addEventListener('click',function(e){var a=e.target.closest('a[data-id]');if(a){e.preventDefault();openDetail(a.getAttribute('data-id'))}});
+$('vTog').addEventListener('click',function(e){var b=e.target.closest('[data-view]');if(b)setView(b.getAttribute('data-view'))});
 /* 수정 : 등록 화면을 저장된 값으로 채워 수정 모드로 연다. 취소하면 상세로, 저장하면 갱신된 상세로 돌아온다 */
 function backToDetail(){showPage('detail');mode='view';dr=null;renderDetail();window.scrollTo(0,0)}
 function editCorner(){

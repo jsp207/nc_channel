@@ -1,0 +1,301 @@
+<title>주문 코너 유형 등록</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 참고 화면(ADMIN 코너 유형 관리) 구조 재현. 좌측 메뉴 + 상단 탭 + 흰 콘텐츠 카드(미리보기 | 기본 정보·코너 속성) */
+:root{
+  --primary:#3617CE; --primary-weak:#EFECFC; --green:#14946A; --fg:#1A1A1A; --fg2:#454F59; --fg3:#8B939C;
+  --border:#E8ECEF; --bg:#EEF0F4; --side:#EEF0F4; --surface:#FFFFFF; --cell:#F7F8FA; --grp:#F5F6F8;
+  --ph:#E9ECF0; --dis:#C5CBD2; --dis-bg:#E3E6EA; --new:#3617CE; --new-bg:#EFECFC; --arr:#14946A; --arr-bg:#E6F5EE;
+  --font:"Pretendard","Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --primary:#8F7BFF; --primary-weak:#2A2450; --green:#4FCB98; --fg:#ECEEF2; --fg2:#B4BBC4; --fg3:#858D97;
+  --border:#2E333B; --bg:#121418; --side:#16191E; --surface:#1C1F24; --cell:#22262C; --grp:#20242A;
+  --ph:#2C3138; --dis:#4A5059; --dis-bg:#3A3F47; --new:#A898FF; --new-bg:#2A2450; --arr:#4FCB98; --arr-bg:#16352A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --primary:#8F7BFF; --primary-weak:#2A2450; --green:#4FCB98; --fg:#ECEEF2; --fg2:#B4BBC4; --fg3:#858D97;
+  --border:#2E333B; --bg:#121418; --side:#16191E; --surface:#1C1F24; --cell:#22262C; --grp:#20242A;
+  --ph:#2C3138; --dis:#4A5059; --dis-bg:#3A3F47; --new:#A898FF; --new-bg:#2A2450; --arr:#4FCB98; --arr-bg:#16352A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:13px;line-height:1.45}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh;padding-right:max(0px,env(safe-area-inset-right,0px))}
+/* sidebar */
+.side{background:var(--side);padding:14px 14px 20px max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:2px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:2px 0 18px}
+.logo i{width:28px;height:28px;border-radius:6px;background:var(--primary);display:grid;place-items:center;color:#fff;font-style:normal;font-size:12px}
+.sg{font-size:12px;color:var(--fg2);padding:16px 10px 6px}
+.si{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--fg2);font-size:13px}
+.si .ic{width:14px;height:14px;border:1.5px solid currentColor;border-radius:3px;opacity:.75}
+.si.on{background:var(--surface);color:var(--primary);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.ver{margin-top:auto;font-size:11px;color:var(--fg3);text-align:center;padding-top:20px}
+/* top tabs */
+.main{min-width:0;padding:12px 12px 12px 0}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.tab{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--fg2)}
+.tab.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:500}
+.content{background:var(--surface);border-radius:14px;padding:36px 48px 28px}
+.cols{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+.box{border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden}
+.box>h2{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:19px;margin:0;padding:16px 16px 14px;border-bottom:1px solid var(--border)}
+.box>h2 small{font-size:11px;color:var(--fg3);font-weight:400;margin-left:8px}
+.chev{border:0;background:none;color:var(--fg3);cursor:pointer;font-size:12px;padding:4px}
+.chip-res{font-size:11px;font-weight:500;background:var(--cell);border:1px solid var(--border);border-radius:999px;padding:3px 10px;color:var(--fg2);white-space:nowrap}
+.chip-res b{color:var(--primary)}
+.right{display:flex;flex-direction:column;gap:14px;min-width:0}
+.inner{padding:0 16px 14px}
+/* form table */
+.ft{display:grid;grid-template-columns:150px minmax(0,1fr) 150px minmax(0,1fr)}
+.ft>div{border-bottom:1px solid var(--border);padding:12px 14px;min-width:0}
+.ft .l{background:var(--cell);color:var(--fg);font-weight:500;display:flex;align-items:center;gap:4px}
+.ft .span3{grid-column:span 3}
+.req{color:#E5484D}
+.info{display:inline-grid;place-items:center;width:13px;height:13px;border:1px solid var(--fg3);border-radius:50%;font-size:9px;color:var(--fg3)}
+.radios{display:flex;flex-wrap:wrap;gap:6px 18px}
+.radios label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13.5px}
+input[type=radio],input[type=checkbox]{accent-color:var(--primary);margin:0;width:15px;height:15px}
+.purpose{margin-top:10px;background:var(--primary-weak);border-radius:4px;padding:7px 12px;font-size:11.5px}
+.purpose b{color:var(--primary);margin-right:8px}
+.hint{font-size:11px;color:var(--fg3);margin-top:8px}.hint b{color:var(--fg2)}
+.inp{width:100%;max-width:320px;border:1px solid var(--border);background:var(--surface);color:var(--fg);border-radius:4px;padding:8px 10px;font:inherit;font-size:12.5px}
+.inp.wide{max-width:none}
+.pill{display:inline-block;background:var(--cell);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;color:var(--fg2)}
+.ro{font-size:11px;color:var(--fg3);margin-left:6px}
+/* attribute table */
+.grp{padding:9px 12px;background:var(--grp);border-bottom:1px solid var(--border);font-size:11.5px;color:var(--fg3)}
+.at + .grp.i{margin-top:20px;border-top:1px solid var(--border)}
+.grp b{font-size:12.5px;margin-right:4px}
+.grp.c b{color:var(--primary)} .grp.i b{color:var(--green)}
+.at{display:grid;grid-template-columns:150px minmax(0,1fr) 150px minmax(0,1fr)}
+.at>div{border-bottom:1px solid var(--border);padding:10px 12px;min-width:0;display:flex;align-items:center}
+.at .l{background:var(--cell);flex-direction:column;align-items:flex-start;justify-content:center;gap:1px}
+.at .full{grid-column:span 3}
+.nm{font-size:13.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.key{font-size:10.5px;color:var(--fg3)}
+.tg{font-size:9.5px;line-height:15px;padding:0 5px;border-radius:3px;font-weight:500}
+.tg.fix{background:var(--dis-bg);color:var(--fg2)}
+.tg.opt{background:var(--primary-weak);color:var(--primary)}
+.tg.new{background:var(--new-bg);color:var(--new);border:1px dashed var(--new)}
+.tg.arr{background:var(--arr-bg);color:var(--arr)}
+.yn{display:flex;gap:18px;align-items:center}
+.yn label{display:inline-flex;gap:6px;align-items:center;cursor:pointer;font-size:13.5px}
+.yn input:disabled{accent-color:var(--dis)}
+.yn input:disabled+span{color:var(--fg3)}
+.legend{padding:12px;font-size:11px;color:var(--fg3)}.legend b{color:var(--primary);font-weight:500}
+.notice{margin:12px;padding:12px;border:1px solid var(--border);background:var(--cell);border-radius:6px;font-size:11.5px;color:var(--fg2)}
+.below{font-size:11px;color:var(--fg3);margin-top:2px}.below b{color:var(--fg2)}
+.actions{display:flex;justify-content:space-between;gap:8px;margin-top:24px;border-top:1px solid var(--border);padding-top:14px}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--fg);border-radius:4px;padding:8px 14px;font:inherit;cursor:pointer}
+.btn.p{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:500}
+/* preview */
+.pvbox{background:var(--grp);padding:16px;border-bottom:1px solid var(--border)}
+.phone{background:var(--surface);border-radius:28px;padding:22px 26px 26px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:10px;min-height:110px}
+.reset{display:flex;justify-content:center;align-items:center;gap:6px;margin:10px 0 0;width:100%;border:1px solid var(--border);background:var(--surface);color:var(--fg);border-radius:6px;padding:10px;font:inherit;font-weight:500;cursor:pointer}
+.pvnote{font-size:11px;color:var(--fg3);margin-top:12px}.pvnote b{color:var(--fg2)}
+.ph{background:var(--ph);border-radius:6px;color:var(--fg3);font-size:11px;display:grid;place-items:center}
+.ct{font-weight:700;font-size:15px}
+.cs{font-size:11.5px;color:var(--fg3);margin-top:-6px}
+.bt{font-size:11.5px;color:var(--fg3);margin-top:-6px}
+.nt{font-size:11px;background:var(--cell);border-radius:6px;padding:6px 8px;color:var(--fg2)}
+.row{display:flex;gap:12px;align-items:flex-start;padding:4px 0}
+.row .img{width:46px;height:46px;flex:none}
+.body{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.it{font-weight:700;font-size:13px}
+.st{font-size:11.5px;color:var(--fg3)}
+.pr{font-size:13px;font-weight:700}.pr em{font-style:normal;color:var(--primary);margin-right:4px}.pr span{font-weight:400;font-size:11px;color:var(--fg2)}
+.cap{font-size:10.5px;color:var(--fg3)}
+.bdg{display:inline-block;font-size:9.5px;background:var(--cell);border:1px solid var(--border);color:var(--fg3);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px;font-weight:400}
+.ctl{width:17px;height:17px;border:1.5px solid var(--dis);flex:none;margin-top:1px}
+.ctl.r{border-radius:50%}.ctl.c{border-radius:4px}
+.kv{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:5px 0}.kv span:first-child{color:var(--fg2)}
+.cta{border:1px solid var(--border);border-radius:999px;text-align:center;padding:8px;font-size:11.5px;color:var(--fg)}
+.hs{display:flex;gap:10px;overflow:hidden}
+.card{flex:none;width:112px;display:flex;flex-direction:column;gap:3px}.card .ph{height:112px}
+.card.S .ph{height:84px}.card.S{width:96px}.card.L{width:140px}.card.L .ph{height:140px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chp{display:inline-flex;align-items:center;gap:6px;background:var(--cell);border-radius:999px;padding:6px 12px;font-size:11.5px}
+.chp i{width:12px;height:12px;border-radius:3px;background:var(--primary)}
+.chp.on{outline:1.5px solid var(--primary);color:var(--primary)}
+.ico{width:42px;height:42px;border-radius:50%;flex:none}
+.lbl{font-size:11px;color:var(--fg2)}
+.input{border:1px solid var(--border);border-radius:6px;padding:9px;font-size:11px;color:var(--fg3)}
+.step{display:flex;gap:10px}.step b{width:20px;height:20px;border-radius:50%;background:var(--primary-weak);color:var(--primary);display:grid;place-items:center;font-size:10.5px;flex:none}
+.acc{display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0;font-size:12.5px}
+.tbs{display:flex;gap:14px;font-size:11.5px;border-bottom:1px solid var(--border)}.tbs span{padding-bottom:6px}.tbs span:first-child{border-bottom:2px solid var(--fg);font-weight:700}
+.bar{height:10px;border-radius:5px;background:var(--primary);opacity:.75}
+.na{font-size:12px;color:var(--fg3);text-align:center;padding:26px 8px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--fg3);font-weight:400;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+@media (max-width:1100px){.content{padding:24px 20px}.cols{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}.side{display:none}
+  .main{padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+  .content{padding:16px 12px}
+  .ft,.at{grid-template-columns:110px minmax(0,1fr)}.ft .span3,.at .full{grid-column:span 1}
+}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo"><i>▦</i>ADMIN</div>
+    <div class="si"><span class="ic"></span>구조도</div>
+    <div class="sg">주문 관리</div>
+    <div class="si on"><span class="ic"></span>주문 코너 유형 관리</div>
+    <div class="si"><span class="ic"></span>주문 프로세스 관리</div>
+    <div class="sg">전시 관리</div>
+    <div class="si"><span class="ic"></span>전시화면 관리</div>
+    <div class="si"><span class="ic"></span>코너 유형 관리</div>
+    <div class="si"><span class="ic"></span>배너 캠페인 관리</div>
+    <div class="si"><span class="ic"></span>문구 관리</div>
+    <div class="ver">메뉴 구성 가안</div>
+  </aside>
+
+  <main class="main">
+    <div class="tabs"><span class="tab on">주문 코너 유형 관리</span><span class="tab">주문 프로세스 관리</span></div>
+    <div class="content">
+      <div class="cols">
+        <div>
+          <section class="box">
+            <h2>코너 미리보기</h2>
+            <div class="pvbox"><div class="phone" id="pv"></div></div>
+          </section>
+          <button class="reset" id="reset" type="button">↺ 초기 설정값으로 돌리기</button>
+          <div class="pvnote">코너 유형은 <b>어떤 요소를 쓸지(Show)·형태</b>만 정의합니다. 값은 샘플이고, 실제 문구·콘텐츠는 다른 메뉴에서 채웁니다.</div>
+        </div>
+
+        <div class="right">
+          <section class="box">
+            <h2>코너 기본 정보 <span style="display:flex;gap:8px;align-items:center"><span class="chip-res" id="result"></span><button class="chev" data-t="b1" aria-label="접기">︿</button></span></h2>
+            <div class="inner" id="b1"><div class="ft">
+              <div class="l">코너 유형 ID</div><div class="span3" style="color:var(--fg2)">( 자동 생성 )</div>
+              <div class="l">코너 마크업 ID <span class="req">*</span> <span class="info">i</span></div><div class="span3"><input class="inp" id="markup" placeholder="코너 마크업 ID를 입력해 주세요"></div>
+              <div class="l">코너 유형 <span class="req">*</span> <span class="info">i</span></div><div class="span3" style="display:block"><div class="radios" id="types"></div><div class="purpose" id="purpose"></div></div>
+              <div class="l">배열·레이아웃 <span class="info">i</span></div><div class="span3" style="display:block"><div class="radios" id="arrs"></div><div class="hint">배열은 <b>형태(레이아웃)</b>만 정합니다 · 노출 개수는 주문 프로세스에서.</div></div>
+              <div class="l">운영 플랫폼</div><div><div class="radios"><label><input type="checkbox" id="pf1"> 전체</label><label><input type="checkbox" id="pf2" checked> 모바일</label><label><input type="checkbox" id="pf3"> PC</label></div></div>
+              <div class="l">사용 여부 <span class="req">*</span></div><div><div class="radios"><label><input type="radio" name="use" id="u1" checked> 사용</label><label><input type="radio" name="use" id="u2"> 미사용</label></div></div>
+              <div class="l">승인상태</div><div class="span3"><span class="pill">임시저장</span><span class="ro">(읽기 전용)</span></div>
+              <div class="l">코너 유형 설명</div><div class="span3"><input class="inp wide" id="desc" placeholder="100자 이내"></div>
+            </div></div>
+          </section>
+
+          <section class="box">
+            <h2><span>코너 속성<small>이 코너 유형이 쓰는 표시 항목</small></span><span style="display:flex;gap:10px;align-items:center"><button class="chev" data-t="b2" aria-label="접기">︿</button></span></h2>
+            <div class="inner" id="b2" style="padding-top:0"><div id="attrs"></div></div>
+          </section>
+          
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button">‹ 목록</button>
+        <div style="display:flex;gap:8px"><button class="btn" type="button">취소</button><button class="btn p" type="button">✓ 등록</button></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const DATA={"상품형|세로형": [{"area": "c", "name": "배너", "key": "Banner", "g": "옵션", "src": "ref"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "ref"}, {"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 서브 타이틀", "key": "CornerSubTitle", "g": "옵션", "src": "new"}, {"area": "c", "name": "버튼 텍스트", "key": "ButtonText", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 선택 방식", "key": "SelectType", "g": "형태(없음/단일/복수)", "src": "new"}, {"area": "i", "name": "컴포넌트 이미지", "key": "ImageSrc", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 서브 타이틀", "key": "SubTitle", "g": "옵션", "src": "new"}, {"area": "i", "name": "컴포넌트 배지", "key": "BadgeGroup", "g": "옵션", "src": "new"}, {"area": "i", "name": "가격", "key": "TextPriceGroup", "g": "옵션", "src": "ref"}, {"area": "i", "name": "할인율", "key": "Discount", "g": "옵션", "src": "ref"}, {"area": "i", "name": "기간", "key": "Period", "g": "옵션", "src": "ref"}, {"area": "i", "name": "컴포넌트 캡션", "key": "Caption01", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 캡션2", "key": "Caption02", "g": "옵션", "src": "chg"}], "상품형|가로형": [{"area": "c", "name": "배너", "key": "Banner", "g": "옵션", "src": "ref"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "ref"}, {"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 서브 타이틀", "key": "CornerSubTitle", "g": "옵션", "src": "new"}, {"area": "c", "name": "버튼 텍스트", "key": "ButtonText", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 형태", "key": "Variants", "g": "형태(Small/Medium/Large)", "src": "ref"}, {"area": "i", "name": "컴포넌트 선택 방식", "key": "SelectType", "g": "형태(없음/단일/복수)", "src": "new"}, {"area": "i", "name": "컴포넌트 이미지", "key": "ImageSrc", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "고정", "src": "ref"}, {"area": "i", "name": "가격", "key": "Price", "g": "옵션", "src": "ref"}, {"area": "i", "name": "할인율", "key": "DiscountRate", "g": "옵션", "src": "ref"}, {"area": "i", "name": "컴포넌트 서브 텍스트", "key": "SubText", "g": "옵션", "src": "chg"}], "혜택·오퍼형|세로형": [{"area": "c", "name": "배너", "key": "Banner", "g": "옵션", "src": "ref"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "ref"}, {"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 서브 타이틀", "key": "CornerSubTitle", "g": "옵션", "src": "new"}, {"area": "c", "name": "버튼 텍스트", "key": "ButtonText", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 선택 방식", "key": "SelectType", "g": "형태(없음/단일/복수)", "src": "new"}, {"area": "i", "name": "컴포넌트 이미지", "key": "ImageSrc", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 서브 타이틀", "key": "SubTitle", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 배지", "key": "BadgeGroup", "g": "옵션", "src": "new"}, {"area": "i", "name": "가격", "key": "Price", "g": "옵션", "src": "new"}], "배너형|스와이프형": [], "업무 진입형|리스트형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 서브 타이틀", "key": "CornerSubTitle", "g": "옵션", "src": "new"}, {"area": "c", "name": "코너 안내 문구", "key": "Notice", "g": "옵션", "src": "new"}, {"area": "c", "name": "코너 전체 동의", "key": "AllAgree", "g": "옵션", "src": "new"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "new"}, {"area": "i", "name": "리스트 형태", "key": "ListVariants", "g": "형태(기본/항목·값)", "src": "new"}, {"area": "i", "name": "컴포넌트 선택 방식", "key": "SelectType", "g": "형태(없음/단일/복수)", "src": "new"}, {"area": "i", "name": "리스트", "key": "List", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 그룹 타이틀", "key": "GroupTitle", "g": "옵션", "src": "new"}, {"area": "i", "name": "컴포넌트 서브 타이틀", "key": "SubTitle", "g": "옵션", "src": "new"}, {"area": "i", "name": "컴포넌트 배지", "key": "BadgeGroup", "g": "옵션", "src": "new"}, {"area": "i", "name": "컴포넌트 상세 펼침", "key": "Detail", "g": "옵션", "src": "new"}], "업무 진입형|카테고리형": [{"area": "i", "name": "컴포넌트 선택 방식", "key": "SelectType", "g": "형태(없음/단일/복수)", "src": "new"}, {"area": "i", "name": "컴포넌트 아이콘", "key": "Icon", "g": "옵션", "src": "chg"}, {"area": "i", "name": "컴포넌트 라벨", "key": "Label", "g": "고정", "src": "ref"}], "업무 진입형|상태 안내형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 서브 타이틀", "key": "SubTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 배지", "key": "BadgeItem", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 아이콘", "key": "IconItem", "g": "고정", "src": "ref"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "new"}, {"area": "i", "name": "컴포넌트 정보 행", "key": "InfoRow", "g": "옵션", "src": "new"}], "업무 진입형|입력형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "arr"}, {"area": "c", "name": "코너 서브 타이틀", "key": "CornerSubTitle", "g": "옵션", "src": "arr"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 입력 필드", "key": "InputField", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 도움말", "key": "HelpText", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 등록 목록", "key": "RegisteredList", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 빈 상태 안내", "key": "Empty", "g": "옵션", "src": "arr"}], "콘텐츠 안내형|텍스트형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "arr"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 본문", "key": "Body", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 아이콘", "key": "Icon", "g": "옵션", "src": "arr"}], "콘텐츠 안내형|스텝형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "arr"}, {"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 스텝 번호", "key": "StepNo", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 본문", "key": "Body", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 이미지", "key": "ImageSrc", "g": "옵션", "src": "arr"}], "콘텐츠 안내형|아코디언형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "옵션", "src": "arr"}, {"area": "c", "name": "버튼 텍스트", "key": "ButtonText", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 탭", "key": "Tab", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 본문", "key": "Body", "g": "고정", "src": "arr"}], "콘텐츠 안내형|비교형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 비교 항목", "key": "CompareItem", "g": "고정", "src": "arr"}, {"area": "i", "name": "컴포넌트 그래프", "key": "Graph", "g": "옵션", "src": "arr"}, {"area": "i", "name": "컴포넌트 본문", "key": "Body", "g": "옵션", "src": "arr"}], "콘텐츠 안내형|후기형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "arr"}, {"area": "i", "name": "후기 구성", "key": "Review", "g": "TBD", "src": "arr"}], "업무 진입형|프로필형": [{"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 서브 타이틀", "key": "SubTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 프로필 이미지", "key": "ImageSrc", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 고객명", "key": "CustomerName", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 휴대폰 번호", "key": "Caption", "g": "고정", "src": "ref"}, {"area": "c", "name": "코너 버튼", "key": "Button", "g": "고정", "src": "ref"}], "콘텐츠 안내형|가로형": [{"area": "c", "name": "CTA", "key": "CallToAction", "g": "옵션", "src": "ref"}, {"area": "c", "name": "코너 타이틀", "key": "CornerTitle", "g": "고정", "src": "ref"}, {"area": "c", "name": "버튼 텍스트", "key": "ButtonText", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 이미지 형태", "key": "Variants", "g": "형태(Small/Medium/Large)", "src": "ref"}, {"area": "i", "name": "컴포넌트 이미지", "key": "ImageSrc", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 타이틀", "key": "ItemTitle", "g": "고정", "src": "ref"}, {"area": "i", "name": "컴포넌트 캡션·평점", "key": "Caption01", "g": "고정", "src": "ref"}], "배너형|단일형": []};
+const TYPES=[
+ {t:'상품형',p:'판매해 수익이 나는 상품(요금제, 단말, 부가서비스, 보험, 충전 데이터 등) 후보를 탐색·선택하게 한다.',arr:['가로형','세로형','가로형(카테고리형)','세로형(카테고리형)']},
+ {t:'혜택·오퍼형',p:'고객에게 주는 혜택(쿠폰, 할인, 제휴카드, 사은품, 요금제 포함 혜택)을 제안·선택하게 한다.',arr:['가로형','세로형','가로형(카테고리형)','세로형(카테고리형)']},
+ {t:'배너형',p:'배너 캠페인 관리에서 등록한 배너를 불러와 노출한다. 단일형=배너 1개, 스와이프형=배너 여러 개.',arr:['단일형','스와이프형']},
+ {t:'업무 진입형',p:'조회·변경·신청·납부 업무로 바로 이동시키거나 처리하고, 고객 상태·보유 정보를 안내한다.',arr:['카테고리형','리스트형','프로필형','상태 안내형','입력형']},
+ {t:'콘텐츠 안내형',p:'이용 가이드, 설명, 유의사항, 추천 콘텐츠를 제공한다.',arr:['가로형','텍스트형','스텝형','아코디언형','비교형','후기형']},
+];
+const NEWARR=new Set(['업무 진입형|입력형','콘텐츠 안내형|텍스트형','콘텐츠 안내형|스텝형','콘텐츠 안내형|아코디언형','콘텐츠 안내형|비교형','콘텐츠 안내형|후기형']);
+const DEF={'상품형':'세로형','혜택·오퍼형':'세로형','배너형':'단일형','업무 진입형':'리스트형','콘텐츠 안내형':'텍스트형'};
+const GRPDESC={c:'카드 전체에 1개 (배너·타이틀·버튼)',i:'리스트에서 반복되는 카드 1개'};
+let st={t:'상품형',a:'세로형',v:{}};
+const $=s=>document.querySelector(s);
+const tplOf=()=>{const k=st.t+'|'+st.a; if(DATA[k]) return DATA[k]; if(st.a==='세로형(카테고리형)'&&st.t==='상품형') return DATA['상품형|세로형']; return null;};
+function defaults(){st.v={};(tplOf()||[]).forEach(e=>{
+  if(e.g.startsWith('형태')){const o=e.g.match(/\((.*)\)/)[1].split('/');st.v[e.key]=e.key==='SelectType'?'단일':o[0];}
+  else st.v[e.key]=true;});}
+function on(k){const e=(tplOf()||[]).find(x=>x.key===k); if(!e) return false; if(e.g!=='옵션') return true; return !!st.v[k];}
+const val=k=>st.v[k];
+
+function renderTypes(){
+  $('#types').innerHTML=TYPES.map((x,i)=>`<label><input type="radio" name="ty" id="ty${i}" value="${x.t}" ${x.t===st.t?'checked':''}> ${x.t}</label>`).join('');
+  $('#types').querySelectorAll('input').forEach(r=>r.onchange=()=>{st.t=r.value;st.a=DEF[st.t];defaults();renderAll();});
+  const ty=TYPES.find(x=>x.t===st.t); $('#purpose').innerHTML=`<b>목적</b>${ty.p}`;
+  if(!ty.arr.length){$('#arrs').innerHTML='<span style="color:var(--fg3)">미확인</span>';return;}
+  $('#arrs').innerHTML=ty.arr.map((a,i)=>`<label><input type="radio" name="ar" id="ar${i}" value="${a}" ${a===st.a?'checked':''}> ${a}</label>`).join('');
+  $('#arrs').querySelectorAll('input').forEach(r=>r.onchange=()=>{st.a=r.value;defaults();renderAll();});
+}
+function cellPair(e,idx,full){
+  const tag=e.g==='고정'?'<span class="tg fix">고정</span>':e.g==='옵션'?'<span class="tg opt">옵션</span>':e.g==='TBD'?'<span class="tg fix">TBD</span>':'';
+  const lab=`<div class="l"><span class="nm">${e.name} ${tag}</span><span class="key">(${e.key})</span></div>`;
+  let ctl;
+  if(e.g.startsWith('형태')){const o=e.g.match(/\((.*)\)/)[1].split('/');
+    ctl=`<div class="full"><div class="yn">${o.map((x,j)=>`<label><input type="radio" name="f${idx}" id="f${idx}_${j}" value="${x}" data-k="${e.key}" data-f="1" ${val(e.key)===x?'checked':''}><span>${x}</span></label>`).join('')}</div></div>`;
+    return lab+ctl;}
+  const fx=e.g!=='옵션';
+  ctl=`<div class="${full?'full':''}"><div class="yn"><label><input type="radio" name="y${idx}" id="y${idx}a" value="1" data-k="${e.key}" ${fx||st.v[e.key]?'checked':''} ${fx?'disabled':''}><span>Y</span></label><label><input type="radio" name="y${idx}" id="y${idx}b" value="0" data-k="${e.key}" ${!fx&&!st.v[e.key]?'checked':''} ${fx?'disabled':''}><span>N</span></label></div></div>`;
+  return lab+ctl;
+}
+function renderAttrs(){
+  const t=tplOf(), box=$('#attrs');
+  if(t===null){box.innerHTML='<div class="notice">참고 화면에 이 배열의 코너 속성 정의가 없습니다.</div>';return;}
+  if(!t.length){box.innerHTML='<div class="notice">배너 소재(이미지·문구·랜딩)는 배너 캠페인 관리에서 등록해요. 이 코너에 어떤 배너를 노출할지는 주문 프로세스에서 선택합니다.</div>';return;}
+  let h=(st.t==='상품형'&&st.a==='세로형(카테고리형)')?'<div class="notice">세로형(카테고리형) 속성은 참고 화면 미확인으로, 세로형 속성 기준으로 표시합니다.</div>':'';
+  ['c','i'].forEach(area=>{
+    const list=t.map((e,i)=>[e,i]).filter(([e])=>e.area===area); if(!list.length) return;
+    h+=`<div class="grp ${area}"><b>${area==='c'?'코너(카드)':'컴포넌트(요소)'}</b> · ${GRPDESC[area]}</div><div class="at">`;
+    // pair simple Y/N items two per row, 형태 rows full
+    let buf=[];
+    const flush=()=>{ if(buf.length===1) h+=cellPair(buf[0][0],buf[0][1],true); else if(buf.length===2) h+=cellPair(buf[0][0],buf[0][1],false)+cellPair(buf[1][0],buf[1][1],false); buf=[]; };
+    list.forEach(([e,i])=>{ if(e.g.startsWith('형태')){flush(); h+=cellPair(e,i,true);} else {buf.push([e,i]); if(buf.length===2) flush();} });
+    flush(); h+='</div>';
+  });
+  box.innerHTML=h;
+  box.querySelectorAll('input').forEach(r=>r.onchange=()=>{const k=r.dataset.k; st.v[k]=r.dataset.f?r.value:r.value==='1'; renderPreview();});
+}
+// preview
+const ctl=()=>{const s=val('SelectType');return s==='단일'?'<span class="ctl r"></span>':s==='복수'?'<span class="ctl c"></span>':'';};
+function head(){let h='';
+  if(on('Banner')) h+='<div class="ph" style="height:150px;margin:-22px -26px 4px;border-radius:28px 28px 0 0">Banner</div>';
+  if(on('CornerTitle')) h+='<div class="ct">CornerTitle</div>';
+  if(on('CornerSubTitle')) h+='<div class="cs">CornerSubTitle</div>';
+  if(on('ButtonText')) h+='<div class="bt">ButtonText ›</div>';
+  if(on('Notice')) h+='<div class="nt">Notice</div>';
+  if(on('AllAgree')) h+='<div class="row" style="font-weight:700"><span class="ctl c"></span>AllAgree</div>';
+  return h;}
+const cta=()=>on('CallToAction')?'<div class="cta">CTA ›</div>':'';
+function vItem(i){
+  let b=`<div class="it">ItemTitle${on('BadgeGroup')?'<span class="bdg">Badge</span>':''}</div>`;
+  if(on('SubTitle')) b+='<div class="st">SubTitle</div>';
+  if(on('TextPriceGroup')||on('Price')) b+=`<div class="pr">${on('Discount')||on('DiscountRate')?'<em>99%</em>':''}99,999원${on('Period')?' <span>/Period</span>':''}</div>`;
+  if(on('Caption01')) b+=`<div class="cap">Caption01${on('Caption02')?' | Caption02':''}</div>`;
+  return `<div class="row">${ctl()}${on('ImageSrc')?'<div class="ph img">▣</div>':''}<div class="body">${b}</div></div>`;}
+function pv(){
+  const t=tplOf(), a=st.a, ty=st.t;
+  if(t===null) return '<div class="na">참고 화면 미확인</div>';
+  if(ty==='배너형') return `<div class="body"><div class="it" style="font-size:14px">Title</div><div class="st">SubTitle</div></div>${a==='스와이프형'?'<div class="cap" style="text-align:right">1 / 3</div>':''}`;
+  if(a==='프로필형') return `<div class="row" style="align-items:center"><div class="ph ico">◯</div><div class="body"><div class="it">CornerTitle <span class="st" style="font-weight:400">Caption</span></div></div><span class="chp">Button</span></div>`;
+  if(a==='상태 안내형'){let h=`<div class="row" style="align-items:center"><div class="body"><div class="ct">CornerTitle<span class="bdg">Badge</span></div><div class="st">SubTitle</div></div><div class="ph ico">아이콘</div></div>`;
+    if(on('InfoRow')) h+=['Label 01','Label 02','Label 03'].map(k=>`<div class="kv"><span>${k}</span><span>Value</span></div>`).join(''); return h+cta();}
+  if(a==='카테고리형'){const s=val('SelectType');return `<div class="chips">${[1,2,3,4,5,6,7].map(i=>`<span class="chp ${s!=='없음'&&(i===1||(s==='복수'&&i===3))?'on':''}">${on('Icon')?'<i></i>':''}Category${i}</span>`).join('')}</div>`;}
+  if(a.startsWith('가로형')){const z=(val('Variants')||'Small')[0];
+    return head()+(a.includes('카테고리')?'<div class="chips"><span class="chp on">Category1</span><span class="chp">Category2</span></div>':'')+`<div class="hs">${[1,2,3].map(()=>`<div class="card ${z}">${on('ImageSrc')?'<div class="ph">▣</div>':''}<div class="it" style="font-size:12px">ItemTitle</div>${on('Price')?`<div class="pr" style="font-size:12px">${on('DiscountRate')?'<em>99%</em>':''}99,999원</div>`:''}${on('SubText')?'<div class="cap">SubText</div>':''}${ty==='콘텐츠 안내형'?'<div class="cap">Caption01</div>':''}</div>`).join('')}</div>`+cta();}
+  if(a==='입력형'){let h=head();['Label 01','Label 02'].forEach((l,i)=>{h+=`<div class="lbl">${l}</div><div class="input">InputField</div>`;if(i&&on('HelpText'))h+='<div class="cap" style="margin-top:-6px">HelpText</div>';});
+    if(on('RegisteredList')) h+='<div class="lbl">RegisteredList</div><div class="kv"><span>010-1234-5678</span><span>삭제</span></div>';
+    if(on('Empty')) h+='<div class="cap" style="text-align:center;padding:6px">Empty</div>'; return h+cta();}
+  if(a==='텍스트형') return head()+[1,2].map(()=>`<div class="body">${on('ItemTitle')?`<div class="it">${on('Icon')?'● ':''}ItemTitle</div>`:''}<div class="st">Body</div></div>`).join('')+cta();
+  if(a==='스텝형') return head()+[1,2,3].map(i=>`<div class="step"><b>${i}</b><div class="body"><div class="it">ItemTitle</div>${on('Body')?'<div class="st">Body</div>':''}${on('ImageSrc')&&i===1?'<div class="ph" style="height:44px;margin-top:4px">▣</div>':''}</div></div>`).join('')+cta();
+  if(a==='아코디언형') return head()+(on('Tab')?'<div class="tbs"><span>Tab1</span><span>Tab2</span></div>':'')+[1,2,3].map(i=>`<div class="acc"><span>ItemTitle</span><span>${i===1?'︿':'﹀'}</span></div>${i===1?'<div class="st">Body</div>':''}`).join('');
+  if(a==='비교형') return head()+['Before','After'].map((k,i)=>`<div class="lbl">${k}</div>${on('Graph')?`<div class="bar" style="width:${i?55:85}%"></div>`:''}<div class="kv"><span>CompareItem</span><span>Value</span></div>`).join('');
+  if(a==='후기형') return head()+'<div class="na">후기 구성 TBD</div>';
+  if(a==='리스트형'){let h=head();
+    if(val('ListVariants')==='항목·값'){h+=['Label 01','Label 02','Label 03'].map(k=>`<div class="kv"><span>${k}</span><span>Value</span></div>`).join('');if(on('Detail'))h+='<div class="acc"><span>Detail</span><span>﹀</span></div>';}
+    else{if(on('GroupTitle'))h+='<div class="lbl" style="font-weight:700">GroupTitle</div>';
+      h+=[1,2,3,4].map(()=>`<div class="row">${ctl()}<div class="body"><div class="it" style="font-weight:400">List${on('BadgeGroup')?'<span class="bdg">Badge</span>':''}</div>${on('SubTitle')?'<div class="st">SubTitle</div>':''}</div>${on('Detail')?'<span class="cap">›</span>':''}</div>`).join('');}
+    return h+cta();}
+  let h=head(); if(a.includes('카테고리')) h+='<div class="chips"><span class="chp on">Category1</span><span class="chp">Category2</span></div>';
+  return h+[0,1,2].map(vItem).join('')+cta();
+}
+function renderPreview(){$('#pv').innerHTML=pv();}
+function renderAll(){renderTypes();renderAttrs();renderPreview();$('#result').innerHTML=`등록 결과 · <b>${st.t}${st.a?' · '+st.a:''}</b>`;}
+$('#reset').onclick=()=>{defaults();renderAll();};
+document.querySelectorAll('.chev').forEach(b=>b.onclick=()=>{const el=document.getElementById(b.dataset.t);el.hidden=!el.hidden;b.textContent=el.hidden?'﹀':'︿';});
+defaults();renderAll();
+</script>
