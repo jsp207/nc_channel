@@ -581,6 +581,7 @@ body:not(.authenticated) .app{display:none}
 .auth-form .btn{min-height:42px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}
 .auth-error{min-height:20px;margin:0;color:#c0392b;font-size:12px}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="ul">
 <!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 코너 데이터 · 미리보기 · 목록/상세/수정 로직은 src/order-corner-v22.ts -->
@@ -597,11 +598,12 @@ body:not(.authenticated) .app{display:none}
         <div class="sg kw"><span class="sgl">검색어</span><div class="ss w120"><select id="fKey"><option value="n">코너명</option><option value="i">코너 ID</option></select><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div><div class="si"><input id="fKw" type="text" placeholder="검색어를 입력하세요" autocomplete="off"><button type="button" id="bClr" aria-label="입력값 삭제" hidden><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div>
         <div class="sa"><button type="button" class="sbtn" id="bReset">초기화</button><button type="button" class="sbtn pri" id="bSearch">조회</button></div>
       </div>
-      <div class="rh"><h2>조회 결과<small>총 <b id="rCnt">0</b>건</small></h2></div>
+      <div class="rh"><h2>조회 결과<small>총 <b id="rCnt">0</b>건</small></h2><div class="vtog" id="vTog" role="group" aria-label="보기 방식"><button type="button" data-view="card" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/></svg>카드</button><button type="button" data-view="list" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>리스트</button></div></div>
       <div id="vList">
-        <table class="lt" id="lTable"><colgroup><col style="width:120px"><col style="width:72px"><col><col style="width:96px"><col style="width:120px"><col style="width:120px"><col style="width:70px"><col style="width:110px"><col style="width:140px"></colgroup>
-          <thead><tr><th>코너 ID</th><th>버전</th><th>코너명</th><th>코너 유형</th><th>코너 형태</th><th>표시 방식</th><th>사용여부</th><th>최근 수정일</th><th>최근 수정자</th></tr></thead><tbody id="lBody"></tbody></table>
+        <table class="lt lt-pv" id="lTable"><colgroup><col style="width:130px"><col style="width:200px"><col style="width:130px"><col><col style="width:84px"><col style="width:110px"><col style="width:120px"><col style="width:150px"></colgroup>
+          <thead><tr><th>코너 유형 ID</th><th>미리보기</th><th>코너 유형</th><th class="l">배열·레이아웃</th><th>사용여부</th><th>승인상태</th><th>최근 수정일</th><th>최근 수정자</th></tr></thead><tbody id="lBody"></tbody></table>
       </div>
+      <div id="vCard" hidden><div class="cgrid" id="cGrid"></div></div>
       <div class="empty" id="lEmpty" hidden style="margin-top:8px">조회된 코너가 없습니다.</div>
       <!-- 목록 아래 : 가운데 페이지 번호 + 오른쪽 등록 버튼 (list-unified .lst-bottom) -->
       <div class="lst-bottom"><div class="pager" id="pager"></div><div class="lst-foot"><button type="button" class="btn pri" id="bCreate">코너 등록</button></div></div>
@@ -619,7 +621,7 @@ body:not(.authenticated) .app{display:none}
 
     <!-- ===== 상세 / 수정 ===== -->
     <section id="pDetail" hidden>
-      <div class="ph"><div class="dh2"><h1 id="dName"></h1><span class="mono did" id="dId"></span><span id="dPills"></span></div><button type="button" class="btn-sm" id="bTopList">목록 보기</button></div>
+      <div class="ph dph"><h1 id="dName"></h1><button type="button" class="btn-sm" id="bTopList">목록 보기</button></div><div class="dhr"></div>
       <div class="dtabs" id="dTabs"><button type="button" class="dtab on" data-dt="info">상세 정보</button><button type="button" class="dtab" data-dt="use">사용 위치<small id="uCnt"></small></button><button type="button" class="dtab" data-dt="hist">변경/승인 이력<small id="hCnt"></small></button></div>
 
       <div id="tInfo">
