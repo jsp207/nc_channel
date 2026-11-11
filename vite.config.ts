@@ -24,6 +24,7 @@ export default defineConfig({
         productV022: 'product-v022.html',
         productV023: 'product-v023.html',
         productV024: 'product-v024.html',
+        productV030: 'product-v030.html',
         displayList2: 'display-list2.html',
         payment1: 'payment1.html',
         payMerchant: 'payment-merchant.html',

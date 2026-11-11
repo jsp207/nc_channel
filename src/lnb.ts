@@ -28,8 +28,8 @@ const MENU = [
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'epc-list.html' },
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
-    // 상품 전시 관리는 등록 화면 v0.2.4(product-v024.html)로 바로 연다. 목록(display-list2.html)에서도 메뉴는 켜진 채로 둔다
-    { label: '상품 전시 관리', icon: 'display', href: 'product-v024.html', match: ['display-list2.html', 'product-v021.html', 'product-v022.html', 'product-v023.html', 'product-v024.html', 'product-display-bulk.html'] },
+    // 상품 전시 관리는 등록 화면 v0.3(product-v030.html)로 바로 연다. 목록(display-list2.html)에서도 메뉴는 켜진 채로 둔다
+    { label: '상품 전시 관리', icon: 'display', href: 'product-v030.html', match: ['display-list2.html', 'product-v021.html', 'product-v022.html', 'product-v023.html', 'product-v024.html', 'product-v030.html', 'product-display-bulk.html'] },
     // 상품 콘텐츠 관리는 화면 이동 대신 TBD 안내만 띄운다
     { label: '상품 콘텐츠 관리', icon: 'content', href: '', pending: 'TBD 입니다.' },
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
