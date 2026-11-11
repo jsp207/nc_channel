@@ -218,7 +218,7 @@ const CONTENT_SEED=()=>({
   tpl('TPL-0011','바로픽업 안내','이용안내','v1.2','가까운 매장에서 바로 찾아갈 수 있어요. 신분증을 꼭 챙겨 주세요',at('10-14','17:45:00')),
   tpl('TPL-0012','다이렉트 플랜 혜택 안내','혜택안내','v1.3','다이렉트 플랜 가입 고객에게 드리는 혜택을 안내합니다',at('10-20','09:30:00')),
   tpl('TPL-0013','티다팩 안내','이용안내','v1.5','대상 요금제를 12개월 약정하면 1년간 매월 제휴 쿠폰을 드려요',at('10-22','11:00:00')),
-  tpl('TPL-0014','휴대폰 구매 FAQ','자주 묻는 질문','v1.0','Q. 주문 후 개통까지 얼마나 걸리나요?\nA. 주문서 확인 후 보통 1~2일 안에 개통돼요\nQ. 번호이동도 온라인으로 할 수 있나요?\nA. 네, 본인 인증 후 온라인에서 바로 신청할 수 있어요',at('11-11','10:00:00')),
+  tpl('TPL-0014','자주 묻는 질문','자주 묻는 질문','v1.0','Q. 주문 후 개통까지 얼마나 걸리나요?\nA. 주문서 확인 후 보통 1~2일 안에 개통돼요\nQ. 번호이동도 온라인으로 할 수 있나요?\nA. 네, 본인 인증 후 온라인에서 바로 신청할 수 있어요',at('11-11','10:00:00')),
  ],
  color:[
   clr('CLR-BK','블랙','#1E2533','COLOR_BLACK',at('10-02')), clr('CLR-WH','화이트','#FFFFFF','COLOR_WHITE',at('10-02')),
@@ -250,8 +250,10 @@ const CONTENT_SEED=()=>({
  ],
 });
 export const CONTENT_KEY='nova.product-content.v1';
-// 템플릿은 읽기 전용(삭제 없음)이라, 저장소에 없는 기본 템플릿(나중에 추가한 TPL-0014 등)은 뒤에 붙인다
-function loadContent(){ const s=CONTENT_SEED(); try { const o=JSON.parse(localStorage.getItem(CONTENT_KEY)||'null'); if(o) Object.keys(s).forEach(k=>{ if(!Array.isArray(o[k])) return; s[k]=k==='tpl'?[...o[k],...s[k].filter(t=>!o[k].some(x=>x.id===t.id))]:o[k]; }); } catch {} return s; }
+// 템플릿은 읽기 전용(등록 · 삭제 · 이름 수정 없음, 사용여부만 바꾼다)이라 기본 템플릿 값을 쓰고 저장소의 사용여부만 덮어쓴다.
+// 그래서 나중에 추가하거나 이름을 바꾼 기본 템플릿(TPL-0014 등)도 바로 반영된다
+function loadContent(){ const s=CONTENT_SEED(); try { const o=JSON.parse(localStorage.getItem(CONTENT_KEY)||'null'); if(o) Object.keys(s).forEach(k=>{ if(!Array.isArray(o[k])) return;
+ s[k]=k==='tpl'?[...s[k].map(t=>{ const x=o[k].find(y=>y.id===t.id); return x?{...t,on:x.on,upd:x.upd,editor:x.editor}:t; }),...o[k].filter(x=>!s[k].some(t=>t.id===x.id))]:o[k]; }); } catch {} return s; }
 export const CONTENT=loadContent();
 export function saveContent(){ try { localStorage.setItem(CONTENT_KEY,JSON.stringify(CONTENT)); return true; } catch { return false; } }
 // 다른 화면(다른 탭)이 콘텐츠를 바꾸면 같은 배열에 다시 읽어 들인다. 바뀌면 true

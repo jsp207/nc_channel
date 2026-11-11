@@ -131,6 +131,9 @@ function openEdit(id){
  // v0.2.4: 새 전시는 연관 및 유사 상품을 꺼 둔 채로 시작한다
  if(!d) E.related=false;
  E.sim.on=E.related;
+ // v0.3: 템플릿 콘텐츠 제목을 구분명(이용안내 등) 대신 템플릿명으로 쓴다. 구분이 같은 템플릿(이용안내 6개)이 같은 제목으로 겹쳐 보이던 문제.
+ // 예전에 구분명 그대로 들어간 제목은 템플릿명으로 바꾼다
+ E.extras.forEach(x=>{ const t=x.src&&tplBy(x.src); if(t&&x.t===t.t) x.t=t.n; });
  // v0.3: 수급 방식 하나로 문구 · 노출 상품을 함께 정한다(CVM = 고정 문구 · 자동 노출, 운영자 = 직접 입력 · 직접 지정). 기본 CVM 데이터 연동
  if(!d) E.rel.mode='auto';
  E.sim.mode=E.rel.mode==='auto'?'def':'custom';
@@ -262,7 +265,7 @@ function syncConnTpls(){
  const off=E.tplOff||[], want=[...new Set(connPoList().flatMap(poTpls))].filter(id=>!off.includes(id)&&tplBy(id)&&tplBy(id).on!==false);
  const n0=E.extras.length; E.extras=E.extras.filter(x=>!(x.auto&&x.mode==='link'&&!want.includes(x.src)));
  const have=new Set(E.extras.map(x=>x.src).filter(Boolean)), add=want.filter(id=>!have.has(id));
- add.forEach(id=>E.extras.push({id:nid(),t:tplBy(id).t,mode:'link',src:id,show:true,txt:'',auto:true}));
+ add.forEach(id=>E.extras.push({id:nid(),t:tplBy(id).n,mode:'link',src:id,show:true,txt:'',auto:true}));
  if(add.length||E.extras.length!==n0) rExtra();
  return add.length;
 }
@@ -1294,7 +1297,7 @@ function drawTpl(){
  $('#tmReset').addEventListener('click',()=>{ TM.f={k:'전체',q:''}; TM.a={...TM.f}; drawTpl(); $('#tq').focus(); });
  $('#mFoot').innerHTML=`<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>추가하기</button>`;
  $('#mc').addEventListener('click',closeModal);
- $('#mo').addEventListener('click',()=>{ const n=TM.sel.size; TM.sel.forEach(id=>{ const t=tplBy(id); const x={id:nid(),t:t.t,mode:TM.mode,src:id,show:true,txt:TM.mode==='copy'?t.body:''}; E.extras.push(x); curX=x.id; }); closeModal(); rExtra(); refresh(); toast(`템플릿 ${n}개를 추가했어요`); });
+ $('#mo').addEventListener('click',()=>{ const n=TM.sel.size; TM.sel.forEach(id=>{ const t=tplBy(id); const x={id:nid(),t:t.n,mode:TM.mode,src:id,show:true,txt:TM.mode==='copy'?t.body:''}; E.extras.push(x); curX=x.id; }); closeModal(); rExtra(); refresh(); toast(`템플릿 ${n}개를 추가했어요`); });
  drawTplRows();
 }
 // 표만 다시 그린다. 체크는 행 상태만 바꿔 스크롤 위치를 지킨다
