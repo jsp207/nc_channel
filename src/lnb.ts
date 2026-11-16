@@ -2,6 +2,7 @@
 // 모든 페이지 공통 LNB: .app 안의 <nav class="app-nav">에 메뉴를 그립니다.
 // 메뉴 항목은 MENU 한 곳에서 관리합니다. href가 비어 있으면 아직 화면이 없는 메뉴입니다.
 import "./lnb.css";
+import { SCREENS } from "./history-data";
 
 const ICONS = {
   map: '<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 8.5v3a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3"/>',
@@ -18,34 +19,37 @@ const ICONS = {
   pg: '<path d="M4 10 12 5l8 5"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8M4 20h16"/>',
   fee: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 9.5 12 15l3.5-5.5M8 12.5h8"/>',
   archive: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>',
+  ctype: '<rect x="3.5" y="4" width="17" height="6" rx="1.5"/><rect x="3.5" y="14" width="7" height="6" rx="1.5"/><path d="M14 15h6.5M14 19h4"/>',
   collapse: '<rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M9 3.5v17M15.5 9.5 13 12l2.5 2.5"/>',
 };
 
-// match: 같은 메뉴로 표시할 다른 화면 파일(등록 화면, 이전 버전 등)
+// href: 메뉴에 연결된 화면. 이 파일의 버전이 히스토리에서 Latest가 됩니다(같은 버전의 상세·등록 화면, 정책 포함).
+//       새 버전을 메뉴에 올릴 때는 href만 바꾸면 됩니다.
+// 같은 메뉴로 켜 둘 화면(상세, 등록, 이전 버전)은 history-data.ts에서 menu가 같은 화면을 자동으로 찾습니다.
 // pending: href가 빈 메뉴를 눌렀을 때 띄울 안내 문구(기본 '준비중입니다.')
-const MENU = [
+export const MENU = [
   { items: [{ label: '구조도', icon: 'map', href: 'bo-intro.html' }] },
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'epc-list.html' },
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
-    // 상품 전시 관리는 등록 화면 v0.3(product-v030.html)로 바로 연다. 목록(display-list2.html)에서도 메뉴는 켜진 채로 둔다
-    { label: '상품 전시 관리', icon: 'display', href: 'product-v030.html', match: ['display-list2.html', 'product-v021.html', 'product-v022.html', 'product-v023.html', 'product-v024.html', 'product-v030.html', 'product-display-bulk.html'] },
-    // 상품 콘텐츠 관리는 화면 이동 대신 TBD 안내만 띄운다
-    { label: '상품 콘텐츠 관리', icon: 'content', href: '', pending: 'TBD 입니다.' },
+    // 상품 전시 관리는 등록 화면 v0.3(product-v030.html)로 바로 연다. 목록(display-list2.html)도 같은 v0.3
+    { label: '상품 전시 관리', icon: 'display', href: 'product-v030.html' },
+    // 상품 콘텐츠 관리는 메뉴에서 뺐다. 히스토리 > 상품 콘텐츠 관리(메뉴 없음)로만 연다
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
   ] },
   { label: '주문관리', items: [
-    { label: '주문 프로세스 관리', icon: 'process', href: 'order7-create.html', match: ['order6-create.html', 'order5-create.html', 'order4-create.html', 'order3-create.html'] },
-    // 주문 코너 그룹 관리는 메뉴에서 빼고 히스토리 > 주문 > 그룹(v0.3 latest)으로만 연다
-    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v30.html', match: ['order-corner-v22.html', 'order-corner-v21.html', 'order-corner-create.html'] },
+    { label: '주문 프로세스 관리', icon: 'process', href: 'order7-create.html' },
+    // 주문 코너 그룹 관리는 메뉴에서 뺐다. 히스토리 > 주문 > 주문 코너 그룹 관리(메뉴 없음)로만 연다
+    { label: '주문 코너 관리', icon: 'corner', href: 'order-corner-v30.html' },
+    // 주문 코너 유형 관리 v0.3(order-corner-type-v30.html)은 메뉴에서 뺐다. 히스토리 > 주문 코너 유형 관리(메뉴 없음)로만 연다
     // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },
   { label: '결제관리', items: [
-    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method4.html', match: ['payment-method4-detail.html', 'payment-method4-merchant.html', 'payment-method4-create.html', 'payment-method3.html', 'payment-method3-create.html', 'payment-method3-detail.html', 'payment-method2.html', 'payment-method2-create.html'] },
-    { label: '결제 이력 관리', icon: 'history', href: 'payment-history4.html', match: ['payment-history4-detail.html', 'payment-history3.html', 'payment-history3-detail.html', 'payment-history2.html'] },
-    { label: '결제 거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html', match: ['payment-recon3.html', 'payment-recon3-detail.html', 'payment-reconciliation2.html'] },
-    { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html', match: ['payment-fee4-detail.html'] },
-    { label: 'PG 관리', icon: 'pg', href: 'payment-pg4.html', match: ['payment-pg4-form.html', 'payment-pg4-detail.html'] },
+    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method4.html' },
+    { label: '결제 이력 관리', icon: 'history', href: 'payment-history4.html' },
+    { label: '결제 거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html' },
+    { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html' },
+    { label: 'PG 관리', icon: 'pg', href: 'payment-pg4.html' },
     // 결제 정책서는 메뉴에서 빼고 히스토리 > 결제 > 정책으로 옮겼다
   ] },
 ];
@@ -65,7 +69,7 @@ const svg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}<
 function item(it) {
   const label = `${svg(it.icon)}<span class="app-nav-text">${it.label}</span>`;
   if (!it.href) return `<li><a class="app-nav-item" href="#" data-pending="${it.pending || '준비중입니다.'}" title="${it.label}">${label}</a></li>`;
-  const on = it.href === current || (it.match || []).includes(current);
+  const on = it.href === current || SCREENS.some(r => r.menu === it.label && r.file === current);
   return `<li><a class="app-nav-item${on ? ' on' : ''}" href="${it.href}" title="${it.label}"${on ? ' aria-current="page"' : ''}>${label}</a></li>`;
 }
 

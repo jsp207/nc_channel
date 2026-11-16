@@ -26,13 +26,19 @@
       .h-cnt{min-width:20px;padding:0 6px;border-radius:10px;background:var(--surface);color:var(--muted);font-size:11px;line-height:18px;text-align:center}
       .h-tabs button[aria-selected="true"] .h-cnt{background:var(--accent-soft);color:var(--accent)}
       [role="tabpanel"][hidden]{display:none}
-      /* 상품 탭: 목록 / 상세 / 템플릿 / 정책 구분 버튼 */
-      .h-seg{margin:0 0 12px}
+      /* 메뉴 구분 버튼 */
+      .h-seg{margin:0 0 12px;flex-wrap:wrap}
       .h-seg button{display:inline-flex;align-items:center;gap:6px}
       .h-seg button.on .h-cnt{background:rgba(255,255,255,.2);color:#fff}
-      tr[hidden]{display:none}
-      /* 첫 열: data-latest 행에 Latest 표시 */
+      .h-tag{font-size:10px;padding:0 5px;border:1px solid currentColor;border-radius:4px;opacity:.6}
+      /* 표 */
       .h-latest{display:inline-block;padding:1px 8px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600}
+      .h-ver{font-variant-numeric:tabular-nums;font-weight:600}
+      .h-file{color:var(--muted);font-size:12px}
+      .h-note{color:var(--muted);font-size:12px}
+      .h-none{color:var(--muted)}
+      .h-empty{padding:28px;text-align:center;color:var(--muted)}
+      tr.h-vstart:not(:first-child) td{border-top:2px solid var(--line)}
     </style>
   </head>
   <body>
@@ -44,128 +50,10 @@
 <section class="view on" id="v-history">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> <strong>히스토리</strong></div>
   <h1>히스토리</h1>
-  <p class="sub">그동안 작업한 화면을 최근 생성일 순으로 정리했습니다. 기준·정책은 <a href="policy.html">policy.html</a>에서 확인하세요.</p>
-  <!-- 탭마다 tbody 맨 위에 한 줄씩 추가하세요(최근 날짜순) -->
-  <div class="h-tabs" role="tablist" aria-label="히스토리 구분">
-    <button type="button" role="tab" id="tab-prod" aria-controls="panel-prod" data-tab="prod">상품 <span class="h-cnt">21</span></button>
-    <button type="button" role="tab" id="tab-order" aria-controls="panel-order" data-tab="order">주문 <span class="h-cnt">10</span></button>
-    <button type="button" role="tab" id="tab-pay" aria-controls="panel-pay" data-tab="pay">결제 <span class="h-cnt">31</span></button>
-  </div>
-  <div role="tabpanel" id="panel-prod" aria-labelledby="tab-prod">
-    <!-- 화면 구분 버튼: 각 행의 data-k(list | detail | template | policy)로 걸러 보여 준다. 상세 제목은 '화면명 vX.Y.Z' 형식 -->
-    <!-- data-latest: 첫 열에 Latest를 붙일 행 (지금 쓰는 버전만) -->
-    <div class="seg h-seg" role="group" aria-label="상품 화면 구분">
-      <button type="button" data-k="list">목록 <span class="h-cnt"></span></button>
-      <button type="button" data-k="detail">상세 <span class="h-cnt"></span></button>
-      <button type="button" data-k="template">템플릿 <span class="h-cnt"></span></button>
-      <button type="button" data-k="policy">정책 <span class="h-cnt"></span></button>
-    </div>
-    <div class="tw"><table id="historyProd">
-      <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
-      <tbody>
-        <tr data-k="list" data-latest><td>2026-10-31</td><td><a href="epc-list.html">EPC 상품 조회 v0.1</a></td><td>epc-list.html</td></tr>
-        <tr data-k="detail" data-latest><td>2026-11-11</td><td><a href="product-v030.html">상품 전시 관리 v0.3 (연관 및 유사 상품 수급 방식)</a></td><td>product-v030.html</td></tr>
-        <tr data-k="detail"><td>2026-11-03</td><td><a href="product-v024.html">상품 전시 관리 v0.2.4 (주문 프로세스 연동)</a></td><td>product-v024.html</td></tr>
-        <tr data-k="detail"><td>2026-11-02</td><td><a href="product-v023.html">상품 전시 관리 v0.2.3</a></td><td>product-v023.html</td></tr>
-        <tr data-k="detail"><td>2026-10-27</td><td><a href="product-v022.html">상품 전시 관리 v0.2.2</a></td><td>product-v022.html</td></tr>
-        <tr data-k="list" data-latest><td>2026-10-27</td><td><a href="display-list2.html">상품 전시 목록 v0.2</a></td><td>display-list2.html</td></tr>
-        <tr data-k="template" data-latest><td>2026-10-26</td><td><a href="product-content.html">상품 콘텐츠 관리 v0.1</a></td><td>product-content.html</td></tr>
-        <tr data-k="list"><td>2026-10-26</td><td><a href="product-display-bulk.html">상품 전시 일괄 목록 v0.1</a></td><td>product-display-bulk.html</td></tr>
-        <tr data-k="detail"><td>2026-10-17</td><td><a href="product-v021.html">상품 전시 관리 v0.2.1</a></td><td>product-v021.html</td></tr>
-        <tr data-k="detail"><td>2026-10-10</td><td><a href="product-v020.html">상품 전시 관리 v0.2 (1차 개발리뷰)</a></td><td>product-v020.html</td></tr>
-        <tr data-k="detail"><td>2026-10-03</td><td><a href="product-v013.html">상품 전시 관리 v0.1.3</a></td><td>product-v013.html</td></tr>
-        <tr data-k="detail"><td>2026-10-02</td><td><a href="product-v012.html">상품 전시 관리 v0.1.2</a></td><td>product-v012.html</td></tr>
-        <tr data-k="detail"><td>2026-09-29</td><td><a href="product-v011.html">상품 전시 관리 v0.1.1</a></td><td>product-v011.html</td></tr>
-        <tr data-k="list"><td>2026-09-29</td><td><a href="product-list.html">상품목록</a></td><td>product-list.html</td></tr>
-        <tr data-k="detail"><td>2026-09-29</td><td><a href="bundle-create4.html">번들 관리 v0.1.4</a></td><td>bundle-create4.html</td></tr>
-        <tr data-k="detail"><td>2026-09-28</td><td><a href="bundle-create3.html">번들 관리 v0.1.3</a></td><td>bundle-create3.html</td></tr>
-        <tr data-k="detail"><td>2026-09-27</td><td><a href="bundle-create2.html">번들 관리 v0.1.2</a></td><td>bundle-create2.html</td></tr>
-        <tr data-k="detail"><td>2026-09-27</td><td><a href="bundle-create.html">번들 관리 v0.1.1</a></td><td>bundle-create.html</td></tr>
-        <tr data-k="list"><td>2026-09-27</td><td><a href="bundle-list.html">번들목록</a></td><td>bundle-list.html</td></tr>
-        <tr data-k="list"><td>2026-09-27</td><td><a href="display-list.html">전시목록</a></td><td>display-list.html</td></tr>
-        <tr data-k="policy"><td>2026-09-23</td><td><a href="policy.html">기준·정책</a></td><td>policy.html</td></tr>
-      </tbody>
-    </table></div>
-  </div>
-  <div role="tabpanel" id="panel-order" aria-labelledby="tab-order" hidden>
-    <!-- 화면 구분 버튼: 각 행의 data-k(process | group | corner | policy)로 걸러 보여 준다 -->
-    <div class="seg h-seg" role="group" aria-label="주문 화면 구분">
-      <button type="button" data-k="process">프로세스 <span class="h-cnt"></span></button>
-      <button type="button" data-k="group">그룹 <span class="h-cnt"></span></button>
-      <button type="button" data-k="corner">코너 <span class="h-cnt"></span></button>
-      <button type="button" data-k="policy">정책 <span class="h-cnt"></span></button>
-    </div>
-    <div class="tw"><table id="historyOrder">
-      <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
-      <tbody>
-        <tr data-k="process" data-latest><td>2026-11-09</td><td><a href="order7-create.html">주문 프로세스 관리 v0.3</a></td><td>order7-create.html</td></tr>
-        <tr data-k="process"><td>2026-11-05</td><td><a href="order6-create.html">주문 프로세스 관리 v0.2.4</a></td><td>order6-create.html</td></tr>
-        <tr data-k="process"><td>2026-11-02</td><td><a href="order5-create.html">주문 프로세스 관리 v0.2.3</a></td><td>order5-create.html</td></tr>
-        <tr data-k="group" data-latest><td>2026-11-09</td><td><a href="order-corner-group-v30.html">주문 코너 그룹 관리 v0.3</a></td><td>order-corner-group-v30.html</td></tr>
-        <tr data-k="group"><td>2026-11-05</td><td><a href="order-corner-group-v23.html">주문 코너 그룹 관리 v0.2.3</a></td><td>order-corner-group-v23.html</td></tr>
-        <tr data-k="group"><td>2026-11-04</td><td><a href="order-corner-group-v22.html">주문 코너 그룹 관리 v0.2.2</a></td><td>order-corner-group-v22.html</td></tr>
-        <tr data-k="policy" data-latest><td>2026-11-06</td><td><a href="order-corner-group-policy-v021.html">주문 코너 그룹 관리 정책서 v0.2.1 (프로세스 조건 허용)</a></td><td>order-corner-group-policy-v021.html</td></tr>
-        <tr data-k="policy"><td>2026-11-05</td><td><a href="order-corner-group-policy-v02.html">주문 코너 그룹 관리 정책서 v0.2</a></td><td>order-corner-group-policy-v02.html</td></tr>
-        <tr data-k="policy"><td>2026-11-04</td><td><a href="order-corner-group-policy.html">주문 코너 그룹 관리 정책서 v0.1</a></td><td>order-corner-group-policy.html</td></tr>
-        <tr data-k="corner" data-latest><td>2026-11-09</td><td><a href="order-corner-v30.html">주문 코너 등록 v0.3</a></td><td>order-corner-v30.html</td></tr>
-        <tr data-k="corner"><td>2026-11-03</td><td><a href="order-corner-v22.html">주문 코너 등록 v0.2.2</a></td><td>order-corner-v22.html</td></tr>
-        <tr data-k="corner"><td>2026-10-30</td><td><a href="order-corner-v21.html">주문 코너 등록 v0.2.1</a></td><td>order-corner-v21.html</td></tr>
-        <tr data-k="process"><td>2026-10-26</td><td><a href="order4-create.html">주문 프로세스 관리 v0.2.2</a></td><td>order4-create.html</td></tr>
-        <tr data-k="corner"><td>2026-10-20</td><td><a href="order-corner-create.html">주문 코너 등록</a></td><td>order-corner-create.html</td></tr>
-        <tr data-k="process"><td>2026-10-17</td><td><a href="order3-create.html">주문 프로세스 관리 v0.2.1</a></td><td>order3-create.html</td></tr>
-        <tr data-k="process"><td>2026-10-13</td><td><a href="order2-create.html">주문 컨테이너 관리 2차</a></td><td>order2-create.html</td></tr>
-        <tr data-k="process"><td>2026-10-13</td><td><a href="order_container_layout.html">주문관리 2차</a></td><td>order_container_layout.html</td></tr>
-        <tr data-k="process"><td>2026-10-12</td><td><a href="order1-create.html">주문 템플릿 관리 1차 (등록)</a></td><td>order1-create.html</td></tr>
-        <tr data-k="process"><td>2026-10-12</td><td><a href="order1.html">주문 컨테이너 목록</a></td><td>order1.html</td></tr>
-      </tbody>
-    </table></div>
-  </div>
-  <div role="tabpanel" id="panel-pay" aria-labelledby="tab-pay" hidden>
-    <!-- 화면 구분 버튼: 각 행의 data-k(method | history | recon | fee | policy)로 걸러 보여 준다 -->
-    <div class="seg h-seg" role="group" aria-label="결제 화면 구분">
-      <button type="button" data-k="method">결제수단 기준정보 <span class="h-cnt"></span></button>
-      <button type="button" data-k="history">결제이력관리 <span class="h-cnt"></span></button>
-      <button type="button" data-k="recon">거래내역관리 <span class="h-cnt"></span></button>
-      <button type="button" data-k="fee">수수료조회 <span class="h-cnt"></span></button>
-      <button type="button" data-k="policy">정책 <span class="h-cnt"></span></button>
-    </div>
-    <div class="tw"><table id="historyPay">
-      <thead><tr><th style="width:90px">상태</th><th style="width:120px">날짜</th><th>제목</th><th>파일명</th></tr></thead>
-      <tbody>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-method4.html">결제수단 기준정보 관리 v0.2.2 (목록)</a></td><td>payment-method4.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-method4-detail.html">결제수단 기준정보 관리 v0.2.2 (결제수단 상세)</a></td><td>payment-method4-detail.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-method4-merchant.html">결제수단 기준정보 관리 v0.2.2 (가맹점 상세)</a></td><td>payment-method4-merchant.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-method4-create.html">결제수단 등록 v0.2.2</a></td><td>payment-method4-create.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-09</td><td><a href="payment-pg4-detail.html">PG사 관리 v0.2.2 (상세)</a></td><td>payment-pg4-detail.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-pg4.html">PG사 관리 v0.2.2 (목록)</a></td><td>payment-pg4.html</td></tr>
-        <tr data-k="method" data-latest><td>2026-11-03</td><td><a href="payment-pg4-form.html">PG사 관리 v0.2.2 (등록 / 수정)</a></td><td>payment-pg4-form.html</td></tr>
-        <tr data-k="history" data-latest><td>2026-11-03</td><td><a href="payment-history4.html">결제이력 관리 v0.2.2 (목록)</a></td><td>payment-history4.html</td></tr>
-        <tr data-k="history" data-latest><td>2026-11-03</td><td><a href="payment-history4-detail.html">결제이력 관리 v0.2.2 (상세)</a></td><td>payment-history4-detail.html</td></tr>
-        <tr data-k="recon" data-latest><td>2026-11-03</td><td><a href="payment-recon4.html">거래내역 대사관리 v0.2.2 (승인대사 / 입금대사)</a></td><td>payment-recon4.html</td></tr>
-        <tr data-k="fee" data-latest><td>2026-11-09</td><td><a href="payment-fee4-detail.html">PG 수수료 조회 v0.2.2 (상세)</a></td><td>payment-fee4-detail.html</td></tr>
-        <tr data-k="fee" data-latest><td>2026-11-03</td><td><a href="payment-fee4.html">PG 수수료 조회 v0.2.2</a></td><td>payment-fee4.html</td></tr>
-        <tr data-k="policy" data-latest><td>2026-11-03</td><td><a href="payment-policy4.html">결제관리 정책서 / IA v0.2.2</a></td><td>payment-policy4.html</td></tr>
-        <tr data-k="recon"><td>2026-11-03</td><td><a href="payment-recon3.html">거래내역 대사관리 v0.2.1 (목록)</a></td><td>payment-recon3.html</td></tr>
-        <tr data-k="recon"><td>2026-11-03</td><td><a href="payment-recon3-detail.html">거래내역 대사관리 v0.2.1 (상세)</a></td><td>payment-recon3-detail.html</td></tr>
-        <tr data-k="history"><td>2026-11-01</td><td><a href="payment-history3.html">결제이력 관리 v0.2.1 (목록)</a></td><td>payment-history3.html</td></tr>
-        <tr data-k="history"><td>2026-11-01</td><td><a href="payment-history3-detail.html">결제이력 관리 v0.2.1 (상세)</a></td><td>payment-history3-detail.html</td></tr>
-        <tr data-k="method"><td>2026-11-01</td><td><a href="payment-method3.html">결제수단 기준정보 관리 v0.2.1 (목록)</a></td><td>payment-method3.html</td></tr>
-        <tr data-k="method"><td>2026-11-01</td><td><a href="payment-method3-create.html">결제수단 기준정보 관리 v0.2.1 (등록)</a></td><td>payment-method3-create.html</td></tr>
-        <tr data-k="method"><td>2026-11-01</td><td><a href="payment-method3-detail.html">결제수단 기준정보 관리 v0.2.1 (상세)</a></td><td>payment-method3-detail.html</td></tr>
-        <tr data-k="method"><td>2026-10-13</td><td><a href="payment-method2.html">결제수단 기준정보 관리 (목록)</a></td><td>payment-method2.html</td></tr>
-        <tr data-k="method"><td>2026-10-13</td><td><a href="payment-method2-create.html">결제수단 기준정보 관리 (생성)</a></td><td>payment-method2-create.html</td></tr>
-        <tr data-k="history"><td>2026-10-13</td><td><a href="payment-history2.html">결제이력관리</a></td><td>payment-history2.html</td></tr>
-        <tr data-k="recon"><td>2026-10-13</td><td><a href="payment-reconciliation2.html">PG 수수료 / 정산 대사</a></td><td>payment-reconciliation2.html</td></tr>
-        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-merchant.html">결제 가맹점 정보관리</a></td><td>payment-merchant.html</td></tr>
-        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-merchant-product.html">결제 가맹점 상품관리</a></td><td>payment-merchant-product.html</td></tr>
-        <tr data-k="history"><td>2026-10-04</td><td><a href="payment-history.html">결제이력 관리</a></td><td>payment-history.html</td></tr>
-        <tr data-k="fee"><td>2026-10-04</td><td><a href="payment-settlement.html">PG 수수료/정산 관리</a></td><td>payment-settlement.html</td></tr>
-        <tr data-k="method"><td>2026-10-04</td><td><a href="payment-exposure.html">결제수단 노출 우선순위 관리</a></td><td>payment-exposure.html</td></tr>
-        <tr data-k="policy"><td>2026-10-04</td><td><a href="payment-policy.html">결제 폴리시</a></td><td>payment-policy.html</td></tr>
-        <tr data-k="method"><td>2026-10-04</td><td><a href="payment1.html">결제 1차</a></td><td>payment1.html</td></tr>
-      </tbody>
-    </table></div>
-  </div>
+  <p class="sub">메뉴 › 버전 › 화면 순으로 정리했습니다. <b>Latest</b>는 왼쪽 메뉴에 연결된 버전입니다.</p>
+  <!-- 목록은 src/history-data.ts에서 그립니다. 새 화면은 그 파일 SCREENS에 한 줄 추가하세요 -->
+  <div class="h-tabs" role="tablist" aria-label="히스토리 구분"></div>
+  <div id="historyPanels"></div>
 </section>
 
 </main>

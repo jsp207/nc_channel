@@ -72,6 +72,7 @@ export default defineConfig({
         orderCornerV21: 'order-corner-v21.html',
         orderCornerV22: 'order-corner-v22.html',
         orderCornerV30: 'order-corner-v30.html',
+        orderCornerTypeV30: 'order-corner-type-v30.html',
         orderCornerGroupV22: 'order-corner-group-v22.html',
         orderCornerGroupV23: 'order-corner-group-v23.html',
         orderCornerGroupV30: 'order-corner-group-v30.html',
