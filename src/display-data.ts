@@ -1,192 +1,15 @@
 // @ts-nocheck
 // 상품 전시 데이터 · 저장소. product-v021.html(상품 전시 등록/수정), display-list2.html(상품 전시 목록 · 일괄 관리 통합), product-display-bulk.html(이전 일괄 관리)이 함께 쓴다.
-// EPC 샘플 상품, 샘플 전시, 브라우저 저장소(STORE_KEY) 읽기·쓰기를 이 파일에 모은다.
-// ---------- EPC 샘플 데이터 (EPC 상품 조회 화면에서 내려오는 값으로 가정) ----------
-// PO: 판매 단위. dt = Delivery type(PS 목록), base = Price policy 기본가, 후보 add = 추가금
+// 샘플 전시, 브라우저 저장소(STORE_KEY) 읽기·쓰기를 이 파일에 모은다.
+// ---------- EPC 상품 데이터 ----------
+// EPC 상품은 src/data/epc-products.json · epc-codes.json에서 관리한다(src/data/epc.ts). 기존 화면이 이 파일에서 가져다 쓰므로 그대로 다시 내보낸다.
+import { PO, poBy, selPS, hasSel, PSLIST, psBy, LV2S, LV3S, TYPES, ST_SALE, epcOf } from "./data/epc";
+export { PO, poBy, selPS, hasSel, PSLIST, psBy, LV2S, LV3S, TYPES, ST_SALE, epcOf };
 export const TODAY=new Date().toISOString().slice(0,10);
 // 전시 시작·종료 일시 비교용 지금 시각 (YYYY-MM-DDTHH:MM, 브라우저 시간대)
 export const NOW=(d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16))(new Date());
-export const TYPES=['기기서비스','액세서리','요금제','부가서비스','구독서비스','보험','제휴'];
 export const ONCE=new Set(['기기서비스','액세서리']);
 export function seedNum(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
-// T우주 편의점&카페의 선택 혜택 후보 50개와 추가금
-export const PS3_NAMES=['YouTube Premium','디즈니+','Netflix 스탠다드','티빙 스탠다드','웨이브 베이직','쿠팡플레이','밀리의서재','윌라 오디오북','FLO 무제한','멜론 스트리밍','지니뮤직','Google One 100GB','네이버플러스 멤버십','배달의민족 쿠폰팩','요기요 쿠폰팩','파리바게뜨 할인','배스킨라빈스 할인','도미노피자 쿠폰','CGV 예매 할인','메가박스 예매 할인','교보문고 sam','리디셀렉트','클래스101','야놀자 할인','여기어때 할인','카카오T 블루 할인','쏘카 할인','GS25 할인','CU 할인','이마트24 할인'];
-for(let i=PS3_NAMES.length+1;i<=50;i++) PS3_NAMES.push('제휴 쿠폰팩 '+String(i-30).padStart(2,'0'));
-export const PS3_ADD=n=>n==='YouTube Premium'||n==='디즈니+'?7900:[0,1000,2000,3900,4900,5900][seedNum(n)%6];
-export let EPCN=3370;
-// st = EPC 상품상태(출시 · 검증 · 운영 · 가입중단 · 퇴출), sale = 전시 화면에 보이는 판매상태(st로 정한다)
-export const ST_SALE={출시:'판매예정',검증:'판매예정',운영:'판매중',가입중단:'가입중단',퇴출:'판매종료'};
-export const mk=o=>Object.assign({epc:String(++EPCN).padStart(6,'0'),ver:'v1.0',st:'운영',sale:ST_SALE[o.st||'운영'],img:[o.id.toLowerCase()+'_main.png']},o);
-// 단말 세트: 용량 × 색상 조합마다 PO 하나
-export const devSet=(start,model,file,rows,ver,desc)=>rows.map(([c,k,p],i)=>mk({id:'DEV-'+String(start+i).padStart(3,'0'),name:`${model} ${c} ${k}`,type:'기기서비스',ver,base:p,desc:`${desc} ${c} 모델입니다`,img:[`${file}_${k==='블루'?'blue':'silver'}_front.png`],dt:[{id:'PS1',name:'단말',req:true,desc:`${c} · ${k}`},{id:'PS2',name:'기본 구성품',req:true,desc:'USB-C 케이블 · 유심핀'}]}));
-// EPC 상품 조회 확장 샘플 (PO 맨 뒤에 붙는다). dev = 단말(PS 단말 · 기본 구성품), one · two = 필수 PS 1 · 2개
-function EXTRA_PO(){
- const dev=(id,name,cat,base,desc,file,spec,comp,x={})=>({id,name,type:'기기서비스',...(cat?{cat}:{}),base,desc,img:[file+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:spec},{id:'PS2',name:'기본 구성품',req:true,desc:comp}],...x});
- const one=(id,name,type,base,desc,psName,psDesc,x={})=>({id,name,type,base,desc,dt:[{id:'PS1',name:psName,req:true,desc:psDesc}],...x});
- const two=(id,name,type,base,desc,a,b,x={})=>({id,name,type,base,desc,dt:[{id:'PS1',name:a[0],req:true,desc:a[1]},{id:'PS2',name:b[0],req:true,desc:b[1]}],...x});
- const cands=(l,add=()=>0)=>l.map(n=>({n,add:add(n)}));
- const plan=(id,n,p,d,x)=>two(id,n,'요금제',p,`데이터 ${d}를 쓰는 요금제입니다`,['데이터',d],['음성·문자','기본 제공'],x);
- const OPT={lv3:'이동전화 base 옵션형'}, PTN={lv3:'이동전화 base 제휴형'};
- return [
-  // 휴대폰형: 갤럭시 S26 · iPhone 18 · 폴드 · 보급형
-  ...[['256GB','블랙',1155000],['256GB','실버',1155000],['512GB','블랙',1309000]].map(([c,k,p],i)=>dev('DEV-'+String(15+i).padStart(3,'0'),`갤럭시 S26 ${c} ${k}`,null,p,`AI 기능을 강화한 갤럭시 S26 ${c} 모델입니다`,'gs26_'+(k==='블랙'?'black':'silver'),`${c} · ${k}`,'USB-C 케이블 · 유심핀')),
-  ...[['256GB','블랙',2079000],['512GB','실버',2387000]].map(([c,k,p],i)=>dev('DEV-'+String(18+i).padStart(3,'0'),`갤럭시 S26 Ultra ${c} ${k}`,null,p,`S펜을 내장한 갤럭시 S26 Ultra ${c} 모델입니다`,'gs26u_'+(k==='블랙'?'black':'silver'),`${c} · ${k}`,'USB-C 케이블 · 유심핀 · S펜')),
-  ...[['128GB','화이트',1350000],['256GB','블랙',1500000]].map(([c,k,p],i)=>dev('DEV-'+String(20+i).padStart(3,'0'),`iPhone 18 ${c} ${k}`,null,p,`일상용 기본 모델 iPhone 18 ${c}입니다`,'ip18_'+(k==='블랙'?'black':'white'),`${c} · ${k}`,'USB-C 케이블')),
-  dev('DEV-022','갤럭시 Z 폴드8 512GB 실버',null,2538000,'펼치면 태블릿이 되는 갤럭시 Z 폴드8 512GB 모델입니다','fold8_silver','512GB · 실버','USB-C 케이블 · 유심핀',{ver:'v1.1'}),
-  dev('DEV-023','갤럭시 A57 128GB 블루',null,599500,'가성비를 갖춘 보급형 갤럭시 A57 모델입니다','ga57_blue','128GB · 블루','USB-C 케이블 · 유심핀'),
-  dev('DEV-024','갤럭시 와이드8 128GB 그레이',null,399300,'큰 화면의 SKT 전용 갤럭시 와이드8 모델입니다','gwide8_gray','128GB · 그레이','USB-C 케이블 · 유심핀',{st:'가입중단'}),
-  // 태블릿형 · 웨어러블형
-  dev('DEV-025','갤럭시 탭 S11 FE 128GB 실버','태블릿',749000,'S펜을 기본 제공하는 갤럭시 탭 S11 FE 실버 모델입니다','gtabs11fe','갤럭시 탭 S11 FE · 128GB · 5G','S펜 · USB-C 케이블'),
-  dev('DEV-026','iPad mini 8 256GB 퍼플','태블릿',999000,'한 손에 드는 8.3인치 iPad mini 퍼플 모델입니다','ipadmini8','iPad mini 8 · 256GB · 셀룰러','USB-C 케이블',{st:'검증'}),
-  dev('DEV-027','갤럭시 워치8 44mm 그린','웨어러블',429000,'수면·건강 관리를 돕는 갤럭시 워치8 44mm 모델입니다','gwatch8','갤럭시 워치8 · 44mm · LTE','무선 충전기'),
-  dev('DEV-028','Apple Watch SE 3 40mm 실버','웨어러블',389000,'입문용 Apple Watch SE 3 실버 모델입니다','awse3','Apple Watch SE 3 · 40mm · 셀룰러','마그네틱 충전 케이블'),
-  dev('DEV-029','갤럭시 핏4 키즈 블루','웨어러블',219000,'위치 확인과 보호자 통화가 되는 키즈 워치입니다','gfit4kids','갤럭시 핏4 키즈 · LTE','무선 충전기'),
-  // 이동전화 요금제형
-  ...[['5GX 레귤러',69000,'110GB + 소진 시 5Mbps'],['5GX 슬림',55000,'12GB + 소진 시 1Mbps'],['0청년 5G',69000,'무제한 (만 34세 이하)'],['LTE 데이터 33',33000,'1.5GB'],['T플랜 시니어',49000,'10GB + 소진 시 1Mbps (만 65세 이상)'],['ZEM 플랜 스마트',26000,'2GB + 소진 시 400kbps (만 12세 이하)']]
-   .map(([n,p,d],i)=>plan('PLN-'+String(7+i).padStart(3,'0'),n,p,d)),
-  two('PLN-013','태블릿 데이터 셰어링','요금제',0,'모회선 데이터를 태블릿에서 나눠 쓰는 요금제입니다',['데이터 셰어링','모회선 데이터 공유'],['가입 조건','모회선 5GX 요금제'],OPT),
-  two('PLN-014','T플랜 워치','요금제',11000,'워치 단독 통화와 데이터를 쓰는 웨어러블 요금제입니다',['데이터','250MB'],['음성·문자','모회선 번호 공유']),
-  {id:'PLN-015',name:'베스트 Plus(티빙)',type:'요금제',base:85000,desc:'데이터 무제한에 티빙을 기본으로 주고, 음악 서비스 하나를 더 고르는 베스트 요금제입니다',dt:[
-    {id:'PS1',name:'데이터',req:true,desc:'무제한'},{id:'PS2',name:'티빙',req:true,desc:'티빙 스탠다드 이용'},
-    {id:'PS3',name:'음악 택1',req:false,min:1,max:1,cands:cands(['FLO 무제한','멜론 스트리밍','지니뮤직','YouTube Music'])}]},
-  // 로밍형
-  ...[['baro 3GB',29000,'3GB · 7일'],['baro 6GB',39000,'6GB · 15일'],['baro 12GB',59000,'12GB · 30일'],['T로밍 아시아패스',25000,'아시아 13개국 · 4GB · 5일',{st:'출시'}]]
-   .map(([n,p,d,x],i)=>one('PLN-'+String(16+i).padStart(3,'0'),n,'요금제',p,`해외에서 데이터 ${d}를 쓰는 로밍 상품입니다`,'로밍 데이터',d,{lv3:'로밍형',...x})),
-  // 부가서비스 (base 옵션형 · 제휴형)
-  one('ADD-003','데이터 리필 쿠폰','부가서비스',5500,'소진된 데이터를 다시 채우는 쿠폰입니다','데이터 충전','2GB 1회 충전',OPT),
-  one('ADD-004','콜키퍼','부가서비스',550,'못 받은 전화를 문자로 알려 주는 부가서비스입니다','부재중 알림','부재중 전화 문자 안내',OPT),
-  one('ADD-005','T전화 Pro','부가서비스',1100,'스팸 차단과 통화 요약을 쓰는 부가서비스입니다','T전화 Pro 이용','스팸 차단 · 통화 요약',OPT),
-  two('ADD-006','안심 데이터 차단','부가서비스',0,'자녀 회선의 유해 사이트와 결제를 막아 주는 부가서비스입니다',['유해 차단','유해 사이트 차단'],['결제 제한','소액결제 차단'],OPT),
-  one('ADD-007','지니뮤직 앤 데이터','부가서비스',7900,'지니뮤직 무제한과 전용 데이터를 주는 제휴 부가서비스입니다','지니뮤직 무제한','음악 무제한 듣기',PTN),
-  // 구독 (플랫폼형)
-  one('SUB-007','티빙 스탠다드','구독서비스',13500,'티빙 오리지널과 실시간 TV를 보는 구독 서비스입니다','티빙 이용','동시 시청 2명 · FHD'),
-  one('SUB-008','웨이브 베이직','구독서비스',7900,'지상파 VOD를 보는 웨이브 구독 서비스입니다','웨이브 이용','동시 시청 1명 · HD'),
-  one('SUB-009','밀리의서재','구독서비스',9900,'전자책과 오디오북을 무제한으로 보는 구독 서비스입니다','밀리의서재 이용','전자책 · 오디오북 무제한'),
-  one('SUB-010','쿠팡플레이','구독서비스',7890,'스포츠 중계와 영화를 보는 구독 서비스입니다','쿠팡플레이 이용','동시 시청 2명'),
-  one('SUB-011','배달의민족 쿠폰팩','구독서비스',4900,'매월 배달 할인 쿠폰을 주는 구독 서비스입니다','쿠폰 지급','매월 3천원 쿠폰 3장'),
-  {id:'SUB-012',name:'T 우주패스 올인원',type:'구독서비스',ver:'v1.2',base:14900,desc:'OTT 1개와 생활 혜택 2개를 골라 쓰는 T우주 구독 상품입니다',dt:[
-    {id:'PS1',name:'OTT 택1',req:false,min:1,max:1,cands:cands(['YouTube Premium','Netflix 스탠다드','티빙 스탠다드','디즈니+','웨이브 베이직'],n=>n==='YouTube Premium'?4000:0)},
-    {id:'PS2',name:'생활 혜택',req:false,min:2,max:2,cands:cands(['세븐일레븐 할인','투썸플레이스 할인','배스킨라빈스 할인','CGV 예매 할인','카카오T 블루 할인','쏘카 할인','야놀자 할인'])}]},
-  // 보험 · 클럽형
-  one('INS-003','[보험] T ALL케어 플러스 분실파손형','보험',9900,'분실과 파손을 함께 보상하는 휴대폰 보험입니다','분실·파손 보상','자기부담금 30%',PTN),
-  one('INS-004','[보험] 폰안심 라이트','보험',4900,'화면 파손만 보상하는 가벼운 휴대폰 보험입니다','화면 파손 보상','자기부담금 20% · 연 1회',{...PTN,st:'퇴출'}),
-  two('INS-005','갤럭시 S26 T클럽','보험',17900,'갤럭시 S26 파손 보상과 24개월 뒤 기기 교체를 묶은 클럽 상품입니다',['파손 보상','자기부담금 20%'],['기기 교체','24개월 후 잔여 할부금 면제'],{lv3:'클럽형'}),
-  two('INS-006','아이폰18 AI클럽','보험',16900,'iPhone 18 보상과 기기 교체 혜택을 묶은 클럽 상품입니다',['AI클럽 혜택','파손 보상 · 배터리 교체'],['기기 교체','24개월 후 반납 교체'],{lv3:'클럽형'}),
-  // 액세서리형
-  one('ACC-003','정품 강화유리 필름','액세서리',19000,'갤럭시 S26 전용 강화유리 필름입니다','필름','기종별 전용'),
-  one('ACC-004','45W 초고속 충전기','액세서리',39000,'USB-C PD 45W 초고속 충전기입니다','충전기','USB-C PD 45W'),
-  one('ACC-005','갤럭시 버즈4 프로','액세서리',299000,'노이즈 캔슬링 무선 이어폰입니다','이어폰','화이트 · ANC'),
-  one('ACC-006','AirPods Pro 3','액세서리',369000,'적응형 오디오를 갖춘 Apple 무선 이어폰입니다','이어폰','USB-C 충전 케이스'),
-  one('ACC-007','10000mAh 무선 보조배터리','액세서리',49000,'무선 충전이 되는 10000mAh 보조배터리입니다','보조배터리','무선 15W · USB-C 25W'),
-  // 제휴 · 앱서비스형
-  one('PTN-002','디즈니+ 프리미엄 제휴 이용권','제휴',13900,'디즈니+ 프리미엄을 SKT 회선 인증으로 이용하는 제휴 이용권입니다','디즈니+ 프리미엄 이용','동시 시청 4명 · UHD',PTN),
-  one('PTN-003','스타벅스 제휴 멤버십','제휴',9900,'매월 음료 쿠폰을 주는 제휴 멤버십입니다','쿠폰 지급','매월 아메리카노 2잔',{lv3:'플랫폼형'}),
-  one('APP-002','T맵(타사)','구독서비스',0,'타사 고객도 쓸 수 있는 내비게이션 앱 서비스입니다','T맵 이용','앱 서비스',{lv3:'앱서비스형'}),
-  one('APP-003','스캠뱅가드(타사)','구독서비스',0,'보이스피싱 의심 전화를 알려 주는 앱 서비스입니다','스캠뱅가드 이용','앱 서비스',{lv3:'앱서비스형',st:'출시'}),
-  // EPC 상품 조회 첫 화면에 쓰던 상태별 샘플(출시 · 검증 · 가입중단 · 퇴출)과 나머지 조회용 상품
-  plan('PLN-020','5G 프리미엄',99000,'무제한',{ver:'v1.2',st:'출시'}),
-  plan('PLN-021','5G 스탠다드',75000,'150GB + 소진 시 5Mbps',{st:'검증'}),
-  plan('PLN-022','5G 라이트',55000,'11GB + 소진 시 1Mbps',{ver:'v1.1'}),
-  plan('PLN-023','T플랜 스몰',33000,'1.2GB',{ver:'v2.3',st:'퇴출'}),
-  ...[['다이렉트 5G 27',27000,'6GB + 소진 시 400kbps'],['다이렉트 5G 48',48000,'110GB + 소진 시 5Mbps'],['다이렉트 5G 69',69000,'무제한']].map(([n,p,d],i)=>plan('PLN-0'+(24+i),n,p,d)),
-  plan('PLN-027','0틴 5G',45000,'9GB + 소진 시 1Mbps (만 18세 이하)'),
-  plan('PLN-028','T플랜 세이브',33000,'1.5GB',{st:'가입중단'}),
-  one('ADD-008','컬러링 클래식','부가서비스',990,'통화 연결음을 음악으로 바꾸는 부가서비스입니다','통화연결음 설정','음원 컬러링',{...OPT,ver:'v1.4',st:'퇴출'}),
-  dev('DEV-030','갤럭시 탭 S10 FE 128GB 그레이','태블릿',649000,'갤럭시 탭 S10 FE 그레이 모델입니다','gtabs10fe','갤럭시 탭 S10 FE · 128GB · 5G','S펜 · USB-C 케이블',{st:'가입중단'}),
-  dev('DEV-031','갤럭시 S26+ 256GB 블루',null,1353000,'큰 화면의 갤럭시 S26+ 256GB 모델입니다','gs26p_blue','256GB · 블루','USB-C 케이블 · 유심핀'),
-  dev('DEV-032','iPhone 18 Air 256GB 블루',null,1700000,'가장 얇은 iPhone 18 Air 256GB 모델입니다','ip18air_blue','256GB · 블루','USB-C 케이블',{st:'출시'}),
-  dev('DEV-033','갤럭시 링2 10호 티타늄','웨어러블',499000,'손가락에 끼는 건강 관리 링입니다','gring2','갤럭시 링2 · 10호','충전 케이스',{st:'검증'}),
-  dev('DEV-034','갤럭시 워치 FE 40mm 블랙','웨어러블',299000,'가볍게 쓰는 갤럭시 워치 FE 40mm 모델입니다','gwatchfe','갤럭시 워치 FE · 40mm · LTE','무선 충전기'),
- ];
-}
-export const PO=[
- // 갤럭시 Z 플립 세트
- ...devSet(1,'갤럭시 Z 플립8','flip8',[['256GB','블루',1485000],['256GB','실버',1485000],['512GB','블루',1643000],['512GB','실버',1643000]],'v1.1','반으로 접는 갤럭시 Z 플립8'),
- // 아이폰 18 프로 세트
- ...devSet(5,'iPhone 18 Pro','ip18p',[['256GB','실버',1900000],['256GB','블루',1900000],['512GB','실버',2200000],['512GB','블루',2200000]],'v1.0','프로 카메라 시스템을 갖춘 iPhone 18 Pro'),
- // 베스트 요금제
- ...[['5GX 플래티넘',125000,'무제한 + 쉐어링 50GB'],['5GX 프라임',89000,'무제한']].map(([n,p,d],i)=>mk({id:'PLN-00'+(i+1),name:n,type:'요금제',base:p,desc:`데이터 ${d}를 쓰는 5G 베스트 요금제입니다`,dt:[{id:'PS1',name:'데이터',req:true,desc:d},{id:'PS2',name:'음성·문자',req:true,desc:'기본 제공'}]})),
- // 액세서리 2
- mk({id:'ACC-001',name:'정품 실리콘 케이스',type:'액세서리',base:39000,desc:'갤럭시 Z 플립8 · iPhone 18 Pro 전용 실리콘 케이스입니다',dt:[{id:'PS1',name:'케이스',req:true,desc:'기종별 전용'}]}),
- mk({id:'ACC-002',name:'25W 충전기',type:'액세서리',base:25000,desc:'USB-C PD 25W 고속 충전기입니다',dt:[{id:'PS1',name:'충전기',req:true,desc:'USB-C PD 25W'}]}),
- // 부가서비스 2
- mk({id:'ADD-001',name:'V컬러링',type:'부가서비스',base:3300,desc:'통화 연결음 대신 영상을 보여주는 부가서비스입니다',dt:[{id:'PS1',name:'통화연결음 설정',req:true,desc:'영상 컬러링'}]}),
- mk({id:'ADD-002',name:'FLO 앤 데이터',type:'부가서비스',base:7900,desc:'FLO 무제한 듣기와 전용 데이터를 함께 주는 부가서비스입니다',dt:[{id:'PS1',name:'FLO 무제한',req:true,desc:'음악 무제한 듣기'},{id:'PS2',name:'전용 데이터',req:true,desc:'FLO 전용 데이터'}]}),
- // 구독: 유튜브 · 넷플릭스 · 디즈니 · 구글 1개
- mk({id:'SUB-001',name:'YouTube Premium',type:'구독서비스',base:14900,desc:'광고 없이 영상과 음악을 즐기는 구독 서비스입니다',dt:[{id:'PS1',name:'YouTube Premium 이용',req:true,desc:'광고 없는 재생 · 오프라인 저장'}]}),
- mk({id:'SUB-002',name:'Netflix 스탠다드',type:'구독서비스',base:13500,desc:'동시 시청 2명, FHD 화질의 넷플릭스 이용권입니다',dt:[{id:'PS1',name:'Netflix 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
- mk({id:'SUB-003',name:'디즈니+ 스탠다드',type:'구독서비스',base:9900,desc:'디즈니·픽사·마블 콘텐츠를 보는 구독 서비스입니다',dt:[{id:'PS1',name:'디즈니+ 이용',req:true,desc:'동시 시청 2명 · FHD'}]}),
- mk({id:'SUB-004',name:'Google One 100GB',type:'구독서비스',base:2400,desc:'구글 드라이브·포토·지메일에서 함께 쓰는 100GB 저장공간입니다',dt:[{id:'PS1',name:'클라우드 저장공간',req:true,desc:'100GB'}]}),
- // 보험 1: 상품명 앞에 [보험] 구분자
- mk({id:'INS-001',name:'[보험] T ALL케어 플러스 파손형',type:'보험',base:7900,desc:'파손 시 수리비를 보상하는 휴대폰 보험입니다',dt:[{id:'PS1',name:'파손 보상',req:true,desc:'자기부담금 25%'}]}),
- // PS 선택 옵션이 있는 구독 (고객이 혜택을 직접 고름). 기존 상품의 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
- mk({id:'SUB-005',name:'T우주 편의점&카페',type:'구독서비스',ver:'v2.0',base:9900,desc:'세븐일레븐·투썸플레이스 할인에 원하는 혜택 1개를 더하는 T우주 구독 상품입니다',dt:[
-   {id:'PS1',name:'세븐일레븐',req:true,desc:'1천원당 300원 · 1일 1회 · 회당 9천원'},
-   {id:'PS2',name:'투썸플레이스',req:true,desc:'최대 30% · 1일 1회 · 회당 9천원'},
-   {id:'PS3',name:'선택 혜택',req:false,min:1,max:1,cands:PS3_NAMES.map(n=>({n,add:PS3_ADD(n)}))}]}),
- mk({id:'SUB-006',name:'T 우주패스 DIY',type:'구독서비스',base:9900,desc:'기본 혜택 2개와 추가 혜택 1~2개를 골라 만드는 구독 상품입니다',dt:[
-   {id:'PS1',name:'기본 혜택',req:false,min:2,max:2,cands:['Google One 100GB','세븐일레븐 할인','투썸플레이스 할인','밀리의서재','파리바게뜨 할인','배스킨라빈스 할인','CU 할인','GS25 할인','교보문고 sam','FLO 무제한'].map(n=>({n,add:0}))},
-   {id:'PS2',name:'추가 혜택',req:false,min:1,max:2,cands:['YouTube Premium','Netflix 스탠다드','티빙 스탠다드','디즈니+','웨이브 베이직','배달의민족 쿠폰팩','도미노피자 쿠폰','CGV 예매 할인'].map(n=>({n,add:n==='YouTube Premium'?7900:4900}))}]}),
- // 베스트 요금제: 기본 포함 혜택 + OTT 1개를 고객이 고른다 (PS 선택 옵션)
- mk({id:'PLN-004',name:'베스트 Max(Google AI)',type:'요금제',base:115000,desc:'데이터 무제한에 Google AI를 기본으로 주고, OTT 하나를 더 고르는 베스트 요금제입니다',dt:[
-   {id:'PS1',name:'데이터',req:true,desc:'무제한'},
-   {id:'PS2',name:'Google AI',req:true,desc:'Google AI Pro 이용'},
-   {id:'PS3',name:'OTT 택1',req:false,min:1,max:1,cands:['YouTube Premium','Netflix 스탠다드','디즈니+','티빙 스탠다드','웨이브 베이직'].map(n=>({n,add:0}))}]}),
- mk({id:'PLN-005',name:'베스트 Pro(넷플릭스)',type:'요금제',base:99000,desc:'데이터 무제한에 넷플릭스를 기본으로 주고, OTT 하나를 더 고르는 베스트 요금제입니다',dt:[
-   {id:'PS1',name:'데이터',req:true,desc:'무제한'},
-   {id:'PS2',name:'넷플릭스',req:true,desc:'Netflix 스탠다드 이용'},
-   {id:'PS3',name:'OTT 택1',req:false,min:1,max:1,cands:['YouTube Premium','티빙 스탠다드','디즈니+','웨이브 베이직'].map(n=>({n,add:0}))}]}),
- // 태블릿 3 · 웨어러블 3: 상품 구분은 기기서비스, cat = 상품유형
- ...[['갤럭시 탭 S11 256GB 그레이','gtabs11',1298000,'11인치 AMOLED 화면의 갤럭시 탭 S11 그레이 모델입니다','갤럭시 탭 S11 · 256GB','S펜 · USB-C 케이블'],
-     ['iPad Pro 13 M5 256GB 실버','ipadpro13',2299000,'M5 칩을 탑재한 13인치 iPad Pro 실버 모델입니다','iPad Pro 13 · 256GB','USB-C 케이블'],
-     ['iPad Air 11 M3 128GB 블루','ipadair11',1049000,'가볍게 들고 다니는 11인치 iPad Air 블루 모델입니다','iPad Air 11 · 128GB','USB-C 케이블']]
-  .map(([n,f,p,d,s,c],i)=>mk({id:'DEV-'+String(9+i).padStart(3,'0'),name:n,type:'기기서비스',cat:'태블릿',base:p,desc:d,img:[f+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:s},{id:'PS2',name:'기본 구성품',req:true,desc:c}]})),
- ...[['갤럭시 워치8 클래식 46mm 블랙','gwatch8c',599000,'회전 베젤을 갖춘 갤럭시 워치8 클래식 블랙 모델입니다','갤럭시 워치8 클래식 · 46mm · LTE','무선 충전기'],
-     ['Apple Watch Series 11 46mm 실버','aws11',749000,'건강 기능을 강화한 Apple Watch Series 11 실버 모델입니다','Apple Watch Series 11 · 46mm · 셀룰러','마그네틱 고속 충전 케이블'],
-     ['Apple Watch Ultra 3 49mm 블랙','awu3',1249000,'아웃도어용 티타늄 케이스의 Apple Watch Ultra 3 블랙 모델입니다','Apple Watch Ultra 3 · 49mm · 셀룰러','마그네틱 고속 충전 케이블']]
-  .map(([n,f,p,d,s,c],i)=>mk({id:'DEV-'+String(12+i).padStart(3,'0'),name:n,type:'기기서비스',cat:'웨어러블',base:p,desc:d,img:[f+'_front.png'],dt:[{id:'PS1',name:'단말',req:true,desc:s},{id:'PS2',name:'기본 구성품',req:true,desc:c}]})),
- // v023 반영: 제휴 상품 1 (상품 유형 제휴서비스). 기존 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
- mk({id:'PTN-001',name:'넷플릭스 프리미엄 제휴 이용권',type:'제휴',base:17000,desc:'넷플릭스 프리미엄을 SKT 회선 인증으로 이용하는 제휴 이용권입니다',dt:[{id:'PS1',name:'Netflix 프리미엄 이용',req:true,desc:'동시 시청 4명 · UHD'}]}),
- // v024-1 반영: 로밍형 · 클럽형 · 앱서비스형 샘플. 금액은 화면 확인용 임시값. 기존 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
- mk({id:'PLN-006',name:'baro 요금제',type:'요금제',lv3:'로밍형',base:33000,desc:'해외에서 데이터와 통화를 함께 쓰는 로밍 요금제입니다',dt:[{id:'PS1',name:'로밍 데이터',req:true,desc:'해외 데이터 · 음성 제공'}]}),
- mk({id:'INS-002',name:'아이폰16 AI클럽',type:'보험',lv3:'클럽형',base:15900,desc:'아이폰16 보상과 기기 교체 혜택을 묶은 클럽 상품입니다',dt:[{id:'PS1',name:'AI클럽 혜택',req:true,desc:'파손 보상 · 기기 교체'}]}),
- mk({id:'APP-001',name:'에이닷(타사)',type:'구독서비스',lv3:'앱서비스형',base:0,desc:'타사 고객도 쓸 수 있는 앱 서비스입니다',dt:[{id:'PS1',name:'에이닷 이용',req:true,desc:'앱 서비스'}]}),
- // EPC 상품 조회(epc-list.html) 확장 샘플: LV3마다 고르게, 상품상태(st)도 섞는다. 금액은 화면 확인용 임시값. 기존 EPC 상품ID가 바뀌지 않도록 맨 뒤에 붙인다
- ...EXTRA_PO().map(mk),
-];
-export const poBy=id=>PO.find(p=>p.id===id);
-export const selPS=po=>po.dt.filter(p=>!p.req);
-export const hasSel=po=>selPS(po).length>0;
-// PS 개별 전시용: PO의 PS를 펼친 목록
-export const PSLIST=PO.flatMap(po=>po.dt.flatMap(ps=>ps.req?[{key:po.id+'|'+ps.id,name:ps.name,desc:ps.desc,po,kind:'필수 PS'}]:ps.cands.map((c,ci)=>({key:po.id+'|'+ps.id+'|'+ci,name:c.n,desc:`${ps.name} 후보 · ${c.add?'+'+c.add.toLocaleString()+'원':'추가금 없음'}`,po,kind:'선택 PS 후보'}))));
-export const psBy=k=>PSLIST.find(x=>x.key===k);
-
-// ---------- v024-1 반영: EPC 상품 분류 · 계약 속성 (product-v023.html) ----------
-// LV1은 '상품' 고정. EPC에서 내려오는 읽기 전용 값으로 가정한다.
-// 레퍼런스(ref/product-admin-prototype-v024-1.html)에 있는 값: LV2 목록, 로밍형까지의 LV3와 그 계약유형(contract) · 회선필수(line) · 제공주체(provider), Product Spec 표기.
-// 나머지는 화면 확인용 가정값이다(정책 확정 필요): 기기 LV3 4종, 회선종류(lineKind) · 회선상태(lineState) · 기존 가입상품(exist) · 중복가입(dup) · 상품 조합(combo).
-export const LV2S=['이동전화','제휴','기기','범용','인터넷','TV'];
-const MOBILE='이동전화 회선(5G · LTE)', NO_LINE='회선 없이 가입 가능', IN_USE='사용 중 회선 (정지 · 미납 회선 불가)', NO_CHECK='확인 안 함';
-export const LV3S={
- '이동전화 요금제형':{lv2:'이동전화',contract:'메인',line:'Y',provider:'자사',lineKind:MOBILE,lineState:'신규 또는 사용 중 회선 (정지 · 미납 회선 불가)',exist:'기존 요금제가 있으면 요금제 변경으로 처리',dup:'불가 (회선당 요금제 1개)',combo:'단말 · 부가서비스 · 구독과 함께 가입 가능'},
- '이동전화 base 옵션형':{lv2:'이동전화',spec:'데이터 Product Spec',contract:'옵션',line:'Y',provider:'자사',lineKind:MOBILE,lineState:IN_USE,exist:'기본 요금제 가입 필수',dup:'불가 (같은 상품)',combo:'요금제에 더해 가입 · 단독 가입 불가'},
- '이동전화 base 제휴형':{lv2:'제휴',spec:'제휴 부가 Product Spec',contract:'옵션',line:'Y',provider:'자사/제휴사',lineKind:MOBILE,lineState:IN_USE,exist:'기본 요금제 가입 필수',dup:'불가 (같은 원천 서비스 코드)',combo:'요금제에 더해 가입 · 단독 가입 불가'},
- '클럽형':{lv2:'제휴',spec:'클럽 Product Spec',contract:'메인/옵션',line:'N',provider:'자사/보험사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'같은 클럽 가입 여부 확인',dup:'불가 (단말당 1개)',combo:'단말과 함께 또는 단독 가입'},
- '플랫폼형':{lv2:'제휴',spec:'제휴 플랫폼 Product Spec',contract:'메인/옵션',line:'N',provider:'제휴사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'같은 구독 가입 여부 확인',dup:'불가 (같은 원천 서비스 코드)',combo:'요금제 · 부가서비스와 함께 또는 단독 가입'},
- '로밍형':{lv2:'이동전화',spec:'로밍 Product Spec',contract:'메인/옵션',line:'Y',provider:'자사',lineKind:MOBILE,lineState:IN_USE,exist:'같은 기간 로밍 상품 가입 여부 확인',dup:'불가 (같은 기간 로밍 상품 1개)',combo:'요금제에 더해 가입'},
- '앱서비스형':{lv2:'범용',contract:'메인',line:'N',provider:'타사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'해당 없음',dup:'해당 없음 (타사 앱에서 관리)',combo:'단독 가입'},
- '휴대폰형':{lv2:'기기',spec:'휴대폰 Product Spec',contract:'메인',line:'Y',provider:'자사',lineKind:MOBILE,lineState:'신규 또는 사용 중 회선 (정지 · 미납 회선 불가)',exist:'기기변경은 기존 요금제 유지 가능',dup:'불가 (회선당 단말 1대)',combo:'요금제 필수 · 부가서비스 · 보험 선택'},
- '태블릿형':{lv2:'기기',spec:'태블릿 Product Spec',contract:'메인',line:'Y',provider:'자사',lineKind:'데이터 전용 회선',lineState:'신규 또는 사용 중 회선 (정지 · 미납 회선 불가)',exist:'기기변경은 기존 요금제 유지 가능',dup:'불가 (회선당 단말 1대)',combo:'데이터 요금제 필수'},
- '웨어러블형':{lv2:'기기',spec:'웨어러블 Product Spec',contract:'메인',line:'Y',provider:'자사',lineKind:'웨어러블 회선 (모회선 연결)',lineState:'모회선이 사용 중이어야 가입 가능',exist:'모회선 요금제 가입 필수',dup:'불가 (회선당 단말 1대)',combo:'모회선 요금제 필수 · 데이터 쉐어링 선택'},
- '액세서리형':{lv2:'기기',spec:'액세서리 Product Spec',contract:'메인',line:'N',provider:'자사',lineKind:NO_LINE,lineState:NO_CHECK,exist:'해당 없음',dup:'가능',combo:'단말과 함께 또는 단독 구매'},
-};
-// 지금 샘플 상품(PO)의 LV3: 상품별 값 → 상품유형(cat) → 상품 구분(type) 순서로 찾는다. 보험은 제공주체가 달라 함께 적는다
-const LV3_BY_ID={'ADD-001':['이동전화 base 제휴형'],'ADD-002':['이동전화 base 옵션형'],'INS-001':['이동전화 base 제휴형','자사/보험사'],'PTN-001':['이동전화 base 제휴형']};
-const LV3_BY_KIND={기기서비스:'휴대폰형',태블릿:'태블릿형',웨어러블:'웨어러블형',액세서리:'액세서리형',요금제:'이동전화 요금제형',구독서비스:'플랫폼형'};
-export const epcOf=p=>{
- const [idLv3,provider]=LV3_BY_ID[p.id]||[], lv3=p.lv3||idLv3||LV3_BY_KIND[p.cat||p.type], s=LV3S[lv3];
- return {...s,lv3,provider:provider||s.provider,spec:s.spec||`${p.name} Product Spec`};
-};
 
 export const BCOL=[['보라','#4320d4'],['파랑','#1f5fa8'],['초록','#1f8a5b'],['주황','#d4612a'],['빨강','#c0392b'],['핑크','#a8326a'],['검정','#2c2c2a']];
 export const MSG1='이 상품은 고객이 직접 선택하는 항목이 있어, 고정으로 등록해도 고객 화면에 선택 항목이 표시됩니다.';
@@ -289,11 +112,11 @@ export const PTYPES=[
  {k:'이동전화',d:'요금제 단독 가입',kinds:['요금제'],kn:'요금제',need:['join'],ord:'요금제 주문',items:['가입 유형','요금제','본인 인증']},
  {k:'부가서비스',d:'보험 · 컬러링 등',kinds:['부가서비스','보험'],kn:'부가서비스',need:[],ord:'부가서비스 주문',items:['회선 인증','부가서비스']},
  {k:'구독서비스',d:'우주패스 등 정기 구독',kinds:['구독서비스'],kn:'구독',need:[],ord:'구독 주문',items:['구독 상품','결제 수단']},
- {k:'제휴서비스',d:'제휴사 상품 · 이용권',kinds:['제휴'],kn:'제휴',need:[],ord:'제휴 주문',items:['회선 인증','제휴 동의']}
+ {k:'제휴서비스',d:'제휴사 상품 · 이용권',kinds:['제휴','쿠폰'],kn:'제휴',need:[],ord:'제휴 주문',items:['회선 인증','제휴 동의']}
 ];
 export const ptOf=d=>PTYPES.find(p=>p.k===d.svc)||null;
 // 연결 상품 구분으로 추천하는 상품 유형: 기기 → 요금제 → 부가서비스 → 구독 → 제휴 순으로 본다
-export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':h('제휴')?'제휴서비스':''; }
+export function recPtype(types){ const h=t=>types.includes(t); return h('기기서비스')?'기기서비스':h('요금제')?'이동전화':h('부가서비스')||h('보험')?'부가서비스':h('구독서비스')?'구독서비스':h('액세서리')?'기기서비스':h('제휴')||h('쿠폰')?'제휴서비스':''; }
 // ---------- v023 반영: 대표 상품 (product-v022.html) ----------
 // 상품 유형은 직접 고르지 않고 대표 상품의 EPC 상품 구분으로 정한다. 전시 값: repPo = 대표 상품 PO id (운영자가 직접 지정, 미지정이면 null)
 export const ptypeOfPo=id=>{ const p=poBy(id); return p&&PTYPES.find(x=>x.kinds.includes(p.type))||null; };
@@ -345,7 +168,7 @@ export const TD_TOP=3; // 티다팩은 처음 3개만 보이고 나머지는 전
 export function orderDefaults(){ const o={}; Object.values(FLOWS).forEach(f=>f.fields.forEach(([k,,v])=>o[k]=v.slice())); return o; }
 // 상품 유형 이름 목록 (예전 '전시 유형(서비스 구분)'과 같은 값)
 export const SVCS=PTYPES.map(p=>p.k);
-export function newDisplay(){ return {id:null,kind:'po',conn:[],method:'fixed',areas:[newArea('','fixed')],name:'',from:TODAY,fromTime:'00:00',to:'',toTime:'23:59',noEnd:true,show:false,channels:[],svc:'',svcAuto:true,main:null,mainAlt:'',subs:[],subAlt:'',badges:[],related:true,orderOn:true,descMode:'image',descImgs:[],descHtml:'',descNote:'',extras:[],search:{on:false,kw:[],title:'',desc:'',og:null},cvm:{on:false,n:CVM_DEF,lines:[]},order:orderDefaults(),orderPlan:null,off:OFF_DEF(),review:true,sim:{on:true,mode:'def',t:'',s:''},join:JOIN_DEF(),instBy:INST_BY_DEF(),instTop:INST_TOP_DEF(),ship:SHIP_DEF(),gifts:[],giftBadge:true,tds:[],tdBadge:true}; }
+export function newDisplay(){ return {id:null,kind:'po',conn:[],method:'fixed',areas:[newArea('','fixed')],name:'',from:TODAY,fromTime:'00:00',to:'',toTime:'23:59',noEnd:true,show:false,channels:[],svc:'',svcAuto:true,main:null,mainAlt:'',brief:'',mp:'',deduct:false,subs:[],subAlt:'',badges:[],related:true,orderOn:true,descMode:'image',descImgs:[],descHtml:'',descNote:'',extras:[],search:{on:false,kw:[],title:'',desc:'',og:null},cvm:{on:false,n:CVM_DEF,lines:[]},order:orderDefaults(),orderPlan:null,off:OFF_DEF(),review:true,sim:{on:true,mode:'def',t:'',s:''},join:JOIN_DEF(),instBy:INST_BY_DEF(),instTop:INST_TOP_DEF(),ship:SHIP_DEF(),gifts:[],giftBadge:true,tds:[],tdBadge:true}; }
 // 이미지: n = 파일명, u = 업로드한 이미지 주소(EPC에서 불러온 이미지는 파일명만 있다)
 export const img=n=>({n,u:null});
 export const PLANS=['PLN-001','PLN-002','PLN-004','PLN-005'];
@@ -357,11 +180,11 @@ export function norm(d){
  // EPC 샘플에서 지운 상품(예: 0 청년 69)을 가리키면 연결·영역·옵션 매핑에서 뺀다
  const ok=k=>d.kind==='ps'?!!psBy(k):!!poBy(k);
  d.conn=(d.conn||[]).filter(ok); (d.areas||[]).forEach(a=>{ a.pos=(a.pos||[]).filter(ok); a.def=(a.def||[]).filter(ok); Object.keys(a.map||{}).forEach(k=>{ if(!ok(a.map[k])) delete a.map[k]; }); });
- if(d.images){ d.main=d.images[0]||null; d.subs=d.images.slice(1); delete d.images; } d.main=d.main||null; d.mainAlt=d.mainAlt||''; d.subs=d.subs||[]; d.subAlt=d.subAlt||''; d.fromTime=d.fromTime||'00:00'; d.toTime=d.toTime||'23:59'; d.channels=[...new Set((d.channels||[]).map(c=>({웹:'통합 WEB',앱:'통합 APP',BSS:'BSS(TBD)'}[c]||c)))]; d.svc=SVCS.includes(d.svc)?d.svc:''; delete d.summary;
+ if(d.images){ d.main=d.images[0]||null; d.subs=d.images.slice(1); delete d.images; } d.main=d.main||null; d.mainAlt=d.mainAlt||''; d.brief=d.brief||''; d.mp=d.mp||''; d.deduct=!!d.deduct; d.subs=d.subs||[]; d.subAlt=d.subAlt||''; d.fromTime=d.fromTime||'00:00'; d.toTime=d.toTime||'23:59'; d.channels=[...new Set((d.channels||[]).map(c=>({웹:'통합 WEB',앱:'통합 APP',BSS:'BSS(TBD)'}[c]||c)))]; d.svc=SVCS.includes(d.svc)?d.svc:''; delete d.summary;
  if(d.desc!=null){ const t=String(d.desc).trim(); if(t&&!d.descHtml){ const e=x=>x.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); d.descHtml=t.split(/\n{2,}/).map(p=>`<p>${e(p).replace(/\n/g,'<br>')}</p>`).join(''); if(!(d.descImgs&&d.descImgs.length)) d.descMode='html'; } delete d.desc; }
  d.descMode=d.descMode||'image'; d.descImgs=d.descImgs||[]; d.descHtml=d.descHtml||''; d.descNote=d.descNote||''; (d.areas||[]).forEach(a=>{ if(a.name==='고객 선택 방식'||/^구성 영역( d+)?$/.test(a.name)) a.name=''; a.cond=a.cond&&a.cond!=='relation'?a.cond:'always'; delete a.rel; if(a.parent===undefined) a.parent=null; a.trig=a.trig||[]; }); if(d.orderPlan===undefined) d.orderPlan=null;
  const sr=d.search=Object.assign({on:false,kw:[]},d.search); if(sr.title==null) sr.title=String(sr.line||'').slice(0,25); delete sr.line; sr.desc=sr.desc||''; sr.og=sr.og||null; d.cvm=Object.assign({n:CVM_DEF,lines:[]},d.cvm); d.cvm.n=Math.min(CVM_MAX,Math.max(1,d.cvm.n)); if(d.cvm.on==null) d.cvm.on=d.cvm.lines.some(x=>x&&x.trim()); if(d.noEnd==null) d.noEnd=!d.to; if(d.show==null) d.show=true;
- delete d.rep; if(d.svcAuto==null) d.svcAuto=!d.svc; if(d.review==null) d.review=true; if(d.related==null) d.related=true; if(d.orderOn==null) d.orderOn=true; d.sim=Object.assign({on:true,mode:'def',t:'',s:''},d.sim); if(!d.join) d.join=JOIN_DEF();
+ delete d.rep; if(d.svcAuto==null) d.svcAuto=!d.svc; if(d.review==null) d.review=true; if(d.expert==null) d.expert=false; if(d.related==null) d.related=true; if(d.orderOn==null) d.orderOn=true; d.sim=Object.assign({on:true,mode:'def',t:'',s:''},d.sim); if(!d.join) d.join=JOIN_DEF();
  // 예전 저장본: 할부 한 목록(inst) · 기본 선택(joinDef · instDef) → 가입 유형별 할부(instBy · instTop)
  { const bd=INST_BY_DEF(), td=INST_TOP_DEF(); d.instBy=Object.assign(bd,d.instBy); d.instTop=Object.assign(td,typeof d.instTop==='object'?d.instTop:{}); delete d.inst; delete d.joinDef; delete d.instDef; }
  if(!d.ship) d.ship=SHIP_DEF(); d.off=Object.assign(OFF_DEF(),d.off); d.gifts=d.gifts||[]; if(d.giftBadge==null) d.giftBadge=true; d.tds=d.tds||[]; d.tdCut=d.tdCut||[]; if(d.tdBadge==null) d.tdBadge=true; return d; }
@@ -375,6 +198,7 @@ export const SEEDS=()=>[
  seed({id:3,svc:'기기서비스',name:'iPhone 18 Pro + 베스트요금제 + 구독',from:'2026-10-15',to:'2026-12-31',conn:[...IP18,...PLANS,'SUB-001','SUB-002','SUB-003'],method:'complex',areas:[devArea('단말',IP18,['실버','블루']),Object.assign(newArea('요금제','list'),{pos:PLANS,q:1}),Object.assign(newArea('구독 혜택','list'),{pos:['SUB-001','SUB-002','SUB-003'],q:1})],images:[img('ip18p_silver_front.png')],badges:[{t:'온라인 전용',c:'#1f8a5b',s:'l'}],desc:'iPhone 18 Pro와 베스트 요금제, 원하는 구독 하나를 함께 가입하는 온라인 전용 구성입니다.',extras:[{id:1,t:'유의사항',mode:'link',src:'TPL-0002',show:true,txt:''},{id:2,t:'이용약관',mode:'link',src:'TPL-0003',show:true,txt:''}],search:{on:true,kw:['아이폰','요금제'],line:''},orderPlan:planOf(13,'휴대폰 + 요금제 + 구독 / 통합형')}),
  seed({id:4,svc:'이동전화',name:'베스트 요금제',from:'2026-09-01',conn:PLANS,method:'select',areas:[Object.assign(newArea('요금제를 골라 주세요','list'),{pos:PLANS,q:1})],search:{on:false,kw:[],line:''},desc:'데이터 걱정 없는 5G 베스트 요금제를 비교하고 골라 보세요.',orderPlan:planOf(2,'요금제 / 기본')}),
  seed({id:5,svc:'기기서비스',name:'액세서리 모음',from:'2026-09-01',to:'2026-09-30',conn:['ACC-001','ACC-002'],method:'fixed',areas:[Object.assign(newArea('액세서리','fixed'),{pos:['ACC-001','ACC-002']})],desc:'갤럭시 Z 플립8 · iPhone 18 Pro와 함께 쓰기 좋은 정품 액세서리입니다.',orderPlan:planOf(19,'액세서리 / 택배')}),
+ seed({id:7,svc:'이동전화',name:'베스트 89 넷플릭스 혜택',from:'2026-10-01',to:'2026-12-31',kind:'mp',conn:['PLN-089'],mp:'PLN-089|MP-B89-02',method:'fixed',areas:[Object.assign(newArea('베스트 89 넷플릭스','fixed'),{pos:['PLN-089']})],desc:'베스트 89에 넷플릭스 혜택을 고정한 전시입니다.'}),
  seed({id:6,svc:'구독서비스',name:'YouTube Premium 혜택 소개',from:'2026-10-01',kind:'ps',conn:['SUB-001|PS1'],method:'fixed',areas:[],desc:'YouTube Premium에 포함된 광고 없는 재생 · 오프라인 저장 혜택을 소개합니다.'}),
 ];
 // 저장한 전시는 이 브라우저에만 남긴다. 저장소를 못 쓰면 샘플로 시작한다

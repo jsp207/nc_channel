@@ -42,3 +42,20 @@ npm start
 `http://localhost:4000`에서 빌드한 화면과 인증 API를 함께 제공합니다.
 
 원본 단일 파일은 `product-admin-prototype-simple.html`로 보존되어 있습니다.
+
+## EPC 상품 데이터
+
+EPC 상품은 아래 두 파일에서만 관리합니다. 상품 전시 등록, EPC 상품 조회, 다운로드 등 모든 메뉴가 이 데이터를 가져다 씁니다.
+
+| 파일 | 내용 |
+|---|---|
+| `src/data/epc-products.json` | EPC 상품(PO) 목록. 상품 하나가 `{ }` 한 덩어리 |
+| `src/data/epc-codes.json` | 코드표. LV2 목록, LV3 속성(계약유형 · 회선 · 제공주체 등), 상품 구분, EPC 상태 → 판매상태 |
+| `src/data/epc.ts` | 화면에서 가져다 쓰는 공용 진입점(`PO`, `poBy`, `psBy`, `epcOf` 등). 각 항목 설명이 파일 맨 위에 있습니다 |
+
+- 상품 추가·수정: `epc-products.json`에 상품 덩어리를 추가하거나 값을 고칩니다. EPC 상품ID(`epc`)와 PO ID(`id`)는 겹치면 안 됩니다.
+- 새 LV3나 상품 구분이 필요하면 `epc-codes.json`에 먼저 추가합니다.
+- MP(PO에 따로 붙는 혜택)는 그 PO의 `mpg`(요금프로그램그룹)에 넣습니다. MP 상품 전시에서 원천 PO와 고정 MP를 고를 때 이 값을 씁니다.
+- 값이 잘못되면(ID 중복, 없는 LV3 · 상태 · 상품 구분) 브라우저 개발자 도구 콘솔에 `[EPC 데이터 점검]` 경고가 나옵니다.
+- 전체 목록 파일 만들기: `npm run export:epc` → `export/epc-products-sample.json` · `.csv`
+- EPC 상품 조회 화면에서는 조회 결과를 [JSON 다운로드] · [CSV 다운로드]로 내려받습니다. CSV는 엑셀에서 바로 열립니다.

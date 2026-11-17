@@ -140,8 +140,9 @@
         <li><a href="#np-s5">5. 전시 기본 규칙</a></li>
         <li><a href="#np-s6">6. 고객 선택 방식</a></li>
         <li><a href="#np-s7">7. MP 고정 전시</a></li>
-        <li><a href="#np-s8">8. 남은 미결</a></li>
-        <li><a href="#np-s9">9. 조합 규칙</a></li>
+        <li><a href="#np-s8">8. 공제항목 반영</a></li>
+        <li><a href="#np-s9">9. 남은 미결</a></li>
+        <li><a href="#np-s10">10. 조합 규칙</a></li>
       </ol>
     </nav>
     <div class="np-body">
@@ -366,20 +367,38 @@
     </section>
 
     <section id="np-s8">
-      <h2><span class="np-no">08</span>남은 미결 사항</h2>
+      <h2><span class="np-no">08</span>공제항목 반영 (초안)</h2>
+      <p class="np-sub">세부 정책 협의 전. 지금은 전시마다 ON/OFF만 정한다 <span class="np-tag">미결 Q16</span></p>
+      <p>공제항목 반영은 매달 청구되는 통신 요금이나 단말기 할부금에서 약정 할인, 복지 혜택, 가족 결합 등 각종 할인 금액을 미리 빼서 계산했다는 뜻이다. 할인 전 원래 금액(정상가)이 아니라, 할인받을 금액을 뺀 실제 납부 예정 금액을 보여 준다.</p>
+      <div class="np-tbl"><table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td class="np-k">설정 위치</td><td>상품 전시 등록 &gt; 전시 설정 &gt; 공제항목 반영. 전시 단위로 하나만 정한다(영역 · 상품별로 따로 정하지 않는다)</td></tr>
+          <tr><td class="np-k">값</td><td>OFF(기본) · ON</td></tr>
+          <tr><td class="np-k">OFF</td><td>지금처럼 EPC Price policy의 정상가를 보여 준다</td></tr>
+          <tr><td class="np-k">ON</td><td>고객 화면 금액을 공제항목(할인)을 뺀 납부 예정 금액으로 보여 준다. 계산 방식은 협의 후 정한다</td></tr>
+          <tr><td class="np-k">대상</td><td>PO/MP 상품 전시 · MP 상품 전시. PS 상품 전시는 금액이 없어 쓰지 않는다</td></tr>
+          <tr><td class="np-k">가격 원칙</td><td>전시는 가격 · 추가금을 입력하거나 고치지 않는다(5장). 공제 금액도 전시에서 입력하지 않고, 원천 값을 받아 보여 주기만 한다</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="np-s9">
+      <h2><span class="np-no">09</span>남은 미결 사항</h2>
       <div class="np-qlist">
         <div class="np-q"><b>Q6</b>"기본 할인 RULE"의 정의, 재선택 횟수·기간 제한, 적용 시점(즉시/익월)</div>
         <div class="np-q"><b>Q9-1</b>기존 NA 코드 가입자를 PO + MP로 전환하는 시점과 방식</div>
         <div class="np-q"><b>Q13</b>자동 제외로 필수 영역(최소 1 이상)의 후보가 0개가 되면 어떻게 하는가<p>선택지: 전시 미노출 / 영역 건너뛰기 / 안내 후 진행 불가</p></div>
         <div class="np-q"><b>Q14</b>한 전시에 결제 방식이 섞이는 경우(회선 청구 + 일시불, 일시불 + 정기결제) 주문·결제를 어떻게 처리하는가<p>선택지: 주문 컨테이너 1개에서 결제 코너 복수 / 주문 분리</p></div>
+        <div class="np-q"><b>Q16</b>공제항목 반영의 세부 정책(8장)<p>정할 것: 공제항목 범위(약정 할인 · 선택약정 · 복지 · 가족 결합 · 프로모션 등)와 우선순위 / 공제 금액의 원천 시스템(EPC · BSS · 할인 정책) / 고객 정보가 없을 때(비로그인 · 결합 정보 미확인) 보여 줄 금액 / 정상가 병기 · 공제 내역 노출 방식 / 주문서 · 청구 금액과의 일치 검증</p></div>
         <div class="np-q"><b>Q15</b>다회선 구성에서 영역과 회선을 어떻게 연결하는가<p>예: 영역1 폰 단말 → 영역2 폰 요금제, 영역3 워치 단말 → 영역4 워치 요금제처럼 회선 묶음 단위를 둘지</p></div>
       </div>
     </section>
 
-    <section id="np-s9">
-      <h2><span class="np-no">09</span>조합 규칙</h2>
+    <section id="np-s10">
+      <h2><span class="np-no">10</span>조합 규칙</h2>
       <p>기준 상품과 함께 묶는 상품의 조합별 규칙이다.</p>
-      <p class="np-sub">판정: <span class="np-pill np-ok">O</span> 확정 규칙으로 가능 &nbsp; <span class="np-pill np-wait">△</span> 미정 규칙 또는 8장 미결에 따라 갈림 &nbsp; <span class="np-pill np-no">X</span> 확정 규칙상 불가</p>
+      <p class="np-sub">판정: <span class="np-pill np-ok">O</span> 확정 규칙으로 가능 &nbsp; <span class="np-pill np-wait">△</span> 미정 규칙 또는 9장 미결에 따라 갈림 &nbsp; <span class="np-pill np-no">X</span> 확정 규칙상 불가</p>
       <div class="np-tbl"><table>
         <thead><tr><th>조합</th><th>구성 방식</th><th>규칙</th><th>판정</th></tr></thead>
         <tbody>

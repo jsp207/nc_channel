@@ -3,6 +3,7 @@
 // 섹션별 필수 검사(sectionState · blocking)로 '작성 중' 여부를 정하고, 전시 여부 · 기간으로 운영 상태(status)를 정한다.
 import { TODAY, NOW, poBy, hasSel, psBy, MSG2, FLOWS, GIFT, TDP, DISPLAYS, CHS, ptOf, APP_CH, ordKind, epcOf } from "./display-data";
 import { sameCat, procUsable } from "./order-process-data";
+import { mpBy } from "./data/epc";
 
 // 전시 시작·종료 일시. 종료일없음이면 종료는 빈 값
 export const endOf=d=>d.noEnd?'':d.to;
@@ -17,9 +18,9 @@ export const descFilled=d=>d.descMode==='image'?d.descImgs.length>0:d.descMode==
 export function combos(a){const os=a.opts.filter(o=>o.name.trim()&&o.vals.length);if(!os.length)return[];return os.reduce((acc,o)=>acc.flatMap(c=>o.vals.map(v=>c.concat(v))),[[]]).map(c=>c.join('|'));}
 export const areaHasSel=a=>a.pos.some(id=>hasSel(poBy(id)));
 export function rng(a){ if(a.mode!=='list') return null; return {lo:a.opt0?0:a.q, hi:a.useMax?a.mx:a.q}; }
-export const usedIn=id=>DISPLAYS.filter(d=>d.kind==='po'&&d.conn.includes(id)).length;
-export const connPOs=d=>d.kind==='po'?d.conn.map(poBy):[...new Set(d.conn.map(k=>psBy(k).po))];
-export const activeFlows=d=>d.kind!=='po'?[]:Object.entries(FLOWS).filter(([k,f])=>d.conn.some(id=>f.types.includes(poBy(id).type)));
+export const usedIn=id=>DISPLAYS.filter(d=>d.kind!=='ps'&&d.conn.includes(id)).length;
+export const connPOs=d=>d.kind!=='ps'?d.conn.map(poBy):[...new Set(d.conn.map(k=>psBy(k).po))];
+export const activeFlows=d=>d.kind==='ps'?[]:Object.entries(FLOWS).filter(([k,f])=>d.conn.some(id=>f.types.includes(poBy(id).type)));
 // ---------- 상품 유형 · 채널 연동 ----------
 // 통합 APP · WEB 중 하나라도 고르면 주문 단계(가입 유형 · 할부 · 배송)를 이 화면에서 정한다
 export const appOn=d=>APP_CH.some(c=>d.channels.includes(c));
@@ -29,9 +30,9 @@ export const STEP_CORNER={join:'CN-ORD-0003',inst:'CN-ORD-0004',ship:'CN-ORD-000
 export const planCorners=d=>d.orderPlan&&Array.isArray(d.orderPlan.stages)?d.orderPlan.stages.flatMap(s=>s.corners.map(c=>c.id)):null;
 // 섹션을 쓰는지: 상품 판매 전시 + 통합 APP · WEB + 상품 유형(또는 연결한 프로세스)이 그 단계를 쓸 때 (k = join | inst | ship)
 // noSteps: 이 화면에서 단계를 정하지 않는 전시(product-v024: 주문 프로세스에서 가져와 정할 예정)
-export const needs=(d,k)=>{ if(d.noSteps||d.kind!=='po'||!appOn(d)) return false; const pc=planCorners(d); return pc?pc.includes(STEP_CORNER[k]):!!ptOf(d)&&ptOf(d).need.includes(k); };
+export const needs=(d,k)=>{ if(d.noSteps||d.kind==='ps'||!appOn(d)) return false; const pc=planCorners(d); return pc?pc.includes(STEP_CORNER[k]):!!ptOf(d)&&ptOf(d).need.includes(k); };
 // 상품 유형(LV3 조합): 연결 상품의 LV3를 연결한 순서대로 겹치지 않게 모은다
-export const lv3Combo=d=>d.kind==='po'?[...new Set(connPOs(d).map(p=>epcOf(p).lv3))]:[];
+export const lv3Combo=d=>d.kind!=='ps'?[...new Set(connPOs(d).map(p=>epcOf(p).lv3))]:[];
 // 상품 유형과 연결 상품이 맞지 않으면 경고 (예: 기기서비스인데 기기 상품이 없음)
 export function ptWarn(d){ const p=ptOf(d); if(!p||!p.kinds||!d.conn.length) return ''; return connPOs(d).some(x=>p.kinds.includes(x.type))?'':`연결 상품에 ${p.kn} 상품이 없어요. 상품 유형을 다시 확인하세요`; }
 // v023 대표 상품(repPo)을 쓰는 전시인지. product-v022에서 저장한 전시만 이 값을 가진다
@@ -54,9 +55,9 @@ export function areaIssues(a,d){ const e=[];
   else if(a.cond==='only'&&!(a.trig||[]).some(v=>p.pos.includes(v))) e.push('어떤 선택일 때 보여줄지 고르세요'); }
  return e; }
 // ---------- 사은품·티다팩: 연결 상품과 조건이 맞으면 자동으로 올라오고, 전시에서는 노출 여부·순서만 정한다 ----------
-export const hasDev=d=>d.kind==='po'&&d.conn.some(id=>poBy(id).type==='기기서비스');
+export const hasDev=d=>d.kind!=='ps'&&d.conn.some(id=>poBy(id).type==='기기서비스');
 // 티다팩은 요금제를 연결했을 때만 노출한다
-export const hasPlan=d=>d.kind==='po'&&d.conn.some(id=>poBy(id).type==='요금제');
+export const hasPlan=d=>d.kind!=='ps'&&d.conn.some(id=>poBy(id).type==='요금제');
 export const GM=id=>GIFT.find(g=>g.id===id), TDM=id=>TDP.find(t=>t.id===id);
 export const condMatch=(d,c)=>{ const P=connPOs(d); if(c.model) return P.some(p=>p.name.startsWith(c.model)); if(c.pos) return P.some(p=>c.pos.includes(p.id)); return false; };
 // 소진·기간 종료는 자동 미노출, 시작 전은 시작일에 자동 노출. 진행 중이면 수량 10% 미만·종료 2주 이내를 알린다
@@ -71,7 +72,7 @@ export function benefitState(g){
 export function joinWarn(d,g){ if(!g.cond.join||!needs(d,'join')) return ''; const on=d.join.filter(j=>j.on).map(j=>j.k); return g.cond.join.some(j=>on.includes(j))?'':`대상 가입 유형(${g.cond.join.join(', ')})이 이 전시에서 꺼져 있어 고객에게 나오지 않아요`; }
 // 조건 매칭 항목을 연결 상품에 맞춰 다시 맞춘다. 전시 전용(직접 연결) 항목은 그대로 둔다
 export function syncList(list,pool,d){ const by=id=>pool.find(x=>x.id===id); const keep=list.filter(x=>x.src==='own'||condMatch(d,by(x.id).cond)); pool.filter(g=>!g.own&&condMatch(d,g.cond)&&!keep.some(x=>x.id===g.id)).forEach(g=>keep.push({id:g.id,src:'auto',show:!benefitState(g).auto})); return keep; }
-export function syncBenefits(d){ d.gifts=syncList(d.gifts,GIFT,d).filter(x=>!(d.giftCut||[]).includes(x.id)); d.tds=d.kind==='po'?syncList(d.tds,TDP,d).filter(x=>!(d.tdCut||[]).includes(x.id)):[]; }
+export function syncBenefits(d){ d.gifts=syncList(d.gifts,GIFT,d).filter(x=>!(d.giftCut||[]).includes(x.id)); d.tds=d.kind!=='ps'?syncList(d.tds,TDP,d).filter(x=>!(d.tdCut||[]).includes(x.id)):[]; }
 // T기프트는 기기 상품을 연결했을 때만 노출한다(가입 유형 · 할부 설정과 같음)
 export const visibleGifts=d=>!hasDev(d)?[]:d.gifts.filter(x=>{ const g=GM(x.id); return x.show&&!benefitState(g).auto&&!joinWarn(d,g); });
 export const visibleTd=d=>!hasPlan(d)?[]:d.tds.filter(x=>x.show&&!benefitState(TDM(x.id)).auto);
@@ -97,7 +98,7 @@ export function sectionState(d){
   S.search=!sr.on?{st:any?'done':'todo',e:[]}:{st:miss.length?(miss.length===3&&!sr.og?'todo':'warn'):'done',e:miss}; }
  S.cvm={st:d.cvm.lines.slice(0,d.cvm.n).some(x=>x.trim())?'done':'todo',e:[]};
  S.review={st:d.review?'on':'off',e:[]};
- S.sim=!d.sim.on?{st:'off',e:[]}:(d.sim.mode==='def'||(d.sim.t.trim()&&d.sim.s.trim()))?{st:'on',e:[]}:{st:'warn',e:['직접 입력한 타이틀과 소타이틀을 채우세요']};
+ S.sim=!d.sim.on?{st:'off',e:[]}:(d.sim.mode==='def'||d.sim.t.trim())?{st:'on',e:[]}:{st:'warn',e:['직접 입력한 타이틀을 채우세요']};
  // product-v022는 유사한 상품 문구를 연관 상품 섹션에서 정한다. 문구 검사도 연관 상품으로 옮긴다
  S.rel=usesRep(d)&&d.related&&S.sim.st==='warn'?S.sim:{st:d.related?'on':'off',e:[]};
  // 추가설정 = 오퍼링 문구 · 검색 노출 설정을 묶은 섹션 (product-v021은 유사한 상품도 포함)
@@ -139,6 +140,6 @@ export const OPST={'전시 예약':['예정','wait'],'전시 중':['전시중','
 export const opState=d=>OPST[status(d)[0]];
 export function epcState(d){ const pos=connPOs(d); if(!pos.length) return null; const s=pos.find(p=>p.sale!=='판매중'); return s?[s.sale,'stop']:['운영','ok']; }
 export const chText=d=>d.channels.length&&CHS.every(c=>d.channels.includes(c))?'All 채널':firstMore(d.channels);
-export const connNames=d=>d.kind==='po'?d.conn.map(id=>poBy(id).name):d.conn.map(k=>psBy(k).name);
+export const connNames=d=>d.kind!=='ps'?d.conn.map(id=>poBy(id).name+(d.kind==='mp'&&mpBy(d.mp)?.po.id===id?' + '+mpBy(d.mp).name:'')):d.conn.map(k=>psBy(k).name);
 export function methodText(d){ if(d.kind==='ps') return '-'; if(d.method==='complex') return '복합형'; if(d.method==='fixed') return '고정';
  const a=d.areas[0]; return a&&a.mode==='opt'?`옵션 선택, 대상 ${a.pos.length}개`:'목록 선택'; }

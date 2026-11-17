@@ -1,0 +1,1871 @@
+[
+  {
+    "epc": "003371",
+    "id": "DEV-001",
+    "name": "갤럭시 Z 플립8 256GB 블루",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1485000,
+    "desc": "반으로 접는 갤럭시 Z 플립8 256GB 모델입니다",
+    "img": ["flip8_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003372",
+    "id": "DEV-002",
+    "name": "갤럭시 Z 플립8 256GB 실버",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1485000,
+    "desc": "반으로 접는 갤럭시 Z 플립8 256GB 모델입니다",
+    "img": ["flip8_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003373",
+    "id": "DEV-003",
+    "name": "갤럭시 Z 플립8 512GB 블루",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1643000,
+    "desc": "반으로 접는 갤럭시 Z 플립8 512GB 모델입니다",
+    "img": ["flip8_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003374",
+    "id": "DEV-004",
+    "name": "갤럭시 Z 플립8 512GB 실버",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1643000,
+    "desc": "반으로 접는 갤럭시 Z 플립8 512GB 모델입니다",
+    "img": ["flip8_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003375",
+    "id": "DEV-005",
+    "name": "iPhone 18 Pro 256GB 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1900000,
+    "desc": "프로 카메라 시스템을 갖춘 iPhone 18 Pro 256GB 모델입니다",
+    "img": ["ip18p_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003376",
+    "id": "DEV-006",
+    "name": "iPhone 18 Pro 256GB 블루",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1900000,
+    "desc": "프로 카메라 시스템을 갖춘 iPhone 18 Pro 256GB 모델입니다",
+    "img": ["ip18p_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003377",
+    "id": "DEV-007",
+    "name": "iPhone 18 Pro 512GB 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 2200000,
+    "desc": "프로 카메라 시스템을 갖춘 iPhone 18 Pro 512GB 모델입니다",
+    "img": ["ip18p_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003378",
+    "id": "DEV-008",
+    "name": "iPhone 18 Pro 512GB 블루",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 2200000,
+    "desc": "프로 카메라 시스템을 갖춘 iPhone 18 Pro 512GB 모델입니다",
+    "img": ["ip18p_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003379",
+    "id": "PLN-001",
+    "name": "5GX 플래티넘",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 125000,
+    "desc": "데이터 무제한 + 쉐어링 50GB를 쓰는 5G 베스트 요금제입니다",
+    "img": ["pln-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한 + 쉐어링 50GB"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003380",
+    "id": "PLN-002",
+    "name": "5GX 프라임",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 89000,
+    "desc": "데이터 무제한를 쓰는 5G 베스트 요금제입니다",
+    "img": ["pln-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ],
+    "mpg": [
+      {"id": "MPG-PRM-BNF", "name": "가입 혜택", "min": 0, "max": 1, "mps": [{"id": "MP-PRM-01", "name": "11번가 혜택", "svc": "SVC-11ST", "desc": "11번가 우주패스 멤버십 할인 쿠폰 매월 제공", "from": "2026-01-01", "to": "2027-12-31"},{"id": "MP-PRM-02", "name": "웰컴기프트", "svc": "SVC-WGF", "desc": "가입 다음 달 웰컴기프트 1회 제공", "from": "2026-09-01", "to": "2026-12-31"}]}
+    ]
+  },
+  {
+    "epc": "003381",
+    "id": "ACC-001",
+    "name": "정품 실리콘 케이스",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 39000,
+    "desc": "갤럭시 Z 플립8 · iPhone 18 Pro 전용 실리콘 케이스입니다",
+    "img": ["acc-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "케이스", "req": true, "desc": "기종별 전용"}
+    ]
+  },
+  {
+    "epc": "003382",
+    "id": "ACC-002",
+    "name": "25W 충전기",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 25000,
+    "desc": "USB-C PD 25W 고속 충전기입니다",
+    "img": ["acc-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "충전기", "req": true, "desc": "USB-C PD 25W"}
+    ]
+  },
+  {
+    "epc": "003383",
+    "id": "ADD-001",
+    "name": "V컬러링",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 제휴형",
+    "base": 3300,
+    "desc": "통화 연결음 대신 영상을 보여주는 부가서비스입니다",
+    "img": ["add-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "통화연결음 설정", "req": true, "desc": "영상 컬러링"}
+    ]
+  },
+  {
+    "epc": "003384",
+    "id": "ADD-002",
+    "name": "FLO 앤 데이터",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 옵션형",
+    "base": 7900,
+    "desc": "FLO 무제한 듣기와 전용 데이터를 함께 주는 부가서비스입니다",
+    "img": ["add-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "FLO 무제한", "req": true, "desc": "음악 무제한 듣기"},
+      {"id": "PS2", "name": "전용 데이터", "req": true, "desc": "FLO 전용 데이터"}
+    ]
+  },
+  {
+    "epc": "003385",
+    "id": "SUB-001",
+    "name": "YouTube Premium",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 14900,
+    "desc": "광고 없이 영상과 음악을 즐기는 구독 서비스입니다",
+    "img": ["sub-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "YouTube Premium 이용", "req": true, "desc": "광고 없는 재생 · 오프라인 저장"}
+    ]
+  },
+  {
+    "epc": "003386",
+    "id": "SUB-002",
+    "name": "Netflix 스탠다드",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 13500,
+    "desc": "동시 시청 2명, FHD 화질의 넷플릭스 이용권입니다",
+    "img": ["sub-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "Netflix 이용", "req": true, "desc": "동시 시청 2명 · FHD"}
+    ]
+  },
+  {
+    "epc": "003387",
+    "id": "SUB-003",
+    "name": "디즈니+ 스탠다드",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 9900,
+    "desc": "디즈니·픽사·마블 콘텐츠를 보는 구독 서비스입니다",
+    "img": ["sub-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "디즈니+ 이용", "req": true, "desc": "동시 시청 2명 · FHD"}
+    ]
+  },
+  {
+    "epc": "003388",
+    "id": "SUB-004",
+    "name": "Google One 100GB",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 2400,
+    "desc": "구글 드라이브·포토·지메일에서 함께 쓰는 100GB 저장공간입니다",
+    "img": ["sub-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "클라우드 저장공간", "req": true, "desc": "100GB"}
+    ]
+  },
+  {
+    "epc": "003389",
+    "id": "INS-001",
+    "name": "[보험] T ALL케어 플러스 파손형",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "보험",
+    "lv3": "이동전화 base 제휴형",
+    "provider": "자사/보험사",
+    "base": 7900,
+    "desc": "파손 시 수리비를 보상하는 휴대폰 보험입니다",
+    "img": ["ins-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "파손 보상", "req": true, "desc": "자기부담금 25%"}
+    ]
+  },
+  {
+    "epc": "003390",
+    "id": "SUB-005",
+    "name": "T우주 편의점&카페",
+    "ver": "v2.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 9900,
+    "desc": "세븐일레븐·투썸플레이스 할인에 원하는 혜택 1개를 더하는 T우주 구독 상품입니다",
+    "img": ["sub-005_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "세븐일레븐", "req": true, "desc": "1천원당 300원 · 1일 1회 · 회당 9천원"},
+      {"id": "PS2", "name": "투썸플레이스", "req": true, "desc": "최대 30% · 1일 1회 · 회당 9천원"},
+      {"id": "PS3", "name": "선택 혜택", "req": false, "min": 1, "max": 1, "cands": [{"n": "YouTube Premium", "add": 7900},{"n": "디즈니+", "add": 7900},{"n": "Netflix 스탠다드", "add": 0},{"n": "티빙 스탠다드", "add": 3900},{"n": "웨이브 베이직", "add": 5900},{"n": "쿠팡플레이", "add": 1000},{"n": "밀리의서재", "add": 4900},{"n": "윌라 오디오북", "add": 1000},{"n": "FLO 무제한", "add": 1000},{"n": "멜론 스트리밍", "add": 1000},{"n": "지니뮤직", "add": 1000},{"n": "Google One 100GB", "add": 3900},{"n": "네이버플러스 멤버십", "add": 5900},{"n": "배달의민족 쿠폰팩", "add": 0},{"n": "요기요 쿠폰팩", "add": 1000},{"n": "파리바게뜨 할인", "add": 0},{"n": "배스킨라빈스 할인", "add": 0},{"n": "도미노피자 쿠폰", "add": 0},{"n": "CGV 예매 할인", "add": 2000},{"n": "메가박스 예매 할인", "add": 5900},{"n": "교보문고 sam", "add": 1000},{"n": "리디셀렉트", "add": 3900},{"n": "클래스101", "add": 2000},{"n": "야놀자 할인", "add": 4900},{"n": "여기어때 할인", "add": 0},{"n": "카카오T 블루 할인", "add": 4900},{"n": "쏘카 할인", "add": 2000},{"n": "GS25 할인", "add": 5900},{"n": "CU 할인", "add": 2000},{"n": "이마트24 할인", "add": 2000},{"n": "제휴 쿠폰팩 01", "add": 2000},{"n": "제휴 쿠폰팩 02", "add": 3900},{"n": "제휴 쿠폰팩 03", "add": 4900},{"n": "제휴 쿠폰팩 04", "add": 5900},{"n": "제휴 쿠폰팩 05", "add": 0},{"n": "제휴 쿠폰팩 06", "add": 1000},{"n": "제휴 쿠폰팩 07", "add": 2000},{"n": "제휴 쿠폰팩 08", "add": 3900},{"n": "제휴 쿠폰팩 09", "add": 4900},{"n": "제휴 쿠폰팩 10", "add": 2000},{"n": "제휴 쿠폰팩 11", "add": 3900},{"n": "제휴 쿠폰팩 12", "add": 4900},{"n": "제휴 쿠폰팩 13", "add": 5900},{"n": "제휴 쿠폰팩 14", "add": 0},{"n": "제휴 쿠폰팩 15", "add": 1000},{"n": "제휴 쿠폰팩 16", "add": 2000},{"n": "제휴 쿠폰팩 17", "add": 3900},{"n": "제휴 쿠폰팩 18", "add": 4900},{"n": "제휴 쿠폰팩 19", "add": 5900},{"n": "제휴 쿠폰팩 20", "add": 3900}]}
+    ]
+  },
+  {
+    "epc": "003391",
+    "id": "SUB-006",
+    "name": "T 우주패스 DIY",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 9900,
+    "desc": "기본 혜택 2개와 추가 혜택 1~2개를 골라 만드는 구독 상품입니다",
+    "img": ["sub-006_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "기본 혜택", "req": false, "min": 2, "max": 2, "cands": [{"n": "Google One 100GB", "add": 0},{"n": "세븐일레븐 할인", "add": 0},{"n": "투썸플레이스 할인", "add": 0},{"n": "밀리의서재", "add": 0},{"n": "파리바게뜨 할인", "add": 0},{"n": "배스킨라빈스 할인", "add": 0},{"n": "CU 할인", "add": 0},{"n": "GS25 할인", "add": 0},{"n": "교보문고 sam", "add": 0},{"n": "FLO 무제한", "add": 0}]},
+      {"id": "PS2", "name": "추가 혜택", "req": false, "min": 1, "max": 2, "cands": [{"n": "YouTube Premium", "add": 7900},{"n": "Netflix 스탠다드", "add": 4900},{"n": "티빙 스탠다드", "add": 4900},{"n": "디즈니+", "add": 4900},{"n": "웨이브 베이직", "add": 4900},{"n": "배달의민족 쿠폰팩", "add": 4900},{"n": "도미노피자 쿠폰", "add": 4900},{"n": "CGV 예매 할인", "add": 4900}]}
+    ]
+  },
+  {
+    "epc": "003392",
+    "id": "PLN-004",
+    "name": "베스트 Max(Google AI)",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 115000,
+    "desc": "데이터 무제한에 Google AI를 기본으로 주고, OTT 하나를 더 고르는 베스트 요금제입니다",
+    "img": ["pln-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한"},
+      {"id": "PS2", "name": "Google AI", "req": true, "desc": "Google AI Pro 이용"},
+      {"id": "PS3", "name": "OTT 택1", "req": false, "min": 1, "max": 1, "cands": [{"n": "YouTube Premium", "add": 0},{"n": "Netflix 스탠다드", "add": 0},{"n": "디즈니+", "add": 0},{"n": "티빙 스탠다드", "add": 0},{"n": "웨이브 베이직", "add": 0}]}
+    ]
+  },
+  {
+    "epc": "003393",
+    "id": "PLN-005",
+    "name": "베스트 Pro(넷플릭스)",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 99000,
+    "desc": "데이터 무제한에 넷플릭스를 기본으로 주고, OTT 하나를 더 고르는 베스트 요금제입니다",
+    "img": ["pln-005_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한"},
+      {"id": "PS2", "name": "넷플릭스", "req": true, "desc": "Netflix 스탠다드 이용"},
+      {"id": "PS3", "name": "OTT 택1", "req": false, "min": 1, "max": 1, "cands": [{"n": "YouTube Premium", "add": 0},{"n": "티빙 스탠다드", "add": 0},{"n": "디즈니+", "add": 0},{"n": "웨이브 베이직", "add": 0}]}
+    ]
+  },
+  {
+    "epc": "003394",
+    "id": "DEV-009",
+    "name": "갤럭시 탭 S11 256GB 그레이",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "태블릿",
+    "lv3": "태블릿형",
+    "base": 1298000,
+    "desc": "11인치 AMOLED 화면의 갤럭시 탭 S11 그레이 모델입니다",
+    "img": ["gtabs11_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 탭 S11 · 256GB"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "S펜 · USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003395",
+    "id": "DEV-010",
+    "name": "iPad Pro 13 M5 256GB 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "태블릿",
+    "lv3": "태블릿형",
+    "base": 2299000,
+    "desc": "M5 칩을 탑재한 13인치 iPad Pro 실버 모델입니다",
+    "img": ["ipadpro13_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "iPad Pro 13 · 256GB"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003396",
+    "id": "DEV-011",
+    "name": "iPad Air 11 M3 128GB 블루",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "태블릿",
+    "lv3": "태블릿형",
+    "base": 1049000,
+    "desc": "가볍게 들고 다니는 11인치 iPad Air 블루 모델입니다",
+    "img": ["ipadair11_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "iPad Air 11 · 128GB"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003397",
+    "id": "DEV-012",
+    "name": "갤럭시 워치8 클래식 46mm 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 599000,
+    "desc": "회전 베젤을 갖춘 갤럭시 워치8 클래식 블랙 모델입니다",
+    "img": ["gwatch8c_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 워치8 클래식 · 46mm · LTE"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "무선 충전기"}
+    ]
+  },
+  {
+    "epc": "003398",
+    "id": "DEV-013",
+    "name": "Apple Watch Series 11 46mm 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 749000,
+    "desc": "건강 기능을 강화한 Apple Watch Series 11 실버 모델입니다",
+    "img": ["aws11_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "Apple Watch Series 11 · 46mm · 셀룰러"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "마그네틱 고속 충전 케이블"}
+    ]
+  },
+  {
+    "epc": "003399",
+    "id": "DEV-014",
+    "name": "Apple Watch Ultra 3 49mm 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 1249000,
+    "desc": "아웃도어용 티타늄 케이스의 Apple Watch Ultra 3 블랙 모델입니다",
+    "img": ["awu3_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "Apple Watch Ultra 3 · 49mm · 셀룰러"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "마그네틱 고속 충전 케이블"}
+    ]
+  },
+  {
+    "epc": "003400",
+    "id": "PTN-001",
+    "name": "넷플릭스 프리미엄 제휴 이용권",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "제휴",
+    "lv3": "이동전화 base 제휴형",
+    "base": 17000,
+    "desc": "넷플릭스 프리미엄을 SKT 회선 인증으로 이용하는 제휴 이용권입니다",
+    "img": ["ptn-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "Netflix 프리미엄 이용", "req": true, "desc": "동시 시청 4명 · UHD"}
+    ]
+  },
+  {
+    "epc": "003401",
+    "id": "PLN-006",
+    "name": "baro 요금제",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "로밍형",
+    "base": 33000,
+    "desc": "해외에서 데이터와 통화를 함께 쓰는 로밍 요금제입니다",
+    "img": ["pln-006_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "로밍 데이터", "req": true, "desc": "해외 데이터 · 음성 제공"}
+    ]
+  },
+  {
+    "epc": "003402",
+    "id": "INS-002",
+    "name": "아이폰16 AI클럽",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "보험",
+    "lv3": "클럽형",
+    "base": 15900,
+    "desc": "아이폰16 보상과 기기 교체 혜택을 묶은 클럽 상품입니다",
+    "img": ["ins-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "AI클럽 혜택", "req": true, "desc": "파손 보상 · 기기 교체"}
+    ]
+  },
+  {
+    "epc": "003403",
+    "id": "APP-001",
+    "name": "에이닷(타사)",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "앱서비스형",
+    "base": 0,
+    "desc": "타사 고객도 쓸 수 있는 앱 서비스입니다",
+    "img": ["app-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "에이닷 이용", "req": true, "desc": "앱 서비스"}
+    ]
+  },
+  {
+    "epc": "003404",
+    "id": "DEV-015",
+    "name": "갤럭시 S26 256GB 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1155000,
+    "desc": "AI 기능을 강화한 갤럭시 S26 256GB 모델입니다",
+    "img": ["gs26_black_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블랙"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003405",
+    "id": "DEV-016",
+    "name": "갤럭시 S26 256GB 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1155000,
+    "desc": "AI 기능을 강화한 갤럭시 S26 256GB 모델입니다",
+    "img": ["gs26_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003406",
+    "id": "DEV-017",
+    "name": "갤럭시 S26 512GB 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1309000,
+    "desc": "AI 기능을 강화한 갤럭시 S26 512GB 모델입니다",
+    "img": ["gs26_black_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 블랙"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003407",
+    "id": "DEV-018",
+    "name": "갤럭시 S26 Ultra 256GB 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 2079000,
+    "desc": "S펜을 내장한 갤럭시 S26 Ultra 256GB 모델입니다",
+    "img": ["gs26u_black_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블랙"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀 · S펜"}
+    ]
+  },
+  {
+    "epc": "003408",
+    "id": "DEV-019",
+    "name": "갤럭시 S26 Ultra 512GB 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 2387000,
+    "desc": "S펜을 내장한 갤럭시 S26 Ultra 512GB 모델입니다",
+    "img": ["gs26u_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀 · S펜"}
+    ]
+  },
+  {
+    "epc": "003409",
+    "id": "DEV-020",
+    "name": "iPhone 18 128GB 화이트",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1350000,
+    "desc": "일상용 기본 모델 iPhone 18 128GB입니다",
+    "img": ["ip18_white_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "128GB · 화이트"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003410",
+    "id": "DEV-021",
+    "name": "iPhone 18 256GB 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1500000,
+    "desc": "일상용 기본 모델 iPhone 18 256GB입니다",
+    "img": ["ip18_black_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블랙"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003411",
+    "id": "DEV-022",
+    "name": "갤럭시 Z 폴드8 512GB 실버",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 2538000,
+    "desc": "펼치면 태블릿이 되는 갤럭시 Z 폴드8 512GB 모델입니다",
+    "img": ["fold8_silver_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "512GB · 실버"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003412",
+    "id": "DEV-023",
+    "name": "갤럭시 A57 128GB 블루",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 599500,
+    "desc": "가성비를 갖춘 보급형 갤럭시 A57 모델입니다",
+    "img": ["ga57_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "128GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003413",
+    "id": "DEV-024",
+    "name": "갤럭시 와이드8 128GB 그레이",
+    "ver": "v1.0",
+    "st": "가입중단",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 399300,
+    "desc": "큰 화면의 SKT 전용 갤럭시 와이드8 모델입니다",
+    "img": ["gwide8_gray_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "128GB · 그레이"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003414",
+    "id": "DEV-025",
+    "name": "갤럭시 탭 S11 FE 128GB 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "태블릿",
+    "lv3": "태블릿형",
+    "base": 749000,
+    "desc": "S펜을 기본 제공하는 갤럭시 탭 S11 FE 실버 모델입니다",
+    "img": ["gtabs11fe_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 탭 S11 FE · 128GB · 5G"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "S펜 · USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003415",
+    "id": "DEV-026",
+    "name": "iPad mini 8 256GB 퍼플",
+    "ver": "v1.0",
+    "st": "검증",
+    "type": "기기서비스",
+    "cat": "태블릿",
+    "lv3": "태블릿형",
+    "base": 999000,
+    "desc": "한 손에 드는 8.3인치 iPad mini 퍼플 모델입니다",
+    "img": ["ipadmini8_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "iPad mini 8 · 256GB · 셀룰러"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003416",
+    "id": "DEV-027",
+    "name": "갤럭시 워치8 44mm 그린",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 429000,
+    "desc": "수면·건강 관리를 돕는 갤럭시 워치8 44mm 모델입니다",
+    "img": ["gwatch8_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 워치8 · 44mm · LTE"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "무선 충전기"}
+    ]
+  },
+  {
+    "epc": "003417",
+    "id": "DEV-028",
+    "name": "Apple Watch SE 3 40mm 실버",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 389000,
+    "desc": "입문용 Apple Watch SE 3 실버 모델입니다",
+    "img": ["awse3_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "Apple Watch SE 3 · 40mm · 셀룰러"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "마그네틱 충전 케이블"}
+    ]
+  },
+  {
+    "epc": "003418",
+    "id": "DEV-029",
+    "name": "갤럭시 핏4 키즈 블루",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 219000,
+    "desc": "위치 확인과 보호자 통화가 되는 키즈 워치입니다",
+    "img": ["gfit4kids_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 핏4 키즈 · LTE"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "무선 충전기"}
+    ]
+  },
+  {
+    "epc": "003419",
+    "id": "PLN-007",
+    "name": "5GX 레귤러",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 69000,
+    "desc": "데이터 110GB + 소진 시 5Mbps를 쓰는 요금제입니다",
+    "img": ["pln-007_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "110GB + 소진 시 5Mbps"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003420",
+    "id": "PLN-008",
+    "name": "5GX 슬림",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 55000,
+    "desc": "데이터 12GB + 소진 시 1Mbps를 쓰는 요금제입니다",
+    "img": ["pln-008_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "12GB + 소진 시 1Mbps"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003421",
+    "id": "PLN-009",
+    "name": "0청년 5G",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 69000,
+    "desc": "데이터 무제한 (만 34세 이하)를 쓰는 요금제입니다",
+    "img": ["pln-009_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한 (만 34세 이하)"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003422",
+    "id": "PLN-010",
+    "name": "LTE 데이터 33",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 33000,
+    "desc": "데이터 1.5GB를 쓰는 요금제입니다",
+    "img": ["pln-010_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "1.5GB"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003423",
+    "id": "PLN-011",
+    "name": "T플랜 시니어",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 49000,
+    "desc": "데이터 10GB + 소진 시 1Mbps (만 65세 이상)를 쓰는 요금제입니다",
+    "img": ["pln-011_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "10GB + 소진 시 1Mbps (만 65세 이상)"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003424",
+    "id": "PLN-012",
+    "name": "ZEM 플랜 스마트",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 26000,
+    "desc": "데이터 2GB + 소진 시 400kbps (만 12세 이하)를 쓰는 요금제입니다",
+    "img": ["pln-012_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "2GB + 소진 시 400kbps (만 12세 이하)"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003425",
+    "id": "PLN-013",
+    "name": "태블릿 데이터 셰어링",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 base 옵션형",
+    "base": 0,
+    "desc": "모회선 데이터를 태블릿에서 나눠 쓰는 요금제입니다",
+    "img": ["pln-013_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터 셰어링", "req": true, "desc": "모회선 데이터 공유"},
+      {"id": "PS2", "name": "가입 조건", "req": true, "desc": "모회선 5GX 요금제"}
+    ]
+  },
+  {
+    "epc": "003426",
+    "id": "PLN-014",
+    "name": "T플랜 워치",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 11000,
+    "desc": "워치 단독 통화와 데이터를 쓰는 웨어러블 요금제입니다",
+    "img": ["pln-014_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "250MB"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "모회선 번호 공유"}
+    ]
+  },
+  {
+    "epc": "003427",
+    "id": "PLN-015",
+    "name": "베스트 Plus(티빙)",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 85000,
+    "desc": "데이터 무제한에 티빙을 기본으로 주고, 음악 서비스 하나를 더 고르는 베스트 요금제입니다",
+    "img": ["pln-015_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한"},
+      {"id": "PS2", "name": "티빙", "req": true, "desc": "티빙 스탠다드 이용"},
+      {"id": "PS3", "name": "음악 택1", "req": false, "min": 1, "max": 1, "cands": [{"n": "FLO 무제한", "add": 0},{"n": "멜론 스트리밍", "add": 0},{"n": "지니뮤직", "add": 0},{"n": "YouTube Music", "add": 0}]}
+    ]
+  },
+  {
+    "epc": "003428",
+    "id": "PLN-016",
+    "name": "baro 3GB",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "로밍형",
+    "base": 29000,
+    "desc": "해외에서 데이터 3GB · 7일를 쓰는 로밍 상품입니다",
+    "img": ["pln-016_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "로밍 데이터", "req": true, "desc": "3GB · 7일"}
+    ]
+  },
+  {
+    "epc": "003429",
+    "id": "PLN-017",
+    "name": "baro 6GB",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "로밍형",
+    "base": 39000,
+    "desc": "해외에서 데이터 6GB · 15일를 쓰는 로밍 상품입니다",
+    "img": ["pln-017_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "로밍 데이터", "req": true, "desc": "6GB · 15일"}
+    ]
+  },
+  {
+    "epc": "003430",
+    "id": "PLN-018",
+    "name": "baro 12GB",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "로밍형",
+    "base": 59000,
+    "desc": "해외에서 데이터 12GB · 30일를 쓰는 로밍 상품입니다",
+    "img": ["pln-018_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "로밍 데이터", "req": true, "desc": "12GB · 30일"}
+    ]
+  },
+  {
+    "epc": "003431",
+    "id": "PLN-019",
+    "name": "T로밍 아시아패스",
+    "ver": "v1.0",
+    "st": "출시",
+    "type": "요금제",
+    "lv3": "로밍형",
+    "base": 25000,
+    "desc": "해외에서 데이터 아시아 13개국 · 4GB · 5일를 쓰는 로밍 상품입니다",
+    "img": ["pln-019_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "로밍 데이터", "req": true, "desc": "아시아 13개국 · 4GB · 5일"}
+    ]
+  },
+  {
+    "epc": "003432",
+    "id": "ADD-003",
+    "name": "데이터 리필 쿠폰",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 옵션형",
+    "base": 5500,
+    "desc": "소진된 데이터를 다시 채우는 쿠폰입니다",
+    "img": ["add-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터 충전", "req": true, "desc": "2GB 1회 충전"}
+    ]
+  },
+  {
+    "epc": "003433",
+    "id": "ADD-004",
+    "name": "콜키퍼",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 옵션형",
+    "base": 550,
+    "desc": "못 받은 전화를 문자로 알려 주는 부가서비스입니다",
+    "img": ["add-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "부재중 알림", "req": true, "desc": "부재중 전화 문자 안내"}
+    ]
+  },
+  {
+    "epc": "003434",
+    "id": "ADD-005",
+    "name": "T전화 Pro",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 옵션형",
+    "base": 1100,
+    "desc": "스팸 차단과 통화 요약을 쓰는 부가서비스입니다",
+    "img": ["add-005_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "T전화 Pro 이용", "req": true, "desc": "스팸 차단 · 통화 요약"}
+    ]
+  },
+  {
+    "epc": "003435",
+    "id": "ADD-006",
+    "name": "안심 데이터 차단",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 옵션형",
+    "base": 0,
+    "desc": "자녀 회선의 유해 사이트와 결제를 막아 주는 부가서비스입니다",
+    "img": ["add-006_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "유해 차단", "req": true, "desc": "유해 사이트 차단"},
+      {"id": "PS2", "name": "결제 제한", "req": true, "desc": "소액결제 차단"}
+    ]
+  },
+  {
+    "epc": "003436",
+    "id": "ADD-007",
+    "name": "지니뮤직 앤 데이터",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 제휴형",
+    "base": 7900,
+    "desc": "지니뮤직 무제한과 전용 데이터를 주는 제휴 부가서비스입니다",
+    "img": ["add-007_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "지니뮤직 무제한", "req": true, "desc": "음악 무제한 듣기"}
+    ]
+  },
+  {
+    "epc": "003437",
+    "id": "SUB-007",
+    "name": "티빙 스탠다드",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 13500,
+    "desc": "티빙 오리지널과 실시간 TV를 보는 구독 서비스입니다",
+    "img": ["sub-007_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "티빙 이용", "req": true, "desc": "동시 시청 2명 · FHD"}
+    ]
+  },
+  {
+    "epc": "003438",
+    "id": "SUB-008",
+    "name": "웨이브 베이직",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 7900,
+    "desc": "지상파 VOD를 보는 웨이브 구독 서비스입니다",
+    "img": ["sub-008_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "웨이브 이용", "req": true, "desc": "동시 시청 1명 · HD"}
+    ]
+  },
+  {
+    "epc": "003439",
+    "id": "SUB-009",
+    "name": "밀리의서재",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 9900,
+    "desc": "전자책과 오디오북을 무제한으로 보는 구독 서비스입니다",
+    "img": ["sub-009_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "밀리의서재 이용", "req": true, "desc": "전자책 · 오디오북 무제한"}
+    ]
+  },
+  {
+    "epc": "003440",
+    "id": "SUB-010",
+    "name": "쿠팡플레이",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 7890,
+    "desc": "스포츠 중계와 영화를 보는 구독 서비스입니다",
+    "img": ["sub-010_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "쿠팡플레이 이용", "req": true, "desc": "동시 시청 2명"}
+    ]
+  },
+  {
+    "epc": "003441",
+    "id": "SUB-011",
+    "name": "배달의민족 쿠폰팩",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 4900,
+    "desc": "매월 배달 할인 쿠폰을 주는 구독 서비스입니다",
+    "img": ["sub-011_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "쿠폰 지급", "req": true, "desc": "매월 3천원 쿠폰 3장"}
+    ]
+  },
+  {
+    "epc": "003442",
+    "id": "SUB-012",
+    "name": "T 우주패스 올인원",
+    "ver": "v1.2",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "플랫폼형",
+    "base": 14900,
+    "desc": "OTT 1개와 생활 혜택 2개를 골라 쓰는 T우주 구독 상품입니다",
+    "img": ["sub-012_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "OTT 택1", "req": false, "min": 1, "max": 1, "cands": [{"n": "YouTube Premium", "add": 4000},{"n": "Netflix 스탠다드", "add": 0},{"n": "티빙 스탠다드", "add": 0},{"n": "디즈니+", "add": 0},{"n": "웨이브 베이직", "add": 0}]},
+      {"id": "PS2", "name": "생활 혜택", "req": false, "min": 2, "max": 2, "cands": [{"n": "세븐일레븐 할인", "add": 0},{"n": "투썸플레이스 할인", "add": 0},{"n": "배스킨라빈스 할인", "add": 0},{"n": "CGV 예매 할인", "add": 0},{"n": "카카오T 블루 할인", "add": 0},{"n": "쏘카 할인", "add": 0},{"n": "야놀자 할인", "add": 0}]}
+    ]
+  },
+  {
+    "epc": "003443",
+    "id": "INS-003",
+    "name": "[보험] T ALL케어 플러스 분실파손형",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "보험",
+    "lv3": "이동전화 base 제휴형",
+    "base": 9900,
+    "desc": "분실과 파손을 함께 보상하는 휴대폰 보험입니다",
+    "img": ["ins-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "분실·파손 보상", "req": true, "desc": "자기부담금 30%"}
+    ]
+  },
+  {
+    "epc": "003444",
+    "id": "INS-004",
+    "name": "[보험] 폰안심 라이트",
+    "ver": "v1.0",
+    "st": "퇴출",
+    "type": "보험",
+    "lv3": "이동전화 base 제휴형",
+    "base": 4900,
+    "desc": "화면 파손만 보상하는 가벼운 휴대폰 보험입니다",
+    "img": ["ins-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "화면 파손 보상", "req": true, "desc": "자기부담금 20% · 연 1회"}
+    ]
+  },
+  {
+    "epc": "003445",
+    "id": "INS-005",
+    "name": "갤럭시 S26 T클럽",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "보험",
+    "lv3": "클럽형",
+    "base": 17900,
+    "desc": "갤럭시 S26 파손 보상과 24개월 뒤 기기 교체를 묶은 클럽 상품입니다",
+    "img": ["ins-005_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "파손 보상", "req": true, "desc": "자기부담금 20%"},
+      {"id": "PS2", "name": "기기 교체", "req": true, "desc": "24개월 후 잔여 할부금 면제"}
+    ]
+  },
+  {
+    "epc": "003446",
+    "id": "INS-006",
+    "name": "아이폰18 AI클럽",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "보험",
+    "lv3": "클럽형",
+    "base": 16900,
+    "desc": "iPhone 18 보상과 기기 교체 혜택을 묶은 클럽 상품입니다",
+    "img": ["ins-006_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "AI클럽 혜택", "req": true, "desc": "파손 보상 · 배터리 교체"},
+      {"id": "PS2", "name": "기기 교체", "req": true, "desc": "24개월 후 반납 교체"}
+    ]
+  },
+  {
+    "epc": "003447",
+    "id": "ACC-003",
+    "name": "정품 강화유리 필름",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 19000,
+    "desc": "갤럭시 S26 전용 강화유리 필름입니다",
+    "img": ["acc-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "필름", "req": true, "desc": "기종별 전용"}
+    ]
+  },
+  {
+    "epc": "003448",
+    "id": "ACC-004",
+    "name": "45W 초고속 충전기",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 39000,
+    "desc": "USB-C PD 45W 초고속 충전기입니다",
+    "img": ["acc-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "충전기", "req": true, "desc": "USB-C PD 45W"}
+    ]
+  },
+  {
+    "epc": "003449",
+    "id": "ACC-005",
+    "name": "갤럭시 버즈4 프로",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 299000,
+    "desc": "노이즈 캔슬링 무선 이어폰입니다",
+    "img": ["acc-005_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "이어폰", "req": true, "desc": "화이트 · ANC"}
+    ]
+  },
+  {
+    "epc": "003450",
+    "id": "ACC-006",
+    "name": "AirPods Pro 3",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 369000,
+    "desc": "적응형 오디오를 갖춘 Apple 무선 이어폰입니다",
+    "img": ["acc-006_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "이어폰", "req": true, "desc": "USB-C 충전 케이스"}
+    ]
+  },
+  {
+    "epc": "003451",
+    "id": "ACC-007",
+    "name": "10000mAh 무선 보조배터리",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "액세서리",
+    "lv3": "액세서리형",
+    "base": 49000,
+    "desc": "무선 충전이 되는 10000mAh 보조배터리입니다",
+    "img": ["acc-007_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "보조배터리", "req": true, "desc": "무선 15W · USB-C 25W"}
+    ]
+  },
+  {
+    "epc": "003452",
+    "id": "PTN-002",
+    "name": "디즈니+ 프리미엄 제휴 이용권",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "제휴",
+    "lv3": "이동전화 base 제휴형",
+    "base": 13900,
+    "desc": "디즈니+ 프리미엄을 SKT 회선 인증으로 이용하는 제휴 이용권입니다",
+    "img": ["ptn-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "디즈니+ 프리미엄 이용", "req": true, "desc": "동시 시청 4명 · UHD"}
+    ]
+  },
+  {
+    "epc": "003453",
+    "id": "PTN-003",
+    "name": "스타벅스 제휴 멤버십",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "제휴",
+    "lv3": "플랫폼형",
+    "base": 9900,
+    "desc": "매월 음료 쿠폰을 주는 제휴 멤버십입니다",
+    "img": ["ptn-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "쿠폰 지급", "req": true, "desc": "매월 아메리카노 2잔"}
+    ]
+  },
+  {
+    "epc": "003454",
+    "id": "APP-002",
+    "name": "T맵(타사)",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "구독서비스",
+    "lv3": "앱서비스형",
+    "base": 0,
+    "desc": "타사 고객도 쓸 수 있는 내비게이션 앱 서비스입니다",
+    "img": ["app-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "T맵 이용", "req": true, "desc": "앱 서비스"}
+    ]
+  },
+  {
+    "epc": "003455",
+    "id": "APP-003",
+    "name": "스캠뱅가드(타사)",
+    "ver": "v1.0",
+    "st": "출시",
+    "type": "구독서비스",
+    "lv3": "앱서비스형",
+    "base": 0,
+    "desc": "보이스피싱 의심 전화를 알려 주는 앱 서비스입니다",
+    "img": ["app-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "스캠뱅가드 이용", "req": true, "desc": "앱 서비스"}
+    ]
+  },
+  {
+    "epc": "003456",
+    "id": "PLN-020",
+    "name": "5G 프리미엄",
+    "ver": "v1.2",
+    "st": "출시",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 99000,
+    "desc": "데이터 무제한를 쓰는 요금제입니다",
+    "img": ["pln-020_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003457",
+    "id": "PLN-021",
+    "name": "5G 스탠다드",
+    "ver": "v1.0",
+    "st": "검증",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 75000,
+    "desc": "데이터 150GB + 소진 시 5Mbps를 쓰는 요금제입니다",
+    "img": ["pln-021_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "150GB + 소진 시 5Mbps"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003458",
+    "id": "PLN-022",
+    "name": "5G 라이트",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 55000,
+    "desc": "데이터 11GB + 소진 시 1Mbps를 쓰는 요금제입니다",
+    "img": ["pln-022_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "11GB + 소진 시 1Mbps"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003459",
+    "id": "PLN-023",
+    "name": "T플랜 스몰",
+    "ver": "v2.3",
+    "st": "퇴출",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 33000,
+    "desc": "데이터 1.2GB를 쓰는 요금제입니다",
+    "img": ["pln-023_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "1.2GB"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003460",
+    "id": "PLN-024",
+    "name": "다이렉트 5G 27",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 27000,
+    "desc": "데이터 6GB + 소진 시 400kbps를 쓰는 요금제입니다",
+    "img": ["pln-024_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "6GB + 소진 시 400kbps"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003461",
+    "id": "PLN-025",
+    "name": "다이렉트 5G 48",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 48000,
+    "desc": "데이터 110GB + 소진 시 5Mbps를 쓰는 요금제입니다",
+    "img": ["pln-025_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "110GB + 소진 시 5Mbps"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003462",
+    "id": "PLN-026",
+    "name": "다이렉트 5G 69",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 69000,
+    "desc": "데이터 무제한를 쓰는 요금제입니다",
+    "img": ["pln-026_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "무제한"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003463",
+    "id": "PLN-027",
+    "name": "0틴 5G",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 45000,
+    "desc": "데이터 9GB + 소진 시 1Mbps (만 18세 이하)를 쓰는 요금제입니다",
+    "img": ["pln-027_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "9GB + 소진 시 1Mbps (만 18세 이하)"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003464",
+    "id": "PLN-028",
+    "name": "T플랜 세이브",
+    "ver": "v1.0",
+    "st": "가입중단",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 33000,
+    "desc": "데이터 1.5GB를 쓰는 요금제입니다",
+    "img": ["pln-028_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "데이터", "req": true, "desc": "1.5GB"},
+      {"id": "PS2", "name": "음성·문자", "req": true, "desc": "기본 제공"}
+    ]
+  },
+  {
+    "epc": "003465",
+    "id": "ADD-008",
+    "name": "컬러링 클래식",
+    "ver": "v1.4",
+    "st": "퇴출",
+    "type": "부가서비스",
+    "lv3": "이동전화 base 옵션형",
+    "base": 990,
+    "desc": "통화 연결음을 음악으로 바꾸는 부가서비스입니다",
+    "img": ["add-008_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "통화연결음 설정", "req": true, "desc": "음원 컬러링"}
+    ]
+  },
+  {
+    "epc": "003466",
+    "id": "DEV-030",
+    "name": "갤럭시 탭 S10 FE 128GB 그레이",
+    "ver": "v1.0",
+    "st": "가입중단",
+    "type": "기기서비스",
+    "cat": "태블릿",
+    "lv3": "태블릿형",
+    "base": 649000,
+    "desc": "갤럭시 탭 S10 FE 그레이 모델입니다",
+    "img": ["gtabs10fe_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 탭 S10 FE · 128GB · 5G"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "S펜 · USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003467",
+    "id": "DEV-031",
+    "name": "갤럭시 S26+ 256GB 블루",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1353000,
+    "desc": "큰 화면의 갤럭시 S26+ 256GB 모델입니다",
+    "img": ["gs26p_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블 · 유심핀"}
+    ]
+  },
+  {
+    "epc": "003468",
+    "id": "DEV-032",
+    "name": "iPhone 18 Air 256GB 블루",
+    "ver": "v1.0",
+    "st": "출시",
+    "type": "기기서비스",
+    "lv3": "휴대폰형",
+    "base": 1700000,
+    "desc": "가장 얇은 iPhone 18 Air 256GB 모델입니다",
+    "img": ["ip18air_blue_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "256GB · 블루"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "USB-C 케이블"}
+    ]
+  },
+  {
+    "epc": "003469",
+    "id": "DEV-033",
+    "name": "갤럭시 링2 10호 티타늄",
+    "ver": "v1.0",
+    "st": "검증",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 499000,
+    "desc": "손가락에 끼는 건강 관리 링입니다",
+    "img": ["gring2_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 링2 · 10호"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "충전 케이스"}
+    ]
+  },
+  {
+    "epc": "003470",
+    "id": "DEV-034",
+    "name": "갤럭시 워치 FE 40mm 블랙",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "기기서비스",
+    "cat": "웨어러블",
+    "lv3": "웨어러블형",
+    "base": 299000,
+    "desc": "가볍게 쓰는 갤럭시 워치 FE 40mm 모델입니다",
+    "img": ["gwatchfe_front.png"],
+    "dt": [
+      {"id": "PS1", "name": "단말", "req": true, "desc": "갤럭시 워치 FE · 40mm · LTE"},
+      {"id": "PS2", "name": "기본 구성품", "req": true, "desc": "무선 충전기"}
+    ]
+  },
+  {
+    "epc": "003471",
+    "id": "NET-001",
+    "name": "광랜 인터넷 100M",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "인터넷",
+    "lv3": "인터넷형",
+    "base": 33000,
+    "desc": "최대 100Mbps 속도의 유선 인터넷 상품입니다",
+    "img": ["net-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "인터넷 접속", "req": true, "desc": "최대 100Mbps"},
+      {"id": "PS2", "name": "와이파이 공유기", "req": true, "desc": "기가 와이파이 공유기 임대"},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003472",
+    "id": "NET-002",
+    "name": "기가 인터넷 500M",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "인터넷",
+    "lv3": "인터넷형",
+    "base": 38500,
+    "desc": "최대 500Mbps 속도의 유선 인터넷 상품입니다",
+    "img": ["net-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "인터넷 접속", "req": true, "desc": "최대 500Mbps"},
+      {"id": "PS2", "name": "와이파이 공유기", "req": true, "desc": "기가 와이파이 공유기 임대"},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003473",
+    "id": "NET-003",
+    "name": "기가 인터넷 1G",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "인터넷",
+    "lv3": "인터넷형",
+    "base": 44000,
+    "desc": "최대 1Gbps 속도의 유선 인터넷 상품입니다",
+    "img": ["net-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "인터넷 접속", "req": true, "desc": "최대 1Gbps"},
+      {"id": "PS2", "name": "와이파이 공유기", "req": true, "desc": "기가 와이파이 공유기 임대"},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003474",
+    "id": "NET-004",
+    "name": "기가 인터넷 10G",
+    "ver": "v1.0",
+    "st": "검증",
+    "type": "인터넷",
+    "lv3": "인터넷형",
+    "base": 88000,
+    "desc": "최대 10Gbps 속도의 유선 인터넷 상품입니다",
+    "img": ["net-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "인터넷 접속", "req": true, "desc": "최대 10Gbps"},
+      {"id": "PS2", "name": "와이파이 공유기", "req": true, "desc": "10기가 와이파이 7 공유기 임대"},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003475",
+    "id": "TEL-001",
+    "name": "인터넷전화 기본형",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "유선전화",
+    "lv3": "유선전화형",
+    "base": 1100,
+    "desc": "인터넷 회선으로 쓰는 기본 인터넷전화입니다",
+    "img": ["tel-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "전화번호", "req": true, "desc": "새 번호 또는 번호 이동"},
+      {"id": "PS2", "name": "전화기", "req": false, "min": 1, "max": 1, "cands": [{"n": "전화기 없음", "add": 0},{"n": "유선 전화기 임대", "add": 1100},{"n": "무선 전화기 임대", "add": 2200}]}
+    ]
+  },
+  {
+    "epc": "003476",
+    "id": "TEL-002",
+    "name": "인터넷전화 무제한",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "유선전화",
+    "lv3": "유선전화형",
+    "base": 11000,
+    "desc": "국내 유선·이동전화 통화를 무제한으로 쓰는 인터넷전화입니다",
+    "img": ["tel-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "전화번호", "req": true, "desc": "새 번호 또는 번호 이동"},
+      {"id": "PS2", "name": "통화", "req": true, "desc": "국내 유선 · 이동전화 무제한"},
+      {"id": "PS3", "name": "전화기", "req": false, "min": 1, "max": 1, "cands": [{"n": "전화기 없음", "add": 0},{"n": "유선 전화기 임대", "add": 1100},{"n": "무선 전화기 임대", "add": 2200}]}
+    ]
+  },
+  {
+    "epc": "003477",
+    "id": "TEL-003",
+    "name": "집전화 표준요금",
+    "ver": "v1.0",
+    "st": "가입중단",
+    "type": "유선전화",
+    "lv3": "유선전화형",
+    "base": 5200,
+    "desc": "인터넷 없이 단독으로 가입하는 일반 집전화입니다",
+    "img": ["tel-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "전화번호", "req": true, "desc": "새 번호 또는 번호 이동"},
+      {"id": "PS2", "name": "통화", "req": true, "desc": "시내 · 시외 통화 종량 요금"}
+    ]
+  },
+  {
+    "epc": "003478",
+    "id": "TV-001",
+    "name": "IPTV 이코노미",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "IPTV",
+    "lv3": "IPTV형",
+    "base": 9900,
+    "desc": "실시간 채널 180개를 보는 IPTV 상품입니다",
+    "img": ["tv-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "채널 구성", "req": true, "desc": "실시간 채널 180개"},
+      {"id": "PS2", "name": "셋톱박스", "req": false, "min": 1, "max": 1, "cands": [{"n": "기본 셋톱박스", "add": 0},{"n": "4K UHD 셋톱박스", "add": 1100},{"n": "AI 셋톱박스", "add": 2200}]},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003479",
+    "id": "TV-002",
+    "name": "IPTV 베이직",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "IPTV",
+    "lv3": "IPTV형",
+    "base": 13200,
+    "desc": "실시간 채널 236개를 보는 IPTV 상품입니다",
+    "img": ["tv-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "채널 구성", "req": true, "desc": "실시간 채널 236개"},
+      {"id": "PS2", "name": "셋톱박스", "req": false, "min": 1, "max": 1, "cands": [{"n": "기본 셋톱박스", "add": 0},{"n": "4K UHD 셋톱박스", "add": 1100},{"n": "AI 셋톱박스", "add": 2200}]},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003480",
+    "id": "TV-003",
+    "name": "IPTV 스탠다드",
+    "ver": "v1.1",
+    "st": "운영",
+    "type": "IPTV",
+    "lv3": "IPTV형",
+    "base": 16500,
+    "desc": "실시간 채널 255개 · 영화 월정액 포함를 보는 IPTV 상품입니다",
+    "img": ["tv-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "채널 구성", "req": true, "desc": "실시간 채널 255개 · 영화 월정액 포함"},
+      {"id": "PS2", "name": "셋톱박스", "req": false, "min": 1, "max": 1, "cands": [{"n": "기본 셋톱박스", "add": 0},{"n": "4K UHD 셋톱박스", "add": 1100},{"n": "AI 셋톱박스", "add": 2200}]},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003481",
+    "id": "TV-004",
+    "name": "IPTV 프리미엄",
+    "ver": "v1.0",
+    "st": "출시",
+    "type": "IPTV",
+    "lv3": "IPTV형",
+    "base": 22000,
+    "desc": "실시간 채널 260개 · 영화 · 해외 시리즈 월정액 포함를 보는 IPTV 상품입니다",
+    "img": ["tv-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "채널 구성", "req": true, "desc": "실시간 채널 260개 · 영화 · 해외 시리즈 월정액 포함"},
+      {"id": "PS2", "name": "셋톱박스", "req": false, "min": 1, "max": 1, "cands": [{"n": "기본 셋톱박스", "add": 0},{"n": "4K UHD 셋톱박스", "add": 1100},{"n": "AI 셋톱박스", "add": 2200}]},
+      {"id": "PS3", "name": "약정 기간", "req": false, "min": 1, "max": 1, "cands": [{"n": "3년 약정", "add": 0},{"n": "무약정", "add": 11000}]}
+    ]
+  },
+  {
+    "epc": "003482",
+    "id": "CPN-001",
+    "name": "컬쳐랜드 문화상품권 5천원",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "쿠폰",
+    "lv3": "쿠폰형",
+    "provider": "제휴사(컬쳐랜드)",
+    "base": 5000,
+    "desc": "온·오프라인 가맹점에서 쓰는 컬쳐랜드 문화상품권 5천원권입니다",
+    "img": ["cpn-001_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "상품권 발송", "req": true, "desc": "모바일 PIN 문자 발송 · 유효기간 5년"}
+    ]
+  },
+  {
+    "epc": "003483",
+    "id": "CPN-002",
+    "name": "컬쳐랜드 문화상품권 1만원",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "쿠폰",
+    "lv3": "쿠폰형",
+    "provider": "제휴사(컬쳐랜드)",
+    "base": 10000,
+    "desc": "온·오프라인 가맹점에서 쓰는 컬쳐랜드 문화상품권 1만원권입니다",
+    "img": ["cpn-002_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "상품권 발송", "req": true, "desc": "모바일 PIN 문자 발송 · 유효기간 5년"}
+    ]
+  },
+  {
+    "epc": "003484",
+    "id": "CPN-003",
+    "name": "컬쳐랜드 문화상품권 3만원",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "쿠폰",
+    "lv3": "쿠폰형",
+    "provider": "제휴사(컬쳐랜드)",
+    "base": 30000,
+    "desc": "온·오프라인 가맹점에서 쓰는 컬쳐랜드 문화상품권 3만원권입니다",
+    "img": ["cpn-003_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "상품권 발송", "req": true, "desc": "모바일 PIN 문자 발송 · 유효기간 5년"}
+    ]
+  },
+  {
+    "epc": "003485",
+    "id": "CPN-004",
+    "name": "컬쳐랜드 문화상품권 5만원",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "쿠폰",
+    "lv3": "쿠폰형",
+    "provider": "제휴사(컬쳐랜드)",
+    "base": 50000,
+    "desc": "온·오프라인 가맹점에서 쓰는 컬쳐랜드 문화상품권 5만원권입니다",
+    "img": ["cpn-004_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "상품권 발송", "req": true, "desc": "모바일 PIN 문자 발송 · 유효기간 5년"}
+    ]
+  },
+  {
+    "epc": "003486",
+    "id": "CPN-005",
+    "name": "컬쳐랜드 문화상품권 금액 선택",
+    "ver": "v1.0",
+    "st": "검증",
+    "type": "쿠폰",
+    "lv3": "쿠폰형",
+    "provider": "제휴사(컬쳐랜드)",
+    "base": 0,
+    "desc": "고객이 금액을 골라 구매하는 컬쳐랜드 문화상품권입니다",
+    "img": ["cpn-005_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "권종", "req": false, "min": 1, "max": 1, "cands": [{"n": "5천원", "add": 5000},{"n": "1만원", "add": 10000},{"n": "3만원", "add": 30000},{"n": "5만원", "add": 50000}]},
+      {"id": "PS2", "name": "상품권 발송", "req": true, "desc": "모바일 PIN 문자 발송 · 유효기간 5년"}
+    ]
+  },
+  {
+    "epc": "003487",
+    "id": "PLN-089",
+    "name": "베스트 89",
+    "ver": "v1.0",
+    "st": "운영",
+    "type": "요금제",
+    "lv3": "이동전화 요금제형",
+    "base": 89000,
+    "desc": "데이터 무제한에 OTT 혜택 하나를 고르는 베스트 요금제입니다. 어떤 혜택을 골라도 요금은 같아요",
+    "img": ["pln-089_main.png"],
+    "dt": [
+      {"id": "PS1", "name": "월정액 89", "req": true, "desc": "데이터 무제한 · 음성·문자 기본 제공"}
+    ],
+    "mpg": [
+      {"id": "MPG-B89-OTT", "name": "OTT 택1", "min": 1, "max": 1, "mps": [{"id": "MP-B89-01", "name": "T우주 혜택", "svc": "SVC-UZU", "desc": "우주패스 이용권 매월 제공", "from": "2026-01-01", "to": "2027-12-31"},{"id": "MP-B89-02", "name": "넷플릭스 혜택", "svc": "SVC-NFX", "desc": "Netflix 스탠다드 매월 제공", "from": "2026-01-01", "to": "2027-12-31"},{"id": "MP-B89-03", "name": "디즈니+ 혜택", "svc": "SVC-DSN", "desc": "디즈니+ 스탠다드 매월 제공", "from": "2026-01-01", "to": "2027-12-31"},{"id": "MP-B89-04", "name": "티빙&웨이브 혜택", "svc": "SVC-TVW", "desc": "티빙 · 웨이브 베이직 매월 제공", "from": "2026-01-01", "to": "2026-12-31"}]}
+    ]
+  }
+]
