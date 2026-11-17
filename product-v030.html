@@ -404,6 +404,11 @@
       .ph-model{font-size:11px;color:var(--ph-mu);margin-bottom:4px}
       .ph-title{font-size:16px;font-weight:700;line-height:1.4;word-break:keep-all}
       .ph-title.ph-empty{color:var(--ph-mu)}
+      .ph-mp{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;font-weight:600}
+      .ph-mp span{padding:1px 6px;border-radius:4px;background:var(--accent,#4320d4);color:#fff;font-size:10px;font-weight:600}
+      .ph-ded{display:flex;flex-direction:column;gap:2px;padding-top:6px;border-top:1px dashed var(--ph-ln)}
+      .ph-ded span{font-weight:600}.ph-ded small{font-size:10px;color:var(--ph-mu)}
+      .ph-brief{font-size:13px;line-height:1.5;margin-top:4px;word-break:keep-all}
       .ph-sub{font-size:12px;color:var(--ph-mu);margin-top:6px}
       .ph-sub.ph-empty{color:#b2b9c9}
       .ph-bdgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
@@ -600,7 +605,10 @@
       /* 하단 바: 필수 완료 수, 승인요청은 비어 있어도 눌러서 채울 섹션으로 이동 */
       .dock-msg{align-self:center;margin-right:6px;font-size:12px;color:var(--muted);white-space:nowrap}
       .dock-msg b{color:var(--accent);font-weight:700}
-      #bSave.pending{background:#a99be8;border-color:#a99be8}
+      #bAppr.pending{background:#a99be8;border-color:#a99be8}
+      .dock-acts .btn.danger{color:var(--bad);border-color:var(--bad)}
+      /* 상세: 입력 영역은 읽기 전용(섹션 접기 · 미리보기는 그대로) */
+      #form.ro .step>.body{opacity:.85}
       .lnk{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer}
       /* 가입 유형 · 할부 · 배송: 사용 · 순서 · 항목 · 문구(배송은 운영 조건 포함) */
       .olist{border:1px solid var(--line);border-radius:8px;overflow:hidden}
@@ -795,9 +803,8 @@
       .igrid span{max-width:100%;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       /* 기본 정보: 디바이스별 이미지 */
       .fl-sub{display:block;margin-top:2px;font-size:11px;font-weight:400;color:var(--muted)}
-      .dimg{border:1px solid var(--line);border-radius:10px;overflow:hidden}
-      .drow{padding:12px 14px;border-bottom:1px solid var(--line)}
-      .drow:last-child{border-bottom:0}
+      /* 디바이스별 이미지: 바깥 테두리 · 구분선 없이 영역 사이 간격만 둔다 */
+      .dimg{display:grid;gap:20px}
       .dh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
       .dh b{font-size:13px;font-weight:600}
       .dh small{font-size:11px;color:var(--muted)}
@@ -817,11 +824,6 @@
       .it.add b{font-size:22px;font-weight:400;line-height:1}
       .it.add small{font-size:11px}
       .fbk{font-size:12px;color:var(--muted)}
-      .drow:has(+.dmore){border-bottom:0}
-      .dmore{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;height:40px;border:0;border-top:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:12px;font-weight:600;cursor:pointer}
-      .dmore:hover{color:var(--accent)}
-      .dmore svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
-      .dmore[aria-expanded="true"] svg{transform:rotate(180deg)}
       /* 연관 상품: 노출 방식 · 목록(이미지 · 상품명 · 가격 · 옵션 사항 1줄) */
       .rl-tbl td{vertical-align:middle}
       .rl-tbl td b{display:block;font-size:13px;font-weight:600}
@@ -835,9 +837,9 @@
       tr.rl-r.dragging{opacity:.4}
       /* v0.3: CVM 데이터 연동 노출 결과 · 연관도 막대 */
       /* v0.3: 사용 여부 N이면 수급 · 문구 · 노출 결과를 비활성화로 보여 준다 */
-      #sb-sim .ft-row.rl-dis .ft-v,#relList.rl-off,#sb-review .rl-off{opacity:.45}
+      #sb-sim .ft-row.rl-dis .ft-v,#relList.rl-off,#sb-review .rl-off,#sb-expert .rl-off{opacity:.45}
       #sb-sim .ft-row.rl-dis label{cursor:not-allowed}
-      #relList.rl-off,#sb-review .rl-off{pointer-events:none;user-select:none}
+      #relList.rl-off,#sb-review .rl-off,#sb-expert .rl-off{pointer-events:none;user-select:none}
       .rl-tbl .rl-sc{display:block;width:64px;height:6px;margin:0 auto 2px;border-radius:3px;background:var(--surface);overflow:hidden}
       .rl-tbl .rl-sc i{display:block;height:100%;background:var(--accent)}
       tr.rl-r.drop-b td{box-shadow:inset 0 3px 0 var(--accent)}
@@ -915,7 +917,7 @@
 <!-- 전시 등록/수정 -->
 <section class="view on" id="v-edit">
   <div class="toolbar"><h1 id="editTitle">전시등록</h1><button type="button" class="btn" id="goList" style="margin-left:auto">전시 목록 보기</button></div>
-  <div class="editing" id="editingBar"><span id="editingTxt"></span><button type="button" class="btn sm" id="editCancel">새로 만들기로 전환</button></div>
+  <div class="editing" id="editingBar"><span id="editingTxt"></span></div>
   <div class="builder">
     <aside class="side">
       <section class="panel pv-panel" aria-label="미리보기">
@@ -923,7 +925,7 @@
         <div class="pvbox"><div class="pv" id="pv"></div></div>
       </section>
     </aside>
-    <div>
+    <div id="form">
       <div class="step" id="sec-kind">
         <header><b>전시 유형</b><span class="req">필수</span><span class="st"><span class="chip" id="st-kind"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-kind"></div>
@@ -956,6 +958,10 @@
         <header><b>구매 후기</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
       </div>
+      <div class="step" id="sec-expert">
+        <header><b>전문가 리뷰</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-expert"></div>
+      </div>
       <!-- v0.3 연관 및 유사 상품: 머리줄 스위치 대신 표 첫 줄 사용 여부(N/Y, 기본 N) · 수급(CVM 데이터 연동 기본 · 운영자 설정) · 타이틀 · 소타이틀 + 노출 결과 -->
       <div class="step" id="sec-rel">
         <header><b>연관 및 유사 상품</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
@@ -978,7 +984,7 @@
     </section>
     <div class="dock-bar" id="dockBar">
       <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="false" aria-controls="dockSheet"><b>연결 상품</b><span class="po" id="poCount">0<small>상품</small></span><svg class="dock-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
-      <span class="dock-acts"><button type="button" class="btn" id="bReset">초기화</button><button type="button" class="btn" id="bDraft">임시저장</button><button type="button" class="btn primary" id="bSave" disabled>승인요청</button></span>
+      <span class="dock-acts" id="dockActs"></span>
     </div>
   </div>
 </section>

@@ -1,14 +1,16 @@
 // @ts-nocheck
 // EPC 상품 조회 (epc-list.html): EPC에서 내려오는 상품을 조회 조건으로 찾는 읽기 전용 목록.
 // 모든 행은 상품 전시와 같은 샘플(display-data.ts PO)이고, 컬럼은 EPC 상품ID · 버전 · EPC 상품명 · LV2 · LV3 · Product Spec · EPC 상태 · 최종등록일시.
-// [다운로드]는 조회 결과를 같은 컬럼 + 상세 스펙(계약 속성 · 가격 · PS 구성 등)까지 담은 JSON으로 내려받는다(epc-export.ts).
+// [JSON 다운로드] · [CSV 다운로드]는 조회 결과를 같은 컬럼 + 상세 스펙(계약 속성 · 가격 · PS 구성 등)까지 담아 내려받는다(epc-export.ts).
+// EPC 상품 데이터는 src/data/epc.ts(epc-products.json · epc-codes.json)에서 가져온다.
 import "./style.css";
 import "./list.css";
 import "./epc-list.css";
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
-import { PO, poBy, nowStamp, LV2S, LV3S } from "./display-data";
-import { ST_LIST, epcRow, epcExport } from "./epc-export";
+import { PO, poBy, LV2S, LV3S } from "./data/epc";
+import { nowStamp } from "./display-data";
+import { ST_LIST, epcRow, epcExport, epcCsv } from "./epc-export";
 
 requireAuthentication();
 
@@ -87,16 +89,21 @@ $('#pager').addEventListener('click', e => { const b = e.target.closest('button[
 $('#listTable tbody').addEventListener('click', e => { if (e.target.closest('[data-act="soon"]')) alert('준비중입니다.'); });
 
 // ---------- 다운로드 ----------
-// 마지막으로 [조회]한 조건의 결과 전체(모든 페이지)를 JSON으로 내려받는다
-$('#btnDown').addEventListener('click', () => {
+// 마지막으로 [조회]한 조건의 결과 전체(모든 페이지)를 내려받는다. JSON = 상세 구조 그대로, CSV = 상품 한 줄(엑셀로 열 수 있음)
+function download(fmt) {
   const list = filtered();
   if (!list.length) { alert('내려받을 EPC 상품이 없어요. 조회 조건을 바꿔 주세요.'); return; }
   const { page, ...cond } = st;
   const filter = Object.values(cond).some(v => v && v !== 'all') ? cond : null;
-  const blob = new Blob([JSON.stringify(epcExport(list, filter), null, 2) + '\n'], { type: 'application/json' });
-  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `EPC상품_조회결과_${nowStamp().replace(/[-: ]/g, '').slice(0, 12)}.json` });
+  const [body, type] = fmt === 'csv'
+    ? ['﻿' + epcCsv(list), 'text/csv;charset=utf-8'] // BOM: 엑셀에서 한글이 깨지지 않게
+    : [JSON.stringify(epcExport(list, filter), null, 2) + '\n', 'application/json'];
+  const blob = new Blob([body], { type });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `EPC상품_조회결과_${nowStamp().replace(/[-: ]/g, '').slice(0, 12)}.${fmt}` });
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 0);
-});
+}
+$('#btnDownJson').addEventListener('click', () => download('json'));
+$('#btnDownCsv').addEventListener('click', () => download('csv'));
 
 render();
