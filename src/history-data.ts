@@ -56,6 +56,8 @@ export const SCREENS: Screen[] = [
   { menu: '상품 전시 관리', ver: '0.1', screen: '목록', file: 'display-list.html', date: '2026-09-27' },
   { menu: '상품 전시 관리', ver: '0.1', screen: '등록', file: 'display-create.html', date: '2026-09-27' },
 
+  { menu: '상품 콘텐츠 관리', ver: '0.2', screen: '변경이력조회', file: 'product-content-v02-history.html', date: '2026-11-18', note: '템플릿 상세 변경이력 탭' },
+  { menu: '상품 콘텐츠 관리', ver: '0.2', screen: '목록·상세', file: 'product-content-v02.html', date: '2026-11-17', note: '안내 템플릿 적용 상품유형' },
   { menu: '상품 콘텐츠 관리', ver: '0.1', screen: '목록·상세', file: 'product-content.html', date: '2026-10-26' },
 
   { menu: '번들 관리', ver: '0.1.4', screen: '등록', file: 'bundle-create4.html', date: '2026-09-29' },

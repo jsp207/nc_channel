@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J45JDGG545"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-J45JDGG545');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>상품 콘텐츠 관리 v0.2 · 목록·상세 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  </head>
+  <body class="ul">
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴"></nav>
+<main>
+
+<!-- 상품 콘텐츠 관리 v0.2: 안내 템플릿 목록 · 상세(상세보기 탭). 스크립트는 src/product-content-v02.ts, 스타일은 src/list.css · src/product-content.css -->
+<!-- 주소: 목록 / ?id=템플릿ID (상세보기). 변경이력조회 탭은 product-content-v02-history.html?id=템플릿ID -->
+
+<!-- ===== 목록 ===== -->
+<section class="view on" id="v-list">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품관리 <span aria-hidden="true">›</span> <strong>상품 콘텐츠 관리</strong></div>
+  <h1 class="lst-title">상품 콘텐츠 관리</h1>
+  <!-- 조회 조건: 상품 전시 목록 · 일괄 관리와 같은 구성. [조회]를 눌러야 반영된다 -->
+  <form class="lst-filter" id="lFilter" autocomplete="off"></form>
+  <h2 class="lst-count">조회 결과 <span>총 <b id="lCount">0</b>건</span></h2>
+  <div class="lst-tw"><table class="lst-table" id="lTable"></table></div>
+  <div class="lst-bottom">
+    <nav class="lst-pager" id="lPager" aria-label="페이지"></nav>
+  </div>
+</section>
+
+<!-- ===== 상세 (결제관리 상세 모양: 상세보기 | 변경이력조회 탭 + 하단 고정 바). 내용은 스크립트가 그린다 ===== -->
+<section class="view" id="v-detail"></section>
+
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+    <script type="module" src="/src/product-content-v02.ts"></script>
+  </body>
+</html>

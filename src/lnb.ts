@@ -34,7 +34,8 @@ export const MENU = [
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
     // 상품 전시 관리는 등록 화면 v0.3(product-v030.html)로 바로 연다. 목록(display-list2.html)도 같은 v0.3
     { label: '상품 전시 관리', icon: 'display', href: 'product-v030.html' },
-    // 상품 콘텐츠 관리는 메뉴에서 뺐다. 히스토리 > 상품 콘텐츠 관리(메뉴 없음)로만 연다
+    // 상품 콘텐츠 관리 v0.2를 다시 메뉴에 올렸다(안내 템플릿 적용 상품유형). v0.1은 히스토리 > 상품 콘텐츠 관리
+    { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content-v02.html' },
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다
   ] },
   { label: '주문관리', items: [
