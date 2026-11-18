@@ -21,27 +21,29 @@ export const MSG2='선택 항목이 EPC 상품에 포함되어 있어 옵션을 
 export const TPL_TYPES=['이용안내','유의사항','약관','판매자 정보','자주 묻는 질문','마케팅 정보','구매후기','혜택안내'];
 const M0='김등록(P123456)';
 const at=(d,t='09:00:00')=>`2026-${d} ${t}`;
-const tpl=(id,n,t,v,body,upd,on=true)=>({id,n,t,v,body,on,upd,editor:M0});
+// ptype: 적용 상품유형(상품 콘텐츠 관리 v0.2). scope all = 공통(모든 상품유형) · type = lv3에 고른 상품유형(LV3) · none = 자동 적용 안 함(템플릿 불러오기로만)
+const PT=(scope,lv3=[])=>({scope,lv3});
+const tpl=(id,n,t,v,body,upd,on=true,ptype=PT('none'))=>({id,n,t,v,body,on,upd,editor:M0,ptype});
 const clr=(code,n,hex,epc,upd,on=true)=>({code,n,hex,epc,on,upd,editor:M0});
 const cap=(code,gb,n,unit,epc,upd,on=true)=>({code,gb,n,unit,epc,on,upd,editor:M0});
 const siz=(code,group,n,val,unit,epc,upd,on=true)=>({code,group,n,val,unit,epc,on,upd,editor:M0});
 const opt=(code,group,n,epc,upd,on=true)=>({code,group,n,epc,on,upd,editor:M0});
 const CONTENT_SEED=()=>({
  tpl:[
-  tpl('TPL-0001','휴대폰 이용안내','이용안내','v1.0','상품 수령 후 구성품과 외관을 확인해 주세요\n개통 및 서비스 이용 조건은 선택한 상품의 안내를 확인해 주세요',at('09-02')),
-  tpl('TPL-0002','구매 전 유의사항','유의사항','v3.0','개통 후 14일 이내 단순 변심 철회가 가능해요\n약정 할인 반환금이 발생할 수 있어요',at('10-05','14:20:00')),
-  tpl('TPL-0003','이동전화 이용약관','약관','v5.0','이동전화 서비스 이용약관 전문\n개인정보 처리방침',at('08-21','11:05:00')),
-  tpl('TPL-0004','SK텔레콤 판매자 정보','판매자 정보','v1.0','상호 SK텔레콤(주)\n사업자등록번호 104-81-37225',at('07-15')),
-  tpl('TPL-0005','T우주 구독 FAQ','자주 묻는 질문','v2.0','Q. 선택 혜택은 언제 바꿀 수 있나요?\nA. 매월 1회 변경할 수 있어요',at('09-18','16:40:00')),
+  tpl('TPL-0001','휴대폰 이용안내','이용안내','v1.0','상품 수령 후 구성품과 외관을 확인해 주세요\n개통 및 서비스 이용 조건은 선택한 상품의 안내를 확인해 주세요',at('09-02'),true,PT('type',['휴대폰형'])),
+  tpl('TPL-0002','구매 전 유의사항','유의사항','v3.0','개통 후 14일 이내 단순 변심 철회가 가능해요\n약정 할인 반환금이 발생할 수 있어요',at('10-05','14:20:00'),true,PT('type',['휴대폰형','태블릿형','웨어러블형'])),
+  tpl('TPL-0003','이동전화 이용약관','약관','v5.0','이동전화 서비스 이용약관 전문\n개인정보 처리방침',at('08-21','11:05:00'),true,PT('type',['이동전화 요금제형','이동전화 base 옵션형','로밍형'])),
+  tpl('TPL-0004','SK텔레콤 판매자 정보','판매자 정보','v1.0','상호 SK텔레콤(주)\n사업자등록번호 104-81-37225',at('07-15'),true,PT('all')),
+  tpl('TPL-0005','T우주 구독 FAQ','자주 묻는 질문','v2.0','Q. 선택 혜택은 언제 바꿀 수 있나요?\nA. 매월 1회 변경할 수 있어요',at('09-18','16:40:00'),true,PT('type',['플랫폼형','앱서비스형'])),
   tpl('TPL-0006','10월 프로모션 안내','마케팅 정보','v1.0','10월 가입 고객에게 커피 쿠폰을 드려요',at('10-01','10:00:00')),
-  tpl('TPL-0007','구매후기 작성 안내','구매후기','v1.0','상품을 받은 뒤 30일 안에 구매후기를 남길 수 있어요\n사진과 함께 작성하면 T포인트를 드려요',at('09-10')),
-  tpl('TPL-0008','공통 안내','이용안내','v2.0','주문 · 개통 · 배송 과정에서 공통으로 안내하는 내용입니다',at('10-12','13:30:00')),
-  tpl('TPL-0009','지원금 안내','이용안내','v1.0','공시지원금과 추가지원금은 개통 시점 기준으로 적용돼요',at('10-08','15:10:00')),
-  tpl('TPL-0010','바로도착 · 행복배송 안내','이용안내','v1.0','오늘 주문하면 지역에 따라 당일 또는 다음 날 받아 볼 수 있어요',at('09-25')),
-  tpl('TPL-0011','바로픽업 안내','이용안내','v1.2','가까운 매장에서 바로 찾아갈 수 있어요. 신분증을 꼭 챙겨 주세요',at('10-14','17:45:00')),
-  tpl('TPL-0012','다이렉트 플랜 혜택 안내','혜택안내','v1.3','다이렉트 플랜 가입 고객에게 드리는 혜택을 안내합니다',at('10-20','09:30:00')),
-  tpl('TPL-0013','티다팩 안내','이용안내','v1.5','대상 요금제를 12개월 약정하면 1년간 매월 제휴 쿠폰을 드려요',at('10-22','11:00:00')),
-  tpl('TPL-0014','자주 묻는 질문','자주 묻는 질문','v1.0','Q. 주문 후 개통까지 얼마나 걸리나요?\nA. 주문서 확인 후 보통 1~2일 안에 개통돼요\nQ. 번호이동도 온라인으로 할 수 있나요?\nA. 네, 본인 인증 후 온라인에서 바로 신청할 수 있어요',at('11-11','10:00:00')),
+  tpl('TPL-0007','구매후기 작성 안내','구매후기','v1.0','상품을 받은 뒤 30일 안에 구매후기를 남길 수 있어요\n사진과 함께 작성하면 T포인트를 드려요',at('09-10'),true,PT('type',[...['휴대폰형','태블릿형','웨어러블형'],'액세서리형'])),
+  tpl('TPL-0008','공통 안내','이용안내','v2.0','주문 · 개통 · 배송 과정에서 공통으로 안내하는 내용입니다',at('10-12','13:30:00'),true,PT('all')),
+  tpl('TPL-0009','지원금 안내','이용안내','v1.0','공시지원금과 추가지원금은 개통 시점 기준으로 적용돼요',at('10-08','15:10:00'),true,PT('type',['휴대폰형'])),
+  tpl('TPL-0010','바로도착 · 행복배송 안내','이용안내','v1.0','오늘 주문하면 지역에 따라 당일 또는 다음 날 받아 볼 수 있어요',at('09-25'),true,PT('type',[...['휴대폰형','태블릿형','웨어러블형'],'액세서리형'])),
+  tpl('TPL-0011','바로픽업 안내','이용안내','v1.2','가까운 매장에서 바로 찾아갈 수 있어요. 신분증을 꼭 챙겨 주세요',at('10-14','17:45:00'),true,PT('type',['휴대폰형'])),
+  tpl('TPL-0012','다이렉트 플랜 혜택 안내','혜택안내','v1.3','다이렉트 플랜 가입 고객에게 드리는 혜택을 안내합니다',at('10-20','09:30:00'),true,PT('type',['이동전화 요금제형'])),
+  tpl('TPL-0013','티다팩 안내','이용안내','v1.5','대상 요금제를 12개월 약정하면 1년간 매월 제휴 쿠폰을 드려요',at('10-22','11:00:00'),true,PT('type',['이동전화 요금제형'])),
+  tpl('TPL-0014','자주 묻는 질문','자주 묻는 질문','v1.0','Q. 주문 후 개통까지 얼마나 걸리나요?\nA. 주문서 확인 후 보통 1~2일 안에 개통돼요\nQ. 번호이동도 온라인으로 할 수 있나요?\nA. 네, 본인 인증 후 온라인에서 바로 신청할 수 있어요',at('11-11','10:00:00'),true,PT('all')),
  ],
  color:[
   clr('CLR-BK','블랙','#1E2533','COLOR_BLACK',at('10-02')), clr('CLR-WH','화이트','#FFFFFF','COLOR_WHITE',at('10-02')),
@@ -76,7 +78,7 @@ export const CONTENT_KEY='nova.product-content.v1';
 // 템플릿은 읽기 전용(등록 · 삭제 · 이름 수정 없음, 사용여부만 바꾼다)이라 기본 템플릿 값을 쓰고 저장소의 사용여부만 덮어쓴다.
 // 그래서 나중에 추가하거나 이름을 바꾼 기본 템플릿(TPL-0014 등)도 바로 반영된다
 function loadContent(){ const s=CONTENT_SEED(); try { const o=JSON.parse(localStorage.getItem(CONTENT_KEY)||'null'); if(o) Object.keys(s).forEach(k=>{ if(!Array.isArray(o[k])) return;
- s[k]=k==='tpl'?[...s[k].map(t=>{ const x=o[k].find(y=>y.id===t.id); return x?{...t,on:x.on,upd:x.upd,editor:x.editor}:t; }),...o[k].filter(x=>!s[k].some(t=>t.id===x.id))]:o[k]; }); } catch {} return s; }
+ s[k]=k==='tpl'?[...s[k].map(t=>{ const x=o[k].find(y=>y.id===t.id); return x?{...t,on:x.on,upd:x.upd,editor:x.editor,...(x.ptype?{ptype:x.ptype}:{})}:t; }),...o[k].filter(x=>!s[k].some(t=>t.id===x.id))]:o[k]; }); } catch {} return s; }
 export const CONTENT=loadContent();
 export function saveContent(){ try { localStorage.setItem(CONTENT_KEY,JSON.stringify(CONTENT)); return true; } catch { return false; } }
 // 다른 화면(다른 탭)이 콘텐츠를 바꾸면 같은 배열에 다시 읽어 들인다. 바뀌면 true
@@ -88,6 +90,9 @@ export const tplBy=id=>TPL.find(t=>t.id===id);
 // 상품이 가진 템플릿 (EPC 상품 정보에서 온다고 가정. 프로토타입은 상품 구분별로 정함)
 export const TYPE_TPL={기기서비스:['TPL-0001','TPL-0002','TPL-0004'],요금제:['TPL-0003','TPL-0004'],부가서비스:['TPL-0003','TPL-0004'],구독서비스:['TPL-0005','TPL-0004'],액세서리:['TPL-0001','TPL-0004'],보험:['TPL-0002','TPL-0004'],제휴:['TPL-0002','TPL-0004']};
 export const poTpls=p=>TYPE_TPL[p.type]||[];
+// 상품 콘텐츠 관리 v0.2 적용 상품유형 기준(상품 전시 등록 v0.3이 쓴다): 이 상품유형(LV3)에 자동으로 붙는 템플릿 · 템플릿의 적용 상품유형
+export const tplPtype=t=>t&&t.ptype&&t.ptype.scope?t.ptype:{scope:'none',lv3:[]};
+export const tplsForLv3=lv3=>TPL.filter(t=>t.on!==false&&(tplPtype(t).scope==='all'||tplPtype(t).scope==='type'&&tplPtype(t).lv3.includes(lv3))).map(t=>t.id);
 
 // 주문 구성 (주문 구성 관리에서 정의된 흐름으로 가정). 연결 상품 유형으로 자동 결정
 export const FLOWS={

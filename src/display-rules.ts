@@ -33,6 +33,8 @@ export const planCorners=d=>d.orderPlan&&Array.isArray(d.orderPlan.stages)?d.ord
 export const needs=(d,k)=>{ if(d.noSteps||d.kind==='ps'||!appOn(d)) return false; const pc=planCorners(d); return pc?pc.includes(STEP_CORNER[k]):!!ptOf(d)&&ptOf(d).need.includes(k); };
 // 상품 유형(LV3 조합): 연결 상품의 LV3를 연결한 순서대로 겹치지 않게 모은다
 export const lv3Combo=d=>d.kind!=='ps'?[...new Set(connPOs(d).map(p=>epcOf(p).lv3))]:[];
+// 연결 상품이 '이동전화 요금제형'뿐이면 대표 이미지를 쓰지 않는다(기기 등 다른 유형이 섞이면 지금처럼 이미지 필수)
+export const noImg=d=>{ const l=lv3Combo(d); return l.length===1&&l[0]==='이동전화 요금제형'; };
 // 상품 유형과 연결 상품이 맞지 않으면 경고 (예: 기기서비스인데 기기 상품이 없음)
 export function ptWarn(d){ const p=ptOf(d); if(!p||!p.kinds||!d.conn.length) return ''; return connPOs(d).some(x=>p.kinds.includes(x.type))?'':`연결 상품에 ${p.kn} 상품이 없어요. 상품 유형을 다시 확인하세요`; }
 // v023 대표 상품(repPo)을 쓰는 전시인지. product-v022에서 저장한 전시만 이 값을 가진다
@@ -87,7 +89,7 @@ export function sectionState(d){
  S.conn=d.conn.length?{st:'done',e:[]}:{st:'todo',e:['연결 상품을 1개 이상 추가하세요']};
  if(d.kind==='ps') S.method={st:'na',e:[]};
  else { const un=d.method==='complex'?d.conn.filter(id=>!d.areas.some(a=>a.pos.includes(id))):[]; const pw=ptWarn(d); const e=[...(!d.svc?[usesRep(d)?'대표 상품을 지정하세요':d.ptByConn?'연결 상품을 추가하세요':'상품 유형을 고르세요']:pw?[pw]:[]),...d.areas.flatMap((a,i)=>areaIssues(a,d).map(x=>`${d.method==='complex'?(i+1)+'번 ':''}${a.name||'영역'}: ${x}`)),...(un.length?[`구성 영역에 배정되지 않은 연결 상품 ${un.length}개`]:[])]; if(!d.areas.length) e.unshift('구성 영역을 만드세요'); S.method={st:!d.areas.some(a=>a.pos.length)&&!d.svc?'todo':(e.length?'warn':'done'),e}; }
- const be=[]; if(!d.name.trim()) be.push('전시명을 입력하세요'); if(!d.from) be.push('전시 시작일을 입력하세요'); if(!d.noEnd&&!d.to) be.push('종료일을 입력하거나 종료일없음을 선택하세요'); if(d.imgs&&!d.imgs.mobile.length) be.push('모바일 대표 이미지를 등록하세요'); if(endAt(d)&&startAt(d)&&endAt(d)<=startAt(d)) be.push('전시 종료 일시가 시작 일시보다 빨라요');
+ const be=[]; if(!d.name.trim()) be.push('전시명을 입력하세요'); if(!d.from) be.push('전시 시작일을 입력하세요'); if(!d.noEnd&&!d.to) be.push('종료일을 입력하거나 종료일없음을 선택하세요'); if(d.imgs&&!d.imgs.mobile.length&&!noImg(d)) be.push('모바일 대표 이미지를 등록하세요'); if(endAt(d)&&startAt(d)&&endAt(d)<=startAt(d)) be.push('전시 종료 일시가 시작 일시보다 빨라요');
  S.basic={st:be.length?(d.name||d.main||d.subs.length?'warn':'todo'):'done',e:be};
  S.desc={st:descFilled(d)?'done':'todo',e:descFilled(d)?[]:['상세 설명 본문을 입력하세요']};
  // 전시 정보 = 기본 정보 · 상세 설명을 묶은 필수 섹션

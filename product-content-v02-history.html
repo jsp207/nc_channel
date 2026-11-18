@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J45JDGG545"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-J45JDGG545');
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#eaecf5" />
+    <title>상품 콘텐츠 관리 v0.2 · 변경이력조회 | NC-Channel Product Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  </head>
+  <body class="ul" data-page="hist">
+<div class="app">
+<nav class="app-nav" aria-label="주 메뉴"></nav>
+<main>
+
+<!-- 상품 콘텐츠 관리 v0.2 · 템플릿 변경이력조회: 상세의 [변경이력조회] 탭 화면. 결제관리 상세의 변경이력 탭과 같은 모양 -->
+<!-- 주소: ?id=템플릿ID. [상세보기] 탭은 product-content-v02.html?id=템플릿ID. 스크립트는 src/product-content-v02.ts(data-page="hist") -->
+<section class="view on" id="v-detail"></section>
+
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+    <script type="module" src="/src/product-content-v02.ts"></script>
+  </body>
+</html>

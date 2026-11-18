@@ -261,9 +261,9 @@
           <li>선택 항목 단위는 PO 또는 PO + 고정 MP까지다.</li>
           <li>PO + 고정 MP(전시ID)는 고정형과 상품목록에 배정할 수 있다.</li>
           <li>전시가 선택 PS를 미리 골라 카드를 나누는 것은 불가. 선택이 MP일 때만 카드 분리 가능. 선택 PS를 하나로 정한 상품이 필요하면 EPC에서 PO를 따로 만든다.</li>
-          <li>선택 PS가 있는 PO(편의점&amp;카페, 우주패스 DIY, 선택 PS가 있는 액세서리 등)는 고정형으로만 노출한다. 선택형·복합형 영역에는 넣지 않는다. 단말 + 요금제 + T우주 동시 판매 구성도 허용하지 않는다. <span class="np-tag">10-16 결정, 10-22 재확인 Q12</span></li>
-          <li>선택 PS가 있는 PO끼리 묶을 때도 고정형만 가능하다.</li>
-          <li>선택 PS가 있는 PO는 옵션 방식 사용 불가.</li>
+          <li>선택 PS가 있는 PO(편의점&amp;카페, 우주패스 DIY, 선택 PS가 있는 액세서리, 셋톱박스 · 약정을 고르는 IPTV 등)는 고정형과 상품목록(목록에서 선택)으로만 노출한다. 선택형 · 복합형에서도 상품목록 영역에는 넣을 수 있고, 옵션 영역에는 넣지 않는다. <span class="np-tag">11-17 변경</span> 단말 + 요금제 + T우주 동시 판매 구성도 허용하지 않는다. <span class="np-tag">10-16 결정, 10-22 재확인 Q12</span></li>
+          <li>선택 PS가 있는 PO끼리 묶을 때도 고정형 · 상품목록만 가능하다.</li>
+          <li>선택 PS가 있는 PO는 옵션 방식 사용 불가. 고객은 상품목록에서 PO를 고른 뒤, 그 PO 아래 후보 목록에서 선택 PS를 고른다.</li>
         </ul>
       </div>
 
@@ -338,7 +338,7 @@
       </table></div>
       <ul class="np-rules">
         <li>배정 항목은 PO 또는 PO + 고정 MP다.</li>
-        <li>선택 PS가 있는 PO는 고정형에만 배정한다.</li>
+        <li>선택 PS가 있는 PO는 고정형 · 상품목록에만 배정한다. 옵션에는 배정하지 않는다.</li>
         <li>옵션 방식은 조합별 PO가 EPC에 따로 있을 때만 쓴다(단말 색상·용량, 색상별 PO가 있는 액세서리).</li>
       </ul>
     </section>
@@ -409,19 +409,19 @@
           <tr><td class="np-k">요금제 + 부가서비스</td><td>복합형</td><td>영역1 요금제 / 영역2 부가 상품목록 0~N. 데이터 충전 등은 앞 영역 요금제 기준 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">요금제 + 액세서리</td><td>복합형</td><td>영역1 요금제 / 영역2 액세서리 상품목록 0~N. 회선 청구 + 일시불 혼재</td><td><span class="np-pill np-wait">△</span> <span class="np-sub">Q14</span></td></tr>
           <tr><td class="np-k">요금제 + 보험</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
-          <tr><td class="np-k">요금제 + 구독</td><td>복합형</td><td>영역1 요금제 / 영역2 구독 상품목록 0~1. 요금제 MP와 같은 원천 서비스는 자동 제외. 선택 PS 있는 구독은 이 영역에 넣지 않음</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">요금제 + 구독</td><td>복합형</td><td>영역1 요금제 / 영역2 구독 상품목록 0~1. 요금제 MP와 같은 원천 서비스는 자동 제외. 선택 PS 있는 구독도 넣을 수 있음(상품목록)</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">부가서비스 단독 · 부가 + 부가</td><td>고정형·상품목록</td><td>회선 보유 고객 대상. 같은 계열(컬러링, 안심데이터 등) 동시 가입 불가</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">부가서비스 + 액세서리</td><td>복합형</td><td>부가는 회선 보유 고객만, 액세서리는 회선 무관. 회선 없는 고객에게는 부가 영역 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">부가서비스 + 보험</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
           <tr><td class="np-k">부가서비스 + 구독</td><td>복합형</td><td>같은 원천 서비스 자동 제외(예: Wavve 앤 데이터 + Wavve 이용권). 요금제 MP와 겹쳐도 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
-          <tr><td class="np-k">액세서리 단독 · 액세서리 + 액세서리</td><td>고정형·상품목록·옵션</td><td>옵션은 색상별 PO가 있을 때만. 선택 PS 있는 액세서리는 고정형만. 대상 기종 일치 검증, 불일치 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">액세서리 단독 · 액세서리 + 액세서리</td><td>고정형·상품목록·옵션</td><td>옵션은 색상별 PO가 있을 때만. 선택 PS 있는 액세서리는 고정형 · 상품목록만(옵션 불가). 대상 기종 일치 검증, 불일치 자동 제외</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">액세서리 + 보험</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
           <tr><td class="np-k">액세서리 + 구독</td><td>복합형</td><td>선택 PS 없는 PO 기준. 같은 원천 서비스 자동 제외. 일시불 + 정기결제 혼재</td><td><span class="np-pill np-wait">△</span> <span class="np-sub">Q14</span></td></tr>
           <tr><td class="np-k">보험 + 단말</td><td>복합형</td><td>단말 구매 시점에만. 단말이 같은 전시에 있어야 함</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">보험 + 보험</td><td>-</td><td>보험끼리 배타</td><td><span class="np-pill np-no">X</span></td></tr>
           <tr><td class="np-k">보험 + 구독</td><td>-</td><td>단말 없이 보험 가입 불가</td><td><span class="np-pill np-no">X</span></td></tr>
-          <tr><td class="np-k">구독 단독</td><td>고정형·상품목록</td><td>선택 PS 없는 PO는 상품목록 가능. 선택 PS 있는 구독(편의점&amp;카페, 우주패스 DIY)은 고정형만</td><td><span class="np-pill np-ok">O</span></td></tr>
-          <tr><td class="np-k">구독 + 구독</td><td>고정형·상품목록</td><td>같은 원천 서비스 자동 제외(Q1). 선택 PS 있는 구독끼리는 고정형만</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">구독 단독</td><td>고정형·상품목록</td><td>선택 PS 유무와 관계없이 고정형 · 상품목록 가능(편의점&amp;카페, 우주패스 DIY 포함)</td><td><span class="np-pill np-ok">O</span></td></tr>
+          <tr><td class="np-k">구독 + 구독</td><td>고정형·상품목록</td><td>같은 원천 서비스 자동 제외(Q1). 선택 PS 있는 구독끼리도 고정형 · 상품목록 가능</td><td><span class="np-pill np-ok">O</span></td></tr>
           <tr><td class="np-k">단말 + 부가서비스·구독·액세서리</td><td>복합형</td><td>규칙 미정. 단말 + 요금제 복합형에 영역 추가로 가정</td><td><span class="np-pill np-wait">△</span></td></tr>
         </tbody>
       </table></div>

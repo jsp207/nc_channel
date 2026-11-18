@@ -61,6 +61,8 @@ export default defineConfig({
         epcList: 'epc-list.html',
         productDisplayBulk: 'product-display-bulk.html',
         productContent: 'product-content.html',
+        productContentV02: 'product-content-v02.html',
+        productContentV02History: 'product-content-v02-history.html',
         order1: 'order1.html',
         order1Create: 'order1-create.html',
         order2Create: 'order2-create.html',
