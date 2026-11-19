@@ -285,9 +285,10 @@ function rCh(){
 }
 // 공제항목 반영(TBD): 연결 상품 섹션 맨 아래. PS 상품 전시는 금액이 없어 보이지 않는다
 // 연결 상품이 없으면 비활성(기본). 상품을 추가하면 고를 수 있고, 상품을 모두 빼면 OFF로 돌아간다
-function dedHtml(){ if(E.kind==='ps') return ''; const off=!E.conn.length; if(off) E.deduct=false; const dis=off?'disabled':'';
- return `<div class="ftbl" style="margin-top:20px">${seoRow('공제항목 반영<br>(TBD)',null,`<span class="srch-radio" role="radiogroup" aria-label="공제항목 반영" ${off?'aria-disabled="true" style="opacity:.45"':''}><label><input type="radio" name="dDed" value="0" ${E.deduct?'':'checked'} ${dis}>OFF</label><label><input type="radio" name="dDed" value="1" ${E.deduct?'checked':''} ${dis}>ON</label></span>`)}</div>`; }
-function bindDed(){ $$('#sb-conn input[name=dDed]').forEach(r=>r.addEventListener('change',()=>{ E.deduct=r.value==='1'; refresh(); toast(E.deduct?'공제항목을 반영한 금액으로 보여줘요':'정상가로 보여줘요'); })); }
+// v0.3.2: 연결 상품 섹션에서 고객 선택 방식 표(상품 유형 → 공제항목 반영 → 구성 방식)로 옮겼다
+function dedField(){ const off=!E.conn.length; if(off) E.deduct=false; const dis=off?'disabled':'';
+ return `<span class="srch-radio" role="radiogroup" aria-label="공제항목 반영" ${off?'aria-disabled="true" style="opacity:.45"':''}><label><input type="radio" name="dDed" value="1" ${E.deduct?'checked':''} ${dis}>Y</label><label><input type="radio" name="dDed" value="0" ${E.deduct?'':'checked'} ${dis}>N</label></span>`; }
+function bindDed(){ $$('#sb-method input[name=dDed]').forEach(r=>r.addEventListener('change',()=>{ E.deduct=r.value==='1'; refresh(); toast(E.deduct?'공제항목을 반영한 금액으로 보여줘요':'정상가로 보여줘요'); })); }
 
 // ---------- 0-1. 공통 속성 (v0.3.2) ----------
 // 모든 채널 공통. BSS 설정값을 기본으로 불러오고, 필요한 항목만 전시에서 수정(Override)한다.
@@ -428,8 +429,7 @@ function rConn(){
   :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td><b>${esc(s.name)}</b></td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="chip ok">${s.po.sale}</span></td><td><button type="button" class="btn sm" data-view="${s.po.id}">보기</button></td><td><button type="button" class="btn sm" data-un="${k}">연결 해제</button></td></tr>`; }).join('');
  $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 ${po?'상품':'PS'}</b><span class="chip acc">${E.conn.length}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${E.conn.length?'':'disabled'}>초기화</button><button type="button" class="btn primary sm" id="connAdd">${E.kind==='mp'?(E.conn.length?'원천 PO 변경':'+ 원천 PO 추가'):po?'+ 상품 추가':E.conn.length?'PS 변경':'+ PS 불러오기'}</button></div>
  ${E.conn.length?`<div class="cl"><table><thead><tr>${po?'<th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>LV2</th><th>LV3</th><th>Product Spec</th><th>판매상태</th><th>상세</th><th>삭제</th>':'<th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매 상태</th><th>상세</th><th>삭제</th>'}</tr></thead><tbody>${rows}</tbody></table></div>`
- :`<div class="empty">${E.kind==='mp'?'MP가 있는 원천 PO 1개를 추가하세요.':po?'연결 상품을 추가하세요.':'전시 콘텐츠를 등록할 PS 1개를 불러오세요'}</div>`}`+(E.kind==='mp'?mpBlock():'')+dedHtml();
- bindDed();
+ :`<div class="empty">${E.kind==='mp'?'MP가 있는 원천 PO 1개를 추가하세요.':po?'연결 상품을 추가하세요.':'전시 콘텐츠를 등록할 PS 1개를 불러오세요'}</div>`}`+(E.kind==='mp'?mpBlock():'');
  $$('#sb-conn input[name=mpPick]').forEach(r=>r.addEventListener('change',()=>{ E.mp=r.value; rConn(); refresh(); toast(`${mpBy(E.mp).name}을 고정했어요`); }));
  $$('#sb-conn tr[data-mp]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; const r=tr.querySelector('input'); if(!r.checked){ r.checked=true; r.dispatchEvent(new Event('change')); } }));
  $('#connAdd').addEventListener('click',po?openConnModal:openPsModal);
@@ -519,11 +519,16 @@ function rMethod(){
  if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 판매 단위가 아니라서 고객 선택 방식을 쓰지 않아요.'); return; }
  const M=[['fixed','고정형','연결 상품을 모두 제공'],['select','선택형','연결 상품 중에서 목록·옵션으로 고름'],['complex','복합형','구성 영역 N개를 순서대로 조합']];
  const m=M.find(x=>x[0]===E.method);
- box.innerHTML=`${ptHtml()}
- <div class="sub-h" id="mLb">구성 방식</div><span class="srch-radio" role="radiogroup" aria-labelledby="mLb">${M.map(([k,t])=>`<label><input type="radio" name="dMethod" value="${k}" ${E.method===k?'checked':''}>${t}</label>`).join('')}</span>
+ // v0.3.2: 상품 유형 · 공제항목 반영 · 구성 방식을 한 표로 묶는다
+ box.innerHTML=`<div class="ftbl">
+ ${seoRow('상품 유형',null,ptHtml())}
+ ${seoRow('공제항목 반영<br>(TBD)',null,dedField())}
+ ${seoRow('구성 방식',null,`<span class="srch-radio" role="radiogroup" aria-label="구성 방식">${M.map(([k,t])=>`<label><input type="radio" name="dMethod" value="${k}" ${E.method===k?'checked':''}>${t}</label>`).join('')}</span>`)}
+ </div>
  <div class="sub-h">${E.method==='complex'?'구성 영역':`${m[1]} 설정`}</div><div id="ae"></div>`;
  // 복합형에서 바꿀 때 확인 창을 취소하면 라디오를 원래 값으로 되돌린다
  $$('#sb-method input[name=dMethod]').forEach(r=>r.addEventListener('change',()=>{ setMethod(r.value); if(E.method!==r.value) rMethod(); }));
+ bindDed();
  rAreas();
 }
 // ---------- 3-1. 상품 유형 ----------
@@ -531,7 +536,7 @@ function rMethod(){
 function ptHtml(){
  const l=lv3Combo();
  const res=l.length?l.map(x=>`<span class="v">${esc(x)}</span>`).join('<span class="p" aria-hidden="true">+</span>'):'<span class="f">연결 상품을 추가하세요.</span>';
- return `<div class="sub-h">상품 유형</div><div class="ptres">${res}</div>`;
+ return `<div class="ptres">${res}</div>`;
 }
 function setMethod(m){
  if(m===E.method) return;
