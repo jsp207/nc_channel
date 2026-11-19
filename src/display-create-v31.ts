@@ -278,7 +278,7 @@ function rCh(){
 // 공제항목 반영(TBD): 연결 상품 섹션 맨 아래. PS 상품 전시는 금액이 없어 보이지 않는다
 // 연결 상품이 없으면 비활성(기본). 상품을 추가하면 고를 수 있고, 상품을 모두 빼면 OFF로 돌아간다
 function dedHtml(){ if(E.kind==='ps') return ''; const off=!E.conn.length; if(off) E.deduct=false; const dis=off?'disabled':'';
- return `<div class="ftbl" style="margin-top:20px">${seoRow('공제항목 반영<br>(TBD)',null,`<span class="srch-radio" role="radiogroup" aria-label="공제항목 반영" ${off?'aria-disabled="true" style="opacity:.45"':''}><label><input type="radio" name="dDed" value="0" ${E.deduct?'':'checked'} ${dis}>OFF</label><label><input type="radio" name="dDed" value="1" ${E.deduct?'checked':''} ${dis}>ON</label></span>${off?'<p class="op-scope" style="margin-top:6px">연결 상품을 추가하면 설정할 수 있어요</p>':''}`)}</div>`; }
+ return `<div class="ftbl" style="margin-top:20px">${seoRow('공제항목 반영<br>(TBD)',null,`<span class="srch-radio" role="radiogroup" aria-label="공제항목 반영" ${off?'aria-disabled="true" style="opacity:.45"':''}><label><input type="radio" name="dDed" value="0" ${E.deduct?'':'checked'} ${dis}>OFF</label><label><input type="radio" name="dDed" value="1" ${E.deduct?'checked':''} ${dis}>ON</label></span>`)}</div>`; }
 function bindDed(){ $$('#sb-conn input[name=dDed]').forEach(r=>r.addEventListener('change',()=>{ E.deduct=r.value==='1'; refresh(); toast(E.deduct?'공제항목을 반영한 금액으로 보여줘요':'정상가로 보여줘요'); })); }
 
 // ---------- 1. 전시 유형 ----------
@@ -1149,11 +1149,11 @@ function bindChx(){
 // [주문 프로세스 선택]은 팝업에서 상품 유형(LV3 조합)에 맞는 주문 유형의 프로세스를 골라 바인딩한다
 const EXT='<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>';
 function planBox(){ const plan=E.orderPlan, o5=isProcPlan(plan);
- const meta=!plan?(lv3Combo().length?`<p>상품 유형 <b>${esc(lv3Text())}</b>에 맞는 주문 유형의 프로세스를 골라요</p>`:'<p>연결 상품을 먼저 추가하면 맞는 주문 유형으로 찾아 드려요</p>')
+ const meta=!plan?''
   :o5?`<p class="op-meta">${plan.id}${plan.ver?' · '+esc(plan.ver):''} · ${esc(plan.cat)} · 컨테이너 ${plan.stages.length} · 코너 ${procCornerCnt(plan)}</p>`
   :`<p class="op-meta">${plan.id} · ${plan.ver} · ${ordKind(plan.name)} <span class="gtag st">이전 구성안 · 주문 프로세스로 다시 연결하세요</span></p>`;
  const name=!plan?'<b>주문 프로세스를 선택하세요</b>':o5?`<button type="button" class="op-name" data-op="go" title="주문 프로세스 관리에서 열기 (새 탭)">${esc(plan.name)}${svg(EXT)}</button>`:`<b>${esc(plan.name)}</b>`;
- return `<div class="op-plan"><div class="op-plan-tx"><p class="op-lb">연결한 주문 프로세스<span>*</span></p>${name}${meta}</div>
+ return `<div class="op-plan"><div class="op-plan-tx">${name}${meta}</div>
  <div class="op-acts"><button type="button" class="btn ${plan?'':'primary'}" data-op="pick">${plan?'프로세스 변경':'주문 프로세스 선택'}</button>${o5?'<button type="button" class="btn" data-op="go">주문 프로세스에서 확인 ↗</button>':''}${plan?'<button type="button" class="btn" data-op="rm">해제</button>':''}</div></div>`; }
 function bindPlan(){
  $$('#sb-order [data-op]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.op; if(k==='pick') openPlanModal();
