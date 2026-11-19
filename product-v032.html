@@ -954,7 +954,7 @@
       /* ===== v0.3.2: 공통 속성 · 채널별 노출 제어 ===== */
       .at-bss{padding-left:0;display:flex;align-items:center;gap:8px}
       .at-sep{color:var(--muted);font-size:12px;margin:0 2px}
-      #attrBox:not(:empty),#chsetBox{margin-top:20px}
+      .itabs .ch-each{align-self:center;margin-left:12px;padding-bottom:4px}
       /* 노출 채널: 테두리 상자 없이 체크박스만 */
       #sb-ch .chc,#sb-ch .chc:has(input:checked){min-height:0;padding:0;border:0;background:none}
       #sb-ch .chg{gap:20px}
@@ -1005,6 +1005,11 @@
       <div class="step ch-step" id="sec-ch">
         <header><b>노출 채널</b><span class="req">필수</span><span class="st"><span class="chip" id="st-ch"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-ch"></div>
+      </div>
+      <!-- v0.3.2 채널별 노출 제어: 노출 채널 섹션 바로 아래. 통합 APP · WEB을 고를 때만 보인다 -->
+      <div class="step" id="sec-chset">
+        <header><b>통합 APP · 통합 WEB 전용 노출</b><span class="req">필수</span><span class="st"><span class="chip" id="st-chset"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-chset"><div id="chsetBox"></div></div>
       </div>
       <!-- 기본 정보 · 상세 설명: 콘텐츠 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
       <div class="step" id="sec-info">

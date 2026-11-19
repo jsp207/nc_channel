@@ -158,6 +158,8 @@ function openEdit(id,mode){
  E.orderOv={}; E.chHide=Object.assign({join:[],inst:[],ship:[]},E.chHide);
  // v0.3.2: 채널별 노출 제어(EPC 수정값)
  E.chset=E.chset||{}; curCh=null;
+ // 적용 방식(모든 채널 동일 · 채널별): 저장값이 없으면 채널마다 수정값이 다를 때만 채널별로 연다
+ if(!E.chMode) E.chMode=new Set(Object.values(E.chset).map(x=>JSON.stringify((x&&x.ov)||{}))).size>1?'each':'same';
  // 추가설정(검색 노출 설정 · 오퍼링 문구)은 끄는 스위치 없이 항상 사용한다
  E.search.on=E.cvm.on=true;
  // 이전 버전에서 지정한 대표 상품은 더 쓰지 않는다
@@ -276,8 +278,9 @@ function rCh(){
  // 전시 정보와 같은 표(왼쪽 항목명 · 오른쪽 입력). 공제항목 반영은 연결 상품 섹션 아래로 옮겼다
  $('#sb-ch').innerHTML=`<div class="ftbl">
  ${seoRow('노출 채널',null,`<div class="chg"><label class="chc all"><input type="checkbox" id="chAll" ${all?'checked':''}>전체</label>${CHS.map(c=>`<label class="chc"><input type="checkbox" data-ch="${c}" ${E.channels.includes(c)?'checked':''}>${c}</label>`).join('')}</div>`)}
- </div><div id="attrBox"></div><div id="chsetBox"></div>`;
- // v0.3.2: 노출 채널 표 아래 = 공통 속성(모든 채널 · 보기만) → 채널별 노출 제어
+ <div id="attrBox" style="display:contents"></div>
+ </div>`;
+ // v0.3.2: 노출 채널 표 = 노출 채널 + 공통 속성(모든 채널 · 보기만, 제목 없이 같은 표). 채널별 노출 제어는 바로 아래 별도 섹션으로 분리
  rAttr(); rChset();
  $('#chAll').indeterminate=!all&&E.channels.length>0;
  // 통합 앱 전용 영역이 나타나거나 숨으면 알려 준다(숨겨도 입력한 값은 남는다)
@@ -316,20 +319,17 @@ function colorCap(){
 }
 function rAttr(){
  const box=$('#attrBox'); if(!box) return;
- const head='<div class="sec-h"><b>공통 속성</b></div>';
  if(E.kind==='ps'){ box.innerHTML=''; return; }
- if(!E.conn.length){ box.innerHTML=head+'<div class="empty">연결 상품을 추가하면 EPC 설정값을 불러와요</div>'; return; }
+ if(!E.conn.length){ box.innerHTML=seoRow('공통 속성',null,'<span class="pill">연결 상품을 추가하면 EPC 설정값을 불러와요</span>'); return; }
  const A=epcAttr(E), [col,cap]=colorCap(), chips=a=>a.map(v=>`<span class="axchip val ch-fix">${esc(v)}</span>`).join('')||'<span class="chip">-</span>';
  const pre=A.pre.on==='Y'?`Y (${A.pre.from||'-'} ~ ${A.pre.to||'-'})`:'N';
- box.innerHTML=`${head}
- <div class="ftbl">
+ box.innerHTML=`
  ${seoRow('자상품 그룹명',null,esc(A.child||'-'))}
  ${seoRow('SIM 구분',null,SIM_T[A.sim])}
  ${seoRow('유심 필수구매',null,A.usimReq)}
  ${seoRow('사전예약',null,esc(pre))}
  ${seoRow('색상 / 용량',null,`<div class="axchips">${chips(col)}<span class="at-sep">/</span>${chips(cap)}</div>`)}
- ${seoRow('약정',null,esc(A.contract.join(' · ')||'-'))}
- </div>`;
+ ${seoRow('약정',null,esc(A.contract.join(' · ')||'-'))}`;
 }
 
 // ---------- 0-2. 채널별 노출 제어 (v0.3.2) ----------
@@ -375,13 +375,22 @@ function rChset(){
  const box=$('#chsetBox'); if(!box) return;
  const C=ctlChs(E);
  if(E.kind==='ps'||!C.length){ box.innerHTML=''; return; }
- if(!C.includes(curCh)) curCh=C[0];
+ // 적용 방식: same = 모든 채널에 같은 값(탭 하나), each = 채널(탭)마다 따로. 채널이 1개면 고를 필요 없이 same
+ const same=C.length<2||E.chMode!=='each';
+ // 섹션 제목은 고른 채널에 따라 바뀐다: 예) 통합 APP · 통합 WEB 전용 노출
+ { const t=`${C.join(' · ')} 전용 노출`, hb=$('#sec-chset header b'); if(hb) hb.textContent=t; const sc=SECS.find(x=>x[0]==='chset'); if(sc){ sc[1]=t; sc[3]=t; } }
+ if(same){ curCh=C[0]; C.slice(1).forEach(x=>{ E.chset[x]={ov:clone(chOv(E,C[0]))}; }); }
+ else if(!C.includes(curCh)) curCh=C[0];
+ const T=same?C:[curCh], put=(k,v)=>T.forEach(x=>setCh(x,k,v));
  const ch=curCh, c=chOf(E,ch), B=epcCh(E,ch), pp=needPP(E), bad=x=>chIssues({...E,channels:[x]}).length>0;
  const nMod=CH_KEYS.filter(k=>chMod(E,ch,k)).length, own=c.stock.t==='own';
  const rv=k=>chMod(E,ch,k)?`<p class="ft-hint at-bss">EPC 값: ${esc(chTxt(k,B[k],B))} <button type="button" class="lnk" data-crv="${k}">EPC 값으로 복원</button></p>`:'';
  const chk=(attr,v,on,label,extra='')=>`<label class="axchip ${on?'on':''}"><input type="checkbox" data-${attr}="${v}" ${extra} ${on?'checked':''}>${label||v}</label>`;
  const radio=(name,v,opts)=>`<span class="srch-radio" role="radiogroup">${opts.map(([x,t])=>`<label><input type="radio" name="${name}" value="${x}" ${v===x?'checked':''}>${t}</label>`).join('')}</span>`;
- box.innerHTML=`<div class="itabs" role="tablist" aria-label="노출 채널">${C.map(x=>`<button type="button" role="tab" data-cht="${esc(x)}" class="${x===ch?'on':''}" aria-selected="${x===ch}">${esc(x)}${bad(x)?'<small>확인 필요</small>':''}</button>`).join('')}<span class="itabs-r"><button type="button" class="btn sm" id="cReset" ${nMod?'':'disabled'}>모두 EPC 값으로 복원</button></span></div>
+ const tabs=same?`<button type="button" role="tab" class="on" aria-selected="true">${esc(C.join(' · '))}${C.some(bad)?'<small>확인 필요</small>':''}</button>`
+  :C.map(x=>`<button type="button" role="tab" data-cht="${esc(x)}" class="${x===ch?'on':''}" aria-selected="${x===ch}">${esc(x)}${bad(x)?'<small>확인 필요</small>':''}</button>`).join('');
+ box.innerHTML=`
+ <div class="itabs" role="tablist" aria-label="노출 채널">${tabs}${C.length>1?`<label class="chkl ch-each"><input type="checkbox" id="cEach" ${same?'':'checked'}>채널별 따로 설정</label>`:''}<span class="itabs-r"><button type="button" class="btn sm" id="cReset" ${nMod?'':'disabled'}>모두 EPC 값으로 복원</button></span></div>
  <div class="ftbl">
  ${seoRow('모상품 그룹명',null,`<input type="text" id="cGrp" value="${esc(c.grp)}" maxlength="40" placeholder="비우면 전시명을 사용해요" aria-label="모상품 그룹명" style="width:100%">${rv('grp')}`)}
  ${seoRow('채널별 재고',null,`<div class="row">${radio('cStock',c.stock.t,[['common','공통 재고'],['own','채널 전용 재고']])}${own?`<input type="number" id="cQty" min="1" value="${esc(c.stock.qty)}" placeholder="수량" aria-label="채널 전용 재고 수량" style="width:110px;text-align:right"><span>개</span>`:''}</div>`)}
@@ -392,19 +401,25 @@ function rChset(){
  ${seoRow('노출 서비스',null,`<div class="axchips" role="group" aria-label="노출 서비스">${svcOf(E).map(([k,t])=>chk('cs',k,c.svc[k]==='Y',t)).join('')}</div>${rv('svc')}`)}`}
  </div>`;
  const re=()=>{ rChset(); refresh(); };
+ // 채널별 따로 설정: 체크하면 탭마다 따로, 해제하면 지금 탭의 값을 모든 채널에 같이 쓴다
+ { const ce=$('#cEach'); if(ce) ce.addEventListener('change',()=>{
+  if(!ce.checked){ const diff=C.some(y=>JSON.stringify(chOv(E,y))!==JSON.stringify(chOv(E,curCh)));
+   if(diff&&!confirm(`${curCh} 탭의 설정을 모든 채널에 적용할까요? 다른 채널에서 따로 바꾼 값은 사라져요`)){ ce.checked=true; return; }
+   const ov=clone(chOv(E,curCh)); C.forEach(y=>{ E.chset[y]={ov:clone(ov)}; }); E.chMode='same'; re(); if(diff) toast(`${curCh} 설정을 모든 채널에 적용했어요`); }
+  else { E.chMode='each'; re(); toast('채널별로 따로 설정해요'); } }); }
  $$('#chsetBox [data-cht]').forEach(b=>b.addEventListener('click',()=>{ curCh=b.dataset.cht; rChset(); }));
- $('#cGrp').addEventListener('change',e=>{ setCh(ch,'grp',e.target.value.trim()); re(); });
- $$('#chsetBox input[name=cStock]').forEach(r=>r.addEventListener('change',()=>{ setCh(ch,'stock',{t:r.value,qty:r.value==='own'?c.stock.qty:''}); re(); const q=$('#cQty'); if(q) q.focus(); }));
- const q=$('#cQty'); if(q) q.addEventListener('change',e=>{ setCh(ch,'stock',{t:'own',qty:e.target.value}); re(); });
+ $('#cGrp').addEventListener('change',e=>{ put('grp',e.target.value.trim()); re(); });
+ $$('#chsetBox input[name=cStock]').forEach(r=>r.addEventListener('change',()=>{ put('stock',{t:r.value,qty:r.value==='own'?c.stock.qty:''}); re(); const q=$('#cQty'); if(q) q.focus(); }));
+ const q=$('#cQty'); if(q) q.addEventListener('change',e=>{ put('stock',{t:'own',qty:e.target.value}); re(); });
  $$('#chsetBox [data-cj]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cj, nx=JOINS.filter(v=>v===j?x.checked:c.join.includes(v));
   if(!nx.length){ x.checked=true; toast('가입유형은 1개 이상 선택해야 해요'); return; }
-  setCh(ch,'join',nx); re(); }));
+  put('join',nx); re(); }));
  $$('#chsetBox [data-cm]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cmj, m=x.dataset.cm, mo=clone(c.months);
-  mo[j]=INST.filter(v=>v===m?x.checked:mo[j].includes(v)); setCh(ch,'months',mo); re(); }));
- $$('#chsetBox [data-csh]').forEach(x=>x.addEventListener('change',()=>{ const v=x.dataset.csh; setCh(ch,'ship',shipOpts().filter(o=>o===v?x.checked:c.ship.includes(o))); re(); }));
- $$('#chsetBox [data-cs]').forEach(x=>x.addEventListener('change',()=>{ setCh(ch,'svc',{...c.svc,[x.dataset.cs]:x.checked?'Y':'N'}); re(); }));
- $$('#chsetBox [data-crv]').forEach(b=>b.addEventListener('click',()=>{ delete chOv(E,ch)[b.dataset.crv]; re(); toast('EPC 값으로 복원했어요'); }));
- $('#cReset').addEventListener('click',()=>{ if(!nMod) return; E.chset[ch].ov={}; re(); toast(`${ch} 설정을 모두 EPC 값으로 복원했어요`); });
+  mo[j]=INST.filter(v=>v===m?x.checked:mo[j].includes(v)); put('months',mo); re(); }));
+ $$('#chsetBox [data-csh]').forEach(x=>x.addEventListener('change',()=>{ const v=x.dataset.csh; put('ship',shipOpts().filter(o=>o===v?x.checked:c.ship.includes(o))); re(); }));
+ $$('#chsetBox [data-cs]').forEach(x=>x.addEventListener('change',()=>{ put('svc',{...c.svc,[x.dataset.cs]:x.checked?'Y':'N'}); re(); }));
+ $$('#chsetBox [data-crv]').forEach(b=>b.addEventListener('click',()=>{ T.forEach(x=>{ delete chOv(E,x)[b.dataset.crv]; }); re(); toast('EPC 값으로 복원했어요'); }));
+ $('#cReset').addEventListener('click',()=>{ if(!nMod) return; T.forEach(x=>{ chOv(E,x); E.chset[x].ov={}; }); re(); toast(`${same?C.join(' · '):ch} 설정을 모두 EPC 값으로 복원했어요`); });
 }
 // 미리보기의 가입 · 할부 · 배송 코너는 미리보기 채널(통합 APP · WEB 중 먼저 고른 채널)의 채널별 설정을 따른다
 function pvChHidden(k,v){
@@ -476,28 +491,30 @@ const lv3Combo=()=>lv3ComboOf(E);
 // v0.2.4: 사은품 · 티다팩 자동 배지는 T기프트 · 티다팩 섹션과 함께 뺐다
 const autoBadges=()=>[];
 // v0.2.4 섹션 이름: 구매 후기 · 연관 및 유사 상품 · 주문 프로세스 연동 (display-rules.ts의 이름은 v0.2.3 · 목록이 함께 쓰므로 여기서만 바꾼다)
-const SEC_LB={ch:'노출 채널',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
+const SEC_LB={ch:'노출 채널',chset:'채널별 노출 제어',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
 // v0.3: 전문가 리뷰는 이 화면에만 있어 구매 후기 다음에 넣는다(이전 버전 화면은 공용 SECS를 그대로 쓴다)
 // v0.3.1: 화면 순서 = 공통(전시 유형 → 연결 상품 → 고객 선택 방식 → 노출 채널 → 전시 정보 → 콘텐츠 정보) → 통합 앱 전용(구매 후기 → 전문가 리뷰 → 연관 상품 → 주문)
-const SEC_ORD=['kind','conn','method','ch','info','extra','review','expert','rel','order'];
-const SECS=SECS0.flatMap(s=>s[0]==='review'?[s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
+const SEC_ORD=['kind','conn','method','ch','chset','info','extra','review','expert','rel','order'];
+const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',true,'채널별 노출 제어'],s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
  .sort((a,b)=>(SEC_ORD.indexOf(a[0])+1||99)-(SEC_ORD.indexOf(b[0])+1||99));
 // 통합 앱 전용 영역의 섹션: 노출 채널에 통합 APP · WEB이 없으면 '해당 없음'으로 보고 검사하지 않는다
-const APP_SECS=['order','review','expert','rel'];
+const APP_SECS=['chset','order','review','expert','rel'];
 const appScope=d=>d.kind!=='ps'&&appOn(d);
 // 섹션 상태: 공용 규칙(display-rules) + 이 화면에만 있는 전문가 리뷰
 // PS 상품 전시: 전시 콘텐츠 등록용. 연결 PS(1개) · 전시 설정(노출 영역) · 전시 정보(이미지 포함) · 콘텐츠 정보(상품 고시 등)만 쓴다.
 //  고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 화면에서 숨기고 검사에서도 뺀다
-const PS_HIDE=['method','review','expert','rel','order'];
-const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||secHidden(k,d);
+const PS_HIDE=['chset','method','review','expert','rel','order'];
+// v0.3.2: 채널별 노출 제어는 공통 영역(노출 채널 바로 아래)에 있지만 통합 APP · WEB을 고를 때만 보인다
+const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||k==='chset'&&!appScope(d)||secHidden(k,d);
 // PS로 바꾸거나 PS 전시를 열 때: PS는 1개만, 숨긴 섹션 값은 끈다
 function psReset(d){ if(d.kind!=='ps') return; d.conn=d.conn.slice(0,1); d.areas=[]; d.method='fixed'; d.review=false; d.expert=false; d.related=false; if(d.sim) d.sim.on=false; d.orderOn=false; }
-const isReq=isReq0;
+// v0.3.2: 채널별 노출 제어는 이 화면에만 있어 필수 여부를 여기서 정한다(통합 APP · WEB을 고를 때만)
+const isReq=(k,S)=>k==='chset'?S[k].st!=='na':isReq0(k,S);
 const secState=d=>{ const S=sectionState(d); S.expert={st:d.expert?'on':'off',e:[]};
  // v0.3.2: 기기 구분이 없어져 검사 문구를 대표이미지로 바꾼다
  Object.values(S).forEach(x=>{ if(x&&x.e) x.e=x.e.map(t=>t==='모바일 대표 이미지를 등록하세요'?'대표이미지를 등록하세요':t); });
- // 노출 채널: 채널별 노출 제어 검사(채널 전용 재고 수량)도 함께 본다
- { const e=d.kind==='ps'?[]:chIssues(d); if(e.length&&S.ch&&S.ch.st==='done') S.ch={st:'warn',e}; }
+ // 채널별 노출 제어(통합 앱 전용 영역): 채널 전용 재고 수량 등 검사
+ { const e=d.kind==='ps'?[]:chIssues(d); S.chset=e.length?{st:'warn',e}:{st:'done',e:[]}; }
  if(d.kind==='ps'){ PS_HIDE.forEach(k=>S[k]={st:'na',e:[]}); S.sim={st:'na',e:[]}; if(d.conn.length>1) S.conn={st:'warn',e:['PS 상품 전시는 PS 1개만 연결할 수 있어요']}; }
  // MP 상품 전시: 원천 PO 1개 + 고정 MP 1개 저장 검증(정책서 07)
  if(d.kind==='mp'&&d.conn.length){ const e=mpIssues(d); if(e.length) S.conn={st:'warn',e}; }
