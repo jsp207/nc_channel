@@ -42,6 +42,7 @@ export const SCREENS: Screen[] = [
   // ── 상품 ──────────────────────────────────────────
   { menu: 'EPC 상품조회', ver: '0.1', screen: '목록', file: 'epc-list.html', date: '2026-10-31' },
 
+  { menu: '상품 전시 관리', ver: '0.3.1', screen: '등록', file: 'product-v031.html', date: '2026-11-18', note: '공통 · 통합 앱 전용 영역 구분, 채널 관리 항목 노출 체크' },
   { menu: '상품 전시 관리', ver: '0.3', screen: '등록', file: 'product-v030.html', date: '2026-11-11', note: '연관 및 유사 상품 수급 방식' },
   { menu: '상품 전시 관리', ver: '0.3', screen: '목록', file: 'display-list2.html', date: '2026-10-27', note: '전시 목록 + 일괄 관리 통합' },
   { menu: '상품 전시 관리', ver: '0.2.4', screen: '등록', file: 'product-v024.html', date: '2026-11-03', note: '주문 프로세스 연동' },

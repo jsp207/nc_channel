@@ -48,6 +48,11 @@ export const epcOf = p => {
   return { ...s, lv3: p.lv3, provider: p.provider || s.provider, spec: s.spec || `${p.name} Product Spec` };
 };
 
+// 채널에서만 관리하는 항목(가입 유형 · 할부 유형 · 배송 유형). codes.chItems
+//  CH_GROUPS = [{k, n:이름, corner:주문 코너 ID, vals:채널의 값 순서}], chItemsOf(p) = 그 상품(LV3)이 가진 값 {join:[], inst:[], ship:[]}
+export const CH_GROUPS = CODES.chItems.groups;
+export const chItemsOf = p => CODES.chItems.lv3[p.lv3] || {};
+
 // 데이터 점검: 잘못 적힌 값이 있으면 개발자 도구 콘솔에 알려 준다
 (() => {
   const dup = k => PO.map(p => p[k]).filter((v, i, a) => a.indexOf(v) !== i);
@@ -59,6 +64,10 @@ export const epcOf = p => {
     ...PO.filter(p => !TYPES.includes(p.type)).map(p => `${p.id}: 상품 구분 '${p.type}'가 epc-codes.json에 없어요`),
     ...MPLIST.map(m => m.key).filter((v, i, a) => a.indexOf(v) !== i).map(v => `MP ${v}가 겹쳐요`),
     ...MPLIST.filter(m => !m.from || !m.to || m.from > m.to).map(m => `${m.key}: MP 유효기간(from · to)을 확인하세요`),
+    ...Object.entries(CODES.chItems.lv3).flatMap(([lv3, g]) => [
+      ...(LV3S[lv3] ? [] : [`chItems: LV3 '${lv3}'가 lv3 코드표에 없어요`]),
+      ...Object.entries(g).flatMap(([k, vals]) => { const G = CH_GROUPS.find(x => x.k === k); return !G ? [`chItems ${lv3}: 항목 '${k}'가 groups에 없어요`] : vals.filter(v => !G.vals.includes(v)).map(v => `chItems ${lv3}: ${G.n} 값 '${v}'가 groups에 없어요`); }),
+    ]),
   ];
   if (errs.length) console.warn('[EPC 데이터 점검]\n' + errs.join('\n'));
 })();
