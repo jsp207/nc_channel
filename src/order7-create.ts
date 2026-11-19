@@ -143,3 +143,10 @@ const publish = () => { if (Array.isArray(W.DATA)) publishProcs(W.DATA, W.NOW ||
 const coreSave = W.doSave;
 if (typeof coreSave === 'function') W.doSave = function () { const r = coreSave.apply(this, arguments); publish(); return r; };
 publish();
+
+// 상품 전시 관리 v0.3.1(product-v031.html)의 [주문 프로세스에서 확인 ↗]: ?id=프로세스 ID로 열면 그 프로세스 상세로 바로 들어간다
+{
+  const id = new URLSearchParams(location.search).get('id');
+  const t = id && typeof W.tById === 'function' ? W.tById(id) : null;
+  if (t && typeof W.openForm === 'function') W.openForm('detail', t);
+}
