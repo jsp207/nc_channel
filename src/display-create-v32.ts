@@ -525,7 +525,7 @@ function rMethod(){
  ${seoRow('공제항목 반영<br>(TBD)',null,dedField())}
  ${seoRow('구성 방식',null,`<span class="srch-radio" role="radiogroup" aria-label="구성 방식">${M.map(([k,t])=>`<label><input type="radio" name="dMethod" value="${k}" ${E.method===k?'checked':''}>${t}</label>`).join('')}</span>`)}
  </div>
- <div class="sub-h">${E.method==='complex'?'구성 영역':`${m[1]} 설정`}</div><div id="ae"></div>`;
+ ${E.method==='complex'?'<div class="sub-h">구성 영역</div>':'<div class="ae-gap"></div>'}<div id="ae"></div>`;
  // 복합형에서 바꿀 때 확인 창을 취소하면 라디오를 원래 값으로 되돌린다
  $$('#sb-method input[name=dMethod]').forEach(r=>r.addEventListener('change',()=>{ setMethod(r.value); if(E.method!==r.value) rMethod(); }));
  bindDed();
