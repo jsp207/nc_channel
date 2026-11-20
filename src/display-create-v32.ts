@@ -1,8 +1,10 @@
 // @ts-nocheck
 // 상품 전시 관리 v0.3.2 (display-create-v31.ts v0.3.1 복사본, product-v032.html). 바뀐 점:
-// - 공통 속성 섹션(고객 선택 방식 다음): 자상품 그룹명 · SIM 구분 · 유심 필수구매 · 사전예약 · 색상/용량(보기) · 약정 · 상담신청 대상.
-//   BSS 설정값을 기본으로 불러오고 필요한 항목만 수정(E.attr.ov). 수정한 항목은 '수정됨' + BSS 값으로 복원
-// - 채널별 노출 제어(노출 채널 섹션의 노출 채널 표 아래): 노출 채널마다 탭으로 모상품 그룹명 · 채널별 재고 · 가입유형 · 신규가입 할부 · 할부개월수 · 바로픽업 · 바로도착 · 기프트 · 티다팩(E.chset)
+// - 전시 정보 이미지: 모바일 · 데스크탑 구분을 없애고 v0.2.0(product-v020.html)처럼 대표이미지(1장) · 추가이미지(최대 4장)로 나눈다
+// - 공통 속성(노출 채널 섹션 안, 노출 채널 표 아래 · 채널별 탭 위. 읽기 전용이라 별도 섹션 없이 병합): 자상품 그룹명 · SIM 구분 · 유심 필수구매 · 사전예약 · 색상/용량(보기) · 약정(상담신청 대상은 제외).
+//   EPC 기본 설정값을 공통으로 쓰며 수정 불가(보기만)
+// - 채널별 노출 제어(노출 채널 섹션의 노출 채널 표 아래): 노출 채널마다 탭으로 모상품 그룹명 · 채널별 재고 · 가입유형(1개 이상 필수) · 할부개월수(가입유형별) · 배송방식(일반배송 · 행복배송 · 바로도착 · 바로픽업 등) · 바로주문(단말만) · 기프트 · 티다팩.
+//   EPC 설정값을 기본으로 불러오고 필요한 항목만 수정(E.chset[채널].ov), 항목별 · 채널별 EPC 값으로 복원
 //   가입유형 · 할부 · 노출 서비스는 연결 상품에 휴대폰 또는 요금제가 있을 때만
 // - 주문 프로세스 연동의 '채널 관리 항목 노출'(E.chHide)은 채널별 노출 제어로 옮겨 뺐다. 미리보기의 가입 · 할부 · 배송 코너는 미리보기 채널의 채널별 설정을 따른다
 // 이전: 상품 전시 관리 v0.3.1 (display-create-v30.ts v0.3 복사본, product-v031.html). 바뀐 점:
@@ -148,13 +150,16 @@ function openEdit(id,mode){
  E.rel=Object.assign(relDef(),E.rel);
  // v0.2.4: 디바이스별 이미지. 예전 전시는 대표이미지 · 추가이미지를 모바일 이미지로 옮긴다
  // v0.3: 태블릿 영역은 없앴다(모바일 이미지를 함께 쓴다). 예전에 저장한 태블릿 이미지는 버린다
- if(!E.imgs) E.imgs={mobile:[E.main,...E.subs].filter(Boolean).slice(0,IMG_MAX),desktop:[]};
- delete E.imgs.tablet; E.imgs.desktop=E.imgs.desktop||[];
+ // v0.3.2: 기기 구분을 다시 없애고 v0.2.0처럼 대표이미지(1장) · 추가이미지(최대 4장)로 나눈다. 모바일 이미지가 있던 전시는 첫 장을 대표, 나머지를 추가로 옮기고 데스크탑 이미지는 버린다
+ if(E.imgs&&E.imgs.mobile&&E.imgs.mobile.length&&!E.main){ E.main=E.imgs.mobile[0]; E.subs=E.imgs.mobile.slice(1); }
+ E.subs=(E.subs||[]).slice(0,SUB_MAX); E.subAlt=E.subAlt||''; syncImgs();
  PROCS=loadProcs(); livePlan(); CT.open=-1; CT.sel={}; PVC=0;
  // v0.3.1: 코너 문구 · 노출 목록 덮어쓰기는 쓰지 않는다. 채널 관리 항목은 숨긴 값만 저장한다
  E.orderOv={}; E.chHide=Object.assign({join:[],inst:[],ship:[]},E.chHide);
- // v0.3.2: 공통 속성(BSS 수정값) · 채널별 노출 제어
- E.attr=Object.assign({ov:{}},E.attr); E.chset=E.chset||{}; curCh=null;
+ // v0.3.2: 채널별 노출 제어(EPC 수정값)
+ E.chset=E.chset||{}; curCh=null;
+ // 적용 방식(모든 채널 동일 · 채널별): 저장값이 없으면 채널마다 수정값이 다를 때만 채널별로 연다
+ if(!E.chMode) E.chMode=new Set(Object.values(E.chset).map(x=>JSON.stringify((x&&x.ov)||{}))).size>1?'each':'same';
  // 추가설정(검색 노출 설정 · 오퍼링 문구)은 끄는 스위치 없이 항상 사용한다
  E.search.on=E.cvm.on=true;
  // 이전 버전에서 지정한 대표 상품은 더 쓰지 않는다
@@ -273,9 +278,10 @@ function rCh(){
  // 전시 정보와 같은 표(왼쪽 항목명 · 오른쪽 입력). 공제항목 반영은 연결 상품 섹션 아래로 옮겼다
  $('#sb-ch').innerHTML=`<div class="ftbl">
  ${seoRow('노출 채널',null,`<div class="chg"><label class="chc all"><input type="checkbox" id="chAll" ${all?'checked':''}>전체</label>${CHS.map(c=>`<label class="chc"><input type="checkbox" data-ch="${c}" ${E.channels.includes(c)?'checked':''}>${c}</label>`).join('')}</div>`)}
- </div><div id="chsetBox"></div>`;
- // v0.3.2: 노출 채널 표 아래에서 채널별로 설정한다
- rChset();
+ <div id="attrBox" style="display:contents"></div>
+ </div>`;
+ // v0.3.2: 노출 채널 표 = 노출 채널 + 공통 속성(모든 채널 · 보기만, 제목 없이 같은 표). 채널별 노출 제어는 바로 아래 별도 섹션으로 분리
+ rAttr(); rChset();
  $('#chAll').indeterminate=!all&&E.channels.length>0;
  // 통합 앱 전용 영역이 나타나거나 숨으면 알려 준다(숨겨도 입력한 값은 남는다)
  const set=v=>{ const was=appScope(E); E.channels=v; rCh(); onOrderChange(); const now=appScope(E);
@@ -283,7 +289,7 @@ function rCh(){
  $('#chAll').addEventListener('change',e=>set(e.target.checked?CHS.slice():[]));
  $$('#sb-ch [data-ch]').forEach(c=>c.addEventListener('change',()=>{ const v=c.dataset.ch; set(CHS.filter(x=>x===v?c.checked:E.channels.includes(x))); }));
 }
-// 공제항목 반영(TBD): 연결 상품 섹션 맨 아래. PS 상품 전시는 금액이 없어 보이지 않는다
+// 공제항목 반영: 연결 상품 섹션 맨 아래. PS 상품 전시는 금액이 없어 보이지 않는다
 // 연결 상품이 없으면 비활성(기본). 상품을 추가하면 고를 수 있고, 상품을 모두 빼면 OFF로 돌아간다
 // v0.3.2: 연결 상품 섹션에서 고객 선택 방식 표(상품 유형 → 공제항목 반영 → 구성 방식)로 옮겼다
 function dedField(){ const off=!E.conn.length; if(off) E.deduct=false; const dis=off?'disabled':'';
@@ -291,24 +297,18 @@ function dedField(){ const off=!E.conn.length; if(off) E.deduct=false; const dis
 function bindDed(){ $$('#sb-method input[name=dDed]').forEach(r=>r.addEventListener('change',()=>{ E.deduct=r.value==='1'; refresh(); toast(E.deduct?'공제항목을 반영한 금액으로 보여줘요':'정상가로 보여줘요'); })); }
 
 // ---------- 0-1. 공통 속성 (v0.3.2) ----------
-// 모든 채널 공통. BSS 설정값을 기본으로 불러오고, 필요한 항목만 전시에서 수정(Override)한다.
-// 저장 값: E.attr = {ov:{키:값}} (수정한 항목만). 수정한 항목은 '수정됨' 표시 + [BSS 값으로 복원]
+// 모든 채널 공통. 읽기 전용이라 별도 섹션 없이 노출 채널 섹션 안(노출 채널 표 아래 · 채널별 탭 위)에 둔다. EPC 기본 설정값을 그대로 쓰며 전시 · 채널에서 수정하지 않는다(보기만)
 // 범위 제외: 애플워치 모회선 인증 단말 여부 · 2G 단말 지원금 대상 여부
-const ATTR_KEYS=[['child','자상품 그룹명'],['sim','SIM 구분'],['usimReq','유심 필수구매'],['pre','사전예약'],['contract','약정'],['consult','상담신청 대상']];
 const SIM_T={usim:'USIM',esim:'eSIM',dual:'USIM + eSIM'};
 const CONTRACTS=['선택약정','공시지원금'];
 const devPOs=d=>connPOs(d).filter(p=>p.lv3==='휴대폰형');
-// BSS 값(예시): 휴대폰 상품명에서 모델명 + 용량 목록으로 자상품 그룹명을 만든다. 나머지는 BSS 기본값
-function bssAttr(d){
- const D=devPOs(d), cap=/\s(\d+(?:GB|TB))\b/, model=D.length?D[0].name.replace(cap,'').replace(/\s\S+$/,''):'';
- const caps=[...new Set(D.map(p=>(p.name.match(cap)||[])[1]).filter(Boolean))];
- return {child:model?`${model}${caps.length?' '+caps.join('/'):''}`:'',sim:'dual',usimReq:'N',pre:{on:'N',from:'',to:''},contract:CONTRACTS.slice(),consult:'N'};
+// EPC 값(예시): 휴대폰 상품명에서 모델명 + 용량 목록으로 그룹명을 만든다. 나머지는 EPC 기본값
+function epcModel(d){ const D=devPOs(d); return D.length?D[0].name.replace(/\s(\d+(?:GB|TB))\b/,'').replace(/\s\S+$/,''):''; }
+function epcAttr(d){
+ const D=devPOs(d), model=epcModel(d), caps=[...new Set(D.map(p=>(p.name.match(/\s(\d+(?:GB|TB))\b/)||[])[1]).filter(Boolean))];
+ return {child:model?`${model}${caps.length?' '+caps.join('/'):''}`:'',sim:'dual',usimReq:'N',pre:{on:'N',from:'',to:''},contract:CONTRACTS.slice()};
 }
-const attrVal=(d,k)=>{ const ov=(d.attr||{}).ov||{}; return k in ov?ov[k]:bssAttr(d)[k]; };
-const attrMod=(d,k)=>{ const ov=(d.attr||{}).ov||{}; return k in ov&&JSON.stringify(ov[k])!==JSON.stringify(bssAttr(d)[k]); };
-function setAttr(k,v){ const ov=E.attr.ov; if(JSON.stringify(v)===JSON.stringify(bssAttr(E)[k])) delete ov[k]; else ov[k]=clone(v); }
-const attrTxt=(k,v)=>k==='sim'?SIM_T[v]:k==='pre'?(v.on==='Y'?`Y (${v.from||'-'} ~ ${v.to||'-'})`:'N'):k==='contract'?(v.join(' · ')||'없음'):(v||'-');
-// 색상 / 용량: 고객 선택 방식 옵션 기준(없으면 연결 휴대폰 상품명에서). 여기서는 보기만 한다
+// 색상 / 용량: 고객 선택 방식 옵션 기준(없으면 연결 휴대폰 상품명에서)
 function colorCap(){
  const ov=E.areas.flatMap(a=>a.opts||[]), pick=re=>[...new Set(ov.filter(o=>re.test(o.name)).flatMap(o=>o.vals))];
  let col=pick(/컬러|색상/), cap=pick(/용량/);
@@ -317,96 +317,118 @@ function colorCap(){
  if(!col.length) col=[...new Set(D.map(p=>p.name.split(' ').pop()))];
  return [col,cap];
 }
-function attrIssues(d){ const e=[], p=attrVal(d,'pre');
- if(!attrVal(d,'contract').length) e.push('약정을 1개 이상 고르세요');
- if(p.on==='Y'&&!(p.from&&p.to)) e.push('사전예약 기간을 입력하세요');
- return e; }
 function rAttr(){
- const box=$('#sb-attr'); if(!box) return;
- if(!E.conn.length){ box.innerHTML='<div class="empty">연결 상품을 추가하면 BSS 설정값을 불러와요</div>'; return; }
- const B=bssAttr(E), nMod=ATTR_KEYS.filter(([k])=>attrMod(E,k)).length;
- const lb=(k,l)=>l;
- const rv=k=>attrMod(E,k)?`<p class="ft-hint at-bss">BSS 값: ${esc(attrTxt(k,B[k]))} <button type="button" class="lnk" data-arv="${k}">BSS 값으로 복원</button></p>`:'';
- const yn=(k,v,dis)=>`<span class="srch-radio" role="radiogroup" aria-label="${k}">${['Y','N'].map(x=>`<label><input type="radio" name="at-${k}" value="${x}" ${v===x?'checked':''} ${dis?'disabled':''}>${x}</label>`).join('')}</span>`;
- const sim=attrVal(E,'sim'), esimOnly=sim==='esim', pre=attrVal(E,'pre'), ct=attrVal(E,'contract'), [col,cap]=colorCap();
- const e=attrIssues(E);
- box.innerHTML=`<div class="sec-h"><b>BSS 설정값</b><button type="button" class="btn sm" id="atReset" style="margin-left:auto" ${nMod?'':'disabled'}>모두 BSS 값으로 복원</button></div>
- <div class="ftbl">
- ${seoRow(lb('child','자상품 그룹명'),null,`<input type="text" id="atChild" value="${esc(attrVal(E,'child'))}" maxlength="40" aria-label="자상품 그룹명" style="width:100%">${rv('child')}`)}
- ${seoRow(lb('sim','SIM 구분'),null,`<span class="srch-radio" role="radiogroup" aria-label="SIM 구분">${Object.entries(SIM_T).map(([k,t])=>`<label><input type="radio" name="at-sim" value="${k}" ${sim===k?'checked':''}>${t}</label>`).join('')}</span>${rv('sim')}`)}
- ${seoRow(lb('usimReq','유심 필수구매'),null,`${yn('usimReq',esimOnly?'N':attrVal(E,'usimReq'),esimOnly)}${esimOnly?'<p class="ft-hint at-bss">eSIM 전용은 N</p>':''}${rv('usimReq')}`)}
- ${seoRow(lb('pre','사전예약'),null,`${yn('pre',pre.on)}${pre.on==='Y'?`<div class="row" style="margin-top:8px"><input type="datetime-local" id="atPreF" value="${pre.from}" aria-label="사전예약 시작"><span>~</span><input type="datetime-local" id="atPreT" value="${pre.to}" aria-label="사전예약 종료"></div>`:''}${rv('pre')}`)}
- ${seoRow('색상 / 용량',null,`<div class="axchips">${col.map(v=>`<span class="axchip val">${esc(v)}</span>`).join('')||'<span class="chip">-</span>'}<span class="at-sep">/</span>${cap.map(v=>`<span class="axchip val">${esc(v)}</span>`).join('')||'<span class="chip">-</span>'}</div>`)}
- ${seoRow(lb('contract','약정'),null,`<div class="axchips" role="group" aria-label="약정">${CONTRACTS.map(v=>`<label class="axchip ${ct.includes(v)?'on':''}"><input type="checkbox" data-act="${v}" ${ct.includes(v)?'checked':''}>${v}</label>`).join('')}</div>${rv('contract')}`)}
- ${seoRow(lb('consult','상담신청 대상'),null,`${yn('consult',attrVal(E,'consult'))}${rv('consult')}`)}
- </div>${e.map(x=>`<div class="er">${esc(x)}</div>`).join('')}`;
- const re=()=>{ rAttr(); refresh(); };
- $('#atChild').addEventListener('change',ev=>{ setAttr('child',ev.target.value.trim()); re(); });
- $$('#sb-attr input[name=at-sim]').forEach(r=>r.addEventListener('change',()=>{ setAttr('sim',r.value); if(r.value==='esim') setAttr('usimReq','N'); re(); }));
- ['usimReq','consult'].forEach(k=>$$(`#sb-attr input[name=at-${k}]`).forEach(r=>r.addEventListener('change',()=>{ setAttr(k,r.value); re(); })));
- $$('#sb-attr input[name=at-pre]').forEach(r=>r.addEventListener('change',()=>{ setAttr('pre',{...pre,on:r.value}); re(); }));
- [['#atPreF','from'],['#atPreT','to']].forEach(([id,k])=>{ const x=$(id); if(x) x.addEventListener('change',()=>{ setAttr('pre',{...attrVal(E,'pre'),[k]:x.value}); re(); }); });
- $$('#sb-attr [data-act]').forEach(c=>c.addEventListener('change',()=>{ setAttr('contract',CONTRACTS.filter(v=>v===c.dataset.act?c.checked:ct.includes(v))); re(); }));
- $$('#sb-attr [data-arv]').forEach(b=>b.addEventListener('click',()=>{ delete E.attr.ov[b.dataset.arv]; re(); toast('BSS 값으로 복원했어요'); }));
- const rs=$('#atReset'); if(rs) rs.addEventListener('click',()=>{ if(!nMod) return; E.attr.ov={}; re(); toast('모두 BSS 값으로 복원했어요'); });
+ const box=$('#attrBox'); if(!box) return;
+ if(E.kind==='ps'){ box.innerHTML=''; return; }
+ if(!E.conn.length){ box.innerHTML=seoRow('공통 속성',null,'<span class="pill">연결 상품을 추가하면 EPC 설정값을 불러와요</span>'); return; }
+ const A=epcAttr(E), [col,cap]=colorCap(), chips=a=>a.map(v=>`<span class="axchip val ch-fix">${esc(v)}</span>`).join('')||'<span class="chip">-</span>';
+ const pre=A.pre.on==='Y'?`Y (${A.pre.from||'-'} ~ ${A.pre.to||'-'})`:'N';
+ box.innerHTML=`
+ ${seoRow('자상품 그룹명',null,esc(A.child||'-'))}
+ ${seoRow('SIM 구분',null,SIM_T[A.sim])}
+ ${seoRow('유심 필수구매',null,A.usimReq)}
+ ${seoRow('사전예약',null,esc(pre))}
+ ${seoRow('색상 / 용량',null,`<div class="axchips">${chips(col)}<span class="at-sep">/</span>${chips(cap)}</div>`)}
+ ${seoRow('약정',null,esc(A.contract.join(' · ')||'-'))}`;
 }
 
 // ---------- 0-2. 채널별 노출 제어 (v0.3.2) ----------
-// 노출 채널에서 고른 채널마다 탭으로 따로 정한다. 저장 값: E.chset = {채널: {grp, stock, qty, join[], newInst, months[], svc{pickup, arrive, gift, td}}}
-// - 가입유형: 번호이동 · 기기변경 · 신규가입 중 복수 선택. 하나도 고르지 않으면 '가입 없이 구매'
-// - 할부개월수: 채널별 하나의 목록, 번호이동 · 기기변경 공통. 일시불은 항상 선택 가능
-// - 신규가입 할부: 신규가입을 허용한 채널에서만. Y = 같은 할부개월수, N = 일시불만
+// 노출 채널에서 고른 통합 APP · 통합 WEB만 탭으로 따로 정한다(T-gate · 스마트플래너 · BSS는 채널 제어값 없음). EPC 설정값을 기본으로 불러오고 필요한 항목만 수정(Override)
+// 저장 값: E.chset = {채널: {ov:{키:값}}} (수정한 항목만). 수정한 항목은 [EPC 값으로 복원]
+// - 가입유형: 번호이동 · 기기변경 · 신규가입 중 복수 선택, 1개 이상 필수('가입 없이 구매'는 커머스 상품 유형에서 다룬다)
+// - 할부개월수: 채널별로 가입유형(신규 · 번이 · 기변)마다 목록을 관리. 일시불도 목록의 한 값
 // - 가입유형 · 할부 · 바로픽업 · 바로도착 · 기프트 · 티다팩: 연결 상품에 휴대폰 또는 요금제가 있을 때만
+// - 바로주문: 채널별, 단말(휴대폰)이 연결됐을 때만
 // - 기프트 · 티다팩: 채널별 노출 여부만. 목록과 노출 순서는 전체 채널 공통
 const JOINS=['번호이동','기기변경','신규가입'];
-const MONTHS=CH_GROUPS.find(g=>g.k==='inst').vals.filter(v=>v!=='일시불').map(v=>parseInt(v)).sort((a,b)=>a-b);
-const SVC=[['pickup','바로픽업'],['arrive','바로도착'],['gift','기프트'],['td','티다팩']];
+const INST=['일시불',...CH_GROUPS.find(g=>g.k==='inst').vals.filter(v=>v!=='일시불').sort((a,b)=>parseInt(a)-parseInt(b))];
+const SVC=[['order','바로주문'],['gift','T기프트'],['td','티다팩']];
+// 배송방식: 연결 상품(LV3)이 가진 배송 유형을 채널 순서대로 모은 값 중에서 고른다(일반배송 · 행복배송 · 바로도착 · 바로픽업 등)
+const shipOpts=()=>(chUnion().find(g=>g.k==='ship')||{vals:[]}).vals;
+// 바로주문은 채널 고유 상품 속성으로 단말(휴대폰)이 연결됐을 때만 쓴다
+const svcOf=d=>SVC.filter(([k])=>k!=='order'||devPOs(d).length>0);
+const CH_KEYS=['grp','stock','join','months','ship','svc'];
 const needPP=d=>connPOs(d).some(p=>p.lv3==='휴대폰형'||p.type==='요금제');
-const chDef=()=>({grp:'',stock:'common',qty:'',join:['번호이동','기기변경'],newInst:'N',months:[12,24,30,36],svc:{pickup:'Y',arrive:'Y',gift:'Y',td:'Y'}});
-const chOf=(d,ch)=>((d.chset=d.chset||{})[ch]=d.chset[ch]||chDef());
+// 채널 제어 대상: 통합 APP · 통합 WEB
+const ctlChs=d=>d.channels.filter(c=>APP_CH.includes(c));
+// EPC 채널 기본값(예시): 번이 · 기변, 할부 일시불 · 12 · 24 · 30 · 36개월
+function epcCh(d,ch){
+ const m=['일시불','12개월','24개월','30개월','36개월'];
+ return {grp:epcModel(d),stock:{t:'common',qty:''},join:['번호이동','기기변경'],
+  months:{번호이동:m.slice(),기기변경:m.slice(),신규가입:m.slice()},ship:shipOpts(),svc:{order:'Y',gift:'Y',td:'Y'}};
+}
+const chOv=(d,ch)=>{ const s=d.chset=d.chset||{}; if(!s[ch]||!s[ch].ov) s[ch]={ov:{}}; return s[ch].ov; };
+const chOf=(d,ch)=>{ const B=epcCh(d,ch), ov=chOv(d,ch); return Object.fromEntries(CH_KEYS.map(k=>[k,k in ov?ov[k]:B[k]])); };
+const chMod=(d,ch,k)=>{ const ov=chOv(d,ch); return k in ov&&JSON.stringify(ov[k])!==JSON.stringify(epcCh(d,ch)[k]); };
+function setCh(ch,k,v){ const ov=chOv(E,ch); if(JSON.stringify(v)===JSON.stringify(epcCh(E,ch)[k])) delete ov[k]; else ov[k]=clone(v); }
+const chTxt=(k,v,B)=>k==='grp'?(v||'-'):k==='stock'?(v.t==='own'?`채널 전용 재고 ${v.qty||0}개`:'공통 재고')
+ :k==='join'||k==='ship'?(v.join(' · ')||'없음'):k==='months'?B.join.map(j=>`${j} ${v[j].join('·')||'-'}`).join(' / ')
+ :(svcOf(E).filter(([x])=>v[x]==='Y').map(([,t])=>t).join(' · ')||'없음');
 let curCh=null;
-const monthsUsed=c=>!c.join.length||c.join.some(j=>j!=='신규가입')||c.newInst==='Y';
-function chIssues(d){ return d.channels.flatMap(ch=>{ const c=chOf(d,ch); return c.stock==='own'&&!(+c.qty>0)?[`${ch}: 채널 전용 재고 수량을 입력하세요`]:[]; }); }
+function chIssues(d){ return ctlChs(d).flatMap(ch=>{ const c=chOf(d,ch), e=[];
+ if(c.stock.t==='own'&&!(+c.stock.qty>0)) e.push(`${ch}: 채널 전용 재고 수량을 입력하세요`);
+ if(needPP(d)){ if(!c.join.length) e.push(`${ch}: 가입유형을 1개 이상 고르세요`);
+  c.join.forEach(j=>{ if(!c.months[j].length) e.push(`${ch}: ${j} 할부개월수를 1개 이상 고르세요`); });
+  if(shipOpts().length&&!c.ship.length) e.push(`${ch}: 배송방식을 1개 이상 고르세요`); }
+ return e; }); }
 function rChset(){
  const box=$('#chsetBox'); if(!box) return;
- const C=E.channels;
+ const C=ctlChs(E);
  if(E.kind==='ps'||!C.length){ box.innerHTML=''; return; }
- if(!C.includes(curCh)) curCh=C[0];
- const c=chOf(E,curCh), pp=needPP(E), hasNew=c.join.includes('신규가입'), bad=ch=>chIssues({...E,channels:[ch]}).length>0;
- const chk=(attr,v,on,label)=>`<label class="axchip ${on?'on':''}"><input type="checkbox" data-${attr}="${v}" ${on?'checked':''}>${label||v}</label>`;
- const radio=(name,v,opts,dis)=>`<span class="srch-radio" role="radiogroup" ${dis?'style="opacity:.45"':''}>${opts.map(([x,t])=>`<label><input type="radio" name="${name}" value="${x}" ${v===x?'checked':''} ${dis?'disabled':''}>${t}</label>`).join('')}</span>`;
- // 적용 결과: 가입유형별로 고객이 고를 수 있는 할부
- const mTxt=c.months.length?`${c.months.join(' · ')}개월 + 일시불`:'일시불만', base=c.join.filter(j=>j!=='신규가입');
- const res=[...(!c.join.length?[['가입 없이 구매',mTxt]]:[]),...(base.length?[[base.join(' · '),mTxt]]:[]),...(hasNew?[['신규가입',c.newInst==='Y'?mTxt:'일시불만']]:[])];
- box.innerHTML=`<div class="itabs" role="tablist" aria-label="노출 채널">${C.map(ch=>`<button type="button" role="tab" data-cht="${esc(ch)}" class="${ch===curCh?'on':''}" aria-selected="${ch===curCh}">${esc(ch)}${bad(ch)?'<small>확인 필요</small>':''}</button>`).join('')}</div>
+ // 적용 방식: same = 모든 채널에 같은 값(탭 하나), each = 채널(탭)마다 따로. 채널이 1개면 고를 필요 없이 same
+ const same=C.length<2||E.chMode!=='each';
+ // 섹션 제목은 고른 채널에 따라 바뀐다: 예) 통합 APP · 통합 WEB 전용 노출
+ { const t=`${C.join(' · ')} 전용 노출`, hb=$('#sec-chset header b'); if(hb) hb.textContent=t; const sc=SECS.find(x=>x[0]==='chset'); if(sc){ sc[1]=t; sc[3]=t; } }
+ if(same){ curCh=C[0]; C.slice(1).forEach(x=>{ E.chset[x]={ov:clone(chOv(E,C[0]))}; }); }
+ else if(!C.includes(curCh)) curCh=C[0];
+ const T=same?C:[curCh], put=(k,v)=>T.forEach(x=>setCh(x,k,v));
+ const ch=curCh, c=chOf(E,ch), B=epcCh(E,ch), pp=needPP(E), bad=x=>chIssues({...E,channels:[x]}).length>0;
+ const nMod=CH_KEYS.filter(k=>chMod(E,ch,k)).length, own=c.stock.t==='own';
+ const rv=k=>chMod(E,ch,k)?`<p class="ft-hint at-bss">EPC 값: ${esc(chTxt(k,B[k],B))} <button type="button" class="lnk" data-crv="${k}">EPC 값으로 복원</button></p>`:'';
+ const chk=(attr,v,on,label,extra='')=>`<label class="axchip ${on?'on':''}"><input type="checkbox" data-${attr}="${v}" ${extra} ${on?'checked':''}>${label||v}</label>`;
+ const radio=(name,v,opts)=>`<span class="srch-radio" role="radiogroup">${opts.map(([x,t])=>`<label><input type="radio" name="${name}" value="${x}" ${v===x?'checked':''}>${t}</label>`).join('')}</span>`;
+ const tabs=same?`<button type="button" role="tab" class="on" aria-selected="true">${esc(C.join(' · '))}${C.some(bad)?'<small>확인 필요</small>':''}</button>`
+  :C.map(x=>`<button type="button" role="tab" data-cht="${esc(x)}" class="${x===ch?'on':''}" aria-selected="${x===ch}">${esc(x)}${bad(x)?'<small>확인 필요</small>':''}</button>`).join('');
+ box.innerHTML=`
+ <div class="itabs" role="tablist" aria-label="노출 채널">${tabs}${C.length>1?`<label class="chkl ch-each"><input type="checkbox" id="cEach" ${same?'':'checked'}>채널별 따로 설정</label>`:''}<span class="itabs-r"><button type="button" class="btn sm" id="cReset" ${nMod?'':'disabled'}>모두 EPC 값으로 복원</button></span></div>
  <div class="ftbl">
- ${seoRow('모상품 그룹명',null,`<input type="text" id="cGrp" value="${esc(c.grp)}" maxlength="40" placeholder="비우면 전시명을 사용해요" aria-label="모상품 그룹명" style="width:100%">`)}
- ${seoRow('채널별 재고',null,`<div class="row">${radio('cStock',c.stock,[['common','공통 재고'],['own','채널 전용 재고']])}${c.stock==='own'?`<input type="number" id="cQty" min="1" value="${esc(c.qty)}" placeholder="수량" aria-label="채널 전용 재고 수량" style="width:110px;text-align:right"><span>개</span>`:''}</div>${c.stock==='own'&&!(+c.qty>0)?'<div class="er">수량을 입력하세요</div>':''}`)}
+ ${seoRow('모상품 그룹명',null,`<input type="text" id="cGrp" value="${esc(c.grp)}" maxlength="40" placeholder="비우면 전시명을 사용해요" aria-label="모상품 그룹명" style="width:100%">${rv('grp')}`)}
+ ${seoRow('채널별 재고',null,`<div class="row">${radio('cStock',c.stock.t,[['common','공통 재고'],['own','채널 전용 재고']])}${own?`<input type="number" id="cQty" min="1" value="${esc(c.stock.qty)}" placeholder="수량" aria-label="채널 전용 재고 수량" style="width:110px;text-align:right"><span>개</span>`:''}</div>`)}
  ${!pp?'':`
- ${seoRow('가입유형',null,`<div class="axchips" role="group" aria-label="가입유형">${JOINS.map(j=>chk('cj',j,c.join.includes(j))).join('')}${c.join.length?'':'<span class="chip acc">가입 없이 구매</span>'}</div>`)}
- ${monthsUsed(c)?seoRow('할부개월수',null,`<div class="axchips" role="group" aria-label="할부개월수"><span class="axchip on ch-fix" title="항상 선택 가능">일시불</span>${MONTHS.map(m=>chk('cm',m,c.months.includes(m),m+'개월')).join('')}</div>`):''}
- ${seoRow('신규가입 할부',null,radio('cNew',c.newInst,[['Y','Y (위 할부개월수 적용)'],['N','N (일시불만)']],!hasNew)+(hasNew?'':'<p class="ft-hint at-bss">가입유형에서 신규가입을 선택하면 설정할 수 있어요</p>'))}
- ${seoRow('적용 결과',null,`<div class="ch-res">${res.map(([a,b])=>`<div><b>${a}</b><span>${b}</span></div>`).join('')}</div>`)}
- ${seoRow('노출 서비스',null,`<div class="axchips" role="group" aria-label="노출 서비스">${SVC.map(([k,t])=>chk('cs',k,c.svc[k]==='Y',t)).join('')}</div>`)}`}
+ ${seoRow('가입유형',null,`<div class="axchips" role="group" aria-label="가입유형">${JOINS.map(j=>chk('cj',j,c.join.includes(j))).join('')}</div>${rv('join')}`)}
+ ${seoRow('할부개월수',null,`<div class="ch-mon">${c.join.map(j=>`<div class="ch-mrow"><b>${j}</b><div class="axchips" role="group" aria-label="${j} 할부개월수">${INST.map(m=>chk('cm',m,c.months[j].includes(m),m,`data-cmj="${j}"`)).join('')}</div></div>${c.months[j].length?'':'<div class="er">1개 이상 고르세요</div>'}`).join('')}</div>${rv('months')}`)}
+ ${shipOpts().length?seoRow('배송방식',null,`<div class="axchips" role="group" aria-label="배송방식">${shipOpts().map(v=>chk('csh',v,c.ship.includes(v))).join('')}</div>${c.ship.length?'':'<div class="er">1개 이상 고르세요</div>'}${rv('ship')}`):''}
+ ${seoRow('노출 서비스',null,`<div class="axchips" role="group" aria-label="노출 서비스">${svcOf(E).map(([k,t])=>chk('cs',k,c.svc[k]==='Y',t)).join('')}</div>${rv('svc')}`)}`}
  </div>`;
  const re=()=>{ rChset(); refresh(); };
+ // 채널별 따로 설정: 체크하면 탭마다 따로, 해제하면 지금 탭의 값을 모든 채널에 같이 쓴다
+ { const ce=$('#cEach'); if(ce) ce.addEventListener('change',()=>{
+  if(!ce.checked){ const diff=C.some(y=>JSON.stringify(chOv(E,y))!==JSON.stringify(chOv(E,curCh)));
+   if(diff&&!confirm(`${curCh} 탭의 설정을 모든 채널에 적용할까요? 다른 채널에서 따로 바꾼 값은 사라져요`)){ ce.checked=true; return; }
+   const ov=clone(chOv(E,curCh)); C.forEach(y=>{ E.chset[y]={ov:clone(ov)}; }); E.chMode='same'; re(); if(diff) toast(`${curCh} 설정을 모든 채널에 적용했어요`); }
+  else { E.chMode='each'; re(); toast('채널별로 따로 설정해요'); } }); }
  $$('#chsetBox [data-cht]').forEach(b=>b.addEventListener('click',()=>{ curCh=b.dataset.cht; rChset(); }));
- $('#cGrp').addEventListener('change',e=>{ c.grp=e.target.value.trim(); re(); });
- $$('#chsetBox input[name=cStock]').forEach(r=>r.addEventListener('change',()=>{ c.stock=r.value; re(); const q=$('#cQty'); if(q) q.focus(); }));
- const q=$('#cQty'); if(q) q.addEventListener('change',e=>{ c.qty=e.target.value; re(); });
- $$('#chsetBox [data-cj]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cj; c.join=JOINS.filter(v=>v===j?x.checked:c.join.includes(v)); re(); }));
- $$('#chsetBox input[name=cNew]').forEach(r=>r.addEventListener('change',()=>{ c.newInst=r.value; re(); }));
- $$('#chsetBox [data-cm]').forEach(x=>x.addEventListener('change',()=>{ const m=+x.dataset.cm; c.months=MONTHS.filter(v=>v===m?x.checked:c.months.includes(v)); re(); }));
- $$('#chsetBox [data-cs]').forEach(x=>x.addEventListener('change',()=>{ c.svc[x.dataset.cs]=x.checked?'Y':'N'; re(); }));
+ $('#cGrp').addEventListener('change',e=>{ put('grp',e.target.value.trim()); re(); });
+ $$('#chsetBox input[name=cStock]').forEach(r=>r.addEventListener('change',()=>{ put('stock',{t:r.value,qty:r.value==='own'?c.stock.qty:''}); re(); const q=$('#cQty'); if(q) q.focus(); }));
+ const q=$('#cQty'); if(q) q.addEventListener('change',e=>{ put('stock',{t:'own',qty:e.target.value}); re(); });
+ $$('#chsetBox [data-cj]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cj, nx=JOINS.filter(v=>v===j?x.checked:c.join.includes(v));
+  if(!nx.length){ x.checked=true; toast('가입유형은 1개 이상 선택해야 해요'); return; }
+  put('join',nx); re(); }));
+ $$('#chsetBox [data-cm]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cmj, m=x.dataset.cm, mo=clone(c.months);
+  mo[j]=INST.filter(v=>v===m?x.checked:mo[j].includes(v)); put('months',mo); re(); }));
+ $$('#chsetBox [data-csh]').forEach(x=>x.addEventListener('change',()=>{ const v=x.dataset.csh; put('ship',shipOpts().filter(o=>o===v?x.checked:c.ship.includes(o))); re(); }));
+ $$('#chsetBox [data-cs]').forEach(x=>x.addEventListener('change',()=>{ put('svc',{...c.svc,[x.dataset.cs]:x.checked?'Y':'N'}); re(); }));
+ $$('#chsetBox [data-crv]').forEach(b=>b.addEventListener('click',()=>{ T.forEach(x=>{ delete chOv(E,x)[b.dataset.crv]; }); re(); toast('EPC 값으로 복원했어요'); }));
+ $('#cReset').addEventListener('click',()=>{ if(!nMod) return; T.forEach(x=>{ chOv(E,x); E.chset[x].ov={}; }); re(); toast(`${same?C.join(' · '):ch} 설정을 모두 EPC 값으로 복원했어요`); });
 }
 // 미리보기의 가입 · 할부 · 배송 코너는 미리보기 채널(통합 APP · WEB 중 먼저 고른 채널)의 채널별 설정을 따른다
 function pvChHidden(k,v){
  if(!needPP(E)) return false;
- const ch=E.channels.find(c=>APP_CH.includes(c))||E.channels[0]; if(!ch) return false;
+ const ch=ctlChs(E)[0]; if(!ch) return false;
  const c=chOf(E,ch);
  if(k==='join') return !c.join.includes(v);
- if(k==='inst') return v!=='일시불'&&(!monthsUsed(c)||!c.months.includes(parseInt(v)));
- if(k==='ship') return v==='바로픽업'?c.svc.pickup!=='Y':v==='바로도착'?c.svc.arrive!=='Y':false;
+ if(k==='inst') return !c.join.some(j=>c.months[j].includes(v));
+ if(k==='ship') return !c.ship.includes(v);
  return false;
 }
 
@@ -469,28 +491,30 @@ const lv3Combo=()=>lv3ComboOf(E);
 // v0.2.4: 사은품 · 티다팩 자동 배지는 T기프트 · 티다팩 섹션과 함께 뺐다
 const autoBadges=()=>[];
 // v0.2.4 섹션 이름: 구매 후기 · 연관 및 유사 상품 · 주문 프로세스 연동 (display-rules.ts의 이름은 v0.2.3 · 목록이 함께 쓰므로 여기서만 바꾼다)
-const SEC_LB={attr:'공통 속성',ch:'노출 채널',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
+const SEC_LB={ch:'노출 채널',chset:'채널별 노출 제어',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
 // v0.3: 전문가 리뷰는 이 화면에만 있어 구매 후기 다음에 넣는다(이전 버전 화면은 공용 SECS를 그대로 쓴다)
 // v0.3.1: 화면 순서 = 공통(전시 유형 → 연결 상품 → 고객 선택 방식 → 노출 채널 → 전시 정보 → 콘텐츠 정보) → 통합 앱 전용(구매 후기 → 전문가 리뷰 → 연관 상품 → 주문)
-const SEC_ORD=['kind','conn','method','attr','ch','info','extra','review','expert','rel','order'];
-const SECS=SECS0.flatMap(s=>s[0]==='review'?[s,['expert','전문가 리뷰',false,'전문가 리뷰']]:s[0]==='method'?[s,['attr','공통 속성',true,'공통 속성']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
+const SEC_ORD=['kind','conn','method','ch','chset','info','extra','review','expert','rel','order'];
+const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',true,'채널별 노출 제어'],s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
  .sort((a,b)=>(SEC_ORD.indexOf(a[0])+1||99)-(SEC_ORD.indexOf(b[0])+1||99));
 // 통합 앱 전용 영역의 섹션: 노출 채널에 통합 APP · WEB이 없으면 '해당 없음'으로 보고 검사하지 않는다
-const APP_SECS=['order','review','expert','rel'];
+const APP_SECS=['chset','order','review','expert','rel'];
 const appScope=d=>d.kind!=='ps'&&appOn(d);
 // 섹션 상태: 공용 규칙(display-rules) + 이 화면에만 있는 전문가 리뷰
 // PS 상품 전시: 전시 콘텐츠 등록용. 연결 PS(1개) · 전시 설정(노출 영역) · 전시 정보(이미지 포함) · 콘텐츠 정보(상품 고시 등)만 쓴다.
 //  고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 화면에서 숨기고 검사에서도 뺀다
-const PS_HIDE=['attr','method','review','expert','rel','order'];
-const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||secHidden(k,d);
+const PS_HIDE=['chset','method','review','expert','rel','order'];
+// v0.3.2: 채널별 노출 제어는 공통 영역(노출 채널 바로 아래)에 있지만 통합 APP · WEB을 고를 때만 보인다
+const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||k==='chset'&&!appScope(d)||secHidden(k,d);
 // PS로 바꾸거나 PS 전시를 열 때: PS는 1개만, 숨긴 섹션 값은 끈다
 function psReset(d){ if(d.kind!=='ps') return; d.conn=d.conn.slice(0,1); d.areas=[]; d.method='fixed'; d.review=false; d.expert=false; d.related=false; if(d.sim) d.sim.on=false; d.orderOn=false; }
-// v0.3.2: 공통 속성 · 채널별 노출 제어는 이 화면에만 있어 필수 여부를 여기서 정한다
-const isReq=(k,S)=>k==='attr'?S[k].st!=='na':isReq0(k,S);
+// v0.3.2: 채널별 노출 제어는 이 화면에만 있어 필수 여부를 여기서 정한다(통합 APP · WEB을 고를 때만)
+const isReq=(k,S)=>k==='chset'?S[k].st!=='na':isReq0(k,S);
 const secState=d=>{ const S=sectionState(d); S.expert={st:d.expert?'on':'off',e:[]};
- { const e=attrIssues(d); S.attr=!d.conn.length?{st:'todo',e:['연결 상품을 추가하세요']}:e.length?{st:'warn',e}:{st:'done',e:[]}; }
- // 노출 채널: 채널별 노출 제어 검사(채널 전용 재고 수량)도 함께 본다
- { const e=d.kind==='ps'?[]:chIssues(d); if(e.length&&S.ch&&S.ch.st==='done') S.ch={st:'warn',e}; }
+ // v0.3.2: 기기 구분이 없어져 검사 문구를 대표이미지로 바꾼다
+ Object.values(S).forEach(x=>{ if(x&&x.e) x.e=x.e.map(t=>t==='모바일 대표 이미지를 등록하세요'?'대표이미지를 등록하세요':t); });
+ // 채널별 노출 제어(통합 앱 전용 영역): 채널 전용 재고 수량 등 검사
+ { const e=d.kind==='ps'?[]:chIssues(d); S.chset=e.length?{st:'warn',e}:{st:'done',e:[]}; }
  if(d.kind==='ps'){ PS_HIDE.forEach(k=>S[k]={st:'na',e:[]}); S.sim={st:'na',e:[]}; if(d.conn.length>1) S.conn={st:'warn',e:['PS 상품 전시는 PS 1개만 연결할 수 있어요']}; }
  // MP 상품 전시: 원천 PO 1개 + 고정 MP 1개 저장 검증(정책서 07)
  if(d.kind==='mp'&&d.conn.length){ const e=mpIssues(d); if(e.length) S.conn={st:'warn',e}; }
@@ -522,7 +546,7 @@ function rMethod(){
  // v0.3.2: 상품 유형 · 공제항목 반영 · 구성 방식을 한 표로 묶는다
  box.innerHTML=`<div class="ftbl">
  ${seoRow('상품 유형',null,ptHtml())}
- ${seoRow('공제항목 반영<br>(TBD)',null,dedField())}
+ ${seoRow('공제항목 반영',null,dedField())}
  ${seoRow('구성 방식',null,`<span class="srch-radio" role="radiogroup" aria-label="구성 방식">${M.map(([k,t])=>`<label><input type="radio" name="dMethod" value="${k}" ${E.method===k?'checked':''}>${t}</label>`).join('')}</span>`)}
  </div>
  ${E.method==='complex'?'<div class="sub-h">구성 영역</div>':'<div class="ae-gap"></div>'}<div id="ae"></div>`;
@@ -823,7 +847,7 @@ const SUB_MAX=4;
 // 이미지 아래 공통 구성: 대체 텍스트 입력 + 등록 안내
 // id가 없으면 대체 텍스트 칸 없이 안내 목록만 그린다
 const imgMeta=(id,val,first,label,size='1440 * 2560',fmt='JPG, PNG')=>`${id?`<div class="alt-row"><input type="text" id="${id}" value="${esc(val)}" maxlength="20" placeholder="웹접근성을 위한 대체 Text를 20자 이내로 입력하세요" aria-label="${label} 대체 텍스트"><span class="pill len" id="${id}Len">${val.length}/20</span></div>`:''}
-  <ul class="img-guide"><li>${first}</li><li>권장규격 : ${size}</li><li>권장형식 : ${fmt}</li></ul>`;
+  <ul class="img-guide">${first?`<li>${first}</li>`:''}<li>권장규격 : ${size}</li><li>권장형식 : ${fmt}</li></ul>`;
 // ---------- 4-0. 전시 정보: 기본 정보 · 상세 설명 ----------
 // 할부 설정과 같은 탭 구성. 탭을 고르면 아래에 그 항목 입력이 나온다(탭 옆은 작성 상태). 처음에는 기본 정보
 // v0.2.4: 추가 설정 영역을 없애고 검색 노출 설정 · 오퍼링 문구를 상세 설명 탭 옆으로 옮겼다
@@ -849,22 +873,19 @@ function rBasic(){
  ${seoRow('전시명',{id:'nameCnt',v:`${E.name.length}/${NAME_MAX}`},`<input type="text" id="fName" value="${esc(E.name)}" maxlength="${NAME_MAX}" placeholder="고객에게 보이는 이름 (줄바꿈은 &lt;br&gt;)" aria-label="전시명" style="width:100%">`)}
  ${seoRow('설명',{id:'briefCnt',v:`${E.brief.length}/${BRIEF_MAX}`},`<input type="text" id="fBrief" value="${esc(E.brief)}" maxlength="${BRIEF_MAX}" placeholder="전시명 아래에 보이는 짧은 설명" aria-label="설명" style="width:100%">`)}
  ${seoRow('전시 상품 배지',{id:'bCnt',v:`${E.badges.length}/${BADGE_MAX}`},`<div class="row" style="gap:8px;margin:0">${autoBadges(E).map(b=>`<span class="bd auto" style="${bstyle(b)}" title="${b.from} 섹션 설정으로 자동 표시">${esc(b.t)}<small>자동</small></span>`).join('')}${E.badges.map((b,i)=>`<span class="bd" style="${bstyle(b)};cursor:default">${esc(b.t)}<button type="button" class="x" data-bx="${i}" aria-label="${esc(b.t)} 삭제">×</button></span>`).join('')}${E.badges.length<BADGE_MAX?'<span class="bin-w"><input type="text" id="bIn" maxlength="10" placeholder="입력 후 Enter" aria-label="전시 상품 배지 추가"><span class="pill len" id="bInLen">0/10</span></span>':''}</div><div class="er" id="berr"></div>`)}
- ${seoRow('이미지',null,noImg(E)?ntc('info',NOIMG_MSG):`<div class="dimg" id="devImgs">${devImgsHtml()}</div>
-  <div class="alt-row"><input type="text" id="mainAlt" value="${esc(E.mainAlt)}" maxlength="20" placeholder="웹접근성을 위한 대체 Text를 20자 이내로 입력하세요" aria-label="이미지 대체 텍스트"></div>
-  <ul class="img-guide"><li>최대 ${IMG_MAX}장 등록할 수 있습니다.</li><li>권장형식 : JPG, JPEG, PNG, GIF, BMP</li></ul>`)}
+ ${noImg(E)?seoRow('이미지',null,ntc('info',NOIMG_MSG)):seoRow('대표이미지',{id:'mainCnt',v:`${E.main?1:0}/1`},mainImgHtml())+seoRow('추가이미지',{id:'subCnt',v:`${E.subs.length}/${SUB_MAX}`},subImgHtml())}
  ${seoRow('전시 기간',null,`<div class="row" style="margin:0"><input type="date" id="fFrom" value="${E.from}" aria-label="시작일"><input type="time" id="fFromT" value="${E.fromTime}" aria-label="시작 시간"><span class="pill">~</span><input type="date" id="fTo" value="${E.noEnd?'':E.to}" aria-label="종료일" ${E.noEnd?'disabled':''}><input type="time" id="fToT" value="${E.noEnd?'':E.toTime}" aria-label="종료 시간" ${E.noEnd?'disabled':''}><label class="chkl"><input type="checkbox" id="noEnd" ${E.noEnd?'checked':''}>종료일없음</label></div>`)}
  ${seoRow('전시 여부',null,`<span class="srch-radio" role="radiogroup" aria-label="전시 여부"><label><input type="radio" name="dShow" value="0" ${E.show?'':'checked'}>N</label><label><input type="radio" name="dShow" value="1" ${E.show?'checked':''}>Y</label></span>`)}
  </div>`;
  $('#fName').addEventListener('input',e=>{ E.name=e.target.value; $('#nameCnt').textContent=`(${E.name.length}/${NAME_MAX}`+')'; refresh(); });
  $('#fBrief').addEventListener('input',e=>{ E.brief=e.target.value; $('#briefCnt').textContent=`(${E.brief.length}/${BRIEF_MAX})`; refresh(); });
- { const ma=$('#mainAlt'); if(ma) ma.addEventListener('input',e=>{ E.mainAlt=e.target.value; refresh(); }); }
  $('#fFromT').addEventListener('change',e=>{ E.fromTime=e.target.value||'00:00'; refresh(); });
  $('#fToT').addEventListener('change',e=>{ E.toTime=e.target.value||'23:59'; refresh(); });
  $('#fFrom').addEventListener('change',e=>{ E.from=e.target.value; refresh(); });
  $('#fTo').addEventListener('change',e=>{ E.to=e.target.value; refresh(); });
  $('#noEnd').addEventListener('change',e=>{ E.noEnd=e.target.checked; if(E.noEnd) E.to=''; rBasic(); refresh(); if(!E.noEnd) $('#fTo').focus(); });
  $$('#sb-basic input[name=dShow]').forEach(r=>r.addEventListener('change',()=>{ E.show=r.value==='1'; refresh(); }));
- bindDevImgs();
+ bindImgs();
  // 전시 상품 배지: 한 줄 입력. 문구를 넣고 Enter로 추가, 칩의 ×로 삭제. 색상은 순서대로 돌아가는 기본색(채움)
  $$('#sb-basic [data-bx]').forEach(b=>b.addEventListener('click',()=>{ E.badges.splice(+b.dataset.bx,1); rBasic(); refresh(); }));
  const bi=$('#bIn'); if(bi){ bi.addEventListener('input',()=>{ $('#bInLen').textContent=bi.value.length+'/10'; $('#berr').textContent=''; });
@@ -876,26 +897,20 @@ const readImgs=files=>Promise.all(files.map(f=>new Promise(r=>{ const rd=new Fil
 // 전시 상품 배지 최대 개수 · 전시명 · 설명 최대 글자 수
 const BADGE_MAX=5, NAME_MAX=20, BRIEF_MAX=20;
 const NOIMG_MSG='이동전화 요금제형은 대표 이미지를 쓰지 않아요';
-// ---------- 4-1. 디바이스별 이미지: 모바일(태블릿, 필수) · 데스크탑 두 영역을 항상 펼쳐 보여 준다. 각 최대 5장, 첫 장이 대표 ----------
-// 태블릿은 모바일 이미지를 함께 쓴다. 모바일 이미지는 지금처럼 대표이미지(E.main) · 추가이미지(E.subs)에도 맞춰 둔다(목록 · 미리보기 · 검사 규칙이 같이 쓴다)
-const DEV=[{k:'mobile',t:'모바일(태블릿)',size:'1000×1000px',req:true},{k:'desktop',t:'데스크탑',size:'1920×1080px'}];
-const IMG_MAX=5;
-const syncMain=()=>{ const m=E.imgs.mobile; E.main=m[0]||null; E.subs=m.slice(1); };
-const devTile=(d,m,i)=>`<div class="it ${i===0?'rep':''} ${d.k}">${m.u?`<img src="${m.u}" alt="${esc(d.t)} 이미지 ${i+1}">`:`<div class="img-ph">${svg(IC.image)}${esc(m.n)}</div>`}${i===0?'<span class="rb">대표</span>':`<button type="button" class="mk" data-dmain="${d.k}:${i}">대표로</button>`}<button type="button" class="rm" data-drm="${d.k}:${i}" aria-label="${d.t} 이미지 ${i+1} 삭제">×</button></div>`;
-function devImgsHtml(){
- return DEV.map(d=>{ const L=E.imgs[d.k];
-  const add=L.length<IMG_MAX?`<button type="button" class="it add ${d.k}" data-dadd="${d.k}" aria-label="${d.t} ${L.length?'추가':'대표'} 이미지 등록"><b>+</b><small>${L.length?'추가':'대표 이미지'}</small></button>`:'';
-  const fb=!d.req&&!L.length&&E.imgs.mobile.length?'<span class="fbk">모바일 대표 이미지 사용 중</span>':'';
-  return `<div class="drow"><div class="dh"><b>${d.t}</b>${d.req?'<span class="req">필수</span>':'<span class="opt">선택</span>'}<span class="cntx">${L.length}/${IMG_MAX}</span><small>${d.size}</small><span class="sp"></span><button type="button" class="btn sm" data-dfill="${d.k}" ${E.conn.length?'':'disabled'}>EPC 상품 이미지로 채우기</button></div><div class="dl">${L.map((m,i)=>devTile(d,m,i)).join('')}${add}${fb}</div></div>`; }).join('');
-}
-function bindDevImgs(){
- const re=()=>{ syncMain(); $('#devImgs').innerHTML=devImgsHtml(); bindDevImgs(); refresh(); };
- $$('#devImgs [data-dadd]').forEach(b=>b.addEventListener('click',()=>{ const d=DEV.find(x=>x.k===b.dataset.dadd), L=E.imgs[d.k];
-  openImgDlg({title:`${d.t} ${L.length?'추가':'대표'} 이미지 등록`,hint:d.size,kind:d.k,onDone:m=>{ L.push(m); re(); toast(`${d.t} ${L.length===1?'대표':'추가'} 이미지를 등록했어요`); }}); }));
- $$('#devImgs [data-drm]').forEach(b=>b.addEventListener('click',()=>{ const [k,i]=b.dataset.drm.split(':'); E.imgs[k].splice(+i,1); re(); }));
- $$('#devImgs [data-dmain]').forEach(b=>b.addEventListener('click',()=>{ const [k,i]=b.dataset.dmain.split(':'), L=E.imgs[k]; L.unshift(L.splice(+i,1)[0]); re(); toast('대표 이미지를 바꿨어요'); }));
- // EPC 상품 이미지로 채우기: 디바이스마다 그 비율(1:1 · 16:9)의 EPC 상품 이미지로 채운다
- $$('#devImgs [data-dfill]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.dfill, t=DEV.find(x=>x.k===k).t, L=epcImages(k); if(!L.length){ toast('연결한 기기 상품이 없어 채울 이미지가 없어요'); return; } E.imgs[k]=L.slice(0,IMG_MAX).map(x=>({n:x.name,u:x.src})); re(); toast(`EPC 상품 이미지 ${E.imgs[k].length}장으로 ${t} 이미지를 채웠어요`); }));
+// ---------- 4-1. 이미지 (v0.3.2: v0.2.0처럼 대표이미지 1장 · 추가이미지 최대 4장. 기기 구분 없음) ----------
+// 공용 검사 규칙(display-rules)은 E.imgs.mobile이 비었는지로 필수를 보므로, 대표이미지가 있을 때만 대표 + 추가를 넣는다(추가이미지만 있으면 미등록)
+const syncImgs=()=>{ E.imgs={mobile:E.main?[E.main,...E.subs]:[],desktop:[]}; };
+const IMG_SIZE='1000×1000px';
+const thumb=(m,key)=>`<div class="img-thumb">${m.u?`<img src="${m.u}" alt="${esc(m.n)}">`:`<div class="img-ph">${svg(IC.image)}${esc(m.n)}</div>`}${key==='main'?'<span class="tag-main">대표</span>':''}<button type="button" class="x" data-imx="${key}" aria-label="${esc(m.n)} 삭제">×</button></div>`;
+const IMG_FMT='JPG, JPEG, PNG, GIF, BMP';
+const mainImgHtml=()=>`<div class="img-list">${E.main?thumb(E.main,'main'):'<button type="button" class="img-add" id="mainAdd"><b>+</b>이미지 등록</button>'}</div>${imgMeta('mainAlt',E.mainAlt,'','대표이미지',IMG_SIZE,IMG_FMT)}`;
+const subImgHtml=()=>`<div class="img-list">${E.subs.map((m,i)=>thumb(m,i)).join('')}${E.subs.length<SUB_MAX?'<button type="button" class="img-add" id="subAdd"><b>+</b>이미지 추가</button>':''}</div>${imgMeta('subAlt',E.subAlt,'','추가이미지',IMG_SIZE,IMG_FMT)}`;
+function bindImgs(){
+ const re=()=>{ syncImgs(); rBasic(); refresh(); };
+ $$('#sb-basic [data-imx]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.imx; if(k==='main') E.main=null; else E.subs.splice(+k,1); re(); }));
+ const ma=$('#mainAdd'); if(ma) ma.addEventListener('click',()=>openImgDlg({title:'대표이미지 등록',hint:IMG_SIZE,onDone:m=>{ E.main=m; re(); toast('대표이미지를 등록했어요'); }}));
+ const sa=$('#subAdd'); if(sa) sa.addEventListener('click',()=>openImgDlg({title:'추가이미지 등록',hint:IMG_SIZE,onDone:m=>{ if(E.subs.length>=SUB_MAX) return; E.subs.push(m); re(); toast(`추가이미지를 등록했어요 (${E.subs.length}/${SUB_MAX})`); }}));
+ [['mainAlt','mainAlt'],['subAlt','subAlt']].forEach(([id,k])=>{ const el=$('#'+id); if(el) el.addEventListener('input',e=>{ E[k]=e.target.value; $('#'+id+'Len').textContent=E[k].length+'/20'; refresh(); }); });
 }
 
 // ---------- 5. 상세 설명 ----------
@@ -1506,7 +1521,7 @@ function drawEpcLoad(){
  // 하단: 바뀐 항목 요약 없이 [취소] [적용]만. 바꿀 항목이 없으면 적용은 비활성
  $('#mFoot').innerHTML=`<button type="button" class="btn" id="mc" style="margin-left:auto">취소</button><button type="button" class="btn primary" id="mo" ${n?'':'disabled'}>적용</button>`;
  $('#mc').addEventListener('click',closeModal);
- $('#mo').addEventListener('click',()=>{ if(EL.name>=0) E.name=P[EL.name].name; const add=[...EL.imgs].map(img); if(!E.main&&add.length) E.main=add.shift(); E.subs.push(...add.slice(0,Math.max(0,SUB_MAX-E.subs.length))); E.imgs.mobile=[E.main,...E.subs].filter(Boolean).slice(0,IMG_MAX); closeModal(); rBasic(); refresh(); toast(`${n}개 항목을 적용했어요`); });
+ $('#mo').addEventListener('click',()=>{ if(EL.name>=0) E.name=P[EL.name].name; const add=[...EL.imgs].map(img); if(!E.main&&add.length) E.main=add.shift(); E.subs.push(...add.slice(0,Math.max(0,SUB_MAX-E.subs.length))); syncImgs(); closeModal(); rBasic(); refresh(); toast(`${n}개 항목을 적용했어요`); });
 }
 // 템플릿 불러오기
 let TM={};
@@ -1923,7 +1938,7 @@ function persist(d,bump){
 function save(){
  const d=clone(E); d.appr='draft';
  const drop=noImg(d)?d.imgs.mobile.length+d.imgs.desktop.length:0;
- if(noImg(d)){ d.imgs={mobile:[],desktop:[]}; d.main=null; d.subs=[]; d.mainAlt=''; }
+ if(noImg(d)){ d.imgs={mobile:[],desktop:[]}; d.main=null; d.subs=[]; d.mainAlt=''; d.subAlt=''; }
  const stored=persist(d,true), n=blockingV(d).length;
  openEdit(d.id,'view'); toast((n?`저장했어요. 필수 확인 ${n}건이 남아 있어요`:'저장했어요')+(drop?` · 요금제형이라 등록한 이미지 ${drop}장은 저장하지 않았어요`:'')+(stored?'':STORE_FAIL));
 }
