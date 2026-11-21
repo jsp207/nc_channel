@@ -409,6 +409,26 @@
       .ph-title{font-size:16px;font-weight:700;line-height:1.4;word-break:keep-all}
       .ph-title.ph-empty{color:var(--ph-mu)}
       .ph-mp{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;font-weight:600}
+      .mp-gray{margin:10px 0 0;padding:10px 12px;border-radius:8px;background:var(--surface,#F5F6F8);font-size:12px;line-height:1.6;color:var(--muted)}
+      tr.dis{opacity:.5;cursor:not-allowed}
+      .mp-off{display:block;font-size:11px;color:var(--muted);font-weight:400}
+      .mpo{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid #E8ECEF;border-radius:10px;background:#fff;font:inherit;font-size:13px;color:#1A1A1A;text-align:left;cursor:pointer}
+      .mpo b{font-weight:600}
+      .mpo small{display:block;margin-top:2px;font-size:11px;color:var(--ph-mu)}
+      .mpo em{margin-left:6px;padding:1px 5px;border-radius:4px;background:#EEEAFE;color:#3617CE;font-size:10px;font-style:normal;font-weight:600}
+      .mpo .ck{flex:none;width:18px;height:18px;border:1px solid #C9CED4;border-radius:50%}
+      .mpo.on{border-color:#3617CE;box-shadow:inset 0 0 0 1px #3617CE}
+      .mpo.on .ck{border-color:#3617CE;background:#3617CE radial-gradient(circle,#fff 0 3px,transparent 4px)}
+      .mp-empty{padding:18px 12px;border:1px dashed #E8ECEF;border-radius:10px;font-size:12px;color:var(--ph-mu);text-align:center}
+      .mp-btn{width:100%;margin-top:8px;padding:10px;border:1px solid #E8ECEF;border-radius:10px;background:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+      .mp-fam{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:13px}
+      .mp-fam em{padding:1px 6px;border-radius:4px;background:#F1F3F5;color:#454F59;font-size:10px;font-style:normal}
+      .mp-bnf p{margin:0 0 6px;font-size:13px;line-height:1.6;color:#454F59}
+      .mp-gd p{margin:0 0 4px;font-size:12px;line-height:1.6;color:var(--ph-mu)}
+      .mp-gd ol{margin:0;padding-left:18px;font-size:12px;line-height:1.8;color:#454F59}
+      .mp-gdbtns{display:flex;gap:6px;margin-top:10px}
+      .mp-gdbtns span{flex:1;padding:9px 6px;border:1px solid #E8ECEF;border-radius:8px;font-size:12px;font-weight:600;text-align:center}
+      .mp-noplan{padding:28px 12px;border-radius:10px;background:#F1F3F5;font-size:12px;color:var(--ph-mu);text-align:center}
       .ph-mp span{padding:1px 6px;border-radius:4px;background:var(--accent,#4320d4);color:#fff;font-size:10px;font-weight:600}
       .ph-ded{display:flex;flex-direction:column;gap:2px;padding-top:6px;border-top:1px dashed var(--ph-ln)}
       .ph-ded span{font-weight:600}.ph-ded small{font-size:10px;color:var(--ph-mu)}
@@ -916,15 +936,7 @@
       .zone-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-size:12px;line-height:1.6;color:var(--muted)}
       .zone-tag{flex:none;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:-.1px}
       .zone.common .zone-tag{background:var(--surface);color:var(--text);border:1px solid var(--line-strong)}
-      .zone.zapp{margin-top:4px;padding:16px 16px 0;border:1.5px dashed #b9acf3;border-radius:14px;background:#faf9ff}
-      .zone.zapp .zone-tag{background:var(--accent);color:#fff}
-      .zone.zapp .zone-tx b{color:var(--accent);font-weight:600}
-      .zone.zapp .step{background:var(--bg)}
       /* 통합 APP · WEB을 고르지 않으면 영역 전체를 흐리게 두고 입력을 막는다(값은 남는다) */
-      .zone.zapp.off{border-color:var(--line-strong);background:var(--surface)}
-      .zone.zapp.off .zone-tag{background:var(--line-strong);color:var(--text)}
-      .zone.zapp.off .step>.body{opacity:.45}
-      .zone.zapp.off .zone-tx{color:var(--warn)}
       /* 노출 채널: 채널별 적용 범위를 체크박스 옆에 붙인다 */
       .chg{display:flex;flex-wrap:wrap;gap:8px}
       /* 줄 배치: 전체 / 통합 APP · 통합 WEB / T-gate · 스마트플래너 · BSS */
@@ -988,7 +1000,6 @@
     </aside>
     <div id="form">
       <div class="zone common" id="zoneCommon">
-        <div class="zone-h"><span class="zone-tag">공통</span><span class="zone-tx">모든 노출 채널에 적용돼요 · T-gate · 스마트플래너는 전시 정보 · 콘텐츠 정보만 사용해요</span></div>
       <div class="step" id="sec-kind">
         <header><b>전시 유형</b><span class="req">필수</span><span class="st"><span class="chip" id="st-kind"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-kind"></div>
@@ -1022,10 +1033,21 @@
         <header><b>콘텐츠 정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-extra"></div>
       </div>
+      <!-- v0.3.2 MP 상품 전시 전용 안내 영역: 머리줄 스위치로 노출 ON/OFF. 다른 전시 유형에서는 숨긴다 -->
+      <div class="step" id="sec-gcs">
+        <header><b>상담 안내</b><label class="switch hsw" title="노출"><input type="checkbox" data-gd="gcs" aria-label="상담 안내 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-gcs"></div>
       </div>
-      <!-- v0.3.1 통합 앱 전용: 노출 채널에 통합 APP · WEB이 있을 때만 보인다. 없으면 영역째 숨긴다(입력한 값은 남는다) -->
-      <div class="zone zapp" id="zoneApp" hidden>
-        <div class="zone-h"><span class="zone-tag">통합 앱 전용</span><span class="zone-tx" id="zoneAppTx"></span></div>
+      <div class="step" id="sec-gshop">
+        <header><b>지점 · 대리점 방문 안내</b><label class="switch hsw" title="노출"><input type="checkbox" data-gd="gshop" aria-label="지점 · 대리점 방문 안내 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-gshop"></div>
+      </div>
+      <div class="step" id="sec-ggov">
+        <header><b>정부24 · 복지로 홈페이지 신청</b><label class="switch hsw" title="노출"><input type="checkbox" data-gd="ggov" aria-label="정부24 · 복지로 홈페이지 신청 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-ggov"></div>
+      </div>
+      </div>
+      <!-- v0.3.2: 통합 앱 전용 영역(노출 채널에 따라 숨김)은 쓰지 않는다. 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 항상 노출 -->
       <div class="step" id="sec-review">
         <header><b>구매 후기</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
@@ -1040,9 +1062,8 @@
         <div class="body" id="sb-rel"><div id="sb-sim"></div><div id="relList"></div></div>
       </div>
       <div class="step" id="sec-order">
-        <header><b>주문 프로세스 연동</b><label class="switch hsw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>주문 프로세스 연동</b><span class="req" id="odReq" hidden>필수</span><label class="switch hsw" id="odSw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>
-      </div>
       </div>
       <!-- v0.3.1: 컨테이너 · 코너 설정은 뺐다(주문 프로세스 관리에서 확인). 미리보기 코드가 참조하므로 빈 자리만 둔다 -->
       <section id="ctnSecs" hidden></section>

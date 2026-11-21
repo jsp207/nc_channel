@@ -1,0 +1,431 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>결제수단 기준정보 | BO</title><style>
+:root{--navy:#1d3157;--purple:#6850b1;--bg:#f5f7fa;--line:#d9dee7;--soft:#f1f3f7;--ink:#253149;--muted:#69778e}*{box-sizing:border-box}body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,'Pretendard','Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer}.layout{display:flex;min-height:100vh}aside{width:215px;background:var(--navy);color:#b9c7dc;padding:24px 12px;flex-shrink:0}.logo{font-size:18px;font-weight:750;color:white;margin:0 12px 38px}.menu-title{font-size:12px;color:#8fa1c4;margin:20px 12px 8px}.menu{padding:12px 14px;border-radius:6px}.menu.on{background:#3c4d73;color:white;font-weight:700}main{min-width:0;flex:1}.top{background:white;border-bottom:1px solid var(--line);padding:17px 32px;font-size:12px;color:var(--muted)}.content{max-width:1500px;margin:auto;padding:29px 35px 64px}.header{border-bottom:2px solid var(--line);padding-bottom:17px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px}h1{font-size:23px;letter-spacing:-.7px;margin:0}h2{font-size:17px;margin:0 0 12px}.desc{font-size:12px;color:var(--muted)}.panel{background:white;border:1px solid var(--line);border-radius:8px;padding:22px;margin-bottom:18px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}.section-title h2{margin:0}.btn{border:1px solid #c9d0dc;border-radius:5px;background:white;color:#32425d;padding:9px 17px;font-weight:650;white-space:nowrap}.btn.primary{background:var(--navy);color:white;border-color:var(--navy)}.btn.purple{background:var(--purple);border-color:var(--purple);color:#fff}.btn.small{font-size:12px;padding:6px 10px}.btn.danger{color:#b83b49}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.form-table{width:100%;border-collapse:collapse;table-layout:fixed}.form-table th,.form-table td{border:1px solid #cdd2da;padding:12px 14px;word-break:break-word}.form-table th{background:#e5e7eb;text-align:left;font-weight:650;width:15%}.form-table td{width:35%;background:white}.mid-table{width:100%;border-collapse:collapse;min-width:1490px}.mid-table th,.mid-table td{padding:12px 10px;border:1px solid #ccd2db;text-align:left;vertical-align:middle}.mid-table th{background:#e5e7eb;font-weight:650}.mid-table tbody tr:hover{background:#fafaff}.table-scroll{overflow-x:auto}.badge{display:inline-block;background:#eaf6ef;color:#247750;font-size:12px;padding:3px 9px;border-radius:4px;font-weight:650}.badge.off{background:#edf0f4;color:#778294}.field{width:100%;border:1px solid #cbd3dd;border-radius:4px;padding:9px 10px;background:#fff;min-width:0;color:#253149}.field:focus{outline:2px solid #d5cafa;border-color:var(--purple)}.field:disabled{background:#f1f3f6;color:#64748b;cursor:not-allowed}.hint{font-size:12px;color:var(--muted);margin-top:9px}.filters{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.filters label{font-size:12px;color:var(--muted);display:grid;gap:5px;flex:1;min-width:150px}.list-table{width:100%;border-collapse:collapse}.list-table th{background:#f0f2f6;text-align:left;color:#526179;font-size:12px}.list-table th,.list-table td{padding:14px;border-bottom:1px solid #e3e7ee}.list-table tbody tr{cursor:pointer}.list-table tbody tr:hover{background:#f4f1ff}.linkish{color:#4e3d98;font-weight:700}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:13px}.muted{color:#6f7c8e;font-size:12px}.hide{display:none!important}.detail-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:22px}.edit-row{background:#f9f7ff}.inline-actions{display:flex;gap:5px;flex-wrap:wrap}.field-inline{min-width:100px}.compact-cell{min-width:130px}.wide-cell{min-width:185px}.notice{padding:12px 14px;border:1px solid #e1ddf0;background:#f8f6ff;border-radius:6px;color:#675c87;font-size:12px;margin-top:14px}.footer{margin-top:20px;padding:15px 16px;background:#f2f3f8;border:1px solid #e4e6ee;color:#687389;font-size:12px}.empty{padding:28px!important;text-align:center!important;color:#79869b}.newrow{background:#f8f6ff}.required{color:#b73448}@media(max-width:850px){aside{display:none}.content{padding:18px 13px}.top{padding:14px}.form-table,.form-table tbody,.form-table tr{display:block}.form-table th,.form-table td{display:block;width:100%;border-bottom:none}.form-table td{border-bottom:1px solid #cdd2da}.panel{padding:15px}.header{align-items:start}.list-table{min-width:650px}}
+.promo-table{width:100%;border-collapse:collapse;min-width:820px}.promo-table th,.promo-table td{padding:12px;border:1px solid #cdd2da;text-align:left}.promo-table th{background:#e5e7eb}.promo-table tbody tr:hover{background:#fafaff}.promo-pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:650;background:#eeebfa;color:#574597}.promo-pill.ended{background:#edf0f4;color:#6a7385}.promo-pill.live{background:#e8f6ee;color:#23784e}.promo-field{display:grid;gap:5px;font-size:12px;font-weight:600;color:#455572}.promo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.promo-grid .full{grid-column:1/-1}@media(max-width:550px){.promo-grid{grid-template-columns:1fr}.promo-grid .full{grid-column:auto}}
+
+aside .menu{display:block;width:100%;font-size:14px;text-align:left;border:0;color:inherit;background:transparent;font-weight:500}aside .menu.on{background:#3c4d73;color:white;font-weight:700}aside button.menu:hover{background:#34476d;color:#fff}.meta-note{background:#f5f3ff;border-left:3px solid #6850b1;padding:12px 14px;color:#554a83;margin-bottom:18px;font-size:13px}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pgcheck{display:flex;gap:8px;align-items:center;padding:9px 11px;border:1px solid #d5d9e2;border-radius:5px}.pgcheck input{accent-color:#6850b1}.pgmodal{border:1px solid #d6dce7;border-radius:10px;width:min(660px,94vw);padding:0;box-shadow:0 20px 70px #1d315744}.pgmodal form{padding:24px}.pgmodal::backdrop{background:#172b4a70}@media(max-width:700px){.grid-2{grid-template-columns:1fr}aside{display:block;width:165px;padding:17px 7px}aside .menu{padding:10px 7px;font-size:12px}.logo{font-size:15px;margin:0 6px 24px}}
+
+.contract-subrow td{padding:0 14px 16px 35px!important;background:#f8f9fc}.contract-inside{border:1px solid #dee3ec;border-radius:7px;background:white;padding:12px}.contract-table{width:100%;border-collapse:collapse}.contract-table th{background:#eef0f6;color:#43516c;font-size:12px;text-align:left;padding:10px}.contract-table td{padding:10px;border-top:1px solid #e4e7ef;font-size:13px}.contract-tag{display:inline-block;background:#eee9fb;color:#5943a0;border-radius:4px;padding:3px 8px;margin:2px}.contract-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.contract-empty{color:#788296;font-size:13px;padding:15px;text-align:center}
+.modal-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.modal-section{padding:15px 0;border-top:1px solid #e4e7ef}.modal-section h2{font-size:14px;margin:0}.method-grid-head,.method-entry{display:grid;grid-template-columns:minmax(150px,1fr) minmax(130px,1fr) 55px;gap:8px;align-items:center}.method-grid-head{font-size:11px;color:#68748a;margin-bottom:6px}.method-rows{display:grid;gap:8px}.u-error{color:#b73448;font-size:12px;min-height:16px}.pgmodal{width:min(760px,96vw);max-height:92vh;overflow:auto}.pgmodal form{padding:24px}.pgmodal input[readonly]{background:#f1f3f6;color:#67748a}@media(max-width:580px){.method-grid-head{display:none}.method-entry{grid-template-columns:1fr 1fr;gap:6px}.method-entry button{grid-column:1/-1}.pgmodal form{padding:16px}}
+.inherit-mode{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:13px;background:#f2f0fa;border:1px solid #ded8f2;border-radius:8px;margin:12px 0 18px;font-size:13px}.inherit-mode .hint{width:100%;margin:0}.url-cell{max-width:240px;word-break:break-all;font-size:12px;color:#576078}.field-mode{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}.field-mode strong{font-size:13px}.mode-options{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px;color:#53617a}.mode-options label{display:flex;align-items:center;gap:4px;cursor:pointer}.mode-options input{accent-color:#6850b1}.mode-block{grid-column:1/-1;border:1px solid #d8dce6;border-radius:7px;padding:13px;background:#fbfcff}.mode-block .hint{margin:5px 0 10px}.two-mode-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.two-mode-fields label{display:grid;gap:5px}@media(max-width:620px){.two-mode-fields{grid-template-columns:1fr}}
+/* PG contract list: click row to view, edit only inside detail dialog */
+#pg-table tr[data-pg-id]{cursor:pointer}#pg-table tr[data-pg-id]:hover td{background:#f3f1fa}#pg-table tr[data-pg-id]:focus-visible{outline:2px solid #6850b1;outline-offset:-2px}
+#unified-dialog.view-only .field:disabled,#unified-dialog.view-only input:disabled,#unified-dialog.view-only select:disabled{opacity:1;background:#f5f6fa;color:#283450;-webkit-text-fill-color:#283450;cursor:default}
+#unified-dialog.view-only .method-remove,#unified-dialog.view-only #u-add-method{display:none!important}
+#unified-dialog.view-only .method-entry{grid-template-columns:minmax(150px,1fr) minmax(130px,1fr)}
+
+/* MID read-only detail and unified form-field styling */
+.mid-click-row{cursor:pointer}.mid-click-row:hover{background:#f3f1fa!important}.mid-click-row:focus-visible{outline:2px solid #6850b1;outline-offset:-2px}
+#merchant-dialog.view-only .field:disabled{opacity:1;background:#f4f6f9;color:#34435d;-webkit-text-fill-color:#34435d;cursor:default}
+#merchant-dialog .mode-block{background:#fff;border:1px solid #d9dee7;border-radius:5px;padding:14px;}
+#merchant-dialog .mode-block .field-mode{margin-bottom:12px;min-height:22px}
+#merchant-dialog .mode-block .hint{margin:0 0 12px;color:#69778e;font-size:12px}
+#merchant-dialog .two-mode-fields label{font-size:12px;font-weight:600;color:#455572;gap:5px}
+#merchant-dialog .mode-block .field{border-radius:4px;padding:9px 10px;min-height:40px}
+#merchant-dialog .mode-options label{font-size:12px;font-weight:400}
+
+.demo-warning{background:#fff9e8;color:#744f13;border:1px solid #f1dfa7;padding:9px 14px;font-size:12px;border-radius:6px;margin:0 0 12px}
+
+/* Align MID detail sections: remove separate card styling from deposit/recon sections */
+#merchant-dialog .mode-block{grid-column:1/-1;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important}
+#merchant-dialog .mode-block + .mode-block{margin-top:2px}
+#merchant-dialog .field-mode{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:0 0 6px}
+#merchant-dialog .field-mode strong{font-size:14px;font-weight:600;color:#253149;line-height:1.4}
+#merchant-dialog .mode-options{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:12px;color:#53617a}
+#merchant-dialog .mode-options label{display:flex;align-items:center;gap:4px;font-weight:400}
+#merchant-dialog .mode-block .hint{margin:0 0 10px}
+#merchant-dialog .two-mode-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+#merchant-dialog .two-mode-fields label{display:grid;gap:5px;font-weight:400;color:#253149}
+#merchant-dialog .two-mode-fields label[style*="grid-column:1/-1"]{grid-column:1/-1}
+@media(max-width:620px){#merchant-dialog .two-mode-fields{grid-template-columns:1fr}}
+
+
+/* 계약별 통합 목록 및 MID 결제수단 표시 */
+#combo-list .contract-tag{display:inline-block;margin:2px 4px 2px 0}
+#merchant-dialog #m-method{min-height:38px}
+#promo-dialog #p-method{min-height:38px}
+#u-contract-no{background:#f1f3f6!important;color:#66748b!important;cursor:not-allowed!important}
+</style></head><body><div class="demo-warning" style="position:fixed;bottom:14px;right:14px;z-index:9999;max-width:290px;box-shadow:0 2px 10px #1d31571c">화면의 사업자·법인번호, 계좌 및 URL은 테스트용 가상 데이터입니다.</div><div class="layout"><aside><div class="logo">Next Admin <small style="font-size:10px">BO</small></div><div class="menu-title">결제 관리</div><button type="button" class="menu" data-nav="pg">PG사 관리</button><button type="button" class="menu on" data-nav="methods">결제수단 기준정보</button><div class="menu" aria-disabled="true" style="cursor:default">PG 수수료 집계</div><div class="menu">결제 이력 관리</div><div class="menu">결제 대사 관리</div></aside><main><div class="top" id="breadcrumb">운영 관리 / 결제 관리 / 결제수단 기준정보</div><div class="content">
+<div id="pg-view" class="hide">
+ <div class="header"><div><h1>PG사 관리</h1><div class="desc">PG사별 계약과 제공 결제수단을 목록에서 관리합니다.</div></div><div class="inline-actions"><button class="btn purple" id="pg-add">+ 등록</button></div></div>
+
+ <div class="panel"><div class="section-title"><h2>PG사 등록 목록</h2><span class="muted" id="pg-count"></span></div><div class="table-scroll"><table class="list-table"><thead><tr><th>계약번호</th><th>PG사</th><th>PG 코드</th><th>사업자등록번호</th><th>계약주체</th><th>법인등록번호</th><th>계약 구분</th><th>입금계좌</th><th>제공 결제수단</th><th>관리</th></tr></thead><tbody id="pg-table"></tbody></table></div></div>
+ </div>
+ <div id="fee-view" class="hide"><div class="header"><div><h1>PG 수수료 집계</h1><div class="desc">PG사 및 결제수단별 수수료 현황</div></div></div><div class="meta-note">아래는 MID에 등록된 수수료 조건을 참고하는 관리 화면입니다. 실제 거래 건수·승인금액·금융수수료 집계는 거래/정산 데이터 연동 후 제공됩니다.</div><div class="panel"><div class="section-title"><h2>PG사별 MID 수수료 등록 현황</h2><span class="muted" id="fee-count"></span></div><div class="table-scroll"><table class="list-table"><thead><tr><th>PG사</th><th>결제수단</th><th>가맹점번호</th><th>수수료 조건</th><th>VAT</th></tr></thead><tbody id="fee-table"></tbody></table></div></div></div>
+ <div id="list-view"><div class="header"><div><h1>결제수단 기준정보</h1><div class="desc">PG사 관리에서 연동된 계약별 결제수단과 MID 기준정보 관리</div></div><button class="btn" id="reset">샘플 초기화</button></div><div class="panel"><div class="filters"><label>PG사<select id="filter-pg" class="field"><option value="">전체</option></select></label><label>결제수단<select id="filter-method" class="field"><option value="">전체</option></select></label><label>상태<select id="filter-status" class="field"><option value="">전체</option><option value="사용">사용</option><option value="미사용">미사용</option></select></label><button class="btn primary" id="search">조회</button><button class="btn" id="clear">초기화</button></div></div><div class="panel"><div class="section-title"><h2>PG사 · 결제수단 목록</h2><span class="muted" id="count"></span></div><div class="table-scroll"><table class="list-table"><thead><tr><th>계약번호</th><th>PG사</th><th>계약주체</th><th>계약목적</th><th>제공 결제수단</th><th>상태</th><th>등록 MID 수</th><th>상세</th></tr></thead><tbody id="combo-list"></tbody></table></div></div></div>
+<div id="detail-view" class="hide"><div class="header"><div><h1>결제수단 기준정보 상세</h1><div class="desc">PG사·계약주체·계약목적 및 제공 결제수단은 PG사 관리 정보에서 불러옵니다. 허용 상품은 MID별로 관리합니다.</div></div><button class="btn" id="top-back">목록</button></div><div class="panel"><div class="section-title"><h2>• 결제수단 기준정보</h2><button class="btn small" id="edit-base">수정</button></div><table class="form-table"><tbody><tr><th>PG사</th><td id="v-pg"></td><th>제공 결제수단</th><td id="v-method"></td></tr><tr><th>계약주체</th><td id="v-party"></td><th>계약목적</th><td id="v-purpose"></td></tr><tr><th>상태</th><td colspan="3" id="v-status"></td></tr></tbody></table><div class="actions hide" id="base-actions" style="margin-top:12px"><button class="btn" id="cancel-base">취소</button><button class="btn primary" id="save-base">저장</button></div></div><div class="panel"><div class="section-title"><h2>• 가맹점 등록정보</h2><button class="btn purple" id="add-mid">+ 가맹점 등록</button></div><div class="table-scroll"><table class="mid-table"><thead><tr><th style="min-width:135px">결제수단</th><th style="min-width:150px">가맹점명</th><th style="min-width:170px">가맹점번호 (MID)</th><th style="min-width:160px">허용 상품</th><th style="min-width:165px">수수료</th><th style="min-width:180px">입금계좌</th><th style="min-width:200px">대사 URL</th><th style="min-width:185px">유효기간</th><th style="min-width:135px">인증키</th><th style="min-width:120px">관리</th></tr></thead><tbody id="mid-list"></tbody></table></div><div class="notice">※ MID별 입금계좌와 대사 URL은 각각 계약정보 사용 또는 개별 입력을 선택할 수 있습니다. 계약정보 사용 시 계약의 변경값이 자동 반영됩니다. 수수료는 MID별 계약 기준으로 입력합니다. 정률·정액·혼합 유형과 VAT 기준은 수수료 편집 시 설정합니다. 입금계좌는 조회 시 일부 마스킹합니다. 유효기간 및 인증키는 MID별로 관리하며, 인증키는 실제 비밀값 대신 키 식별정보(끝 4자리)만 보관하는 샘플 화면입니다.</div></div><div class="panel"><div class="section-title"><div><h2>• 결제 프로모션</h2><div class="desc">현재 PG사·결제수단에 적용하는 할인 프로모션을 등록합니다.</div></div><button class="btn purple" id="add-promo">+ 프로모션 등록</button></div><div class="table-scroll"><table class="promo-table"><thead><tr><th>프로모션명</th><th>혜택</th><th>대상 상품</th><th>적용 MID</th><th>적용 기간</th><th>상태</th><th>관리</th></tr></thead><tbody id="promo-list"></tbody></table></div><div class="hint">※ PG사·결제수단은 현재 상세 정보에 자동 연결됩니다. 프로모션은 샘플 관리용이며 실제 할인 계산이나 PG 연동은 수행하지 않습니다.</div></div><div class="panel"><h2>• 처리자 정보</h2><table class="form-table"><tbody><tr><th>최종 처리일시</th><td id="last-date">-</td><th>처리자</th><td>Admin (샘플)</td></tr></tbody></table></div><div class="actions"><button class="btn" id="bottom-back">목록</button></div></div>
+</div></main></div>
+<dialog id="unified-dialog" class="pgmodal"><form id="unified-form" novalidate>
+ <div class="modal-heading"><div><h2 id="unified-title">PG사·계약 등록</h2><p class="desc" style="margin:4px 0 0">PG사 정보, 계약주체, 제공 결제수단 원천정보를 한 번에 관리합니다.</p></div><button type="button" class="btn small" id="unified-close">닫기</button></div>
+ <div class="modal-section"><div class="section-title"><h2>PG사 정보</h2></div>
+ <label class="promo-field" id="existing-pg-wrap">등록 방식<select id="u-pg-select" class="field"><option value="new">신규 PG사 등록</option></select></label>
+ <div class="grid-2" style="margin-top:12px"><label class="promo-field">PG사명 <span class="required">*</span><input id="u-pg-name" class="field" placeholder="예: NHN KCP" maxlength="80"></label><label class="promo-field">PG 코드 <span class="required">*</span><input id="u-pg-code" class="field" placeholder="예: KCP" maxlength="30"></label></div>
+ <label class="promo-field" style="margin-top:12px">PG사 사업자등록번호<input id="u-pg-bizno" class="field" inputmode="numeric" placeholder="예: 123-45-67890" maxlength="12"></label><p class="hint" id="u-pg-note">기존 PG사를 선택하면 해당 PG사의 계약을 추가할 수 있습니다.</p></div>
+ <div class="modal-section"><div class="section-title"><h2>계약 정보</h2></div><div class="grid-2"><label class="promo-field">계약번호 (자동 채번)<input id="u-contract-no" class="field" readonly placeholder="신규 등록 시 자동 발급" title="시스템에서 자동 생성하는 고유 식별번호입니다."></label><label class="promo-field"><span>계약주체 <span class="required">*</span></span><input id="u-party" class="field" placeholder="예: SK텔레콤 주식회사" maxlength="100"></label><label class="promo-field">법인등록번호<input id="u-corpno" class="field" inputmode="numeric" placeholder="예: 123456-1234567" maxlength="14"></label><label class="promo-field" style="grid-column:1/-1">계약 구분 (계약 목적)<input id="u-purpose" class="field" placeholder="예: 구독상품 신규 PG 계약" maxlength="150"></label><label class="promo-field" style="grid-column:1/-1">대사 URL<input id="u-recon-url" class="field" placeholder="https://... (선택)"></label></div><div class="grid-2" style="margin-top:12px"><label class="promo-field">입금은행<input id="u-bank" class="field" placeholder="예: 신한은행"></label><label class="promo-field">예금주<input id="u-holder" class="field" placeholder="예: 에스케이텔레콤(주)"></label><label class="promo-field">입금계좌<input id="u-account" class="field" placeholder="프로토타입에는 가상 계좌만 입력"></label></div><p class="hint">계약 구분은 목적을 자유롭게 입력할 수 있습니다. 예: 멤버십커머스 결제</p></div>
+ <div class="modal-section"><div class="section-title"><h2>제공 결제수단 원천정보 <span class="required">*</span></h2><button type="button" class="btn small" id="u-add-method">+ 결제수단 추가</button></div>
+ <div class="method-grid-head"><span>결제수단명</span><span>원천 코드 / 식별값 (선택)</span><span></span></div><div id="u-method-rows" class="method-rows"></div><p class="hint">결제수단을 직접 입력합니다. 동일 계약 내 중복 결제수단명은 등록할 수 없으며, 계약이 다르면 같은 결제수단을 등록할 수 있습니다.</p></div>
+ <p id="u-error" role="alert" class="u-error"></p><div class="actions"><button type="button" class="btn" id="u-cancel">취소</button><button type="button" class="btn primary hide" id="u-view-edit">수정</button><button type="button" class="btn primary" id="u-save-btn">저장</button></div>
+ </form></dialog>
+<dialog id="merchant-dialog" style="border:1px solid #d6dce7;border-radius:10px;width:min(650px,95vw);padding:0;box-shadow:0 20px 70px #1d315744"><form id="merchant-form" style="padding:23px"><h2 id="dialog-title">가맹점 등록</h2><div class="desc" style="margin-bottom:17px">선택한 계약의 결제수단에 가맹점을 연결합니다.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:13px"><label>결제수단 <span class="required">*</span><select required id="m-method" class="field"></select></label><label>가맹점명 <span class="required">*</span><input required id="m-name" class="field"></label><label>가맹점번호 (MID) <span class="required">*</span><input required id="m-mid" class="field"></label><div style="grid-column:1/-1"><div style="font-weight:600;margin-bottom:7px">허용 상품 <span class="required">*</span></div><div id="m-products" style="display:flex;gap:12px;flex-wrap:wrap;padding:10px;border:1px solid #d2d7e2;border-radius:5px;background:#fff"></div><p class="hint">허용 상품은 MID마다 별도로 지정합니다.</p></div><label>수수료 유형<select id="m-feetype" class="field"><option value="정률">정률(%)</option><option value="정액">정액(원/건)</option><option value="혼합">혼합</option></select></label><label>수수료율 (%)<input id="m-rate" class="field" type="number" min="0" max="100" step="0.001" value="2.1"></label><label>건당 수수료 (원)<input id="m-flat" class="field" type="number" min="0" step="1" value="0"></label><label>VAT 기준<select id="m-vat" class="field"><option value="별도">별도</option><option value="포함">포함</option></select></label><label>정산주체 <span class="required">*</span><input required id="m-owner" class="field" placeholder="예: SK텔레콤"></label><div class="mode-block"><div class="field-mode"><strong>입금계좌 <span class="required">*</span></strong><div class="mode-options"><label><input type="radio" name="m-config" value="contract" checked> 계약정보 사용</label><label><input type="radio" name="m-config" value="override"> 개별 입력</label></div></div><p class="hint" id="m-mode-note">계약에 등록된 입금정보를 사용합니다.</p><div class="two-mode-fields"><label>입금은행<input id="m-bank" class="field" placeholder="예: 신한은행"></label><label>예금주<input id="m-holder" class="field" placeholder="예: 에스케이텔레콤(주)"></label><label style="grid-column:1/-1">입금계좌<input id="m-account" class="field" placeholder="샘플 계좌만 입력"></label></div></div><div class="mode-block"><div class="field-mode"><strong>대사 URL</strong><div class="mode-options"><label><input type="radio" name="m-recon-config" value="contract" checked> 계약정보 사용</label><label><input type="radio" name="m-recon-config" value="override"> 개별 입력</label></div></div><p class="hint" id="m-recon-note">계약정보의 대사 URL을 사용합니다.</p><div class="two-mode-fields"><label style="grid-column:1/-1">대사 URL<input type="url" id="m-recon-url" class="field" placeholder="https://... (선택)"></label></div></div><label>유효시작일 <span class="required">*</span><input required id="m-validfrom" type="date" class="field"></label><label>유효종료일<input id="m-validto" type="date" class="field"></label><label>인증키 (신규 등록/교체)<input id="m-authkey" type="password" class="field" autocomplete="new-password" placeholder="입력하지 않으면 기존 키 유지"></label></div><div class="notice" style="margin-top:15px">인증키는 등록 여부 및 마지막 4자리만 표시합니다. 이 HTML은 실제 비밀 인증키를 저장하지 않으며, 운영 환경에서는 서버의 암호화된 비밀정보 저장소를 사용해야 합니다.</div><div id="form-error" style="color:#b83b49;font-size:12px;margin-top:9px"></div><div class="actions" style="margin-top:22px"><button class="btn" id="close-dialog" type="button">취소</button><button class="btn primary hide" id="merchant-enable-edit" type="button">수정</button><button class="btn primary" id="merchant-save" type="submit">저장</button></div></form></dialog>
+<dialog id="promo-dialog" style="border:1px solid #d6dce7;border-radius:10px;width:min(630px,95vw);padding:0;box-shadow:0 20px 70px #1d315744"><form id="promo-form" novalidate style="padding:23px"><h2 id="promo-dialog-title">프로모션 등록</h2><p class="desc" style="margin:4px 0 18px" id="promo-context"></p><div class="promo-grid"><label class="promo-field full">프로모션명 <span class="required">*</span><input class="field" id="p-name" required maxlength="80" placeholder="예: 신용카드 5% 즉시할인"></label><label class="promo-field">혜택 유형<select class="field" id="p-type"><option value="정률">정률 할인 (%)</option><option value="정액">정액 할인 (원)</option></select></label><label class="promo-field">할인 값 <span class="required">*</span><input class="field" id="p-value" type="number" required min="0.01" step="0.01" placeholder="예: 5"></label><label class="promo-field">적용 시작일 <span class="required">*</span><input type="date" id="p-from" class="field" required></label><label class="promo-field">적용 종료일 <span class="required">*</span><input type="date" id="p-to" class="field" required></label><label class="promo-field">상태<select id="p-status" class="field"><option value="사용">사용</option><option value="미사용">미사용</option></select></label><label class="promo-field">최소 결제금액 (원)<input id="p-min" class="field" type="number" min="0" step="1" value="0"></label><label class="promo-field full">결제수단 <span class="required">*</span><select class="field" id="p-method"></select></label><label class="promo-field full">적용 MID <span class="required">*</span><select class="field" id="p-mid"><option value="" disabled selected>적용 MID를 선택하세요</option></select><span class="desc">전체 MID는 등록된 모든 MID의 허용 상품 합집합을 사용합니다.</span></label><div class="promo-field full"><span>대상 상품 <span class="required">*</span></span><div id="p-products" style="display:flex;flex-wrap:wrap;gap:12px;padding:10px;border:1px solid #d2d7e2;border-radius:5px"><span class="muted">적용 MID를 먼저 선택해 주세요.</span></div><span class="desc" id="p-products-note">선택한 MID의 허용 상품만 표시됩니다.</span></div></div><div id="p-error" style="color:#b83b49;font-size:12px;margin-top:10px" role="alert"></div><div class="actions" style="margin-top:20px"><button type="button" class="btn" id="close-promo">취소</button><button type="button" class="btn primary" id="save-promo-btn">프로모션 저장</button></div></form></dialog>
+<div id="save-notice" class="hide" role="status" aria-live="polite" style="position:fixed;right:22px;bottom:22px;max-width:390px;background:#ecfdf3;border:1px solid #b7ebc9;color:#166534;border-radius:7px;padding:12px 17px;box-shadow:0 7px 26px #1d315724;font-size:13px;z-index:99"></div>
+<script>
+const seed=[{id:'kcp-card',pg:'NHN KCP',method:'신용/체크카드',status:'사용',products:['단말','액세서리','구독'],mids:[{id:'001',name:'SKT 단말결제',mid:'KCP_CARD_001',type:'정률',rate:2.1,flat:0,vat:'별도',owner:'SK텔레콤',bank:'신한은행',holder:'에스케이텔레콤(주)',account:'000-000-000001',active:'Y'},{id:'002',name:'SKT 구독결제',mid:'KCP_CARD_002',type:'정률',rate:2.3,flat:0,vat:'별도',owner:'SK텔레콤',bank:'하나은행',holder:'에스케이텔레콤(주)',account:'000-000-000002',active:'Y'}]},{id:'kcp-transfer',pg:'NHN KCP',method:'계좌이체',status:'사용',products:['단말','액세서리'],mids:[{id:'003',name:'SKT 계좌결제',mid:'KCP_BANK_001',type:'혼합',rate:1.0,flat:200,vat:'별도',owner:'SK텔레콤',bank:'국민은행',holder:'에스케이텔레콤(주)',account:'000-000-000003',active:'Y'}]},{id:'toss-card',pg:'토스페이먼츠',method:'신용/체크카드',status:'사용',products:['구독'],mids:[{id:'004',name:'SKT 정기결제',mid:'TOSS_CARD_001',type:'정률',rate:2.2,flat:0,vat:'별도',owner:'SK텔레콤',bank:'신한은행',holder:'에스케이텔레콤(주)',account:'000-000-000004',active:'Y'}]},{id:'inicis-card',pg:'KG이니시스',method:'신용/체크카드',status:'미사용',products:['단말'],mids:[{id:'005',name:'SKT 예비가맹점',mid:'INI_CARD_001',type:'정률',rate:2.4,flat:0,vat:'포함',owner:'SK텔레콤',bank:'우리은행',holder:'에스케이텔레콤(주)',account:'000-000-000005',active:'N'}]}];
+seed.forEach(c=>{c.promotions=[];c.mids.forEach(m=>{m.validfrom='2026-01-01';m.validto='2027-12-31';m.keyTail=m.id.padStart(4,'0');m.keyRegistered=true})});const key='next-mid-admin-reference-layout-v2', $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let items;try{items=JSON.parse(localStorage.getItem(key))||structuredClone(seed)}catch{items=structuredClone(seed)}items.forEach(x=>{if(!Array.isArray(x.promotions))x.promotions=[];x.mids=(x.mids||[]).map(m=>({...m,products:Array.isArray(m.products)?m.products:[...(x.products||[])]}));});let chosen=null,editingBase=false,editingMid=null,editingPromo=null,merchantSource=null,promoSource=null;
+const contractCombos=()=>items.filter(x=>x.contractId===chosen);
+const groupedContracts=()=>{const groups=new Map();for(const x of items){const k=x.contractId||('legacy:'+x.id);if(!groups.has(k))groups.set(k,{id:k,pg:x.pg,contractNo:window.getPaymentContract?.(x)?.contractNo||'',party:x.contractParty||'',purpose:x.contractPurpose||'',combos:[]});groups.get(k).combos.push(x)}return [...groups.values()]};
+const findMidOwner=id=>contractCombos().find(x=>x.mids.some(m=>m.id===id));
+const findPromoOwner=id=>contractCombos().find(x=>(x.promotions||[]).some(p=>p.id===id));const save=()=>{try{const data=JSON.stringify(items);localStorage.setItem(key,data);if(localStorage.getItem(key)!==data)throw new Error('저장 확인 실패');showSaveNotice('저장 완료 · 이 브라우저에서 새로고침 후에도 유지됩니다.',false);return true}catch(err){showSaveNotice('브라우저 저장에 실패했습니다. 브라우저 저장 권한을 확인해 주세요.',true);return false}};
+let noticeTimer;function showSaveNotice(message,isError){const el=$('save-notice');el.textContent=message;el.style.background=isError?'#fff1f2':'#ecfdf3';el.style.borderColor=isError?'#fecdd3':'#b7ebc9';el.style.color=isError?'#9f1239':'#166534';el.classList.remove('hide');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.classList.add('hide'),5500)};const date=()=>new Date().toLocaleString('ko-KR');let lastUpdate=date();const combo=()=>contractCombos()[0]||items.find(x=>x.id===chosen);function setOptions(id,values){$(id).innerHTML='<option value="">전체</option>'+[...new Set(values)].map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')};setOptions('filter-pg',items.map(x=>x.pg));setOptions('filter-method',items.map(x=>x.method));function renderList(){
+ const pg=$('filter-pg').value,method=$('filter-method').value,status=$('filter-status').value;
+ const rows=groupedContracts().filter(g=>(!pg||g.pg===pg)&&(!method||g.combos.some(x=>x.method===method))&&(!status||g.combos.some(x=>x.status===status)));
+ $('count').textContent=`총 ${rows.length}건`;
+ $('combo-list').innerHTML=rows.map(g=>{const methods=[...new Set(g.combos.map(x=>x.method))],statuses=[...new Set(g.combos.map(x=>x.status))];return `<tr tabindex="0" data-id="${esc(g.id)}" title="계약 상세보기"><td>${esc(g.contractNo||'-')}</td><td>${esc(g.pg)}</td><td>${esc(g.party||'계약주체 미설정')}</td><td>${esc(g.purpose||'-')}</td><td>${methods.map(x=>`<span class="contract-tag">${esc(x)}</span>`).join('')}</td><td>${statuses.map(statusEl).join(' ')}</td><td>${g.combos.reduce((n,x)=>n+x.mids.length,0)}건</td><td class="linkish">상세보기 ›</td></tr>`}).join('')||'<tr><td class="empty" colspan="8">조회 결과가 없습니다.</td></tr>';
+}function navigate(id){chosen=id;editingBase=false;location.hash='detail='+encodeURIComponent(id);renderDetail();$('list-view').classList.add('hide');$('detail-view').classList.remove('hide');$('breadcrumb').textContent='운영 관리 / 결제 관리 / 결제수단 기준정보 / 상세';scrollTo(0,0)}function goBack(){chosen=null;location.hash='list';$('list-view').classList.remove('hide');$('detail-view').classList.add('hide');$('breadcrumb').textContent='운영 관리 / 결제 관리 / 결제수단 기준정보';renderList();scrollTo(0,0)}function currentContract(c){return window.getPaymentContract?.(c)||null}
+function effectiveMid(c,m){const ct=currentContract(c);return {...m,...(m.configMode==='contract'&&ct?{bank:ct.bank??'',holder:ct.holder??'',account:ct.account??''}:{}),reconUrl:m.reconMode==='override'?(m.reconUrl||''):(ct?.reconUrl||'')}}
+function toggleMidMode(){const inherited=document.querySelector('input[name="m-config"]:checked')?.value==='contract';const ct=currentContract(combo());for(const field of ['bank','holder','account'])$('m-'+field).disabled=inherited;$('m-mode-note').textContent=inherited?'계약의 입금은행·예금주·입금계좌를 자동 반영합니다.':'이 MID에만 별도의 입금계좌 정보를 입력합니다.';if(inherited&&ct)for(const [field,value] of Object.entries({bank:ct.bank||'',holder:ct.holder||'',account:ct.account||''}))$('m-'+field).value=value;syncFee()}
+function toggleReconMode(){const inherited=document.querySelector('input[name="m-recon-config"]:checked')?.value==='contract';$('m-recon-url').disabled=inherited;$('m-recon-note').textContent=inherited?'계약에 등록된 대사 URL이 변경되면 자동 반영됩니다.':'이 MID에만 적용할 대사 URL을 입력합니다.';if(inherited)$('m-recon-url').value=currentContract(combo())?.reconUrl||''}
+const statusEl=s=>`<span class="badge ${s==='사용'?'':'off'}">${esc(s)}</span>`;function renderDetail(){
+ const c=combo();if(!c)return goBack();const sources=contractCombos().length?contractCombos():[c];
+ const methods=[...new Set(sources.map(x=>x.method))];
+ $('v-pg').textContent=c.pg;$('v-method').textContent=methods.join(', ');
+ $('v-party').textContent=c.contractParty||'계약주체 미설정';$('v-purpose').textContent=c.contractPurpose||'-';
+ const statuses=[...new Set(sources.map(x=>x.status))];
+ $('v-status').innerHTML=editingBase?`<select id="base-status" class="field"><option ${statuses.length===1&&statuses[0]==='사용'?'selected':''}>사용</option><option ${statuses.length===1&&statuses[0]==='미사용'?'selected':''}>미사용</option></select>`:statuses.map(statusEl).join(' ');
+ $('base-actions').classList.toggle('hide',!editingBase);$('edit-base').classList.toggle('hide',editingBase);
+ const rows=sources.flatMap(source=>source.mids.map(mid=>({source,mid})));
+ $('mid-list').innerHTML=rows.map(({source,mid:x})=>`<tr class="mid-click-row" tabindex="0" data-mid-view="${esc(x.id)}" title="클릭하여 상세보기"><td><strong>${esc(source.method)}</strong></td><td><strong>${esc(x.name)}</strong></td><td>${esc(x.mid)}</td><td>${esc((x.products||source.products||[]).join(', ')||'미설정')}</td><td>${esc(fee(effectiveMid(source,x)))}<div class="muted">VAT ${esc(effectiveMid(source,x).vat)}</div></td><td>${esc(effectiveMid(source,x).bank)}<div class="muted">${esc(mask(effectiveMid(source,x).account))}</div></td><td class="url-cell" title="${esc(effectiveMid(source,x).reconUrl||'')}">${esc(effectiveMid(source,x).reconUrl||'-')}</td><td>${esc(x.validfrom||'-')} ~ ${esc(x.validto||'무기한')}</td><td>${x.keyRegistered?'<span class="badge">등록</span> <span class="muted">•••• '+esc(x.keyTail||'****')+'</span>':'<span class="badge off">미등록</span>'}</td><td><div class="inline-actions"><button class="btn small" data-edit="${esc(x.id)}">상세보기</button><button class="btn small danger" data-delete="${esc(x.id)}">삭제</button></div></td></tr>`).join('')||'<tr><td colspan="10" class="empty">등록된 가맹점이 없습니다. 가맹점 등록 버튼을 눌러 추가하세요.</td></tr>';
+ renderPromotions(c);$('last-date').textContent=lastUpdate;
+}function fee(x){return x.type==='정액'?Number(x.flat).toLocaleString()+'원/건':x.type==='혼합'?`${x.rate}% + ${Number(x.flat).toLocaleString()}원/건`:`${x.rate}%`}function mask(a){const s=String(a||'');return s.length<=4?'••••':`•••• •••• ${s.slice(-4)}`}function syncFee(){const t=$('m-feetype').value;$('m-rate').disabled=t==='정액';$('m-flat').disabled=t==='정률'}function openMerchant(id,viewOnly=false){if($('merchant-dialog').classList.contains('view-only'))setMerchantViewMode(false);editingMid=id;merchantSource=id?findMidOwner(id):contractCombos()[0]||combo();const x=merchantSource?.mids.find(y=>y.id===id);$('m-method').innerHTML=contractCombos().map(z=>`<option value="${esc(z.id)}">${esc(z.method)}</option>`).join('');$('m-method').value=merchantSource?.id||'';$('dialog-title').textContent=x?'가맹점 등록정보 수정':'가맹점 등록';for(const [f,v] of Object.entries({'name':x?.name||'','mid':x?.mid||'','feetype':x?.type||'정률','rate':x?.rate??2.1,'flat':x?.flat??0,'vat':x?.vat||'별도','owner':x?.owner||'','bank':x?.bank||'','holder':x?.holder||'','account':x?.account||'','recon-url':x?.reconUrl||'','validfrom':x?.validfrom||'2026-01-01','validto':x?.validto||''}))$('m-'+f).value=v;$('m-authkey').value='';$('form-error').textContent='';const prodChoices=['단말','액세서리','구독','요금납부','멤버십 커머스'];const selectedProducts=x?.products||combo().products||[];$('m-products').innerHTML=prodChoices.map(p=>`<label style="font-weight:400;display:flex;gap:5px;align-items:center"><input type="checkbox" class="m-product-choice" value="${esc(p)}" ${selectedProducts.includes(p)?'checked':''}>${esc(p)}</label>`).join('');if(!x||x.configMode==='contract'){const ct=currentContract(combo());if(ct){for(const [field,value] of Object.entries({bank:ct.bank||'',holder:ct.holder||'',account:ct.account||''}))$('m-'+field).value=value}}syncFee();document.querySelector(`input[name="m-config"][value="${x?x.configMode==='contract'?'contract':'override':'contract'}"]`).checked=true;document.querySelector(`input[name="m-recon-config"][value="${x?.reconMode==='override'?'override':'contract'}"]`).checked=true;toggleMidMode();toggleReconMode();$('merchant-dialog').showModal();setMerchantViewMode(!!x&&viewOnly)}
+function promoStatus(p){const today=new Date().toISOString().slice(0,10);return p.status==='미사용'?'미사용':today<p.from?'예정':today>p.to?'종료':'진행중'}
+function promoBenefit(p){return p.type==='정률'?p.value+'% 즉시할인':Number(p.value).toLocaleString()+'원 즉시할인'}
+function renderPromotions(c){
+ const rows=contractCombos().flatMap(source=>(source.promotions||[]).map(p=>({p,source})));
+ $('promo-list').innerHTML=rows.map(({p,source})=>{const state=promoStatus(p);const label=state==='진행중'?'live':state==='종료'?'ended':'';const mid=p.mid?(source.mids.find(m=>m.mid===p.mid)?.mid||p.mid):'전체 MID';return `<tr><td><strong>${esc(p.name)}</strong><div class="muted">${esc(source.method)}</div></td><td>${esc(promoBenefit(p))}<div class="muted">최소 ${Number(p.min||0).toLocaleString()}원</div></td><td>${esc((p.products||[]).join(', ')||'-')}</td><td>${esc(mid)}</td><td>${esc(p.from)} ~ ${esc(p.to)}</td><td><span class="promo-pill ${label}">${state}</span></td><td><div class="inline-actions"><button class="btn small" data-pedit="${esc(p.id)}">수정</button><button class="btn small danger" data-pdelete="${esc(p.id)}">삭제</button></div></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">등록된 프로모션이 없습니다.</td></tr>';
+}
+function allowedPromoProducts(c,midValue){
+ if(midValue==='__all__')return [...new Set(c.mids.flatMap(m=>Array.isArray(m.products)?m.products:[]))];
+ const m=c.mids.find(x=>x.mid===midValue);
+ return m?(Array.isArray(m.products)?m.products:[]):[];
+}
+function refreshPromoProducts(selected){
+ const c=promoSource||combo(),midValue=$('p-mid').value,container=$('p-products');
+ if(!midValue){container.innerHTML='<span class="muted">적용 MID를 먼저 선택해 주세요.</span>';$('p-products-note').textContent='적용 MID 선택 후 대상 상품이 표시됩니다.';return}
+ const allowed=allowedPromoProducts(c,midValue);
+ if(!allowed.length){container.innerHTML='<span class="muted">선택한 MID에 허용 상품이 없습니다. 먼저 MID의 허용 상품을 등록해 주세요.</span>';$('p-products-note').textContent='대상 상품이 없으면 프로모션을 저장할 수 없습니다.';return}
+ const choices=selected===undefined?allowed:selected;
+ container.innerHTML=allowed.map(x=>`<label style="font-weight:400;color:#253149"><input class="p-product" type="checkbox" value="${esc(x)}" ${choices.includes(x)?'checked':''}> ${esc(x)}</label>`).join('');
+ $('p-products-note').textContent=midValue==='__all__'?'전체 MID에 등록된 허용 상품의 합집합입니다.':'선택한 MID의 허용 상품만 표시됩니다.';
+}
+function openPromotion(id){
+ editingPromo=id;promoSource=id?findPromoOwner(id):(contractCombos()[0]||combo());const c=promoSource;const p=(c.promotions||[]).find(x=>x.id===id);$('p-method').innerHTML=contractCombos().map(z=>`<option value="${esc(z.id)}">${esc(z.method)}</option>`).join('');$('p-method').value=c.id;
+ $('promo-dialog-title').textContent=p?'프로모션 수정':'프로모션 등록';
+ $('promo-context').textContent=c.pg+' / '+c.method+' · 현재 결제수단에 자동 연결';
+ $('p-name').value=p?.name||'';$('p-type').value=p?.type||'정률';$('p-value').value=p?.value??5;$('p-from').value=p?.from||'2026-12-01';$('p-to').value=p?.to||'2026-12-31';$('p-status').value=p?.status||'사용';$('p-min').value=p?.min??0;
+ $('p-mid').innerHTML='<option value="" disabled>적용 MID를 선택하세요</option><option value="__all__">전체 MID</option>'+c.mids.map(m=>`<option value="${esc(m.mid)}">${esc(m.mid)} (${esc(m.name)})</option>`).join('');
+ // Old promotions stored an empty MID for all; preserve that meaning on edit.
+ $('p-mid').value=p?(p.mid||'__all__'):'';
+ refreshPromoProducts(p?.products);
+ $('p-error').textContent='';$('promo-dialog').showModal();
+}
+$('p-method').addEventListener('change',()=>{const c=contractCombos().find(z=>z.id===$('p-method').value);if(!c)return;promoSource=c;$('p-mid').innerHTML='<option value="" disabled selected>적용 MID를 선택하세요</option><option value="__all__">전체 MID</option>'+c.mids.map(m=>`<option value="${esc(m.mid)}">${esc(m.mid)} (${esc(m.name)})</option>`).join('');refreshPromoProducts();});$('p-mid').addEventListener('change',()=>{refreshPromoProducts();$('p-error').textContent='' });
+$('add-promo').onclick=()=>openPromotion(null);$('close-promo').onclick=()=>$('promo-dialog').close();$('promo-list').addEventListener('click',e=>{const edit=e.target.closest('[data-pedit]'),del=e.target.closest('[data-pdelete]');if(edit)openPromotion(edit.dataset.pedit);if(del&&confirm('프로모션을 삭제할까요?')){const c=findPromoOwner(del.dataset.pdelete)||combo();c.promotions=c.promotions.filter(x=>x.id!==del.dataset.pdelete);lastUpdate=date();save();renderDetail()}});function commitPromotion(){
+ const err=$('p-error');err.textContent='';
+ const c=contractCombos().find(z=>z.id===$('p-method').value)||promoSource||combo();
+ if(!c){err.textContent='결제수단을 찾지 못했습니다. 목록에서 다시 선택하세요.';return}
+ const name=$('p-name').value.trim(),products=[...document.querySelectorAll('.p-product:checked')].map(el=>el.value);
+ const valueRaw=$('p-value').value, v=Number(valueRaw),type=$('p-type').value,from=$('p-from').value,to=$('p-to').value;
+ if(!name){err.textContent='프로모션명을 입력해 주세요.';$('p-name').focus();return}
+ if(valueRaw===''||!Number.isFinite(v)||v<=0||(type==='정률'&&v>100)){err.textContent='할인 값을 확인해 주세요. 정률 할인은 0% 초과 ~ 100% 이하입니다.';$('p-value').focus();return}
+ if(!from||!to){err.textContent='적용 시작일과 종료일을 모두 입력해 주세요.';return}
+ if(to<from){err.textContent='종료일은 시작일보다 빠를 수 없습니다.';return}
+ if(!$('p-mid').value){err.textContent='적용 MID를 먼저 선택해 주세요.';return}
+ const allowedProducts=allowedPromoProducts(c,$('p-mid').value);
+ if(!products.length||products.some(x=>!allowedProducts.includes(x))){err.textContent='선택한 MID에서 허용하는 대상 상품을 하나 이상 선택해 주세요.';return}
+ const minRaw=$('p-min').value,min=Number(minRaw||0);
+ if(!Number.isFinite(min)||min<0){err.textContent='최소 결제금액을 확인해 주세요.';return}
+ const p={id:editingPromo||'promo-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name,type,value:v,from,to,status:$('p-status').value,products,mid:$('p-mid').value==='__all__'?'':$('p-mid').value,min};
+ const original=(c.promotions||[]).slice();
+ if(editingPromo){const oldOwner=findPromoOwner(editingPromo);if(oldOwner&&oldOwner!==c)oldOwner.promotions=oldOwner.promotions.filter(x=>x.id!==editingPromo);const index=c.promotions.findIndex(x=>x.id===editingPromo);if(index<0)c.promotions.push(p);else c.promotions[index]=p}
+ else c.promotions.push(p);
+ if(!save()){c.promotions=original;err.textContent='저장에 실패했습니다. 미리보기 환경에서 브라우저 저장이 차단되었을 수 있으니 HTML 파일을 일반 브라우저에서 열어 주세요.';return}
+ lastUpdate=date();renderDetail();$('promo-dialog').close();
+}
+$('save-promo-btn').addEventListener('click',commitPromotion);
+$('promo-form').addEventListener('submit',e=>{e.preventDefault();commitPromotion()});
+
+$('combo-list').addEventListener('click',e=>{const r=e.target.closest('tr[data-id]');if(r)navigate(r.dataset.id)});$('combo-list').addEventListener('keydown',e=>{if(e.key==='Enter'){const r=e.target.closest('tr[data-id]');if(r)navigate(r.dataset.id)}});$('top-back').onclick=$('bottom-back').onclick=goBack;$('search').onclick=renderList;$('clear').onclick=()=>{for(const id of ['filter-pg','filter-method','filter-status'])$(id).value='';renderList()};$('reset').onclick=()=>{if(confirm('샘플 데이터로 초기화할까요?')){items=structuredClone(seed);save();$('clear').click()}};$('edit-base').onclick=()=>{editingBase=true;renderDetail()};$('cancel-base').onclick=()=>{editingBase=false;renderDetail()};$('save-base').onclick=()=>{const c=combo();contractCombos().forEach(x=>x.status=$('base-status').value);editingBase=false;lastUpdate=date();save();renderDetail()};function setMerchantViewMode(viewOnly){
+ const dialog=$('merchant-dialog');dialog.classList.toggle('view-only',viewOnly);
+ const fields=dialog.querySelectorAll('input,select,textarea');
+ fields.forEach(el=>{if(el.id==='merchant-enable-edit'||el.id==='close-dialog')return;
+ if(viewOnly){el.dataset.viewDisabled=el.disabled?'1':'0';el.disabled=true}
+ else if(el.dataset.viewDisabled!==undefined){el.disabled=el.dataset.viewDisabled==='1';delete el.dataset.viewDisabled}
+ });
+ $('merchant-enable-edit').classList.toggle('hide',!viewOnly);
+ $('merchant-save').classList.toggle('hide',viewOnly);
+ $('close-dialog').textContent=viewOnly?'닫기':'취소';
+ $('dialog-title').textContent=viewOnly?'가맹점 등록정보 상세':editingMid?'가맹점 등록정보 수정':'가맹점 등록';
+ if(!viewOnly){syncFee();toggleMidMode();toggleReconMode()}
+}
+$('merchant-enable-edit').onclick=()=>setMerchantViewMode(false);
+$('add-mid').onclick=()=>openMerchant(null,false);$('mid-list').onclick=e=>{const edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(edit){openMerchant(edit.dataset.edit,true);return}const row=e.target.closest('[data-mid-view]');if(row&&!del){openMerchant(row.dataset.midView,true);return}if(del&&confirm('이 가맹점 등록정보를 삭제할까요?')){const owner=findMidOwner(del.dataset.delete);if(owner)owner.mids=owner.mids.filter(x=>x.id!==del.dataset.delete);save();renderDetail()}};$('mid-list').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('[data-mid-view]'))openMerchant(e.target.closest('[data-mid-view]').dataset.midView,true)});$('close-dialog').onclick=()=>$('merchant-dialog').close();$('m-feetype').onchange=syncFee;document.querySelectorAll('input[name="m-config"]').forEach(el=>el.addEventListener('change',toggleMidMode));document.querySelectorAll('input[name="m-recon-config"]').forEach(el=>el.addEventListener('change',toggleReconMode));$('merchant-form').onsubmit=e=>{e.preventDefault();if($('merchant-dialog').classList.contains('view-only'))return;const c=contractCombos().find(z=>z.id===$('m-method').value)||merchantSource||combo();const x={id:editingMid||('mid-'+Date.now()),name:$('m-name').value.trim(),mid:$('m-mid').value.trim(),type:$('m-feetype').value,rate:Number($('m-rate').value||0),flat:Number($('m-flat').value||0),vat:$('m-vat').value,owner:$('m-owner').value.trim(),bank:$('m-bank').value.trim(),holder:$('m-holder').value.trim(),account:$('m-account').value.trim(),reconUrl:$('m-recon-url').value.trim(),validfrom:$('m-validfrom').value,validto:$('m-validto').value,products:[...document.querySelectorAll('.m-product-choice:checked')].map(el=>el.value)};if(!x.products.length){$('form-error').textContent='허용 상품을 하나 이상 선택해 주세요.';return}if(x.validto&&x.validto<x.validfrom){$('form-error').textContent='유효종료일은 유효시작일보다 빠를 수 없습니다.';return}const original=(findMidOwner(editingMid)||c).mids.find(y=>y.id===editingMid);x.configMode=document.querySelector('input[name="m-config"]:checked')?.value||'contract';x.reconMode=document.querySelector('input[name="m-recon-config"]:checked')?.value||'contract';if(x.reconMode==='override'&&x.reconUrl&&!/^https?:\/\//i.test(x.reconUrl)){$('form-error').textContent='대사 URL은 http:// 또는 https://로 시작해야 합니다.';return}if(x.configMode==='contract'&&!currentContract(c)){$('form-error').textContent='연결된 계약 정보가 없습니다. 개별 계좌로 설정해 주세요.';return}const auth=$('m-authkey').value;if(auth){x.keyRegistered=true;x.keyTail=auth.slice(-4)}else{x.keyRegistered=original?.keyRegistered||false;x.keyTail=original?.keyTail||''}if(contractCombos().some(z=>z.mids.some(y=>y.id!==editingMid&&y.mid.toLowerCase()===x.mid.toLowerCase()))){$('form-error').textContent='해당 PG사·결제수단에 이미 등록된 MID입니다.';return}if(editingMid){const originalSource=findMidOwner(editingMid);if(originalSource&&originalSource!==c){originalSource.mids=originalSource.mids.filter(y=>y.id!==editingMid);c.mids.push(x)}else Object.assign(c.mids.find(y=>y.id===editingMid),x)}else c.mids.push(x);save();lastUpdate=date();$('merchant-dialog').close();renderDetail()};window.addEventListener('hashchange',()=>{if(location.hash==='#list')goBack();else if(location.hash.startsWith('#detail=')){const id=decodeURIComponent(location.hash.slice(8));if(groupedContracts().some(x=>x.id===id)&&chosen!==id)navigate(id)}});renderList();if(location.hash.startsWith('#detail=')){const id=decodeURIComponent(location.hash.slice(8));if(groupedContracts().some(x=>x.id===id))navigate(id)}
+</script><script>
+(function(){
+ const pgStorage='next-payment-pg-registry-v2-contracts';
+ const oldPgStorage='next-payment-pg-registry-v1';
+ const knownMethods=['신용/체크카드','계좌이체','가상계좌','휴대폰결제','간편결제','간편결제머니','토스페이','카카오페이','네이버페이'];
+ const $id=id=>document.getElementById(id);
+ const escapeVal=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const makeId=prefix=>prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+ const defaultRegistry=()=>[
+  {id:'pg-kcp',code:'KCP',name:'NHN KCP',contracts:[{id:'ct-kcp1',name:'1번 계약',party:'미설정',purpose:'구독상품 신규 PG 계약',methods:['신용/체크카드','계좌이체']},{id:'ct-kcp2',name:'2번 계약',party:'미설정',purpose:'멤버십커머스 결제',methods:['신용/체크카드','계좌이체']},{id:'ct-kcp3',name:'3번 계약',party:'미설정',methods:['신용/체크카드']}]},
+  {id:'pg-toss',code:'TOSS',name:'토스페이먼츠',contracts:[{id:'ct-toss1',name:'1번 계약',party:'미설정',methods:['신용/체크카드']},{id:'ct-toss2',name:'2번 계약',party:'미설정',methods:['토스페이']}]},
+  {id:'pg-inicis',code:'INICIS',name:'KG이니시스',contracts:[{id:'ct-inicis1',name:'1번 계약',party:'미설정',methods:['신용/체크카드']}]}
+ ];
+ let registry=[],editPg=null,editContract=null,editContractPg=null;
+ window.getPaymentContract=(c)=>registry.find(pg=>pg.name===c.pg)?.contracts?.find(ct=>ct.id===c.contractId)||null;
+ function migratedRegistry(){
+  let previous=[];try{previous=JSON.parse(localStorage.getItem(oldPgStorage))||[]}catch{}
+  const baseline=defaultRegistry();
+  if(!Array.isArray(previous)||!previous.length)return baseline;
+  for(const p of previous){
+   const found=baseline.find(b=>b.name===p.name);
+   if(found){found.code=p.code||found.code;for(const m of p.methods||[])if(!found.contracts.some(c=>c.methods.includes(m)))found.contracts[0].methods.push(m)}
+   else baseline.push({id:p.id||makeId('pg'),code:p.code,name:p.name,contracts:[{id:makeId('ct'),name:'기본 계약',party:'미설정',methods:Array.isArray(p.methods)?p.methods:[]}]});
+  }
+  return baseline;
+ }
+ try{const saved=JSON.parse(localStorage.getItem(pgStorage));registry=Array.isArray(saved)?saved:migratedRegistry()}catch{registry=migratedRegistry()}
+ // 계약번호는 PG사와 무관하게 전역 고유번호로 부여한다. 삭제된 번호는 재사용하지 않는다.
+ const contractSequenceStorage='next-payment-contract-sequence-v1';
+ let nextContractSequence=Number(localStorage.getItem(contractSequenceStorage)||0);
+ for(const pg of registry)for(const ct of pg.contracts||[]){
+  const match=/^PGC-(\d+)$/.exec(ct.contractNo||'');
+  if(match)nextContractSequence=Math.max(nextContractSequence,Number(match[1]));
+ }
+ const assignedContractNumbers=new Set();
+ function generateContractNo(){
+  let no;
+  do{no='PGC-'+String(++nextContractSequence).padStart(6,'0')}while(assignedContractNumbers.has(no));
+  assignedContractNumbers.add(no);
+  return no;
+ }
+ for(const pg of registry){
+  for(const ct of pg.contracts||[]){
+   // 이전 버전의 PG별 임시번호 및 중복번호는 내부 통합번호로 전환한다.
+   if(!/^PGC-\d+$/.test(ct.contractNo||'')||assignedContractNumbers.has(ct.contractNo))ct.contractNo=generateContractNo();
+   else assignedContractNumbers.add(ct.contractNo);
+  }
+  if(!pg.reconUrl)pg.reconUrl=pg.tradeUrl||pg.depositUrl||'';
+  for(const ct of pg.contracts||[])if(ct.reconUrl===undefined)ct.reconUrl=pg.reconUrl||'';
+ }
+ try{localStorage.setItem(contractSequenceStorage,String(nextContractSequence))}catch(e){}
+
+ // All values below are fictitious illustration data (not real PG contract or banking info).
+ const demoContracts={
+  'ct-kcp1':{party:'SK텔레콤',corpNo:'000000-0000001',purpose:'구독상품 신규 PG 계약',bank:'테스트은행 A',holder:'SK텔레콤',account:'000-0000-000001',reconUrl:'https://recon-kcp.example.com/contract/subscription',methodCodes:{'신용/체크카드':'CARD','계좌이체':'BANK_TRANSFER'}},
+  'ct-kcp2':{party:'SK텔레콤 커머스',corpNo:'000000-0000002',purpose:'멤버십커머스 결제',bank:'테스트은행 B',holder:'SK텔레콤 커머스',account:'000-0000-000002',reconUrl:'https://recon-kcp.example.com/contract/commerce',methodCodes:{'신용/체크카드':'CARD','계좌이체':'BANK_TRANSFER'}},
+  'ct-kcp3':{party:'SK텔레콤 단말사업',corpNo:'000000-0000003',purpose:'단말 결제 운영',bank:'테스트은행 C',holder:'SK텔레콤 단말사업',account:'000-0000-000003',reconUrl:'https://recon-kcp.example.com/contract/device',methodCodes:{'신용/체크카드':'CARD'}},
+  'ct-toss1':{party:'SK텔레콤',corpNo:'000000-0000001',purpose:'구독 정기결제',bank:'테스트은행 A',holder:'SK텔레콤',account:'000-0000-000004',reconUrl:'https://recon-toss.example.com/contract/card',methodCodes:{'신용/체크카드':'CARD'}},
+  'ct-toss2':{party:'SK텔레콤',corpNo:'000000-0000001',purpose:'토스페이 간편결제',bank:'테스트은행 A',holder:'SK텔레콤',account:'000-0000-000005',reconUrl:'https://recon-toss.example.com/contract/tosspay',methodCodes:{'토스페이':'TOSSPAY'}},
+  'ct-inicis1':{party:'SK텔레콤 커머스',corpNo:'000000-0000002',purpose:'액세서리 카드결제',bank:'테스트은행 B',holder:'SK텔레콤 커머스',account:'000-0000-000006',reconUrl:'https://recon-inicis.example.com/contract/card',methodCodes:{'신용/체크카드':'CARD'}}
+ };
+ const demoPgNumbers={'pg-kcp':'000-00-00001','pg-toss':'000-00-00002','pg-inicis':'000-00-00003'};
+ function applyDemoContractFields(){
+  for(const pg of registry){
+   if(demoPgNumbers[pg.id]&&!pg.bizNo)pg.bizNo=demoPgNumbers[pg.id];
+   for(const ct of pg.contracts||[]){
+    const demo=demoContracts[ct.id];if(!demo)continue;
+    for(const field of ['party','corpNo','purpose','bank','holder','account','reconUrl']){
+     if(ct[field]===undefined||ct[field]===null||ct[field]===''||(field==='party'&&ct[field]==='미설정'))ct[field]=demo[field];
+    }
+    ct.methodCodes=ct.methodCodes||{};
+    for(const m of ct.methods||[])if(!ct.methodCodes[m])ct.methodCodes[m]=demo.methodCodes[m]||m.toUpperCase().replace(/[^A-Z]/g,'')||'PAY';
+   }
+  }
+ }
+ function applyDemoPaymentFields(){
+  const goods=['단말','액세서리','구독','요금납부','멤버십 커머스'];
+  const list=items.filter(c=>demoContracts[c.contractId]);
+  list.forEach((c,index)=>{
+   const ct=window.getPaymentContract(c);if(!ct)return;
+   const validProducts=c.method==='토스페이'?['구독','멤버십 커머스']:(c.contractId==='ct-kcp1'||c.contractId==='ct-toss1'?['구독']:c.contractId==='ct-kcp3'?['단말']:c.contractId==='ct-inicis1'?['액세서리']:['멤버십 커머스','액세서리']);
+   if(!Array.isArray(c.products)||!c.products.length)c.products=[...validProducts];
+   if(!Array.isArray(c.mids))c.mids=[];
+   if(!c.mids.length){
+    const idSuffix=String(index+1).padStart(2,'0'), pgCode=c.pg==='NHN KCP'?'KCP':c.pg==='토스페이먼츠'?'TOSS':'INI';
+    const midCode=pgCode+'_'+c.contractId.replace('ct-','').toUpperCase()+'_'+(c.method==='토스페이'?'TOSSPAY':c.method==='계좌이체'?'BANK':'CARD')+'_'+idSuffix;
+    c.mids.push({id:'demo-'+c.contractId+'-'+c.method,name:'가맹점 '+(index+1),mid:midCode,type:'정률',rate:2.1+(index%4)*0.1,flat:0,vat:'별도',owner:ct.party,bank:ct.bank,holder:ct.holder,account:ct.account,configMode:'contract',reconMode:'contract',reconUrl:'',validfrom:'2026-01-01',validto:'2027-12-31',keyRegistered:true,keyTail:idSuffix.padStart(4,'0'),products:[...validProducts]});
+   }
+   for(const m of c.mids){
+    if(!Array.isArray(m.products)||!m.products.length)m.products=[...validProducts];
+    if(!m.validfrom)m.validfrom='2026-01-01';
+    if(!m.validto)m.validto='2027-12-31';
+    if(!m.owner)m.owner=ct.party;
+    if(!m.bank)m.bank=ct.bank;
+    if(!m.holder)m.holder=ct.holder;
+    if(!m.account)m.account=ct.account;
+    if(!m.configMode)m.configMode='contract';
+    if(!m.reconMode)m.reconMode='contract';
+   }
+   if(!Array.isArray(c.promotions))c.promotions=[];
+   if(!c.promotions.length){
+    const selected=[...new Set(c.mids.flatMap(m=>m.products||[]))];
+    c.promotions.push({id:'demo-promo-'+c.contractId+'-'+c.method,name:''+c.method+' 즉시할인',type:'정률',value:3,min:30000,from:'2026-11-01',to:'2027-01-31',status:'사용',mid:'',products:selected});
+   }
+  });
+ }
+ function matchCombo(pg,contract,method){return items.find(c=>c.pg===pg.name&&c.contractId===contract.id&&c.method===method)}
+ function reconcile(){
+  // Migration: preserve existing MID/promotions in the first matching contract.
+  for(const c of items){if(c.contractId)continue;const pg=registry.find(p=>p.name===c.pg);if(!pg)continue;let ct=pg.contracts.find(k=>k.methods.includes(c.method));if(!ct){ct=pg.contracts[0];if(ct&&!ct.methods.includes(c.method))ct.methods.push(c.method)}if(ct){c.contractId=ct.id;c.contractName=ct.name;c.contractParty=ct.party}}
+  for(const pg of registry)for(const ct of pg.contracts)for(const method of ct.methods){
+   const existing=matchCombo(pg,ct,method);
+   if(existing){existing.contractName=ct.name;existing.contractParty=ct.party;existing.contractPurpose=ct.purpose||'';existing.methodSourceCode=ct.methodCodes?.[method]||''}
+   else items.push({id:makeId('combo'),pg:pg.name,method,contractId:ct.id,contractName:ct.name,contractParty:ct.party,contractPurpose:ct.purpose||'',methodSourceCode:ct.methodCodes?.[method]||'',status:'사용',products:[],mids:[],promotions:[]});
+  }
+ }
+ applyDemoContractFields();
+ reconcile();
+ applyDemoPaymentFields();
+ function persist(message){
+  try{
+   const a=JSON.stringify(items),b=JSON.stringify(registry);localStorage.setItem(key,a);localStorage.setItem(pgStorage,b);localStorage.setItem(contractSequenceStorage,String(nextContractSequence));
+   if(localStorage.getItem(key)!==a||localStorage.getItem(pgStorage)!==b)throw new Error('저장 확인 실패');
+   showSaveNotice(message||'저장되었습니다.',false);return true;
+  }catch(e){showSaveNotice('브라우저 저장 실패: '+e.message,true);return false}
+ }
+ // No automatic save notification on initial load; write only after explicit changes.
+ try{localStorage.setItem(pgStorage,JSON.stringify(registry));localStorage.setItem(key,JSON.stringify(items));localStorage.setItem(contractSequenceStorage,String(nextContractSequence))}catch(e){console.warn('Local storage unavailable',e)}
+ function refreshFilters(){for(const [id,field] of [['filter-pg','pg'],['filter-method','method']]){const el=$id(id),v=el.value;el.innerHTML='<option value="">전체</option>'+[...new Set(items.map(c=>c[field]))].map(x=>`<option value="${escapeVal(x)}">${escapeVal(x)}</option>`).join('');el.value=v;if(el.selectedIndex<0)el.value=''}}
+ function rerender(){renderPG();refreshFilters();renderList()}
+ function showPage(page){
+  for(const id of ['pg-view','fee-view','list-view','detail-view'])$id(id).classList.add('hide');
+  if(page==='pg'){$id('pg-view').classList.remove('hide');renderPG()}
+  else{$id('list-view').classList.remove('hide');refreshFilters();renderList()}
+  document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav===page));
+  $id('breadcrumb').textContent='운영 관리 / 결제 관리 / '+(page==='pg'?'PG사 관리':'결제수단 기준정보');
+  window.scrollTo(0,0);
+ }
+ function renderPG(){
+  const contractCount=registry.reduce((a,p)=>a+p.contracts.length,0);
+  $id('pg-count').textContent=`총 ${registry.length}개 PG사 · ${contractCount}개 계약`;
+  $id('pg-table').innerHTML=registry.flatMap(pg=>{
+   const rows=pg.contracts.length?pg.contracts:[null];
+   return rows.map(ct=>`<tr data-pg-id="${escapeVal(pg.id)}" data-ct-id="${escapeVal(ct?.id||'')}" tabindex="0" title="클릭하여 상세 조회">
+    <td>${ct?escapeVal(ct.contractNo||'-'):'-'}</td>
+    <td><strong>${escapeVal(pg.name)}</strong></td>
+    <td>${escapeVal(pg.code)}</td>
+    <td>${escapeVal(pg.bizNo||'미등록')}</td>
+    <td>${ct?escapeVal(ct.party||'미설정'):'<span class="muted">미설정</span>'}</td>
+    <td>${ct?escapeVal(ct.corpNo||'-'):'-'}</td>
+    <td>${ct?escapeVal(ct.purpose||'-'):'-'}</td><td>${ct?escapeVal(ct.bank||'-')+' / '+escapeVal(mask(ct.account||'')):'-'}</td>
+    <td>${ct?ct.methods.map(m=>`<span class="contract-tag">${escapeVal(m)}</span>`).join('')||'-':'-'}</td>
+    <td><div class="inline-actions">
+     ${ct?`<button class="btn small danger" data-contract-delete="${escapeVal(ct.id)}" data-parent-pg="${escapeVal(pg.id)}">삭제</button>`:`<button class="btn small danger" data-pg-delete="${escapeVal(pg.id)}">삭제</button>`}
+    </div></td>
+   </tr>`);
+  }).join('')||'<tr><td class="empty" colspan="10">등록된 PG사가 없습니다.</td></tr>';
+ }
+ function addMethodRow(method='',code=''){
+  const div=document.createElement('div');div.className='method-entry';
+  div.innerHTML=`<input class="field method-name" aria-label="결제수단명" placeholder="예: 신용/체크카드" value="${escapeVal(method)}"><input class="field method-code" aria-label="결제수단 원천 코드" placeholder="예: CARD" value="${escapeVal(code)}"><button type="button" class="btn small danger method-remove">삭제</button>`;
+  div.querySelector('.method-remove').onclick=()=>{if(document.querySelectorAll('#u-method-rows .method-entry').length===1){div.querySelectorAll('input').forEach(x=>x.value='')}else div.remove()};
+  $id('u-method-rows').appendChild(div);
+ }
+ function updatePgSelection(){
+  const selected=$id('u-pg-select').value,p=registry.find(x=>x.id===selected);
+  $id('u-pg-name').value=p?.name||'';$id('u-pg-code').value=p?.code||'';$id('u-pg-bizno').value=p?.bizNo||'';
+  $id('u-pg-name').readOnly=!!p&&!editContract;$id('u-pg-code').readOnly=!!p&&!editContract;$id('u-pg-bizno').readOnly=!!p&&!editContract;
+  $id('u-pg-note').textContent=p?'기존 PG사에 계약 정보를 추가합니다. PG사 정보 변경은 해당 행의 수정에서 가능합니다.':'새 PG사와 첫 계약을 함께 등록합니다.';
+ }
+ function openUnified(pgId=null,ctId=null){
+  $id('unified-dialog').classList.remove('view-only');for(const el of $id('unified-dialog').querySelectorAll('input,select'))el.disabled=false;
+  editContract=ctId;editContractPg=pgId;const pg=registry.find(p=>p.id===pgId),ct=pg?.contracts.find(c=>c.id===ctId);
+  $id('unified-title').textContent=ct?'PG사·계약 수정':'PG사·계약 등록';
+  $id('existing-pg-wrap').classList.toggle('hide',!!ct);
+  $id('u-pg-select').innerHTML='<option value="new">신규 PG사 등록</option>'+registry.map(p=>`<option value="${escapeVal(p.id)}">${escapeVal(p.name)} (${escapeVal(p.code)})</option>`).join('');
+  $id('u-pg-select').value=pg?.id||'new';updatePgSelection();
+  if(ct){$id('u-pg-name').readOnly=false;$id('u-pg-code').readOnly=false;$id('u-pg-bizno').readOnly=false;$id('u-pg-note').textContent='PG사 정보 수정 시 같은 PG사에 속한 다른 계약에도 반영됩니다.';}
+  $id('u-contract-no').value=ct?.contractNo||'';$id('u-contract-no').readOnly=true;
+  $id('u-party').value=ct?.party==='미설정'?'':ct?.party||'';
+  $id('u-purpose').value=ct?.purpose||'';$id('u-corpno').value=ct?.corpNo||'';$id('u-recon-url').value=ct?.reconUrl??pg?.reconUrl??'';for(const [id,v] of Object.entries({bank:ct?.bank||'',holder:ct?.holder||'',account:ct?.account||''}))$id('u-'+id).value=v;
+  $id('u-method-rows').innerHTML='';(ct?.methods?.length?ct.methods:['']).forEach(m=>addMethodRow(m,ct?.methodCodes?.[m]||''));
+  $id('u-error').textContent='';if(!$id('unified-dialog').open)$id('unified-dialog').showModal();
+ }
+ function setUnifiedMode(viewOnly){
+  const d=$id('unified-dialog');d.classList.toggle('view-only',viewOnly);
+  for(const el of d.querySelectorAll('input,select'))el.disabled=viewOnly;
+  $id('u-contract-no').readOnly=true;
+  $id('u-add-method').disabled=viewOnly;
+  for(const el of d.querySelectorAll('.method-remove'))el.disabled=viewOnly;
+  $id('u-view-edit').classList.toggle('hide',!viewOnly);
+  $id('u-save-btn').classList.toggle('hide',viewOnly);
+  $id('u-cancel').classList.toggle('hide',viewOnly);
+  if(viewOnly){$id('unified-title').textContent='PG사·계약 상세 조회';$id('existing-pg-wrap').classList.add('hide');}
+  else{$id('unified-title').textContent=editContract?'PG사·계약 수정':'PG사·계약 등록';}
+ }
+ function openPgDetail(pgId,ctId){
+  openUnified(pgId,ctId||null);setUnifiedMode(true);
+ }
+ function saveUnified(e){
+  if($id('unified-dialog').classList.contains('view-only'))return;
+  if(e)e.preventDefault();const err=$id('u-error');err.textContent='';
+  const name=$id('u-pg-name').value.trim(),code=$id('u-pg-code').value.trim().toUpperCase(),party=$id('u-party').value.trim(),purpose=$id('u-purpose').value.trim(),bizNo=$id('u-pg-bizno').value.trim(),corpNo=$id('u-corpno').value.trim(),reconUrl=$id('u-recon-url').value.trim(),bank=$id('u-bank').value.trim(),holder=$id('u-holder').value.trim(),account=$id('u-account').value.trim();
+  const rows=[...document.querySelectorAll('#u-method-rows .method-entry')].map(r=>({name:r.querySelector('.method-name').value.trim(),code:r.querySelector('.method-code').value.trim()}));
+  if(!name||!code||!party){err.textContent='PG사명, PG 코드, 계약주체를 모두 입력해 주세요.';return}
+  if(bizNo&&!/^(?:\d{10}|\d{3}-\d{2}-\d{5})$/.test(bizNo)){err.textContent='PG사 사업자등록번호는 숫자 10자리로 입력해 주세요.';return}
+  if(corpNo&&!/^(?:\d{13}|\d{6}-\d{7})$/.test(corpNo)){err.textContent='계약주체 법인등록번호는 숫자 13자리로 입력해 주세요.';return}
+  if(reconUrl&&!/^https?:\/\//i.test(reconUrl)){err.textContent='대사 URL은 http:// 또는 https://로 시작해야 합니다.';return}if(!rows.length){err.textContent='제공 결제수단을 최소 1개 등록해 주세요.';return}
+  if(rows.some(r=>!r.name)){err.textContent='결제수단명을 입력하거나 비어 있는 행을 삭제해 주세요.';return}
+  if(new Set(rows.map(r=>r.name.toLowerCase())).size!==rows.length){err.textContent='같은 계약 내에 중복된 결제수단명이 있습니다.';return}
+  const methods=rows.map(r=>r.name),methodCodes=Object.fromEntries(rows.map(r=>[r.name,r.code]));
+  const selected=editContract?editContractPg:$id('u-pg-select').value;
+  let pg=registry.find(p=>p.id===selected);
+  if(registry.some(p=>p.id!==pg?.id&&(p.name.toLowerCase()===name.toLowerCase()||p.code.toLowerCase()===code.toLowerCase()))){err.textContent='이미 등록된 PG사명 또는 코드입니다. 기존 PG사를 선택해 주세요.';return}
+  const prev=JSON.stringify({registry,items});
+  if(!pg){pg={id:makeId('pg'),name,code,bizNo,contracts:[]};registry.push(pg)}
+  else {const oldName=pg.name;pg.name=name;pg.code=code;pg.bizNo=bizNo;items.forEach(c=>{if(c.pg===oldName)c.pg=name})}
+  const ct=pg.contracts.find(c=>c.id===editContract);
+  if(ct){const removed=items.filter(c=>c.contractId===ct.id&&!methods.includes(c.method));
+    const filled=removed.filter(c=>c.mids.length||(c.promotions||[]).length);
+    if(filled.length&&!confirm(`삭제되는 결제수단 ${removed.length}건 중 ${filled.length}건에 MID 또는 프로모션이 있습니다. 함께 삭제할까요?`)){const d=JSON.parse(prev);registry=d.registry;items=d.items;return}
+    items=items.filter(c=>!(c.contractId===ct.id&&!methods.includes(c.method)));
+    Object.assign(ct,{party,corpNo,purpose,reconUrl,methods,methodCodes,bank,holder,account});
+  }else{const nums=pg.contracts.map(x=>Number((x.name||'').match(/^([0-9]+)번 계약$/)?.[1]||0));const num=Math.max(0,...nums)+1;pg.contracts.push({id:makeId('ct'),name:`${num}번 계약`,contractNo:generateContractNo(),party,corpNo,purpose,reconUrl,methods,methodCodes,bank,holder,account});}
+  reconcile();
+  if(!persist('등록/수정 내용이 PG사 관리 및 결제수단 기준정보에 반영되었습니다.')){const d=JSON.parse(prev);registry=d.registry;items=d.items;err.textContent='브라우저 저장이 차단되었습니다.';return}
+  $id('unified-dialog').close();rerender();
+ }
+ function deleteContract(pgId,ctId){const pg=registry.find(p=>p.id===pgId),ct=pg?.contracts.find(x=>x.id===ctId);if(!ct)return;
+  const deps=items.filter(c=>c.contractId===ctId),filled=deps.filter(x=>x.mids.length||(x.promotions||[]).length);
+  if(!confirm(`${pg.name} / ${ct.name}을 삭제할까요?\n결제수단 기준정보 ${deps.length}건${filled.length?' (MID 또는 프로모션 등록 '+filled.length+'건 포함)':''}이 함께 삭제됩니다.`))return;
+  const prev=JSON.stringify({registry,items});pg.contracts=pg.contracts.filter(x=>x.id!==ctId);items=items.filter(x=>x.contractId!==ctId);
+  if(!persist('계약이 삭제되었습니다.')){const d=JSON.parse(prev);registry=d.registry;items=d.items;return}rerender();
+ }
+ function deletePg(id){const pg=registry.find(p=>p.id===id);if(!pg)return;
+  const deps=items.filter(c=>c.pg===pg.name);if(!confirm(`${pg.name}을 삭제할까요? 계약 ${pg.contracts.length}건과 결제수단 기준정보 ${deps.length}건(MID·프로모션 포함)이 삭제됩니다.`))return;
+  const prev=JSON.stringify({registry,items});registry=registry.filter(x=>x.id!==id);items=items.filter(x=>x.pg!==pg.name);
+  if(!persist('PG사가 삭제되었습니다.')){const d=JSON.parse(prev);registry=d.registry;items=d.items;return}rerender();
+ }
+ document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{location.hash=b.dataset.nav;showPage(b.dataset.nav)}));
+ $id('pg-add').addEventListener('click',()=>{openUnified();setUnifiedMode(false)});
+ $id('u-view-edit').addEventListener('click',()=>{setUnifiedMode(false);$id('u-pg-name').readOnly=false;$id('u-pg-code').readOnly=false;$id('u-pg-bizno').readOnly=false;$id('u-pg-name').focus()});
+ $id('u-pg-select').addEventListener('change',updatePgSelection);
+ $id('u-add-method').addEventListener('click',()=>addMethodRow());
+ for(const id of ['unified-close','u-cancel'])$id(id).addEventListener('click',()=>$id('unified-dialog').close());
+ $id('unified-form').addEventListener('submit',e=>{e.preventDefault();try{saveUnified()}catch(err){$id('u-error').textContent='처리 오류: '+err.message;console.error(err)}});
+ $id('u-save-btn').addEventListener('click',()=>{try{saveUnified()}catch(e){$id('u-error').textContent='저장 처리 중 오류가 발생했습니다: '+e.message;console.error('PG 등록/수정 오류',e)}});
+ $id('pg-table').addEventListener('click',e=>{
+  const b=e.target.closest('button');
+  if(b){if(b.dataset.pgDelete)deletePg(b.dataset.pgDelete);if(b.dataset.contractDelete)deleteContract(b.dataset.parentPg,b.dataset.contractDelete);return;}
+  const row=e.target.closest('tr[data-pg-id]');if(row)openPgDetail(row.dataset.pgId,row.dataset.ctId);
+ });
+ $id('pg-table').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('button'))return;const row=e.target.closest('tr[data-pg-id]');if(row){e.preventDefault();openPgDetail(row.dataset.pgId,row.dataset.ctId)}});
+ $id('combo-list').addEventListener('click',()=>{document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav==='methods'))});
+ for(const id of ['top-back','bottom-back'])$id(id).addEventListener('click',()=>{document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav==='methods'))});
+ // Reset: restore contract samples together with the payment-method entries.
+ $id('reset').onclick=()=>{if(!confirm('샘플 데이터 및 계약 정보를 모두 초기화할까요?'))return;registry=defaultRegistry();items=structuredClone(seed);applyDemoContractFields();reconcile();applyDemoPaymentFields();persist('샘플 계약과 결제수단 기준정보를 초기화했습니다.');rerender()};
+ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(h==='pg'||h==='methods')showPage(h);else if(h==='list')showPage('methods')});
+ if(location.hash==='#pg')showPage('pg');else showPage('methods');
+})();
+</script></body></html>
