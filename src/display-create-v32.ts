@@ -510,23 +510,24 @@ function rConn(){
  if(E.kind==='mp') return rConnMp();
  const po=E.kind!=='ps';
  const rows=po?E.conn.map(id=>{ const p=poBy(id), x=epcOf(p); return `<tr><td>${p.epc}</td><td>${p.ver}</td><td><b>${esc(p.name)}</b>${hasSel(p)?' <span class="chip acc">선택 PS 있음</span>':''}</td><td>${x.lv2}</td><td>${x.lv3}</td><td>${esc(x.spec)}</td><td><span class="chip ok">${p.sale}</span></td><td><button type="button" class="btn sm" data-view="${id}">보기</button></td><td><button type="button" class="btn sm" data-un="${id}">연결 해제</button></td></tr>`; }).join('')
-  :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td><b>${esc(s.name)}</b></td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="chip ok">${s.po.sale}</span></td><td><button type="button" class="btn sm" data-view="${s.po.id}">보기</button></td><td><button type="button" class="btn sm" data-un="${k}">연결 해제</button></td></tr>`; }).join('');
- $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 ${po?'상품':'PS'}</b><span class="chip acc">${E.conn.length}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${E.conn.length?'':'disabled'}>초기화</button><button type="button" class="btn primary sm" id="connAdd">${po?'+ 상품 추가':E.conn.length?'PS 변경':'+ PS 불러오기'}</button></div>
- ${E.conn.length?`<div class="cl"><table><thead><tr>${po?'<th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>LV2</th><th>LV3</th><th>Product Spec</th><th>판매상태</th><th>상세</th><th>삭제</th>':'<th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매 상태</th><th>상세</th><th>삭제</th>'}</tr></thead><tbody>${rows}</tbody></table></div>`
- :`<div class="empty">${po?'연결 상품을 추가하세요.':'전시 콘텐츠를 등록할 PS 1개를 불러오세요'}</div>`}`;
+  :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td><b>${esc(s.name)}</b></td><td>${esc(s.desc||'-')}</td><td>상시</td><td><span class="chip ok">${s.po.sale}</span></td><td><button type="button" class="btn sm" data-view="${s.po.id}">보기</button></td><td><button type="button" class="btn sm" data-un="${k}">연결 해제</button></td></tr>`; }).join('');
+ $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 상품</b><span class="chip acc">${E.conn.length}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${E.conn.length?'':'disabled'}>초기화</button>${po?'<button type="button" class="btn primary sm" id="connAdd">+ 상품 추가</button>':`<span title="${E.conn.length?PS_ONE:''}"><button type="button" class="btn primary sm" id="connAdd" ${E.conn.length?'disabled':''}>상품 추가</button></span>`}</div>
+ ${E.conn.length?`<div class="cl"><table><thead><tr>${po?'<th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>LV2</th><th>LV3</th><th>Product Spec</th><th>판매상태</th><th>상세</th><th>삭제</th>':'<th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>PS Spec</th><th>유효기간</th><th>판매 상태</th><th>상세</th><th>삭제</th>'}</tr></thead><tbody>${rows}</tbody></table></div>`
+ :`<div class="empty">${po?'연결 상품을 추가하세요.':'상품 추가로 전시할 PS 상품 1개를 연결하세요'}</div>`}`;
  $('#connAdd').addEventListener('click',po?openConnModal:openPsModal);
  // 초기화: 연결한 상품을 모두 해제하고 구성 영역 배정·옵션 매핑에서도 뺀다
  $('#connReset').addEventListener('click',()=>{ if(!E.conn.length) return; E.conn=[]; if(po) E.areas.forEach(a=>{ a.pos=[]; a.map={}; }); onConnChange(); toast('연결 상품을 초기화했어요'); });
  $$('#sb-conn [data-view]').forEach(b=>b.addEventListener('click',()=>openPoDetail(b.dataset.view)));
  $$('#sb-conn [data-un]').forEach(b=>b.addEventListener('click',()=>{ const id=b.dataset.un; E.conn=E.conn.filter(x=>x!==id); if(po) E.areas.forEach(a=>{ a.pos=a.pos.filter(x=>x!==id); Object.keys(a.map).forEach(k=>{ if(a.map[k]===id) delete a.map[k]; }); }); onConnChange(); toast('연결을 해제했어요'); }));
 }
-// v0.3.2 MP 상품 전시: MP 1개만 연결한다. 연결되면 [+ MP 추가]를 막는다
+const PS_ONE='PS 상품 전시는 PS 1개만 연결합니다';
+// v0.3.2 MP 상품 전시: MP 1개만 연결한다. 연결되면 [상품 추가]를 막는다
 const MP_ONE='MP 상품 전시는 MP 1개만 연결합니다';
 function rConnMp(){
  const m=mpDemo(E.mp);
- $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 MP ${m?1:0}건</b><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${m?'':'disabled'}>초기화</button><span title="${m?MP_ONE:''}"><button type="button" class="btn primary sm" id="connAdd" ${m?'disabled':''}>+ MP 추가</button></span></div>
- ${m?`<div class="cl"><table><thead><tr><th>MP ID</th><th>버전</th><th>MP명</th><th>적용 대상</th><th>유효기간</th><th>판매 상태</th><th>상세</th><th>삭제</th></tr></thead><tbody><tr><td>${m.id}</td><td>${m.ver}</td><td><b>${esc(m.name)}</b></td><td>${esc(m.target)}</td><td>${mpPeriod(m)}</td><td><span class="chip ${m.sale==='판매중'?'ok':''}">${m.sale}</span></td><td><button type="button" class="btn sm" id="mpView">보기</button></td><td><button type="button" class="btn sm" id="mpUn">연결 해제</button></td></tr></tbody></table></div>`
- :'<div class="empty">MP 추가로 전시할 MP 1개를 연결하세요</div>'}`;
+ $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 상품</b><span class="chip acc">${m?1:0}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${m?'':'disabled'}>초기화</button><span title="${m?MP_ONE:''}"><button type="button" class="btn primary sm" id="connAdd" ${m?'disabled':''}>상품 추가</button></span></div>
+ ${m?`<div class="cl"><table><thead><tr><th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>MP Spec</th><th>유효기간</th><th>판매 상태</th><th>상세</th><th>삭제</th></tr></thead><tbody><tr><td>${m.id}</td><td>${m.ver}</td><td><b>${esc(m.name)}</b></td><td>${esc(m.target)}</td><td>${mpPeriod(m)}</td><td><span class="chip ${m.sale==='판매중'?'ok':''}">${m.sale}</span></td><td><button type="button" class="btn sm" id="mpView">보기</button></td><td><button type="button" class="btn sm" id="mpUn">연결 해제</button></td></tr></tbody></table></div>`
+ :'<div class="empty">상품 추가로 전시할 MP 상품 1개를 연결하세요</div>'}`;
  const clear=msg=>{ E.mp=''; onConnChange(); toast(msg); };
  $('#connAdd').addEventListener('click',()=>{ if(mpDemo(E.mp)){ toast(MP_ONE); return; } openMpModal(); });
  $('#connReset').addEventListener('click',()=>{ if(m) clear('연결 상품을 초기화했어요'); });
@@ -534,7 +535,7 @@ function rConnMp(){
  { const v=$('#mpView'); if(v) v.addEventListener('click',()=>openMpDetail(m)); }
 }
 function openMpDetail(m){ modal(m.name,m.id,640);
- const R=[['MP ID',m.id],['버전',m.ver],['MP명',m.name],['MP 유형',m.cat],['적용 대상',m.target],['유효기간',mpPeriod(m)],['판매 상태',m.sale],['설명',m.desc]];
+ const R=[['EPC 상품 ID',m.id],['버전',m.ver],['EPC 상품명',m.name],['MP 유형',m.cat],['MP Spec',m.target],['유효기간',mpPeriod(m)],['판매 상태',m.sale],['설명',m.desc]];
  $('#mBody').innerHTML=`<div class="ftbl">${R.map(([l,v])=>seoRow(l,null,esc(v))).join('')}</div>`;
  $('#mFoot').innerHTML='<button type="button" class="btn primary" id="mc">닫기</button>'; $('#mc').addEventListener('click',closeModal); }
 // 고정형·선택형은 영역이 1개라 연결 상품이 그대로 영역의 PO가 된다
@@ -950,7 +951,7 @@ function rBasic(){
  ${seoRow('전시명',{id:'nameCnt',v:`${E.name.length}/${NAME_MAX}`},`<input type="text" id="fName" value="${esc(E.name)}" maxlength="${NAME_MAX}" placeholder="고객에게 보이는 이름 (줄바꿈은 &lt;br&gt;)" aria-label="전시명" style="width:100%">`)}
  ${seoRow('설명',{id:'briefCnt',v:`${E.brief.length}/${BRIEF_MAX}`},`<input type="text" id="fBrief" value="${esc(E.brief)}" maxlength="${BRIEF_MAX}" placeholder="전시명 아래에 보이는 짧은 설명" aria-label="설명" style="width:100%">`)}
  ${seoRow('전시 상품 배지',{id:'bCnt',v:`${E.badges.length}/${BADGE_MAX}`},`<div class="row" style="gap:8px;margin:0">${autoBadges(E).map(b=>`<span class="bd auto" style="${bstyle(b)}" title="${b.from} 섹션 설정으로 자동 표시">${esc(b.t)}<small>자동</small></span>`).join('')}${E.badges.map((b,i)=>`<span class="bd" style="${bstyle(b)};cursor:default">${esc(b.t)}<button type="button" class="x" data-bx="${i}" aria-label="${esc(b.t)} 삭제">×</button></span>`).join('')}${E.badges.length<BADGE_MAX?'<span class="bin-w"><input type="text" id="bIn" maxlength="10" placeholder="입력 후 Enter" aria-label="전시 상품 배지 추가"><span class="pill len" id="bInLen">0/10</span></span>':''}</div><div class="er" id="berr"></div>`)}
- ${noImg(E)?seoRow('이미지',null,ntc('info',NOIMG_MSG)):seoRow('대표이미지',{id:'mainCnt',v:`${E.main?1:0}/1`},mainImgHtml())+seoRow('추가이미지',{id:'subCnt',v:`${E.subs.length}/${SUB_MAX}`},subImgHtml())}
+ ${E.kind==='mp'?seoRow('대표 이미지',null,ntc('info',MP_NOIMG))+seoRow('추가 이미지',null,ntc('info',MP_NOIMG)):noImg(E)?seoRow('이미지',null,ntc('info',NOIMG_MSG)):seoRow('대표이미지',{id:'mainCnt',v:`${E.main?1:0}/1`},mainImgHtml())+seoRow('추가이미지',{id:'subCnt',v:`${E.subs.length}/${SUB_MAX}`},subImgHtml())}
  ${seoRow('전시 기간',null,`<div class="row" style="margin:0"><input type="date" id="fFrom" value="${E.from}" aria-label="시작일"><input type="time" id="fFromT" value="${E.fromTime}" aria-label="시작 시간"><span class="pill">~</span><input type="date" id="fTo" value="${E.noEnd?'':E.to}" aria-label="종료일" ${E.noEnd?'disabled':''}><input type="time" id="fToT" value="${E.noEnd?'':E.toTime}" aria-label="종료 시간" ${E.noEnd?'disabled':''}><label class="chkl"><input type="checkbox" id="noEnd" ${E.noEnd?'checked':''}>종료일없음</label></div>`)}
  ${seoRow('전시 여부',null,`<span class="srch-radio" role="radiogroup" aria-label="전시 여부"><label><input type="radio" name="dShow" value="0" ${E.show?'':'checked'}>N</label><label><input type="radio" name="dShow" value="1" ${E.show?'checked':''}>Y</label></span>`)}
  </div>`;
@@ -974,6 +975,8 @@ const readImgs=files=>Promise.all(files.map(f=>new Promise(r=>{ const rd=new Fil
 // 전시 상품 배지 최대 개수 · 전시명 · 설명 최대 글자 수
 const BADGE_MAX=5, NAME_MAX=20, BRIEF_MAX=20;
 const NOIMG_MSG='이동전화 요금제형은 대표 이미지를 쓰지 않아요';
+// MP 상품 전시는 대표 · 추가 이미지를 쓰지 않는다(입력 칸 대신 안내만 보여 준다)
+const MP_NOIMG='대표 이미지를 사용하지 않습니다.';
 // ---------- 4-1. 이미지 (v0.3.2: v0.2.0처럼 대표이미지 1장 · 추가이미지 최대 4장. 기기 구분 없음) ----------
 // 공용 검사 규칙(display-rules)은 E.imgs.mobile이 비었는지로 필수를 보므로, 대표이미지가 있을 때만 대표 + 추가를 넣는다(추가이미지만 있으면 미등록)
 const syncImgs=()=>{ E.imgs={mobile:E.main?[E.main,...E.subs]:[],desktop:[]}; };
@@ -1570,7 +1573,7 @@ function drawPlanRows(){
 const PS_KINDS=['필수 PS','선택 PS 후보'];
 const psPool=()=>PSLIST.filter(s=>s.po.type==='구독서비스');
 const psPos=()=>[...new Map(psPool().map(s=>[s.po.id,s.po])).values()];
-function openPsModal(){ const z={k:'전체',po:'전체',q:''}; CM={sel:E.conn[0]||'',f:{...z},a:{...z}}; modal('PS 조회','전시 콘텐츠를 등록할 PS(SKU 단위) 1개를 고르세요',1200,'epc'); drawPs(); $('#cq').focus(); }
+function openPsModal(){ const z={k:'전체',po:'전체',q:''}; CM={sel:E.conn[0]||'',f:{...z},a:{...z}}; modal('상품 추가','PS 상품 전시는 PS 1개만 연결합니다',1200,'epc'); drawPs(); $('#cq').focus(); }
 function drawPs(){
  const f=CM.f, opt=(list,v)=>[['전체','전체'],...list].map(([k,l])=>`<option value="${esc(k)}" ${k===v?'selected':''}>${esc(l)}</option>`).join('');
  $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
@@ -1581,7 +1584,7 @@ function drawPs(){
   <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
  </form>
  <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
- <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>PS Spec</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
  $('#cmK').addEventListener('change',e=>{ f.k=e.target.value; });
  $('#cmP').addEventListener('change',e=>{ f.po=e.target.value; });
  $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
@@ -1598,8 +1601,8 @@ function drawPsRows(){
  const L=psPool().filter(s=>(a.k==='전체'||s.kind===a.k)&&(a.po==='전체'||s.po.id===a.po)&&(!q||[s.name,psId(s),s.po.name,s.po.id].some(v=>String(v).toLowerCase().includes(q))));
  $('#cmCnt').textContent=`${L.length}건`;
  $('#cmRows').innerHTML=L.map(s=>{ const on=CM.sel===s.key, done=E.conn.includes(s.key);
-  return `<tr class="${on?'on':''}" data-row="${esc(s.key)}"><td class="c"><input type="radio" name="psPick" data-p="${esc(s.key)}" ${on?'checked':''} aria-label="${esc(s.name)} 선택"></td><td>${psId(s)}</td><td>${s.po.ver}</td><td class="nm">${esc(s.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="sale-chip">${s.po.sale}</span></td></tr>`; }).join('')
-  ||'<tr class="empty-row"><td colspan="8">검색 결과가 없어요</td></tr>';
+  return `<tr class="${on?'on':''}" data-row="${esc(s.key)}"><td class="c"><input type="radio" name="psPick" data-p="${esc(s.key)}" ${on?'checked':''} aria-label="${esc(s.name)} 선택"></td><td>${psId(s)}</td><td>${s.po.ver}</td><td class="nm">${esc(s.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${esc(s.desc||'-')}</td><td>상시</td><td><span class="sale-chip">${s.po.sale}</span></td></tr>`; }).join('')
+  ||'<tr class="empty-row"><td colspan="7">검색 결과가 없어요</td></tr>';
  const sync=()=>{ const b=$('#mo'), x=CM.sel&&psBy(CM.sel); b.disabled=!x||E.conn[0]===CM.sel; };
  const pick=key=>{ CM.sel=key; $$('#cmRows tr[data-row]').forEach(tr=>{ const on=tr.dataset.row===key; tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
  $$('#cmRows [data-p]').forEach(c=>c.addEventListener('change',()=>{ if(c.checked) pick(c.dataset.p); }));
@@ -1608,7 +1611,7 @@ function drawPsRows(){
 }
 // v0.3.2 MP 추가 팝업: 상품 추가 팝업 구조(검색 폼 · 결과 표 · 라디오) 재사용. 판매중이 아닌 MP는 고를 수 없다
 const MP_SALE_MSG='판매중인 상품만 연결할 수 있습니다';
-function openMpModal(){ const z={s:'전체',q:''}; CM={sel:'',f:{...z},a:{...z}}; modal('MP 추가','MP 상품 전시는 MP 1개만 연결합니다',1200,'epc'); drawMp(); $('#cq').focus(); }
+function openMpModal(){ const z={s:'전체',q:''}; CM={sel:'',f:{...z},a:{...z}}; modal('상품 추가','MP 상품 전시는 MP 1개만 연결합니다',1200,'epc'); drawMp(); $('#cq').focus(); }
 function drawMp(){
  const f=CM.f, opt=(list,v)=>list.map(k=>`<option value="${esc(k)}" ${k===v?'selected':''}>${esc(k)}</option>`).join('');
  $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
@@ -1619,7 +1622,7 @@ function drawMp(){
   <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
  </form>
  <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
- <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>MP ID</th><th>MP명</th><th>적용 대상</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>EPC 상품 ID</th><th>EPC 상품명</th><th>MP Spec</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
  $('#cmS').addEventListener('change',e=>{ f.s=e.target.value; });
  $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
  $('#cmForm').addEventListener('submit',e=>{ e.preventDefault(); CM.a={...f,q:f.q.trim()}; drawMpRows(); });
