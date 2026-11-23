@@ -9,6 +9,7 @@ export default defineConfig({
         index: 'index.html',
         boIntro: 'bo-intro.html',
         policy: 'policy.html',
+        commonPolicy: 'common-policy.html',
         bundleCreate: 'bundle-create.html',
         bundleCreate2: 'bundle-create2.html',
         bundleCreate3: 'bundle-create3.html',
