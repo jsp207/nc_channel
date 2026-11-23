@@ -5,7 +5,7 @@
 //   (node scripts/check-history.mjs 로 확인, --fix 로 <title> 일괄 수정).
 // - Latest는 직접 적지 않습니다. LNB 메뉴 href 파일의 버전과 같은 버전의 화면·정책이 자동으로 Latest가 됩니다.
 
-export type Tab = 'prod' | 'order' | 'pay';
+export type Tab = 'prod' | 'order' | 'pay' | 'common';
 
 export interface Screen {
   menu: string;
@@ -21,7 +21,7 @@ export interface Policy {
   ver: string;      // 정책서 자체 버전
   file: string;
   date: string;
-  for: { menu: string; ver: string }[]; // 이 정책서가 기준이 되는 화면 버전
+  for: { menu: string; ver: string }[]; // 이 정책서가 기준이 되는 화면 버전(공통 정책서는 비워 둡니다)
   note?: string;
 }
 
@@ -29,6 +29,7 @@ export const TABS: { key: Tab; label: string; group: string }[] = [
   { key: 'prod', label: '상품', group: '상품관리' },
   { key: 'order', label: '주문', group: '주문관리' },
   { key: 'pay', label: '결제', group: '결제관리' },
+  { key: 'common', label: '공통', group: '' }, // 상품 · 주문 · 결제 공통 정책만 둡니다
 ];
 
 // LNB에 없는(메뉴에서 빠진) 메뉴. 히스토리에서는 탭 뒤쪽에 '메뉴 없음'으로 보여 줍니다.
@@ -36,6 +37,7 @@ export const LEGACY_MENUS: Record<Tab, string[]> = {
   prod: ['번들 관리', '상품 목록'],
   order: ['주문 코너 그룹 관리'],
   pay: [],
+  common: [],
 };
 
 export const SCREENS: Screen[] = [
@@ -93,6 +95,8 @@ export const SCREENS: Screen[] = [
   { menu: '주문 코너 그룹 관리', ver: '0.2.2', screen: '목록·등록', file: 'order-corner-group-v22.html', date: '2026-11-04' },
 
   // ── 결제 ──────────────────────────────────────────
+  { menu: '결제수단 기준정보 관리', ver: '0.2.3', screen: '목록', file: 'payment-method5.html', date: '2026-11-21', note: '계약 단위 목록. 계약 · 결제수단 등록은 PG 관리로 이동' },
+  { menu: '결제수단 기준정보 관리', ver: '0.2.3', screen: '상세', file: 'payment-method5-detail.html', date: '2026-11-21', note: '가맹점(MID) · 결제 프로모션 등록, 입금계좌 · 대사 URL 계약정보 사용' },
   { menu: '결제수단 기준정보 관리', ver: '0.2.2', screen: '목록', file: 'payment-method4.html', date: '2026-11-03' },
   { menu: '결제수단 기준정보 관리', ver: '0.2.2', screen: '결제수단 상세', file: 'payment-method4-detail.html', date: '2026-11-03' },
   { menu: '결제수단 기준정보 관리', ver: '0.2.2', screen: '가맹점 상세', file: 'payment-method4-merchant.html', date: '2026-11-03' },
@@ -107,6 +111,8 @@ export const SCREENS: Screen[] = [
   { menu: '결제수단 기준정보 관리', ver: '0.1', screen: '가맹점 상품', file: 'payment-merchant-product.html', date: '2026-10-04' },
   { menu: '결제수단 기준정보 관리', ver: '0.1', screen: '노출 우선순위', file: 'payment-exposure.html', date: '2026-10-04' },
 
+  { menu: '결제 이력 관리', ver: '0.2.3', screen: '목록', file: 'payment-history5.html', date: '2026-11-21', note: 'PG 관리 · 결제수단 기준정보와 같은 데이터(계약 · MID) 기준으로 재구성' },
+  { menu: '결제 이력 관리', ver: '0.2.3', screen: '상세', file: 'payment-history5-detail.html', date: '2026-11-21' },
   { menu: '결제 이력 관리', ver: '0.2.2', screen: '목록', file: 'payment-history4.html', date: '2026-11-03' },
   { menu: '결제 이력 관리', ver: '0.2.2', screen: '상세', file: 'payment-history4-detail.html', date: '2026-11-03' },
   { menu: '결제 이력 관리', ver: '0.2.1', screen: '목록', file: 'payment-history3.html', date: '2026-11-01' },
@@ -114,15 +120,21 @@ export const SCREENS: Screen[] = [
   { menu: '결제 이력 관리', ver: '0.2', screen: '목록', file: 'payment-history2.html', date: '2026-10-13' },
   { menu: '결제 이력 관리', ver: '0.1', screen: '목록', file: 'payment-history.html', date: '2026-10-04' },
 
+  { menu: '결제 거래내역 대사관리', ver: '0.2.3', screen: '승인대사·입금대사', file: 'payment-recon5.html', date: '2026-11-21', note: '계약 단위 승인대사 · 입금대사' },
   { menu: '결제 거래내역 대사관리', ver: '0.2.2', screen: '승인대사·입금대사', file: 'payment-recon4.html', date: '2026-11-03' },
   { menu: '결제 거래내역 대사관리', ver: '0.2.1', screen: '목록', file: 'payment-recon3.html', date: '2026-11-03' },
   { menu: '결제 거래내역 대사관리', ver: '0.2.1', screen: '상세', file: 'payment-recon3-detail.html', date: '2026-11-03' },
   { menu: '결제 거래내역 대사관리', ver: '0.2', screen: '수수료·정산 대사', file: 'payment-reconciliation2.html', date: '2026-10-13' },
 
+  { menu: 'PG 수수료 조회', ver: '0.2.3', screen: '목록', file: 'payment-fee5.html', date: '2026-11-21', note: '정산월 × MID, MID 수수료 조건 기준' },
+  { menu: 'PG 수수료 조회', ver: '0.2.3', screen: '상세', file: 'payment-fee5-detail.html', date: '2026-11-21' },
   { menu: 'PG 수수료 조회', ver: '0.2.2', screen: '목록', file: 'payment-fee4.html', date: '2026-11-03' },
   { menu: 'PG 수수료 조회', ver: '0.2.2', screen: '상세', file: 'payment-fee4-detail.html', date: '2026-11-09' },
   { menu: 'PG 수수료 조회', ver: '0.1', screen: '수수료·정산 관리', file: 'payment-settlement.html', date: '2026-10-04' },
 
+  { menu: 'PG 관리', ver: '0.2.3', screen: '목록', file: 'payment-pg5.html', date: '2026-11-21', note: 'ref v5 반영: PG사 › 계약 › 결제수단 › MID 구조' },
+  { menu: 'PG 관리', ver: '0.2.3', screen: '상세', file: 'payment-pg5-detail.html', date: '2026-11-21' },
+  { menu: 'PG 관리', ver: '0.2.3', screen: '등록·수정', file: 'payment-pg5-form.html', date: '2026-11-21', note: '계약번호 자동 채번, 제공 결제수단 원천 코드' },
   { menu: 'PG 관리', ver: '0.2.2', screen: '목록', file: 'payment-pg4.html', date: '2026-11-03' },
   { menu: 'PG 관리', ver: '0.2.2', screen: '상세', file: 'payment-pg4-detail.html', date: '2026-11-09' },
   { menu: 'PG 관리', ver: '0.2.2', screen: '등록·수정', file: 'payment-pg4-form.html', date: '2026-11-03' },
@@ -146,6 +158,9 @@ export const POLICIES: Record<Tab, Policy[]> = {
       for: ['결제수단 기준정보 관리', '결제 이력 관리', '결제 거래내역 대사관리', 'PG 수수료 조회', 'PG 관리'].map(menu => ({ menu, ver: '0.2.2' })) },
     { name: '결제 정책', ver: '0.1', file: 'payment-policy.html', date: '2026-10-04',
       for: ['결제수단 기준정보 관리', '결제 이력 관리', 'PG 수수료 조회'].map(menu => ({ menu, ver: '0.1' })) },
+  ],
+  common: [
+    { name: '공통 정책서', ver: '0.1', file: 'common-policy.html', date: '2026-11-23', note: '상품 · 주문 · 결제 공통 케이스', for: [] },
   ],
 };
 

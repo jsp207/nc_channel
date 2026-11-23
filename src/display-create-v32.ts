@@ -60,7 +60,7 @@ import { PROC_KEY, PROC_CATS, PROC_APS, loadProcs, procUsable, procCorners, proc
 import { dispId, CONTENT } from "./display-data";
 // 코너 원본 = 주문 코너 관리(order-corner-v22) 데이터. 주문 프로세스 관리 v0.2.4(order6-create.html)도 같은 원본을 쓰고, 코너 관리에서 바꾼 값(브라우저 저장소)이 열 때 반영된다
 import { CORNERS } from "./order-corner-v22-data";
-import { mpBy, mpsOf, CH_GROUPS, chItemsOf } from "./data/epc";
+import { CH_GROUPS, chItemsOf } from "./data/epc";
 import { planCorners } from "./display-rules";
 
 requireAuthentication();
@@ -175,6 +175,8 @@ function openEdit(id,mode){
  if(!d) E.rel.mode='auto';
  E.sim.mode=E.rel.mode==='auto'?'def':'custom';
  if(E.sim.mode==='custom'&&!E.sim.t) E.sim.t=SIM_DEF.t;
+ // v0.3.2 MP 상품 전시: 값 정리 · 제공 혜택 문구 · 콘텐츠 정보 기본 항목
+ mpNorm(E,false); delete E.bnf; syncMpExtras(); PVMP=mpPvDef();
  cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; PV={}; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=RTE_SRC.xtx=false; XD=null;
  syncSingle(); syncBenefits(E);
  // 처음 열 때(새로고침 포함)는 모든 섹션을 펼친다. 섹션마다 따로 접고 편다
@@ -241,7 +243,7 @@ document.addEventListener('keydown',e=>{
 });
 function goSec(k){ if(k==='info'){ curI=secState(E).basic.st==='done'?'desc':'basic'; rInfo(); } const s=$('#sec-'+k); setDock(false); openSec(s); }
 
-function renderAll(){ rKind(); rConn(); rMethod(); rAttr(); rCh(); rChset(); rInfo(); rBasic(); rDesc(); rExtra(); rReview(); rExpert(); rRel(); rSim(); rSearch(); rCvm(); rOrder(); refresh(); }
+function renderAll(){ rKind(); rConn(); rMethod(); rAttr(); rCh(); rChset(); rInfo(); rBasic(); rDesc(); rExtra(); rGuide(); rReview(); rExpert(); rRel(); rSim(); rSearch(); rCvm(); rOrder(); refresh(); }
 // 섹션 상태·연결 상품 목록·미리보기 갱신
 function refresh(){
  const S=secState(E);
@@ -249,22 +251,18 @@ function refresh(){
  SECS.forEach(([k])=>{ const el0=$('#sec-'+k); if(!el0) return; const s=S[k], [t,c]=STL[s.st]; const ch=$('#st-'+k); if(ch){ ch.textContent=t; ch.className='chip '+c; } const el=$('#sec-'+k); el.classList.toggle('na',s.st==='na'); el.classList.toggle('off',s.st==='off'||s.st==='unused'); el.hidden=hideSec(k,E);
   // 주문 받기가 꺼지면 채널 연동 섹션(가입 유형 · 할부 · 배송)은 필수에서 빠진다
   const rq=el.querySelector(':scope>header .req'); if(rq) rq.hidden=!isReq(k,S); });
- infoChips(); syncZone();
+ // MP 상품 전시: 주문 프로세스 연동 헤더에 [필수]
+ { const r=$('#odReq'); if(r) r.hidden=E.kind!=='mp'; }
+ infoChips();
  // 하단 바: 연결 상품 수, 바텀시트: 연결한 상품 목록 (누르면 연결 상품 섹션으로 이동)
- const items=E.kind!=='ps'?E.conn.map(id=>{ const p=poBy(id), fm=E.kind==='mp'&&mpBy(E.mp); return {n:p.name+(fm?' + '+fm.name:''),m:`${p.epc} · ${p.id} · ${p.type}`,v:priceTxt(p)}; }):E.conn.map(k=>{ const x=psBy(k); return {n:x.name,m:`${x.po.name} · ${x.kind}`,v:''}; });
+ const curMp=E.kind==='mp'&&mpDemo(E.mp);
+ const items=curMp?[{n:curMp.name,m:`${curMp.id} · ${curMp.target}`,v:''}]:E.kind==='mp'?[]:E.kind!=='ps'?E.conn.map(id=>{ const p=poBy(id); return {n:p.name,m:`${p.epc} · ${p.id} · ${p.type}`,v:priceTxt(p)}; }):E.conn.map(k=>{ const x=psBy(k); return {n:x.name,m:`${x.po.name} · ${x.kind}`,v:''}; });
  $('#connList').innerHTML=items.map((x,n)=>`<li data-go="conn"><span class="m">${n+1}</span><span class="t">${esc(x.n)}<span class="d">${esc(x.m)}</span></span>${x.v?`<span class="v">${x.v}</span>`:''}</li>`).join('')||'<li class="none">연결한 상품이 없어요. 연결 상품 섹션에서 추가하세요</li>';
  $$('#connList [data-go]').forEach(li=>li.addEventListener('click',()=>goSec('conn')));
  const bl=blockingV(E).length;
- $('#poCount').innerHTML=E.conn.length+`<small>${E.kind!=='ps'?'상품':'PS'}</small>`;
+ $('#poCount').innerHTML=(E.kind==='mp'?(curMp?1:0):E.conn.length)+`<small>${E.kind==='mp'?'MP':E.kind!=='ps'?'상품':'PS'}</small>`;
  const sb=$('#bAppr'); if(sb&&!sb.disabled){ sb.classList.toggle('pending',bl>0); sb.title=bl?`필수 확인 ${bl}건을 채우면 승인요청할 수 있습니다. 누르면 채울 섹션으로 이동해요. 임시저장은 지금도 됩니다`:''; }
  renderPreview();
-}
-
-// v0.3.1 통합 앱 전용 영역: 노출 채널에 통합 APP · WEB이 있을 때만 보인다. 없거나 PS 상품 전시면 영역째 숨긴다(값은 남고 검사는 '해당 없음')
-function syncZone(){
- const on=appScope(E), ch=APP_CH.filter(c=>E.channels.includes(c));
- $('#zoneApp').hidden=!on;
- $('#zoneAppTx').innerHTML=on?`<b>${ch.join(' · ')}</b>에만 적용돼요. T-gate · 스마트플래너에는 적용되지 않아요`:'';
 }
 
 // ---------- 0. 노출 채널 (v0.3.1: 전시 설정 → 노출 채널. 전시 정보 위) ----------
@@ -283,9 +281,7 @@ function rCh(){
  // v0.3.2: 노출 채널 표 = 노출 채널 + 공통 속성(모든 채널 · 보기만, 제목 없이 같은 표). 채널별 노출 제어는 바로 아래 별도 섹션으로 분리
  rAttr(); rChset();
  $('#chAll').indeterminate=!all&&E.channels.length>0;
- // 통합 앱 전용 영역이 나타나거나 숨으면 알려 준다(숨겨도 입력한 값은 남는다)
- const set=v=>{ const was=appScope(E); E.channels=v; rCh(); onOrderChange(); const now=appScope(E);
-  if(was!==now&&E.kind!=='ps') toast(now?'통합 앱 전용 영역이 아래에 나타났어요':'통합 앱 전용 영역을 숨겼어요. 입력한 값은 남아 있어요'); };
+ const set=v=>{ E.channels=v; rCh(); onOrderChange(); };
  $('#chAll').addEventListener('change',e=>set(e.target.checked?CHS.slice():[]));
  $$('#sb-ch [data-ch]').forEach(c=>c.addEventListener('change',()=>{ const v=c.dataset.ch; set(CHS.filter(x=>x===v?c.checked:E.channels.includes(x))); }));
 }
@@ -319,7 +315,7 @@ function colorCap(){
 }
 function rAttr(){
  const box=$('#attrBox'); if(!box) return;
- if(E.kind==='ps'){ box.innerHTML=''; return; }
+ if(E.kind==='ps'||E.kind==='mp'){ box.innerHTML=''; return; }
  if(!E.conn.length){ box.innerHTML=seoRow('공통 속성',null,'<span class="pill">연결 상품을 추가하면 EPC 설정값을 불러와요</span>'); return; }
  const A=epcAttr(E), [col,cap]=colorCap(), chips=a=>a.map(v=>`<span class="axchip val ch-fix">${esc(v)}</span>`).join('')||'<span class="chip">-</span>';
  const pre=A.pre.on==='Y'?`Y (${A.pre.from||'-'} ~ ${A.pre.to||'-'})`:'N';
@@ -374,7 +370,7 @@ function chIssues(d){ return ctlChs(d).flatMap(ch=>{ const c=chOf(d,ch), e=[];
 function rChset(){
  const box=$('#chsetBox'); if(!box) return;
  const C=ctlChs(E);
- if(E.kind==='ps'||!C.length){ box.innerHTML=''; return; }
+ if(E.kind==='ps'||E.kind==='mp'||!C.length){ box.innerHTML=''; return; }
  // 적용 방식: same = 모든 채널에 같은 값(탭 하나), each = 채널(탭)마다 따로. 채널이 1개면 고를 필요 없이 same
  const same=C.length<2||E.chMode!=='each';
  // 섹션 제목은 고른 채널에 따라 바뀐다: 예) 통합 APP · 통합 WEB 전용 노출
@@ -434,40 +430,114 @@ function pvChHidden(k,v){
 
 // ---------- 1. 전시 유형 ----------
 // v0.3: PO/MP(기본) · MP 상품 전시(원천 PO + 고정 MP, 정책서 07 MP 고정 전시) · PS 상품 전시(T우주 SKU 단위 PS 소개)
-const KIND_NTC={mp:'원천 PO 1개에 혜택(MP) 1개를 고정해 전시합니다. 가격과 PO 구성은 EPC 그대로이고, 고객은 고정된 혜택으로 가입해요. 같은 PO의 다른 혜택은 전시를 따로 만들어요.',
+// v0.3.2 MP 상품 전시(스펙: MP 상품 전시 섹션별 동작 · FO 미리보기)
+//  연결 상품 = EPC MP 상품 1개(PO 연결 없음, E.conn은 비운다) · 고객 선택 방식 = 읽기 전용 1줄(고정형 · MP 1개)
+//  노출 채널 = 체크 박스만(공통 속성 숨김) · 채널별 설정 숨김 · 전시 정보 = 대표 이미지 선택, 오퍼링 문구 탭 → 제공 혜택 문구
+//  콘텐츠 정보 = MP 기본 항목 8개 · 구매 후기 · 전문가 리뷰 · 연관 상품 = 기본 N · 주문 프로세스 연동 = 필수, ON 잠금, MP용 프로세스만
+//  값: E.mp = MP ID(MP_DEMO), E.orderPlan = MP_PROCS 항목 + mpProc:true
+const KIND_NTC={mp:'EPC의 MP 상품(혜택 · 할인) 1개를 연결해 전시합니다. MP는 고객이 보유한 회선에 가입합니다.<br>고객이 고르는 항목(결합 유형, 회선, 할인 방식, 약정 등)은 주문 프로세스의 주문 코너에서 설정합니다.',
  ps:'전시 콘텐츠 등록용입니다. PS(SKU 단위) 1개만 불러오고, 전시 설정 · 전시 정보 · 이미지 · 콘텐츠 정보(상품 고시 등)만 입력해요. 고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 쓰지 않아요.'};
+// 시연 MP 목록(EPC 연동 전 예시값). bnf = EPC 상품 속성의 제공 혜택(상품을 연결하면 미리보기 '제공 혜택'에 자동 노출). desc는 [EPC 정보 불러오기]로 설명을 채울 때 쓴다(시연값)
+const MP_DEMO=[
+ {id:'MP-0001',bnf:['가족 모두 휴대폰 요금 할인','인터넷 · IPTV 요금 추가 할인'],ver:'v1.0',name:'요금제 가족 결합',target:'이동전화 요금제 + 인터넷·IPTV 보유 고객',from:'2026-01-01',to:'2027-12-31',sale:'판매중',cat:'결합',desc:'가족과 결합하면 요금 할인'},
+ {id:'MP-0002',bnf:['휴대폰 요금 할인','인터넷 요금 할인'],ver:'v1.0',name:'나 혼자 결합 할인',target:'이동전화 요금제 + 인터넷 보유 고객',from:'2026-01-01',to:'2027-12-31',sale:'판매중',cat:'결합',desc:'휴대폰과 인터넷 결합 할인'},
+ {id:'MP-0003',bnf:['기본료 · 통화료 감면'],ver:'v1.0',name:'복지 요금 감면',target:'이동전화 요금제 보유 고객',from:'',to:'',sale:'판매중',cat:'요금 감면',desc:'복지 대상 고객 요금 감면'},
+ {id:'MP-0004',bnf:['월 요금 할인','데이터 추가 제공'],ver:'v1.0',name:'군 장병 요금 할인',target:'이동전화 요금제 보유 고객',from:'',to:'',sale:'판매중',cat:'요금 감면',desc:'군 복무 장병 요금 할인'},
+ {id:'MP-0005',bnf:['휴대폰 요금 할인'],ver:'v1.0',name:'구 가족 결합(종료)',target:'이동전화 요금제 보유 고객',from:'2024-01-01',to:'2025-12-31',sale:'판매종료',cat:'결합',desc:'판매 종료된 가족 결합'}];
+const mpDemo=id=>MP_DEMO.find(x=>x.id===id);
+const mpPeriod=m=>m.from?`${m.from} ~ ${m.to}`:'상시';
+// MP용 주문 프로세스(시연값). flow = 미리보기 코너 구성
+const MP_PROCS=[
+ {id:'TP-ORD-101',name:'결합 가입 주문 프로세스',ver:'V1',type:'결합',cat:'MP(결합)',ctn:3,cn:6,flow:'bundle'},
+ {id:'TP-ORD-102',name:'복지 할인 신청 주문 프로세스',ver:'V1',type:'요금 감면',cat:'MP(요금 감면)',ctn:2,cn:3,flow:'welfare'},
+ {id:'TP-ORD-103',name:'군 장병 할인 신청 주문 프로세스',ver:'V1',type:'요금 감면',cat:'MP(요금 감면)',ctn:2,cn:3,flow:'army'}];
+const isMpPlan=p=>!!(p&&p.mpProc);
+// 콘텐츠 정보 MP 기본 항목(템플릿 연결, 읽기 전용). 본문은 시연 문구
+// 상담 · 지점 · 대리점 방문 · 정부24 · 복지로 안내는 콘텐츠 정보에서 빼고 별도 섹션(MP_GUIDE)으로 둔다
+const MP_XDEF=[
+ ['fee','이용 요금','<p>결합 회선 수와 요금제에 따라 할인 금액이 달라요.</p>'],
+ ['use','이용 안내','<p>가입 후 다음 달 요금부터 할인이 적용돼요.</p>'],
+ ['target','가입 대상','<p>이동전화 요금제를 이용 중인 고객이 가입할 수 있어요.</p>'],
+ ['caution','유의 사항','<p>결합 회선을 해지하면 할인이 중단될 수 있어요.</p>'],
+ ['docs','필요 서류 안내','<p>가족 관계를 확인할 수 있는 서류가 필요해요.</p>']];
+// MP 상품 전시 안내 섹션: 섹션마다 노출 ON/OFF만 정한다. 문구 · 버튼은 시연값(관리 위치 미정). 값: E.mpGuide = {gcs, gshop, ggov}
+const MP_GUIDE=[
+ ['gcs','상담 안내','상담으로 빠르게 도와드려요',['고객센터 114 (SKT 휴대폰에서 무료)','평일 09:00 ~ 18:00 (토요일 · 공휴일 휴무)'],null,['전화 가입상담 신청','1:1 채팅 상담']],
+ ['gshop','지점 · 대리점 방문 안내','지점 · 대리점 방문 가입',null,['필요 서류 확인','가까운 지점 · 대리점 방문','지점 · 대리점에서 접수'],['매장 찾기']],
+ ['ggov','정부24 · 복지로 홈페이지 신청','정부24, 복지로 홈페이지 신청',['정부24 또는 복지로 홈페이지에서 신청할 수 있어요.'],null,['정부24 바로가기','복지로 바로가기']]];
+const GUIDE_KEYS=MP_GUIDE.map(g=>g[0]);
+function rGuide(){
+ if(!E.mpGuide) E.mpGuide={gcs:true,gshop:true,ggov:true};
+ MP_GUIDE.forEach(([k,,title,lines,steps,btns])=>{
+  const on=!!E.mpGuide[k], sw=$(`[data-gd="${k}"]`); if(!sw) return;
+  sw.checked=on; sw.disabled=VIEW==='view';
+  $('#sb-'+k).innerHTML=`<div class="ftbl">${seoRow('타이틀',null,esc(title))}${lines?seoRow('안내 문구',null,lines.map(esc).join('<br>')):''}${steps?seoRow('가입 절차',null,steps.map((x,i)=>`${i+1}. ${esc(x)}`).join('<br>')):''}${seoRow('버튼',null,btns.map(b=>`<span class="pill">${esc(b)}</span>`).join(' '))}</div>`;
+ });
+}
+$$('[data-gd]').forEach(c=>c.addEventListener('change',()=>{ E.mpGuide[c.dataset.gd]=c.checked; rGuide(); refresh(); }));
+const mpTxt=h=>h.replace(/<[^>]+>/g,'');
+// 기본 항목은 EPC에서 불러오거나 템플릿 불러오기로 들어오는 읽기 전용 콘텐츠다. 순서 변경 · 노출 ON/OFF만 되고 편집 · 삭제는 없다
+// 유형을 MP로 바꾸면 기본 항목을 앞에 넣고, 다른 유형으로 바꾸면 뺀다. 사용자가 직접 추가한 항목은 그대로 둔다
+function syncMpExtras(){
+ if(E.kind!=='mp'){ E.extras=E.extras.filter(x=>!x.mpDef); return; }
+ const have=new Set(E.extras.map(x=>x.mpDef).filter(Boolean));
+ // 예전에 콘텐츠 정보에 넣었던 상담 · 방문 · 정부24 안내 항목은 별도 섹션으로 옮겨 뺀다
+ E.extras=E.extras.filter(x=>!x.mpDef||MP_XDEF.some(([k])=>k===x.mpDef));
+ const add=MP_XDEF.filter(([k])=>!have.has(k)).map(([k,t,txt])=>({id:nid(),t,mode:'epc',txt:mpTxt(txt),show:true,mpDef:k}));
+ // 예전에 편집 모드(direct)로 넣은 기본 항목은 읽기 전용으로 바꾼다
+ E.extras.forEach(x=>{ const d=x.mpDef&&MP_XDEF.find(([k])=>k===x.mpDef); if(d){ x.mode='epc'; x.t=d[1]; x.txt=mpTxt(d[2]); delete x.tbd; } });
+ E.extras=[...add,...E.extras];
+}
+// MP 유형으로 열거나 바꿀 때 값 정리: PO 연결 없음 · 주문 받기 ON · MP용 프로세스만
+function mpNorm(d,fresh){
+ if(d.kind!=='mp') return;
+ d.conn=[]; if(!mpDemo(d.mp)) d.mp='';
+ d.method='fixed'; d.orderOn=true; if(d.orderPlan&&!isMpPlan(d.orderPlan)) d.orderPlan=null;
+ // 구매 후기 · 전문가 리뷰는 MP 상품 전시에서 쓰지 않는다
+ d.review=false; d.expert=false;
+ if(fresh){ d.related=false; if(d.sim) d.sim.on=false; d.mpGuide={gcs:true,gshop:true,ggov:true}; }
+}
 function rKind(){
  // v0.3.1: 'PO/MP 상품 전시' → 'PO 상품 전시'
  const T=[['po','PO 상품 전시'],['mp','MP 상품 전시'],['ps','PS 상품 전시']];
  $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
  ${!KIND_NTC[E.kind]?'':ntc('',KIND_NTC[E.kind]).replace('class="ntc ','style="margin:0" class="ntc ')}`;
- $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.mp=''; E.areas=k!=='ps'?[newArea('','fixed')]:[]; E.method='fixed'; psReset(E); syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefits(E); renderAll(); }));
+ $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if((E.conn.length||E.mp)&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.mp=''; E.areas=k!=='ps'?[newArea('','fixed')]:[]; E.method='fixed'; psReset(E); if(isMpPlan(E.orderPlan)&&k!=='mp') E.orderPlan=null; mpNorm(E,true); syncMpExtras(); syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefits(E); renderAll(); }));
 }
 
 // ---------- 2. 연결 상품 ----------
 function rConn(){
+ if(E.kind==='mp') return rConnMp();
  const po=E.kind!=='ps';
  const rows=po?E.conn.map(id=>{ const p=poBy(id), x=epcOf(p); return `<tr><td>${p.epc}</td><td>${p.ver}</td><td><b>${esc(p.name)}</b>${hasSel(p)?' <span class="chip acc">선택 PS 있음</span>':''}</td><td>${x.lv2}</td><td>${x.lv3}</td><td>${esc(x.spec)}</td><td><span class="chip ok">${p.sale}</span></td><td><button type="button" class="btn sm" data-view="${id}">보기</button></td><td><button type="button" class="btn sm" data-un="${id}">연결 해제</button></td></tr>`; }).join('')
-  :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td><b>${esc(s.name)}</b></td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="chip ok">${s.po.sale}</span></td><td><button type="button" class="btn sm" data-view="${s.po.id}">보기</button></td><td><button type="button" class="btn sm" data-un="${k}">연결 해제</button></td></tr>`; }).join('');
- $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 ${po?'상품':'PS'}</b><span class="chip acc">${E.conn.length}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${E.conn.length?'':'disabled'}>초기화</button><button type="button" class="btn primary sm" id="connAdd">${E.kind==='mp'?(E.conn.length?'원천 PO 변경':'+ 원천 PO 추가'):po?'+ 상품 추가':E.conn.length?'PS 변경':'+ PS 불러오기'}</button></div>
- ${E.conn.length?`<div class="cl"><table><thead><tr>${po?'<th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>LV2</th><th>LV3</th><th>Product Spec</th><th>판매상태</th><th>상세</th><th>삭제</th>':'<th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매 상태</th><th>상세</th><th>삭제</th>'}</tr></thead><tbody>${rows}</tbody></table></div>`
- :`<div class="empty">${E.kind==='mp'?'MP가 있는 원천 PO 1개를 추가하세요.':po?'연결 상품을 추가하세요.':'전시 콘텐츠를 등록할 PS 1개를 불러오세요'}</div>`}`+(E.kind==='mp'?mpBlock():'');
- $$('#sb-conn input[name=mpPick]').forEach(r=>r.addEventListener('change',()=>{ E.mp=r.value; rConn(); refresh(); toast(`${mpBy(E.mp).name}을 고정했어요`); }));
- $$('#sb-conn tr[data-mp]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; const r=tr.querySelector('input'); if(!r.checked){ r.checked=true; r.dispatchEvent(new Event('change')); } }));
+  :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td><b>${esc(s.name)}</b></td><td>${esc(s.desc||'-')}</td><td>상시</td><td><span class="chip ok">${s.po.sale}</span></td><td><button type="button" class="btn sm" data-view="${s.po.id}">보기</button></td><td><button type="button" class="btn sm" data-un="${k}">연결 해제</button></td></tr>`; }).join('');
+ $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 상품</b><span class="chip acc">${E.conn.length}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${E.conn.length?'':'disabled'}>초기화</button>${po?'<button type="button" class="btn primary sm" id="connAdd">+ 상품 추가</button>':`<span title="${E.conn.length?PS_ONE:''}"><button type="button" class="btn primary sm" id="connAdd" ${E.conn.length?'disabled':''}>상품 추가</button></span>`}</div>
+ ${E.conn.length?`<div class="cl"><table><thead><tr>${po?'<th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>LV2</th><th>LV3</th><th>Product Spec</th><th>판매상태</th><th>상세</th><th>삭제</th>':'<th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>PS Spec</th><th>유효기간</th><th>판매 상태</th><th>상세</th><th>삭제</th>'}</tr></thead><tbody>${rows}</tbody></table></div>`
+ :`<div class="empty">${po?'연결 상품을 추가하세요.':'상품 추가로 전시할 PS 상품 1개를 연결하세요'}</div>`}`;
  $('#connAdd').addEventListener('click',po?openConnModal:openPsModal);
  // 초기화: 연결한 상품을 모두 해제하고 구성 영역 배정·옵션 매핑에서도 뺀다
  $('#connReset').addEventListener('click',()=>{ if(!E.conn.length) return; E.conn=[]; if(po) E.areas.forEach(a=>{ a.pos=[]; a.map={}; }); onConnChange(); toast('연결 상품을 초기화했어요'); });
  $$('#sb-conn [data-view]').forEach(b=>b.addEventListener('click',()=>openPoDetail(b.dataset.view)));
  $$('#sb-conn [data-un]').forEach(b=>b.addEventListener('click',()=>{ const id=b.dataset.un; E.conn=E.conn.filter(x=>x!==id); if(po) E.areas.forEach(a=>{ a.pos=a.pos.filter(x=>x!==id); Object.keys(a.map).forEach(k=>{ if(a.map[k]===id) delete a.map[k]; }); }); onConnChange(); toast('연결을 해제했어요'); }));
 }
-// MP 상품 전시: 원천 PO의 요금프로그램그룹에서 고정할 MP 1개를 고른다. 고르면 LOCK(전시ID마다 원천 PO + 고정 MP 1개)
-function mpBlock(){
- const p=poBy(E.conn[0]); if(!p) return '';
- const L=mpsOf(p), e=mpIssues(E).filter(x=>!x.startsWith('고정할 MP'));
- return `<div class="sec-h" style="margin:20px 0 10px"><b>고정 MP</b>${mpBy(E.mp)?'<span class="chip acc">LOCK</span>':''}<small class="rl-id">${esc(p.name)}의 요금프로그램그룹에서 1개를 고정해요. 어떤 MP를 골라도 가격은 같아요</small></div>
- ${L.length?`<div class="cl"><table><thead><tr><th class="c">고정</th><th>MP ID</th><th>MP명</th><th>요금프로그램그룹</th><th>원천 서비스</th><th>유효기간</th><th>설명</th></tr></thead><tbody>${L.map(m=>`<tr data-mp="${m.key}" style="cursor:pointer"><td class="c"><input type="radio" name="mpPick" value="${m.key}" ${E.mp===m.key?'checked':''} aria-label="${esc(m.name)} 고정"></td><td>${m.id}</td><td><b>${esc(m.name)}</b></td><td>${esc(m.group.name)} (${m.group.min}~${m.group.max})</td><td>${m.svc}</td><td>${m.from} ~ ${m.to}</td><td>${esc(m.desc)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">이 PO에는 고를 수 있는 MP가 없어요. MP가 있는 PO로 바꾸세요</div>'}
- ${e.map(x=>`<div class="er" style="margin-top:8px">${esc(x)}</div>`).join('')}`;
+const PS_ONE='PS 상품 전시는 PS 1개만 연결합니다';
+// v0.3.2 MP 상품 전시: MP 1개만 연결한다. 연결되면 [상품 추가]를 막는다
+const MP_ONE='MP 상품 전시는 MP 1개만 연결합니다';
+function rConnMp(){
+ const m=mpDemo(E.mp);
+ $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 상품</b><span class="chip acc">${m?1:0}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${m?'':'disabled'}>초기화</button><span title="${m?MP_ONE:''}"><button type="button" class="btn primary sm" id="connAdd" ${m?'disabled':''}>상품 추가</button></span></div>
+ ${m?`<div class="cl"><table><thead><tr><th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>MP Spec</th><th>유효기간</th><th>판매 상태</th><th>상세</th><th>삭제</th></tr></thead><tbody><tr><td>${m.id}</td><td>${m.ver}</td><td><b>${esc(m.name)}</b></td><td>${esc(m.target)}</td><td>${mpPeriod(m)}</td><td><span class="chip ${m.sale==='판매중'?'ok':''}">${m.sale}</span></td><td><button type="button" class="btn sm" id="mpView">보기</button></td><td><button type="button" class="btn sm" id="mpUn">연결 해제</button></td></tr></tbody></table></div>`
+ :'<div class="empty">상품 추가로 전시할 MP 상품 1개를 연결하세요</div>'}`;
+ const clear=msg=>{ E.mp=''; onConnChange(); toast(msg); };
+ $('#connAdd').addEventListener('click',()=>{ if(mpDemo(E.mp)){ toast(MP_ONE); return; } openMpModal(); });
+ $('#connReset').addEventListener('click',()=>{ if(m) clear('연결 상품을 초기화했어요'); });
+ { const u=$('#mpUn'); if(u) u.addEventListener('click',()=>clear('연결을 해제했어요')); }
+ { const v=$('#mpView'); if(v) v.addEventListener('click',()=>openMpDetail(m)); }
 }
+function openMpDetail(m){ modal(m.name,m.id,640);
+ const R=[['EPC 상품 ID',m.id],['버전',m.ver],['EPC 상품명',m.name],['MP 유형',m.cat],['MP Spec',m.target],['유효기간',mpPeriod(m)],['판매 상태',m.sale],['설명',m.desc]];
+ $('#mBody').innerHTML=`<div class="ftbl">${R.map(([l,v])=>seoRow(l,null,esc(v))).join('')}</div>`;
+ $('#mFoot').innerHTML='<button type="button" class="btn primary" id="mc">닫기</button>'; $('#mc').addEventListener('click',closeModal); }
 // 고정형·선택형은 영역이 1개라 연결 상품이 그대로 영역의 PO가 된다
 function syncSingle(){ if(E.kind==='ps'||E.method==='complex'||!E.areas[0]) return; const a=E.areas[0]; a.pos=[...a.pos.filter(id=>E.conn.includes(id)),...E.conn.filter(id=>!a.pos.includes(id))]; a.def=(a.def||[]).filter(id=>a.pos.includes(id)); Object.keys(a.map).forEach(k=>{ if(!a.pos.includes(a.map[k])) delete a.map[k]; }); if(a.mode==='opt'&&areaHasSel(a)) a.mode='list'; }
 // 연결 상품이 가진 템플릿을 콘텐츠 정보에 자동으로 넣는다(템플릿 연결). 이미 있는 템플릿은 다시 넣지 않고,
@@ -494,18 +564,22 @@ const autoBadges=()=>[];
 const SEC_LB={ch:'노출 채널',chset:'채널별 노출 제어',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
 // v0.3: 전문가 리뷰는 이 화면에만 있어 구매 후기 다음에 넣는다(이전 버전 화면은 공용 SECS를 그대로 쓴다)
 // v0.3.1: 화면 순서 = 공통(전시 유형 → 연결 상품 → 고객 선택 방식 → 노출 채널 → 전시 정보 → 콘텐츠 정보) → 통합 앱 전용(구매 후기 → 전문가 리뷰 → 연관 상품 → 주문)
-const SEC_ORD=['kind','conn','method','ch','chset','info','extra','review','expert','rel','order'];
-const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',true,'채널별 노출 제어'],s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
+const SEC_ORD=['kind','conn','method','ch','chset','info','extra','gcs','gshop','ggov','review','expert','rel','order'];
+const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',true,'채널별 노출 제어'],...MP_GUIDE.map(([k,n])=>[k,n,false,n]),s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
  .sort((a,b)=>(SEC_ORD.indexOf(a[0])+1||99)-(SEC_ORD.indexOf(b[0])+1||99));
 // 통합 앱 전용 영역의 섹션: 노출 채널에 통합 APP · WEB이 없으면 '해당 없음'으로 보고 검사하지 않는다
-const APP_SECS=['chset','order','review','expert','rel'];
-const appScope=d=>d.kind!=='ps'&&appOn(d);
+// v0.3.2: 통합 앱 전용 영역(구매 후기 · 전문가 리뷰 · 연관 상품 · 주문)을 노출 채널로 숨기는 기능은 쓰지 않는다. 항상 노출한다
+//  채널별 노출 제어(chset)만 통합 APP · WEB을 고를 때 보인다
+const APP_SECS=['chset'];
+// v0.3.2 MP 상품 전시: 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동을 노출 채널과 관계없이 고정으로 보여 준다
+const appScope=d=>d.kind!=='ps'&&d.kind!=='mp'&&appOn(d);
+const MP_HIDE=['chset','method','review','expert'];
 // 섹션 상태: 공용 규칙(display-rules) + 이 화면에만 있는 전문가 리뷰
 // PS 상품 전시: 전시 콘텐츠 등록용. 연결 PS(1개) · 전시 설정(노출 영역) · 전시 정보(이미지 포함) · 콘텐츠 정보(상품 고시 등)만 쓴다.
 //  고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 화면에서 숨기고 검사에서도 뺀다
 const PS_HIDE=['chset','method','review','expert','rel','order'];
 // v0.3.2: 채널별 노출 제어는 공통 영역(노출 채널 바로 아래)에 있지만 통합 APP · WEB을 고를 때만 보인다
-const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||k==='chset'&&!appScope(d)||secHidden(k,d);
+const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||d.kind==='mp'&&MP_HIDE.includes(k)||GUIDE_KEYS.includes(k)&&d.kind!=='mp'||k==='chset'&&!appScope(d)||secHidden(k,d);
 // PS로 바꾸거나 PS 전시를 열 때: PS는 1개만, 숨긴 섹션 값은 끈다
 function psReset(d){ if(d.kind!=='ps') return; d.conn=d.conn.slice(0,1); d.areas=[]; d.method='fixed'; d.review=false; d.expert=false; d.related=false; if(d.sim) d.sim.on=false; d.orderOn=false; }
 // v0.3.2: 채널별 노출 제어는 이 화면에만 있어 필수 여부를 여기서 정한다(통합 APP · WEB을 고를 때만)
@@ -516,24 +590,22 @@ const secState=d=>{ const S=sectionState(d); S.expert={st:d.expert?'on':'off',e:
  // 채널별 노출 제어(통합 앱 전용 영역): 채널 전용 재고 수량 등 검사
  { const e=d.kind==='ps'?[]:chIssues(d); S.chset=e.length?{st:'warn',e}:{st:'done',e:[]}; }
  if(d.kind==='ps'){ PS_HIDE.forEach(k=>S[k]={st:'na',e:[]}); S.sim={st:'na',e:[]}; if(d.conn.length>1) S.conn={st:'warn',e:['PS 상품 전시는 PS 1개만 연결할 수 있어요']}; }
- // MP 상품 전시: 원천 PO 1개 + 고정 MP 1개 저장 검증(정책서 07)
- if(d.kind==='mp'&&d.conn.length){ const e=mpIssues(d); if(e.length) S.conn={st:'warn',e}; }
- if(d.kind!=='ps'&&!appScope(d)){ APP_SECS.forEach(k=>S[k]={st:'na',e:[]}); S.sim={st:'na',e:[]}; }
+ if(d.kind!=='ps'&&!appScope(d)) APP_SECS.forEach(k=>S[k]={st:'na',e:[]});
+ GUIDE_KEYS.forEach(k=>S[k]=d.kind!=='mp'?{st:'na',e:[]}:{st:(d.mpGuide||{})[k]===false?'off':'on',e:[]});
+ if(d.kind==='mp') mpState(d,S);
  return S; };
-const blockingV=d=>{ const S=secState(d); return SECS.filter(([k])=>isReq(k,S)&&(S[k].st==='todo'||S[k].st==='warn')).flatMap(([k,l])=>S[k].e.length?S[k].e.map(x=>[k,l,x]):[[k,l,'입력이 필요해요']]); };
-// MP 고정 전시 저장 검증: 고정 MP가 원천 PO의 MP 목록에 있음 · 원천 PO 1개 · MP 1개(선택 수 최대 1, 배타는 1개라 위반 없음) · MP 유효기간이 전시기간을 포함
-function mpIssues(d){
- if(d.kind!=='mp') return [];
- const e=[], p=poBy(d.conn[0]), m=mpBy(d.mp);
- if(d.conn.length>1) e.push('원천 PO는 1개만 연결해요');
- if(p&&!mpsOf(p).length) e.push(`${p.name}에는 고를 수 있는 MP가 없어요`);
- if(!d.mp) e.push('고정할 MP를 1개 고르세요');
- else if(!m||m.po!==p) e.push('고정 MP가 원천 PO의 MP 목록에 없어요');
- else if(d.from<m.from||d.noEnd||(d.to||'')>m.to) e.push(`MP 유효기간(${m.from} ~ ${m.to})이 전시기간을 포함하지 않아요${d.noEnd?'. 전시 종료일을 MP 종료일 안으로 정하세요':''}`);
- return e;
+// MP 상품 전시 검사: 연결 MP 1개 · 고객 선택 방식은 읽기 전용(필수 아님) · 대표 이미지 선택 · 제공 혜택 문구 · 주문 프로세스 필수
+function mpState(d,S){
+ MP_HIDE.forEach(k=>S[k]={st:'na',e:[]});
+ S.conn=mpDemo(d.mp)?{st:'done',e:[]}:{st:'todo',e:['MP를 1개 연결하세요']};
+ S.method={st:'na',e:[],opt:true};
+ S.basic.e=S.basic.e.filter(t=>t!=='대표이미지를 등록하세요'); if(!S.basic.e.length) S.basic.st='done';
+ S.info={st:S.basic.st==='done'&&S.desc.st==='done'?'done':S.basic.st==='todo'&&S.desc.st==='todo'?'todo':'warn',e:[...S.basic.e,...S.desc.e]};
+ S.order=isMpPlan(d.orderPlan)?{st:'done',e:[]}:{st:'todo',e:['MP용 주문 프로세스를 연결하세요']};
 }
+const blockingV=d=>{ const S=secState(d); return SECS.filter(([k])=>isReq(k,S)&&(S[k].st==='todo'||S[k].st==='warn')).flatMap(([k,l])=>S[k].e.length?S[k].e.map(x=>[k,l,x]):[[k,l,'입력이 필요해요']]); };
 const lv3Text=()=>lv3Combo().join(' + ');
-function onConnChange(){ if(E.kind==='mp'&&E.mp&&!E.conn.includes(E.mp.split('|')[0])) E.mp=''; syncSingle(); PV={}; syncPtype(); syncBenefits(E); const n=syncConnTpls(); rConn(); rMethod(); rAttr(); rChset(); rBasic(); rDesc(); rSearch(); rRel(); rOrder(); refresh(); return n; }
+function onConnChange(){ syncSingle(); PV={}; syncPtype(); syncBenefits(E); const n=syncConnTpls(); rConn(); rMethod(); rAttr(); rChset(); rBasic(); rDesc(); rSearch(); rRel(); rOrder(); refresh(); return n; }
 
 // ---------- 3. 고객 선택 방식 ----------
 const curArea=()=>E.areas.find(a=>a.id===cur);
@@ -541,6 +613,7 @@ const areaLabel=a=>a.name.trim()||(E.method==='complex'?`구성 영역 ${E.areas
 function rMethod(){
  const box=$('#sb-method');
  if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 판매 단위가 아니라서 고객 선택 방식을 쓰지 않아요.'); return; }
+ if(E.kind==='mp'){ box.innerHTML=`<div class="ftbl">${seoRow('구성 방식',null,'고정형 · MP 1개 <span class="pill">변경 불가</span>')}</div><p class="mp-gray">MP 상품 전시에서 고객이 고르는 항목(결합 유형, 회선, 할인 방식, 약정 등)은 주문 프로세스의 주문 코너에서 설정합니다.</p>`; return; }
  const M=[['fixed','고정형','연결 상품을 모두 제공'],['select','선택형','연결 상품 중에서 목록·옵션으로 고름'],['complex','복합형','구성 영역 N개를 순서대로 조합']];
  const m=M.find(x=>x[0]===E.method);
  // v0.3.2: 상품 유형 · 공제항목 반영 · 구성 방식을 한 표로 묶는다
@@ -855,11 +928,16 @@ const INFO=[['basic','기본 정보'],['desc','상세 설명'],['search','검색
 let curI='basic';
 // 탭 옆 작성 상태: 미작성은 표시하지 않는다
 function infoChips(){ const S=secState(E); INFO.forEach(([k])=>{ const ch=$('#ist-'+k); if(!ch) return; const [t,c]=STL[S[k].st]; ch.textContent=S[k].st==='todo'?'':t; ch.className=c; }); }
+// MP 상품 전시: [EPC 정보 불러오기]는 연결한 MP의 이름 · 설명으로 전시명 · 설명을 채운다
+const canEpcLoad=()=>E.kind==='mp'?!!mpDemo(E.mp):E.conn.length>0;
+function mpEpcLoad(){ const m=mpDemo(E.mp); if(!m) return;
+ if((E.name.trim()||E.brief.trim())&&!confirm('입력한 전시명 · 설명을 연결한 MP의 이름 · 설명으로 바꿀까요?')) return;
+ E.name=m.name.slice(0,NAME_MAX); E.brief=m.desc.slice(0,BRIEF_MAX); curI='basic'; rInfo(); rBasic(); refresh(); toast('MP 이름 · 설명으로 전시명 · 설명을 채웠어요'); }
 function rInfo(){
  $('#infoList').innerHTML=INFO.map(([k,l])=>`<button type="button" role="tab" data-ik="${k}" class="${k===curI?'on':''}" aria-selected="${k===curI}">${l}<small id="ist-${k}"></small></button>`).join('')
   // 탭 줄 오른쪽 끝: EPC 정보 불러오기 (연결 상품이 있어야 쓸 수 있다)
-  +`<span class="itabs-r"><button type="button" class="btn sm ai-btn" id="epcLoad" ${E.conn.length?'':'disabled'}>${svg(IC.spark)}EPC 정보 불러오기</button></span>`;
- $('#epcLoad').addEventListener('click',openEpcLoad);
+  +`<span class="itabs-r"><button type="button" class="btn sm ai-btn" id="epcLoad" ${canEpcLoad()?'':'disabled'}>${svg(IC.spark)}EPC 정보 불러오기</button></span>`;
+ $('#epcLoad').addEventListener('click',()=>E.kind==='mp'?mpEpcLoad():openEpcLoad());
  INFO.forEach(([k])=>{ $('#sb-'+k).hidden=k!==curI; });
  infoChips();
  $$('#infoList [data-ik]').forEach(el=>el.addEventListener('click',()=>{ curI=el.dataset.ik; rInfo(); }));
@@ -867,13 +945,13 @@ function rInfo(){
 // 순서: 전시명 → 설명 → 전시 상품 배지 → 대표이미지 → 추가이미지 → 전시 기간 → 전시 여부 (전시 채널은 전시 채널 섹션으로 이동)
 function rBasic(){
  const box=$('#sb-basic');
- { const eb=$('#epcLoad'); if(eb) eb.disabled=!E.conn.length; }
+ { const eb=$('#epcLoad'); if(eb) eb.disabled=!canEpcLoad(); }
  box.innerHTML=` <!-- v0.2.4: 기본 정보는 연관 및 유사 상품 문구와 같은 표(왼쪽 항목명 · 오른쪽 입력) -->
  <div class="ftbl binfo">
  ${seoRow('전시명',{id:'nameCnt',v:`${E.name.length}/${NAME_MAX}`},`<input type="text" id="fName" value="${esc(E.name)}" maxlength="${NAME_MAX}" placeholder="고객에게 보이는 이름 (줄바꿈은 &lt;br&gt;)" aria-label="전시명" style="width:100%">`)}
  ${seoRow('설명',{id:'briefCnt',v:`${E.brief.length}/${BRIEF_MAX}`},`<input type="text" id="fBrief" value="${esc(E.brief)}" maxlength="${BRIEF_MAX}" placeholder="전시명 아래에 보이는 짧은 설명" aria-label="설명" style="width:100%">`)}
  ${seoRow('전시 상품 배지',{id:'bCnt',v:`${E.badges.length}/${BADGE_MAX}`},`<div class="row" style="gap:8px;margin:0">${autoBadges(E).map(b=>`<span class="bd auto" style="${bstyle(b)}" title="${b.from} 섹션 설정으로 자동 표시">${esc(b.t)}<small>자동</small></span>`).join('')}${E.badges.map((b,i)=>`<span class="bd" style="${bstyle(b)};cursor:default">${esc(b.t)}<button type="button" class="x" data-bx="${i}" aria-label="${esc(b.t)} 삭제">×</button></span>`).join('')}${E.badges.length<BADGE_MAX?'<span class="bin-w"><input type="text" id="bIn" maxlength="10" placeholder="입력 후 Enter" aria-label="전시 상품 배지 추가"><span class="pill len" id="bInLen">0/10</span></span>':''}</div><div class="er" id="berr"></div>`)}
- ${noImg(E)?seoRow('이미지',null,ntc('info',NOIMG_MSG)):seoRow('대표이미지',{id:'mainCnt',v:`${E.main?1:0}/1`},mainImgHtml())+seoRow('추가이미지',{id:'subCnt',v:`${E.subs.length}/${SUB_MAX}`},subImgHtml())}
+ ${E.kind==='mp'?seoRow('대표 이미지',null,ntc('info',MP_NOIMG))+seoRow('추가 이미지',null,ntc('info',MP_NOIMG)):noImg(E)?seoRow('이미지',null,ntc('info',NOIMG_MSG)):seoRow('대표이미지',{id:'mainCnt',v:`${E.main?1:0}/1`},mainImgHtml())+seoRow('추가이미지',{id:'subCnt',v:`${E.subs.length}/${SUB_MAX}`},subImgHtml())}
  ${seoRow('전시 기간',null,`<div class="row" style="margin:0"><input type="date" id="fFrom" value="${E.from}" aria-label="시작일"><input type="time" id="fFromT" value="${E.fromTime}" aria-label="시작 시간"><span class="pill">~</span><input type="date" id="fTo" value="${E.noEnd?'':E.to}" aria-label="종료일" ${E.noEnd?'disabled':''}><input type="time" id="fToT" value="${E.noEnd?'':E.toTime}" aria-label="종료 시간" ${E.noEnd?'disabled':''}><label class="chkl"><input type="checkbox" id="noEnd" ${E.noEnd?'checked':''}>종료일없음</label></div>`)}
  ${seoRow('전시 여부',null,`<span class="srch-radio" role="radiogroup" aria-label="전시 여부"><label><input type="radio" name="dShow" value="0" ${E.show?'':'checked'}>N</label><label><input type="radio" name="dShow" value="1" ${E.show?'checked':''}>Y</label></span>`)}
  </div>`;
@@ -897,6 +975,8 @@ const readImgs=files=>Promise.all(files.map(f=>new Promise(r=>{ const rd=new Fil
 // 전시 상품 배지 최대 개수 · 전시명 · 설명 최대 글자 수
 const BADGE_MAX=5, NAME_MAX=20, BRIEF_MAX=20;
 const NOIMG_MSG='이동전화 요금제형은 대표 이미지를 쓰지 않아요';
+// MP 상품 전시는 대표 · 추가 이미지를 쓰지 않는다(입력 칸 대신 안내만 보여 준다)
+const MP_NOIMG='대표 이미지를 사용하지 않습니다.';
 // ---------- 4-1. 이미지 (v0.3.2: v0.2.0처럼 대표이미지 1장 · 추가이미지 최대 4장. 기기 구분 없음) ----------
 // 공용 검사 규칙(display-rules)은 E.imgs.mobile이 비었는지로 필수를 보므로, 대표이미지가 있을 때만 대표 + 추가를 넣는다(추가이미지만 있으면 미등록)
 const syncImgs=()=>{ E.imgs={mobile:E.main?[E.main,...E.subs]:[],desktop:[]}; };
@@ -985,7 +1065,7 @@ function rDesc(){
 $('#descFile').addEventListener('change',e=>{ const fs=[...e.target.files]; e.target.value=''; const room=DESC_MAX-E.descImgs.length; readImgs(fs.slice(0,room)).then(l=>{ if(!l.length) return; E.descImgs.push(...l); rDesc(); refresh(); toast(fs.length>room?`상세 이미지는 최대 ${DESC_MAX}장이라 ${l.length}장만 추가했어요`:`상세 이미지 ${l.length}장을 추가했어요`); }); });
 
 // ---------- 6. 콘텐츠 정보 ----------
-function xBadge(x){ if(x.mode==='link') return `<span class="src s-link">${x.auto?'상품 템플릿':'템플릿 연결'}</span>`; if(x.mode==='copy') return '<span class="src s-copy">템플릿 복사</span>'; return x.txt.trim()?'<span class="src s-copy">직접 입력</span>':'<span class="src s-none">미입력</span>'; }
+function xBadge(x){ if(x.mpDef) return '<span class="src s-link">템플릿 연결</span>'; if(x.mode==='link') return `<span class="src s-link">${x.auto?'상품 템플릿':'템플릿 연결'}</span>`; if(x.mode==='copy') return '<span class="src s-copy">템플릿 복사</span>'; return x.txt.trim()?'<span class="src s-copy">직접 입력</span>':'<span class="src s-none">미입력</span>'; }
 const sw=(attr,id,on,label)=>`<label class="switch" title="노출"><input type="checkbox" ${attr}="${id}" ${on?'checked':''} aria-label="${label} 노출"><span aria-hidden="true"></span></label>`;
 // v0.3: 직접 입력은 삭제 버튼 대신 저장 · 취소. 제목 · 본문(HTML 편집기)은 임시값(XD)에 고치고 저장해야 반영된다
 //  - 취소: 저장한 값으로 되돌린다. 한 번도 저장하지 않은 새 콘텐츠는 목록에서 뺀다
@@ -1038,6 +1118,8 @@ function rExtra(){
  dndList('#sb-extra','x',E.extras,()=>{ rExtra(); refresh(); });
  const x=E.extras.find(y=>y.id===curX); if(!x) return;
  if(x.mode==='direct'){ rExtraDirect(x); return; }
+ // MP 기본 항목(EPC): 읽기 전용. 제목 · 본문을 보기만 하고 순서 · 노출은 목록에서 바꾼다
+ if(x.mode==='epc'){ $('#xd').innerHTML=`<div class="row" style="margin-bottom:10px"><span class="src s-link">템플릿 연결</span><b>${esc(x.t)}</b><span class="pill">읽기 전용 · 순서 · 노출만 바꿀 수 있어요</span></div><div class="bx">${esc(x.txt)}</div>`; return; }
  const t=x.src&&tplBy(x.src);
  let body='';
  if(x.mode==='link') body=`<div class="row" style="margin-bottom:10px"><span class="src s-link">템플릿</span><b>${esc(t.n)}</b><span class="pill">${t.id} · ${t.v} · 완전 매핑 전시 ${tplUsers(t.id,'link').length}곳</span></div>${ctnTypes().length>1?`<p class="pill" style="margin:0 0 8px">적용 상품유형(콘텐츠 관리): ${esc(xScope(x))}${xGroup(x)==='공통'?' → 이 전시에서 공통으로 한 번만 노출':` → ${esc(tyShort(xGroup(x)))} 안내`}</p>`:''}<div class="bx">${esc(t.body)}</div>`;
@@ -1236,7 +1318,7 @@ function rCvm(){
 
 // ---------- 8. 주문 구성 방식 ----------
 // 머리줄 스위치 = 주문 받기. ON: 주문 프로세스 관리(order5)의 프로세스를 주문 구성안으로 연결한다. OFF: 주문 버튼 대신 보일 대체 버튼을 정한다
-$('#odOn').addEventListener('change',e=>{ E.orderOn=e.target.checked; setFold($('#sec-order'),true); onOrderChange(); toast(E.orderOn?'주문을 다시 받아요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
+$('#odOn').addEventListener('change',e=>{ if(E.kind==='mp'){ e.target.checked=true; toast(MP_ORD_LOCK); return; } E.orderOn=e.target.checked; setFold($('#sec-order'),true); onOrderChange(); toast(E.orderOn?'주문을 다시 받아요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
 // [키, 이름, 설명, 기본 버튼 문구]
 const OFF_ACT=[['none','버튼 없음','안내 문구만 보여요',''],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['notify','출시 · 입고 알림 신청','신청자에게 알림을 보내요','출시 알림 받기'],['link','다른 전시로 이동','고른 전시 상품으로 보내요','다른 상품 보러가기']];
 const offBtn=o=>o.act==='none'?'':(o.btn||(OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0])[3]);
@@ -1314,9 +1396,38 @@ function bindPlan(){
   else if(k==='rm'){ E.orderPlan=null; rMethod(); onOrderChange(); toast('프로세스 연결을 해제했어요'); }
   else if(k==='go') window.open(PROC_URL(E.orderPlan&&E.orderPlan.id),'_blank'); }));
 }
+// MP 상품 전시: 주문 프로세스 연결 필수. 주문 받기는 ON으로 잠그고 MP용 프로세스만 고른다
+const MP_ORD_LOCK='MP 상품 전시는 주문 프로세스 연결이 필수입니다.';
+function rOrderMp(box){
+ const pl=isMpPlan(E.orderPlan)?E.orderPlan:null;
+ box.innerHTML=`<div class="op-plan"><div class="op-plan-tx">${pl?`<b>${esc(pl.name)}</b><p class="op-meta">${pl.id} · ${pl.ver} · ${pl.cat} · 컨테이너 ${pl.ctn} · 코너 ${pl.cn}</p>`:'<b>주문 프로세스를 선택하세요</b><p class="op-meta">MP 상품 전시는 주문 프로세스 연결이 필수예요</p>'}</div>
+ <div class="op-acts"><button type="button" class="btn ${pl?'':'primary'}" id="mpPlanPick">${pl?'프로세스 변경':'주문 프로세스 선택'}</button>${pl?'<button type="button" class="btn" id="mpPlanRm">해제</button>':''}</div></div>
+ <p class="op-scope">결합 유형 · 회선 · 가족 정보 · 할인 방식 · 서류 제출 · 입영 일자 · 약정 기간은 연결한 프로세스의 주문 코너에서 설정해요.</p>`;
+ $('#mpPlanPick').addEventListener('click',openMpPlanModal);
+ { const r=$('#mpPlanRm'); if(r) r.addEventListener('click',()=>{ E.orderPlan=null; onOrderChange(); toast('프로세스 연결을 해제했어요'); }); }
+}
+function openMpPlanModal(){
+ const m=mpDemo(E.mp); let f=m?m.cat:'전체', sel=isMpPlan(E.orderPlan)?E.orderPlan.id:'';
+ modal('주문 프로세스 선택','MP 상품 전시용',960,'epc');
+ const draw=()=>{ const L=MP_PROCS.filter(p=>f==='전체'||p.type===f);
+  $('#mBody').innerHTML=`${ntc('warn','MP 프로세스 구분 기준은 협의 중입니다. 현재는 MP 유형(결합, 요금 감면)으로 거릅니다. <span class="chip warn">미정</span>').replace('class="ntc ','style="margin:0 0 14px" class="ntc ')}
+  <form class="epc-search" onsubmit="return false"><div class="fields"><label class="l" for="mpT">MP 유형</label><select id="mpT">${['전체','결합','요금 감면'].map(k=>`<option ${k===f?'selected':''}>${k}</option>`).join('')}</select>${m?`<span class="pill">연결한 MP: ${esc(m.name)} (${m.cat})</span>`:''}</div></form>
+  <div class="epc-head"><b>검색결과</b><span>${L.length}건</span></div>
+  <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>프로세스 ID</th><th>프로세스명</th><th>버전</th><th>주문 유형</th><th>컨테이너</th><th>코너</th></tr></thead><tbody>${L.map(p=>`<tr class="${sel===p.id?'on':''}" data-row="${p.id}"><td class="c"><input type="radio" name="mpPl" ${sel===p.id?'checked':''} aria-label="${esc(p.name)} 선택"></td><td>${p.id}</td><td class="nm">${esc(p.name)}</td><td>${p.ver}</td><td>${p.cat}</td><td>${p.ctn}</td><td>${p.cn}</td></tr>`).join('')||'<tr class="empty-row"><td colspan="7">검색 결과가 없어요</td></tr>'}</tbody></table></div>`;
+  $('#mpT').addEventListener('change',e=>{ f=e.target.value; draw(); });
+  $$('#mBody tr[data-row]').forEach(tr=>tr.addEventListener('click',()=>{ sel=tr.dataset.row; draw(); }));
+  $('#mo').disabled=!sel||(isMpPlan(E.orderPlan)&&E.orderPlan.id===sel); };
+ $('#mFoot').innerHTML='<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>선택</button>';
+ $('#mc').addEventListener('click',closeModal);
+ $('#mo').addEventListener('click',()=>{ const p=MP_PROCS.find(x=>x.id===sel); if(!p) return; E.orderPlan={...p,mpProc:true}; E.orderOn=true; PVMP=mpPvDef(); closeModal(); onOrderChange(); toast(`${p.name}을(를) 연결했어요`); });
+ draw();
+}
 function rOrder(){
+ if(E.kind==='mp') E.orderOn=true;
  $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='ps'?'':E.orderOn?'주문 받기':'주문 안 받음';
+ { const od=$('#odOn'), sw=$('#odSw'), mp=E.kind==='mp'; od.disabled=mp||VIEW==='view'; if(sw) sw.title=mp?MP_ORD_LOCK:'주문 받기'; }
  const box=$('#sb-order');
+ if(E.kind==='mp'){ rCtn(); rOrderMp(box); return; }
  rCtn();
  if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 주문을 받지 않아요. 고객이 주문하려면 PS가 속한 PO 전시로 이동합니다.'); return; }
  if(E.orderOn){
@@ -1356,7 +1467,7 @@ function keepQ(id,set,draw){ $(id).addEventListener('input',e=>{ set(e.target.va
 const lv3Of=g=>Object.keys(LV3S).filter(k=>g==='전체'||LV3S[k].lv2===g);
 // f: 입력 중인 조건, a: 조회 버튼으로 적용한 조건
 let CM={sel:new Set(),f:{g:'전체',k:'전체',q:''},a:{g:'전체',k:'전체',q:''}};
-function openConnModal(){ const z={g:'전체',k:'전체',q:''}; CM={sel:new Set(),f:{...z},a:{...z}}; modal('EPC 상품 조회',E.kind==='mp'?'MP가 있는 원천 PO 1개를 고르세요':'LV1 · 상품 (고정)',1200,'epc'); drawConn(); $('#cq').focus(); }
+function openConnModal(){ const z={g:'전체',k:'전체',q:''}; CM={sel:new Set(),f:{...z},a:{...z}}; modal('EPC 상품 조회',E.kind==='mp'?'전시할 EPC 상품 1개를 고르세요':'LV1 · 상품 (고정)',1200,'epc'); drawConn(); $('#cq').focus(); }
 function drawConn(){
  const f=CM.f, opt=(list,v)=>['전체',...list].map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
  $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
@@ -1382,7 +1493,7 @@ function drawConn(){
 // 표만 다시 그린다. 체크는 행 상태만 바꿔 스크롤 위치를 지킨다
 function drawConnRows(){
  const a=CM.a, q=a.q.toLowerCase();
- const L=PO.filter(p=>{ const x=epcOf(p); return (E.kind!=='mp'||mpsOf(p).length>0)&&(a.g==='전체'||x.lv2===a.g)&&(a.k==='전체'||x.lv3===a.k)&&(!q||[p.name,p.id,p.epc,x.spec].some(v=>v.toLowerCase().includes(q))); });
+ const L=PO.filter(p=>{ const x=epcOf(p); return (a.g==='전체'||x.lv2===a.g)&&(a.k==='전체'||x.lv3===a.k)&&(!q||[p.name,p.id,p.epc,x.spec].some(v=>v.toLowerCase().includes(q))); });
  $('#cmCnt').textContent=`${L.length}건`;
  $('#cmRows').innerHTML=L.map(p=>{ const done=E.conn.includes(p.id), on=CM.sel.has(p.id), x=epcOf(p);
   return `<tr class="${done?'done':''} ${on?'on':''}" data-row="${p.id}"><td class="c"><input type="checkbox" data-p="${p.id}" ${on||done?'checked':''} ${done?'disabled':''} aria-label="${esc(p.name)} 선택"></td><td>${p.epc}</td><td>${p.ver}</td><td class="nm">${esc(p.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${x.lv2}</td><td>${x.lv3}</td><td>${esc(x.spec)}</td><td><span class="sale-chip">${p.sale}</span></td></tr>`; }).join('')
@@ -1462,7 +1573,7 @@ function drawPlanRows(){
 const PS_KINDS=['필수 PS','선택 PS 후보'];
 const psPool=()=>PSLIST.filter(s=>s.po.type==='구독서비스');
 const psPos=()=>[...new Map(psPool().map(s=>[s.po.id,s.po])).values()];
-function openPsModal(){ const z={k:'전체',po:'전체',q:''}; CM={sel:E.conn[0]||'',f:{...z},a:{...z}}; modal('PS 조회','전시 콘텐츠를 등록할 PS(SKU 단위) 1개를 고르세요',1200,'epc'); drawPs(); $('#cq').focus(); }
+function openPsModal(){ const z={k:'전체',po:'전체',q:''}; CM={sel:E.conn[0]||'',f:{...z},a:{...z}}; modal('상품 추가','PS 상품 전시는 PS 1개만 연결합니다',1200,'epc'); drawPs(); $('#cq').focus(); }
 function drawPs(){
  const f=CM.f, opt=(list,v)=>[['전체','전체'],...list].map(([k,l])=>`<option value="${esc(k)}" ${k===v?'selected':''}>${esc(l)}</option>`).join('');
  $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
@@ -1473,7 +1584,7 @@ function drawPs(){
   <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
  </form>
  <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
- <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>PS Spec</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
  $('#cmK').addEventListener('change',e=>{ f.k=e.target.value; });
  $('#cmP').addEventListener('change',e=>{ f.po=e.target.value; });
  $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
@@ -1490,10 +1601,46 @@ function drawPsRows(){
  const L=psPool().filter(s=>(a.k==='전체'||s.kind===a.k)&&(a.po==='전체'||s.po.id===a.po)&&(!q||[s.name,psId(s),s.po.name,s.po.id].some(v=>String(v).toLowerCase().includes(q))));
  $('#cmCnt').textContent=`${L.length}건`;
  $('#cmRows').innerHTML=L.map(s=>{ const on=CM.sel===s.key, done=E.conn.includes(s.key);
-  return `<tr class="${on?'on':''}" data-row="${esc(s.key)}"><td class="c"><input type="radio" name="psPick" data-p="${esc(s.key)}" ${on?'checked':''} aria-label="${esc(s.name)} 선택"></td><td>${psId(s)}</td><td>${s.po.ver}</td><td class="nm">${esc(s.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="sale-chip">${s.po.sale}</span></td></tr>`; }).join('')
-  ||'<tr class="empty-row"><td colspan="8">검색 결과가 없어요</td></tr>';
+  return `<tr class="${on?'on':''}" data-row="${esc(s.key)}"><td class="c"><input type="radio" name="psPick" data-p="${esc(s.key)}" ${on?'checked':''} aria-label="${esc(s.name)} 선택"></td><td>${psId(s)}</td><td>${s.po.ver}</td><td class="nm">${esc(s.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${esc(s.desc||'-')}</td><td>상시</td><td><span class="sale-chip">${s.po.sale}</span></td></tr>`; }).join('')
+  ||'<tr class="empty-row"><td colspan="7">검색 결과가 없어요</td></tr>';
  const sync=()=>{ const b=$('#mo'), x=CM.sel&&psBy(CM.sel); b.disabled=!x||E.conn[0]===CM.sel; };
  const pick=key=>{ CM.sel=key; $$('#cmRows tr[data-row]').forEach(tr=>{ const on=tr.dataset.row===key; tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
+ $$('#cmRows [data-p]').forEach(c=>c.addEventListener('change',()=>{ if(c.checked) pick(c.dataset.p); }));
+ $$('#cmRows tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; pick(tr.dataset.row); }));
+ sync();
+}
+// v0.3.2 MP 추가 팝업: 상품 추가 팝업 구조(검색 폼 · 결과 표 · 라디오) 재사용. 판매중이 아닌 MP는 고를 수 없다
+const MP_SALE_MSG='판매중인 상품만 연결할 수 있습니다';
+function openMpModal(){ const z={s:'전체',q:''}; CM={sel:'',f:{...z},a:{...z}}; modal('상품 추가','MP 상품 전시는 MP 1개만 연결합니다',1200,'epc'); drawMp(); $('#cq').focus(); }
+function drawMp(){
+ const f=CM.f, opt=(list,v)=>list.map(k=>`<option value="${esc(k)}" ${k===v?'selected':''}>${esc(k)}</option>`).join('');
+ $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
+  <div class="fields">
+   <label class="l" for="cmS">판매 상태</label><select id="cmS">${opt(['전체','판매중','판매종료'],f.s)}</select>
+   <label class="l" for="cq">검색어</label><input type="text" id="cq" value="${esc(f.q)}" placeholder="MP명 또는 MP ID 입력">
+  </div>
+  <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
+ </form>
+ <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
+ <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>EPC 상품 ID</th><th>EPC 상품명</th><th>MP Spec</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ $('#cmS').addEventListener('change',e=>{ f.s=e.target.value; });
+ $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
+ $('#cmForm').addEventListener('submit',e=>{ e.preventDefault(); CM.a={...f,q:f.q.trim()}; drawMpRows(); });
+ $('#cmReset').addEventListener('click',()=>{ CM.f={s:'전체',q:''}; CM.a={...CM.f}; drawMp(); $('#cq').focus(); });
+ $('#mFoot').innerHTML='<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>추가</button>';
+ $('#mc').addEventListener('click',closeModal);
+ $('#mo').addEventListener('click',()=>{ const m=mpDemo(CM.sel); if(!m||m.sale!=='판매중') return; E.mp=m.id; closeModal(); onConnChange(); toast(`${m.name}을(를) 연결했어요`); });
+ drawMpRows();
+}
+function drawMpRows(){
+ const a=CM.a, q=a.q.toLowerCase();
+ const L=MP_DEMO.filter(m=>(a.s==='전체'||m.sale===a.s)&&(!q||[m.name,m.id].some(v=>v.toLowerCase().includes(q))));
+ $('#cmCnt').textContent=`${L.length}건`;
+ $('#cmRows').innerHTML=L.map(m=>{ const on=CM.sel===m.id, off=m.sale!=='판매중';
+  return `<tr class="${on?'on':''} ${off?'dis':''}" data-row="${m.id}" ${off?`title="${MP_SALE_MSG}" aria-disabled="true"`:''}><td class="c"><input type="radio" name="mpPick" data-p="${m.id}" ${on?'checked':''} ${off?'disabled':''} aria-label="${esc(m.name)} 선택"></td><td>${m.id}</td><td class="nm">${esc(m.name)}${off?`<small class="mp-off">${MP_SALE_MSG}</small>`:''}</td><td>${esc(m.target)}</td><td>${mpPeriod(m)}</td><td><span class="sale-chip">${m.sale}</span></td></tr>`; }).join('')
+  ||'<tr class="empty-row"><td colspan="6">검색 결과가 없어요</td></tr>';
+ const sync=()=>{ const m=mpDemo(CM.sel); $('#mo').disabled=!m||m.sale!=='판매중'; };
+ const pick=id=>{ const m=mpDemo(id); if(!m||m.sale!=='판매중'){ toast(MP_SALE_MSG); return; } CM.sel=id; $$('#cmRows tr[data-row]').forEach(tr=>{ const on=tr.dataset.row===id; tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
  $$('#cmRows [data-p]').forEach(c=>c.addEventListener('change',()=>{ if(c.checked) pick(c.dataset.p); }));
  $$('#cmRows tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; pick(tr.dataset.row); }));
  sync();
@@ -1776,6 +1923,51 @@ function stepScreenPv(){
  <div class="ph-scroll">${st.corners.map(c=>cornerPv(c)).join('<div class="ph-gap"></div>')||'<div class="ph-sec"><div class="pvempty sm">이 컨테이너에는 코너가 없어요</div></div>'}
  <div class="ph-buy"><div class="ph-buy-row"><button type="button" class="ph-cta" data-next>${last?'주문 완료':'다음'}</button></div></div></div>`;
 }
+// v0.3.2 MP 상품 전시 미리보기: 기존 프레임 안의 화면만 MP 상세로 바꾼다. 상품 이미지 · 색상 · 용량 · 정가 · 판매가는 없다
+//  타이틀(전시명) → 부제(설명) → 제공 혜택(연결한 MP의 EPC 상품 속성, 자동) → 주문 코너 카드(연결한 프로세스) → 콘텐츠 정보 아코디언 → 하단 바(월 999,999원 시연값 + 상품 가입하기)
+//  TP-ORD-101: 결합 유형에서 '가족 결합'을 고르면 가족 정보 등록 · 가족 회선 선택 코너가 나온다. 미리보기에서 고른 값은 PVMP에 둔다
+let PVMP=null;
+const mpPvDef=()=>({type:'가족 결합',lines:['휴대폰'],flines:['휴대폰'],disc:'다 같이 나누어 할인',term:'24개월',doc:'공공 마이데이터로 바로 확인',army:'밀리패스로 인증하기'});
+const MP_LINES=[['휴대폰','010-20**-04**','T+B'],['인터넷','보유 회선',''],['IPTV','보유 회선','']];
+const MP_FLINES=[['휴대폰','010-30**-12**',''],['인터넷','보유 회선','']];
+const mpOpt=(k,v,on,sub,badge)=>`<button type="button" class="mpo ${on?'on':''}" data-mpo="${k}|${esc(v)}"><span><b>${esc(v)}${badge?`<em>${esc(badge)}</em>`:''}</b>${sub?`<small>${esc(sub)}</small>`:''}</span><i class="ck" aria-hidden="true"></i></button>`;
+const mpCard=(t,body)=>`<div class="ph-gap"></div><div class="ph-sec"><div class="ph-h">${t}</div>${body}</div>`;
+function mpCorners(flow){
+ const P=PVMP, one=(k,list)=>list.map(([v,sub,b])=>mpOpt(k,v,P[k]===v,sub,b)).join('');
+ const multi=(k,list)=>list.map(([v,sub,b])=>mpOpt(k,v,P[k].includes(v),sub,b)).join('');
+ const lines=mpCard('결합할 회선을 선택해 주세요',multi('lines',MP_LINES));
+ const term=mpCard('약정 기간을 선택해 주세요',one('term',[['12개월'],['24개월'],['12+12개월']]));
+ if(flow==='welfare') return mpCard('서류 제출 방식을 선택해 주세요',one('doc',[['공공 마이데이터로 바로 확인','','추천'],['전자증명서 발급 받기'],['발급 받은 서류 직접 제출하기']]))+lines+term;
+ if(flow==='army') return mpCard('입영 일자를 등록해 주세요',one('army',[['밀리패스로 인증하기'],['서류 파일로 첨부하기']]))+lines+term;
+ const fam=P.type==='가족 결합';
+ return mpCard('결합 유형을 선택해 주세요',one('type',[['나 혼자 결합','내 회선끼리 결합해요'],['가족 결합','가족 회선과 함께 결합해요']]))+lines
+  +(fam?mpCard('결합할 가족 정보를 등록해 주세요','<div class="mp-empty">등록된 정보가 없습니다</div><button type="button" class="mp-btn" data-mpfam>가족 동의 요청하기</button>')
+   +mpCard('결합할 가족 회선을 선택해 주세요',`<div class="mp-fam"><b>김가족</b><em>배우자</em></div>${multi('flines',MP_FLINES)}`):'')
+  +mpCard('휴대폰 요금 할인 방식을 선택해 주세요',one('disc',[['다 같이 나누어 할인','결합한 회선 모두 나누어 할인'],['한 명에게 집중 할인','대표 회선 1개에 할인을 모아요']]))+term;
+}
+function mpPagePv(stop){
+ if(!PVMP) PVMP=mpPvDef();
+ const pl=isMpPlan(E.orderPlan)?E.orderPlan:null, m=mpDemo(E.mp), B=m?m.bnf:[];
+ const xs=E.extras.filter(x=>x.show&&!x.fresh&&(x.mode==='link'||x.txt.trim()));
+ const benefit=`<div class="ph-sec" data-pa="benefit"><div class="ph-h">제공 혜택</div>${B.length?`<div class="mp-bnf">${B.map(x=>`<p>${esc(x)}</p>`).join('')}</div>`:'<div class="pvempty sm">MP를 연결하면 EPC 상품 속성의 혜택이 여기에 보인다</div>'}</div>`;
+ const order=`<i class="ph-tabmark" data-pa="flow" aria-hidden="true"></i>`+(pl?mpCorners(pl.flow):'<div class="ph-gap"></div><div class="ph-sec"><div class="mp-noplan">주문 프로세스를 연결하면 주문 단계가 표시됩니다</div></div>');
+ const acc=xs.length?`<div class="ph-gap"></div>${xs.map(x=>`<details class="ph-acc" data-pa="x-${x.id}" ${PVX.has(x.id)?'open':''}><summary>${esc(x.t)||'제목 없음'}</summary><div>${x.mode==='direct'?`<div class="ph-rich">${sanitize(x.txt)}</div>`:esc(x.mode==='link'?tplBy(x.src).body:x.txt)}</div></details>`).join('')}`:'';
+ const G=E.mpGuide||{}, guide=MP_GUIDE.filter(([k])=>G[k]!==false).map(([k,,title,lines,steps,btns])=>`<div class="ph-gap"></div><div class="ph-sec mp-gd" data-pa="${k}"><div class="ph-h">${esc(title)}</div>${lines?lines.map(x=>`<p>${esc(x)}</p>`).join(''):''}${steps?`<ol>${steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}<div class="mp-gdbtns">${btns.map(b=>`<span>${esc(b)}</span>`).join('')}</div></div>`).join('');
+ return `<div class="ph-top">${phIc('back')}<span>${phIc('share')}${phIc('menu')}</span></div>
+ <div class="ph-scroll">${stop}
+ <div class="ph-info" data-pa="top"><div class="ph-title${E.name.trim()?'':' ph-empty'}">${E.name.trim()?nameHtml(E.name.trim()):'전시명을 입력하세요'}</div>${E.brief.trim()?`<div class="ph-brief">${esc(E.brief.trim())}</div>`:''}</div>
+ <div class="ph-gap"></div><i class="ph-tabmark" data-pa="tabs" aria-hidden="true"></i>
+ ${benefit}${order}${guide}${acc}${simPv()}
+ ${mpBuyPv()}
+ </div>`;
+}
+// 하단: PO 전시와 같은 떠 있는 금액 알약(누르면 금액 내역) + T 상담 · 상품 가입하기. 금액은 시연값
+const MP_PRICE=999999;
+function mpBuyPv(){
+ const tb=`<button type="button" class="ph-tbtn" data-tbtn aria-label="T 상담">${svg('<path d="M5 6h11M10.5 6v13"/><path d="M17 15v6M14 18h6"/>')}</button>`;
+ const pill=`<div class="ph-float"><div class="ph-pill-wrap">${PVPILL?`<div class="ph-pop" role="dialog" aria-label="예상 금액"><div><span>월 요금</span><b>${won(MP_PRICE)}</b></div></div>`:''}<button type="button" class="ph-pill" data-pill aria-expanded="${PVPILL}">월 <b>${MP_PRICE.toLocaleString()}</b> 원<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div></div>`;
+ return `${pill}<div class="ph-buy"><div class="ph-buy-row">${tb}<button type="button" class="ph-cta" data-cta>상품 가입하기</button></div></div>`;
+}
 const pvGo=i=>{ const n=E.orderPlan.stages.length; if(i<0||i>=n) return; PVC=i; renderPreview(); };
 function renderPreview(){
  const box=$('#pv'); if(!E) return;
@@ -1804,7 +1996,7 @@ function renderPreview(){
  // 가입 조건 안내 (샘플 문구)
  const JOIN_NOTE='만 18세 이상 만 34세 미만의 고객님만 가입할 수 있는 상품이에요';
  const end=endAt(E), stop=end?`<div class="ph-stop">${svg(PH_IC.info)}<div><b>상품 가입 중단 안내</b><p>해당 상품은 ${+end.slice(5,7)}월 ${+end.slice(8,10)}일 이후 신규 가입 중단될 예정입니다.</p></div></div>`:'';
- box.innerHTML=`${ctnNavPv()}<div class="ph-top">${phIc('back')}<span>${phIc('share')}${phIc('menu')}</span></div>
+ box.innerHTML=E.kind==='mp'?mpPagePv(stop):`${ctnNavPv()}<div class="ph-top">${phIc('back')}<span>${phIc('share')}${phIc('menu')}</span></div>
  <div class="ph-scroll">
  ${stop}
  ${noImg(E)?'':`<div class="ph-hero${top&&top.u?' has-img':''}">
@@ -1813,7 +2005,6 @@ function renderPreview(){
  <div class="ph-info"><div class="ph-model">${esc(model)}</div>
   <div class="ph-title${E.name.trim()?'':' ph-empty'}">${E.name.trim()?nameHtml(E.name.trim()):'전시명을 입력하세요'}</div>
   ${E.brief.trim()?`<div class="ph-brief">${esc(E.brief.trim())}</div>`:''}
-  ${E.kind==='mp'&&mpBy(E.mp)?`<div class="ph-mp"><span>혜택 고정</span>${esc(mpBy(E.mp).name)}</div>`:''}
   <div class="ph-sub${sub?'':' ph-empty'}">${sub?esc(sub):'제품명'}</div>
   ${BD.length?`<div class="ph-bdgs">${BD.map((b,i)=>`<span class="${b.k?'au':i?'':'dk'}" ${b.k?`style="background:${b.c}"`:''}>${esc(b.t)}</span>`).join('')}</div>`:''}
   <div class="ph-note">${JOIN_NOTE}</div></div>
@@ -1826,6 +2017,10 @@ function renderPreview(){
  if(ghost) pvSlide(box,ghost,fwd);
  box.querySelectorAll('.ph-tabs button').forEach(b=>b.addEventListener('click',()=>{ if(PVTAB===b.dataset.tab) return; PVTAB=b.dataset.tab; renderPreview(); pvToTabs(); }));
  bindCarousels(box);
+  // MP 미리보기: 코너 선택(회선은 여러 개, 나머지는 1개)
+ box.querySelectorAll('[data-mpo]').forEach(b=>b.addEventListener('click',()=>{ const [k,v]=b.dataset.mpo.split('|'), P=PVMP;
+  if(Array.isArray(P[k])){ P[k]=P[k].includes(v)?P[k].filter(x=>x!==v):[...P[k],v]; } else P[k]=v; renderPreview(); }));
+ box.querySelectorAll('[data-mpfam]').forEach(b=>b.addEventListener('click',()=>toast('가족에게 동의 요청을 보냈어요 (예시)')));
  box.querySelectorAll('[data-pill]').forEach(b=>b.addEventListener('click',()=>{ PVPILL=!PVPILL; renderPreview(); }));
  box.querySelectorAll('[data-tbtn]').forEach(b=>b.addEventListener('click',()=>toast('T 상담 연결 (예시)')));
  box.querySelectorAll('[data-combo]').forEach(b=>b.addEventListener('click',()=>toast('이 조합으로 주문서에 담았어요 (예시)')));
@@ -1854,6 +2049,7 @@ function pvTarget(k){
  if(k.startsWith('cn:')) return [`cn-${k.slice(3)}`,'order'];
  if(k==='flow') return ['flow','order'];
  if(k==='info') k=curI;
+ if(GUIDE_KEYS.includes(k)) return E.mpGuide&&E.mpGuide[k]!==false?[k,'order']:['tabs','order'];
  if(k==='method') return E.kind!=='ps'?[`area-${cur}`,'order']:['top'];
  if(k==='extra') return curX!=null?[`x-${curX}`,'info']:['tabs','info'];
  if(k==='order'&&E.kind==='ps') return ['top'];

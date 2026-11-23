@@ -19,9 +19,9 @@ const link = (file, text) => `<a href="${file}">${text}</a>`;
 const note = n => n ? ` <span class="h-note">${n}</span>` : '';
 const EMPTY = cols => `<tr><td colspan="${cols}" class="h-empty">등록된 화면이 없습니다</td></tr>`;
 
-// 정책 Latest: Latest 버전 화면을 대상으로 하는 정책 중, 같은 이름에서 가장 높은 버전
+// 정책 Latest: Latest 버전 화면을 대상으로 하는 정책(대상이 없는 공통 정책 포함) 중, 같은 이름에서 가장 높은 버전
 function latestPolicies(list) {
-  const hit = list.filter(p => p.for.some(f => isLatest(f.menu, f.ver)));
+  const hit = list.filter(p => !p.for.length || p.for.some(f => isLatest(f.menu, f.ver)));
   return new Set(hit.filter(p => !hit.some(q => q.name === p.name && cmpVer(q.ver, p.ver) > 0)));
 }
 
@@ -55,7 +55,7 @@ function policyTable(list) {
   const body = rows.map(p => `<tr>
     <td>${on.has(p) ? LATEST : ''}</td>
     <td class="h-ver">v${p.ver}</td>
-    <td>${p.for.map(f => `${f.menu} v${f.ver}`).join('<br>')}</td>
+    <td>${p.for.length ? p.for.map(f => `${f.menu} v${f.ver}`).join('<br>') : '상품 · 주문 · 결제 공통'}</td>
     <td>${link(p.file, policyTitle(p))}${note(p.note)}</td>
     <td class="h-file">${p.file}</td>
     <td>${p.date}</td>

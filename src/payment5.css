@@ -1,0 +1,31 @@
+/* 결제관리 v0.2.3 (payment5-base.ts): PG 관리 · 결제수단 기준정보 화면에 더하는 규칙.
+   목록 · 상세 · 모달 · 표 모양은 payment2.css · payment4.css · list-unified.css를 그대로 쓴다. */
+
+/* 제공 결제수단 · 허용 상품 칩 */
+.p5-chips{display:flex;flex-wrap:wrap;gap:4px}
+.p5-chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:5px;background:var(--ac2);color:var(--ac);font-size:12px;font-weight:600;white-space:nowrap}
+.p5-chip.gray{background:var(--th);color:var(--ink2)}
+
+/* 화면 이동 버튼은 <a>로 둔다 */
+a.btn{text-decoration:none;color:inherit}
+a.btn.pri{color:#fff}
+
+/* 섹션 머리줄 오른쪽 버튼 */
+.sec-h .p5-r{margin-left:auto;display:flex;gap:8px}
+
+/* 상세 표 안의 보조 줄 */
+.p5-line{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.p5-url{word-break:break-all;font-size:12px;color:var(--ink2)}
+.p5-warn{color:var(--warn);font-size:12px;font-weight:500}
+
+/* 등록 · 수정 폼: 입금계좌 3칸, 입력값 단위 */
+.p5-acc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.p5-acc .inp,.p5-full{width:100%;max-width:none}
+.p5-unit{display:inline-flex;align-items:center;gap:6px}
+.p5-note{margin:10px 0 0;color:var(--ink3);font-size:12px;line-height:1.6}
+
+/* 모달 안 정보 표: 라벨 칸을 조금 좁게 */
+.mdl .ft th{width:132px}
+.mdl .ft td .inp:not(.num):not([type=date]){width:100%;max-width:none}
+
+@media(max-width:700px){.p5-acc{grid-template-columns:minmax(0,1fr)}}
