@@ -42,6 +42,7 @@ export const LEGACY_MENUS: Record<Tab, string[]> = {
 
 export const SCREENS: Screen[] = [
   // ── 상품 ──────────────────────────────────────────
+  { menu: 'EPC 상품조회', ver: '0.1', screen: '상세', file: 'epc-detail.html', date: '2026-11-23', note: '읽기 전용, 공제항목 반영 ON/OFF만 수정' },
   { menu: 'EPC 상품조회', ver: '0.1', screen: '목록', file: 'epc-list.html', date: '2026-10-31' },
 
   { menu: '상품 전시 관리', ver: '0.3.2', screen: '등록', file: 'product-v032.html', date: '2026-11-19', note: '공통 속성 BSS Override, 채널별 노출 제어(가입유형 · 할부 · 기프트/티다팩)' },
