@@ -1061,6 +1061,15 @@
         <header><b>연관 및 유사 상품</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-rel"><div id="sb-sim"></div><div id="relList"></div></div>
       </div>
+      <!-- v0.3.2 T기프트 · 티다팩 재적용: 단말기 연결 시 T기프트, 요금제 연결 시 티다팩. 목록은 EPC에서 조회한다(CVM 아님) -->
+      <div class="step" id="sec-gift">
+        <header><b>T기프트</b><span class="cond">단말기 연결 시</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-gift"></div>
+      </div>
+      <div class="step" id="sec-td">
+        <header><b>티다팩</b><span class="cond">요금제 연결 시</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-td"></div>
+      </div>
       <div class="step" id="sec-order">
         <header><b>주문 프로세스 연동</b><span class="req" id="odReq" hidden>필수</span><label class="switch hsw" id="odSw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-order"></div>

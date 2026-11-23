@@ -4,7 +4,10 @@ import CODES from "./data/epc-codes.json";
 export type Use = '사용' | '미사용';
 export type Mode = 'contract' | 'own';
 export type FeeType = '정률' | '정액' | '혼합';
-export interface Pg { id: string; name: string; code: string; bizNo: string }
+export type Recv = 'API' | '엑셀';
+// recv: PG 거래 · 입금 내역을 받는 방식. API(인증키 연동, 자동 수신) 또는 엑셀(운영자가 파일 업로드)
+export interface Pg { id: string; name: string; code: string; bizNo: string; recv: Recv }
+export const RECV_LABEL: Record<Recv, string> = { API: 'API 자동 수신', 엑셀: '엑셀 업로드' };
 export interface Method { name: string; code: string }
 export interface Mid {
   id: string; method: string; name: string; mid: string; products: string[];
@@ -41,17 +44,17 @@ export const methodOrder = () => methodGroups().flatMap(g => g.items.map(([n]) =
 // 이름 비교는 공백 · 대소문자를 무시한다 (예: '카카오 페이' = '카카오페이')
 export const normName = (n: string) => n.replace(/\s+/g, '').toLowerCase();
 export const URLS = { pgm: 'payment-pg5.html', pgD: 'payment-pg5-detail.html', pgForm: 'payment-pg5-form.html', base: 'payment-method5.html', ctr: 'payment-method5-detail.html',
-  pay: 'payment-history5.html', payD: 'payment-history5-detail.html', recon: 'payment-recon5.html', fee: 'payment-fee5.html', feeD: 'payment-fee5-detail.html' };
-export const KEY = 'nova-payment5-base-v4';
+  pay: 'payment-history5.html', payD: 'payment-history5-detail.html', recon: 'payment-recon5.html', reconD: 'payment-recon5-detail.html', fee: 'payment-fee5.html', feeD: 'payment-fee5-detail.html' };
+export const KEY = 'nova-payment5-base-v5';
 export const TKEY = 'nova-payment5-base-toast';
 
 /* ================= 목업 데이터 ================= */
 export function seed(): Store {
   const pgs: Pg[] = [
-    { id: 'pg-ini', name: 'KG이니시스', code: 'INI', bizNo: '000-00-00001' },
-    { id: 'pg-kcp', name: 'NHN KCP', code: 'KCP', bizNo: '000-00-00002' },
-    { id: 'pg-tos', name: '토스페이먼츠', code: 'TOS', bizNo: '000-00-00003' },
-    { id: 'pg-nic', name: '나이스페이', code: 'NIC', bizNo: '000-00-00004' },
+    { id: 'pg-ini', name: 'KG이니시스', code: 'INI', bizNo: '000-00-00001', recv: 'API' },
+    { id: 'pg-kcp', name: 'NHN KCP', code: 'KCP', bizNo: '000-00-00002', recv: '엑셀' },
+    { id: 'pg-tos', name: '토스페이먼츠', code: 'TOS', bizNo: '000-00-00003', recv: 'API' },
+    { id: 'pg-nic', name: '나이스페이', code: 'NIC', bizNo: '000-00-00004', recv: '엑셀' },
   ];
   const M = (id: string, method: string, name: string, mid: string, products: string[], fee: [FeeType, number, number], vat: '별도' | '포함', owner: string, from: string, to: string, o: Partial<Mid> = {}): Mid =>
     ({ id, method, name, mid, products, feeType: fee[0], rate: fee[1], flat: fee[2], vat, owner, accMode: 'contract', bank: '', holder: '', account: '', reconMode: 'contract', reconUrl: '', from, to, keyTail: id.slice(-4), ...o });
@@ -84,7 +87,7 @@ export function seed(): Store {
       [M('MID-0005', '신용카드', 'T우주 이용권', 'tosstu0401', ['범용 > 앱서비스형'], ['정률', 2.5, 0], '별도', 'M&S', '2026-02-01', ''),
        M('MID-0010', '네이버페이', 'T우주 일반', 'tosstu0402', ['범용 > 앱서비스형'], ['혼합', 1.6, 50], '별도', 'M&S', '2026-12-01', '')],
       [P('PR-0003', '신용카드 5% 즉시할인', '정률', 5, 10000, '2026-09-01', '2026-10-31', '신용카드', 'tosstu0401', ['범용 > 앱서비스형'])], '사용', '2026-10-30 11:20'),
-    C('PGC-000005', 'pg-tos', '에스케이피에스앤마케팅(주)', '000000-0000002', 'T다이렉트샵 단말 판매', '하나은행', '000-000-000005', 'https://recon.example.com/toss/device',
+    C('PGC-000005', 'pg-tos', '에스케이피에스앤마케팅(주)', '000000-0000002', 'T다이렉트샵 단말 판매', '하나은행', '000-000-000005', '',
       [['신용카드', 'CARD'], ['계좌이체', 'BANK']],
       [M('MID-0006', '신용카드', 'TDS 휴대폰', 'tosstd0402', ['기기 > 휴대폰형'], ['정률', 1.8, 0], '포함', 'PS&M', '2026-02-01', '')], [], '사용', '2026-09-18 17:05'),
     C('PGC-000006', 'pg-nic', '에스케이텔레콤(주)', '000000-0000001', '요금납부 신규 PG 계약 (검토 중)', '신한은행', '000-000-000006', '',

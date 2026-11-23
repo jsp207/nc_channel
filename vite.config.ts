@@ -69,6 +69,7 @@ export default defineConfig({
         paymentHistory5: 'payment-history5.html',
         paymentHistory5Detail: 'payment-history5-detail.html',
         paymentRecon5: 'payment-recon5.html',
+        paymentRecon5Detail: 'payment-recon5-detail.html',
         paymentFee5: 'payment-fee5.html',
         paymentFee5Detail: 'payment-fee5-detail.html',
         productList: 'product-list.html',

@@ -10,7 +10,7 @@ import "./list-unified.css";
 import { requireAuthentication } from "./auth";
 import type { Contract, Mid } from "./payment5-store";
 import {
-  TODAY, USER, URLS, D, $, esc, pad, won, opts, badge, crumb, ph, sec, ft, lf, errBox, pgOf, ctOf, feeTxt, lv3Of, toast, TONE, methodOrder,
+  TODAY, USER, URLS, RECV_LABEL, D, $, esc, pad, won, opts, badge, crumb, ph, sec, ft, lf, errBox, pgOf, ctOf, feeTxt, lv3Of, toast, TONE, methodOrder,
 } from "./payment5-store";
 
 requireAuthentication();
@@ -95,7 +95,7 @@ const usedMethods = () => methodOrder().filter(n => D.cts.some(c => c.mids.some(
 /* ================= 공통 ================= */
 const PAGE = document.body.dataset.page || 'pay';
 const QP = new URLSearchParams(location.search);
-const UI: { f: any; fA: any; page: number; modal: any } = { f: {}, fA: {}, page: 1, modal: null };
+const UI: { f: any; fA: any; page: number; modal: any; tab: any } = { f: {}, fA: {}, page: 1, modal: null, tab: '' };
 function setPath(o: any, path: string, v: unknown) { const ks = path.split('.'); const last = ks.pop() as string; ks.forEach(k => o = o[k]); o[last] = v; }
 function pager(total: number, size: number) {
   const tot = Math.max(1, Math.ceil(total / size)), cur = Math.min(UI.page, tot);
@@ -117,7 +117,6 @@ const filterBox = (rows: string[]) => `<form class="lst-filter" autocomplete="of
 const acts = `<span class="lf-acts"><button type="button" class="btn dark" data-a="reset">초기화</button><button type="button" class="btn pri" data-a="search">조회</button></span>`;
 const range = (a: string, b: string, label: string) => `<span class="lf-range"><input type="date" data-b="f.${a}" value="${UI.f[a] || ''}" aria-label="${label} 시작"><span aria-hidden="true">~</span><input type="date" data-b="f.${b}" value="${UI.f[b] || ''}" aria-label="${label} 종료"></span>`;
 const pgOpts = (v: string) => opts(D.pgs.map(p => [p.id, p.name] as [string, string]), v, '전체');
-const ctOpts = (v: string) => opts(D.cts.map(c => [c.no, `${c.no} (${pgOf(c).name})`] as [string, string]), v, '전체');
 const midOpts = (v: string) => opts(allMids().map(({ m }) => [m.id, `${m.name} · ${m.mid}`] as [string, string]), v, '전체');
 const money = (n: number) => n < 0 ? `<span style="color:var(--bad)">${won(n)}</span>` : won(n);
 
@@ -171,50 +170,123 @@ function mCancel() {
     f: `<button class="btn" data-a="close">닫기</button><button class="btn pri dng" data-a="cancelSave">승인취소</button>` };
 }
 
-/* ================= 거래내역 대사: 계약 단위, 승인대사 · 입금대사 ================= */
-interface Recon { id: string; kind: '승인대사' | '입금대사'; date: string; ct: string; cnt: number; base: number; cmp: number | null; st: 'Pass' | 'Fail' | '입금대기'; at: string; fails: { no: string; type: string; ours: number; pg: number }[] }
-function genRecon(): Recon[] {
-  const r = rng('nova-recon-v5'), out: Recon[] = [];
-  const byKey = new Map<string, Pay[]>();
-  PAYS.filter(p => p.st !== '결제실패').forEach(p => { const k = `${p.ct}|${p.at.slice(0, 10)}`; byKey.set(k, [...(byKey.get(k) || []), p]); });
-  for (let d = START; d < TODAY; d = addDays(d, 1)) D.cts.forEach(c => {
-    const list = byKey.get(`${c.no}|${d}`); if (!list) return;
-    const base = list.reduce((a, p) => a + net(p), 0);
-    // 승인대사: 다음 날 07:00 PG 승인 내역과 대조. 일부 날짜는 불일치 예시
-    const fail = r() < 0.07, pk = list[0];
-    const fa = fail ? [{ no: pk.no, type: '금액 불일치', ours: net(pk), pg: net(pk) - 1000 }] : [];
-    out.push({ id: `A-${c.no}-${d}`, kind: '승인대사', date: d, ct: c.no, cnt: list.length, base, cmp: base - (fail ? 1000 : 0), st: fail ? 'Fail' : 'Pass', at: `${addDays(d, 1)} 07:00`, fails: fa });
-    // 입금대사: 결제일 + 2일 입금 예정. 수수료를 뺀 금액과 대조
-    const dd = addDays(d, 2), exp = base - list.reduce((a, p) => a + feeOf(p), 0);
-    // 입금 다음 날 07:10에 대사하므로, 입금일이 오늘 이후면 아직 입금대기
-    if (dd >= TODAY) { out.push({ id: `D-${c.no}-${d}`, kind: '입금대사', date: dd, ct: c.no, cnt: list.length, base: exp, cmp: null, st: '입금대기', at: '-', fails: [] }); return; }
-    const f2 = r() < 0.05;
-    out.push({ id: `D-${c.no}-${d}`, kind: '입금대사', date: dd, ct: c.no, cnt: list.length, base: exp, cmp: exp - (f2 ? 500 : 0), st: f2 ? 'Fail' : 'Pass', at: `${addDays(dd, 1)} 07:10`,
-      fails: f2 ? [{ no: '-', type: '입금액 차이', ours: exp, pg: exp - 500 }] : [] });
+/* ================= 거래내역 대사: 월별 목록(대사월 × PG사) · 상세(MID별 승인대사 · 입금대사) ================= */
+// 대사 방식은 MID마다 정해진다
+//  - 대사 URL 없음 → 오프라인: 상세에서 내역을 내려받아 대사하고, 결과는 운영자가 상태를 바꿔 남긴다
+//  - PG 수신 방식 API → API 자동: 자동 수신 · 대조해 Pass/Fail
+//  - PG 수신 방식 엑셀 → 엑셀 업로드: 운영자가 파일을 올리면 대조. 올리기 전에는 업로드 대기
+// 어떤 방식이든 운영자가 상태(Pass · Fail)를 바꿀 수 있고, 바꾼 일시 · 처리자 · 사유를 변경 이력에 남긴다
+type RKind = '승인대사' | '입금대사';
+type RMode = 'API 자동' | '엑셀 업로드' | '오프라인';
+type RSt = 'Pass' | 'Fail' | '업로드 대기' | '확인 대기';
+interface RItem { key: string; mon: string; kind: RKind; c: Contract; m: Mid; mode: RMode; pays: Pay[]; cnt: number; base: number; cmp: number | null; st: RSt; at: string; by: string }
+interface RHist { at: string; by: string; mon: string; pg: string; mid: string; kind: RKind; before: string; after: string; why: string }
+const RECON_KEY = 'nova-payment5-recon-v1';
+const RS: { items: Record<string, { st: RSt; at: string; by: string }>; uploads: Record<string, string>; hist: RHist[] } =
+  (() => { try { return { items: {}, uploads: {}, hist: [], ...JSON.parse(sessionStorage.getItem(RECON_KEY) || '{}') }; } catch { return { items: {}, uploads: {}, hist: [] }; } })();
+const saveRS = () => { try { sessionStorage.setItem(RECON_KEY, JSON.stringify(RS)); } catch { /* 저장 실패는 화면 동작에 영향 없음 */ } };
+Object.assign(TONE, { '업로드 대기': 'warn', '확인 대기': 'warn', 완료: 'ok', '처리 필요': 'warn' });
+const nowAt = () => { const d = new Date(); return `${TODAY} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const depDay = (p: Pay) => addDays(p.at.slice(0, 10), 2);
+function reconItems(mon: string): RItem[] {
+  const out: RItem[] = [];
+  allMids().forEach(({ c, m }) => {
+    const ok = PAYS.filter(p => p.midId === m.id && p.st !== '결제실패');
+    const sets: [RKind, Pay[]][] = [
+      ['승인대사', ok.filter(p => p.at.startsWith(mon) && p.at.slice(0, 10) < TODAY)],
+      ['입금대사', ok.filter(p => depDay(p).startsWith(mon) && depDay(p) < TODAY)],
+    ];
+    const pg = pgOf(c), url = m.reconMode === 'own' ? m.reconUrl : c.reconUrl;
+    const mode: RMode = !url ? '오프라인' : pg.recv === 'API' ? 'API 자동' : '엑셀 업로드';
+    sets.forEach(([kind, pays]) => {
+      if (!pays.length) return;
+      const key = `${mon}|${m.id}|${kind}`;
+      const base = pays.reduce((a, p) => a + net(p) - (kind === '입금대사' ? feeOf(p) : 0), 0);
+      const last = pays.map(p => kind === '입금대사' ? depDay(p) : p.at.slice(0, 10)).sort().pop() as string;
+      const fail = rng(key)() < 0.12, up = RS.uploads[`${mon}|${pg.id}|${kind}`];
+      let st: RSt, cmp: number | null = null, at = '-', by = '-';
+      if (mode === '오프라인') st = '확인 대기';
+      else if (mode === '엑셀 업로드' && !up) st = '업로드 대기';
+      else { cmp = base - (fail ? 1000 : 0); st = fail ? 'Fail' : 'Pass'; at = mode === 'API 자동' ? `${addDays(last, 1)} 07:00` : up; by = mode === 'API 자동' ? '시스템' : USER; }
+      const o = RS.items[key];
+      if (o) { st = o.st; at = o.at; by = o.by; }
+      out.push({ key, mon, kind, c, m, mode, pays, cnt: pays.length, base, cmp, st, at, by });
+    });
   });
-  return out.sort((a, b) => b.date.localeCompare(a.date) || a.ct.localeCompare(b.ct) || a.kind.localeCompare(b.kind));
+  return out;
 }
-const emptyReconF = () => ({ kind: '', pg: '', ct: '', st: '', from: '2026-11-01', to: TODAY });
+interface RGroup { mon: string; pg: string; items: RItem[] }
+function reconGroups(mon: string): RGroup[] {
+  const items = reconItems(mon);
+  return D.pgs.map(p => ({ mon, pg: p.id, items: items.filter(x => x.c.pg === p.id) })).filter(g => g.items.length);
+}
+const todo = (items: RItem[]) => items.filter(x => x.st !== 'Pass').length;
+const passTxt = (items: RItem[]) => { const n = items.length; return n ? `Pass ${items.filter(x => x.st === 'Pass').length} / ${n}` : '-'; };
+const lastAt = (items: RItem[]) => items.map(x => x.at).filter(x => x !== '-').sort().pop() || '-';
+const reconCsvRows = (items: RItem[]) => items.map(x => [x.mon, x.kind, pgOf(x.c).name, x.c.no, x.m.name, x.m.mid, x.mode, x.cnt, x.base, x.cmp ?? '', x.cmp == null ? '' : x.cmp - x.base, x.st, x.at, x.by]);
+const RECON_HEAD = ['대사월', '대사 구분', 'PG사', '계약번호', '가맹점명', 'MID', '대사 방식', '건수', '기준 금액', '대조 금액', '차이', '상태', '처리일시', '처리자'];
+
+const emptyReconF = () => ({ mon: '2026-10', pg: '', recv: '', st: '' });
+function reconFiltered() {
+  const a = UI.fA;
+  return reconGroups(a.mon).filter(g => { const p = D.pgs.find(x => x.id === g.pg)!; const n = todo(g.items);
+    return (!a.pg || g.pg === a.pg) && (!a.recv || p.recv === a.recv) && (!a.st || (a.st === '처리 필요' ? n > 0 : n === 0)); });
+}
 function vRecon() {
-  const all = genRecon(), f = UI.f, a = UI.fA;
-  const rows = all.filter(x => (!a.kind || x.kind === a.kind) && (!a.pg || ctById(x.ct).pg === a.pg) && (!a.ct || x.ct === a.ct) && (!a.st || x.st === a.st) && (!a.from || x.date >= a.from) && (!a.to || x.date <= a.to));
-  const page = slice(rows, 15), fails = rows.filter(x => x.st === 'Fail').length;
+  const f = UI.f, rows = reconFiltered(), page = slice(rows, 15);
   return `${crumb(['결제 거래내역 대사관리'])}<h1 class="lst-title">결제 거래내역 대사관리</h1>${filterBox([
-    lf('대사 구분', `<select data-b="f.kind">${opts(['승인대사', '입금대사'], f.kind, '전체')}</select>`) + lf('PG사', `<select data-b="f.pg">${pgOpts(f.pg)}</select>`) + lf('계약번호', `<select data-b="f.ct">${ctOpts(f.ct)}</select>`) + lf('대사 결과', `<select data-b="f.st">${opts(['Pass', 'Fail', '입금대기'], f.st, '전체')}</select>`),
-    lf('기준일', range('from', 'to', '기준일'), 'lf-wide') + acts])}
-  <div class="pm3-bar"><h2 class="lst-count">조회 결과 <span><b>${rows.length}</b>건 / Fail ${fails}건</span></h2><div class="pm3-tools"><button class="btn sm" data-a="reconCsv" ${fails ? '' : 'disabled'}>Fail 건 다운로드</button></div></div>
-  <div class="tw"><table class="tbl lst-table"><thead><tr><th>대사 구분</th><th>기준일</th><th class="l">PG사</th><th>계약번호</th><th class="r">건수</th><th class="r">기준 금액</th><th class="r">대조 금액</th><th class="r">차이</th><th>결과</th><th>대사 일시</th><th>상세</th></tr></thead><tbody>
-  ${page.map(x => { const c = ctById(x.ct), diff = x.cmp == null ? null : x.cmp - x.base; return `<tr><td>${x.kind}</td><td class="num">${x.date}</td><td class="l">${esc(pgOf(c).name)}</td><td><a class="p4-id" href="${URLS.ctr}?ct=${c.no}">${c.no}</a></td>
-   <td class="r num">${x.cnt}</td><td class="r num">${won(x.base)}</td><td class="r num">${x.cmp == null ? '-' : won(x.cmp)}</td><td class="r num">${diff == null ? '-' : diff ? money(diff) : '0'}</td><td>${badge(x.st)}</td><td class="num">${x.at}</td>
-   <td>${x.st === 'Fail' ? `<button class="btn sm" data-a="reconFail" data-id="${x.id}">상세</button>` : '-'}</td></tr>`; }).join('') || '<tr><td colspan="11" class="empty">조건에 맞는 대사 결과가 없습니다.</td></tr>'}</tbody></table></div>
+    lf('대사월', `<select data-b="f.mon">${opts(MONS.map(m => [m, monLabel(m)] as [string, string]), f.mon)}</select>`) + lf('PG사', `<select data-b="f.pg">${pgOpts(f.pg)}</select>`) + lf('입금 내역 수신', `<select data-b="f.recv">${opts([['API', RECV_LABEL.API], ['엑셀', RECV_LABEL.엑셀]], f.recv, '전체')}</select>`) + lf('처리 상태', `<select data-b="f.st">${opts(['처리 필요', '완료'], f.st, '전체')}</select>`),
+    acts])}
+  <div class="pm3-bar"><h2 class="lst-count">조회 결과 <span><b>${rows.length}</b>건 / 처리 필요 ${rows.reduce((a, g) => a + todo(g.items), 0)}건</span></h2></div>
+  <div class="tw"><table class="tbl lst-table"><thead><tr><th>대사월</th><th class="l">PG사</th><th>입금 내역 수신</th><th>대상 MID</th><th>승인대사</th><th>입금대사</th><th>처리 상태</th><th>최근 처리일시</th><th>다운로드</th></tr></thead><tbody>
+  ${page.map(g => { const p = D.pgs.find(x => x.id === g.pg)!, n = todo(g.items), mids = new Set(g.items.map(x => x.m.id)).size;
+    return `<tr><td class="num">${g.mon}</td><td class="l"><a class="p4-id" href="${URLS.reconD}?mon=${g.mon}&pg=${g.pg}">${esc(p.name)}</a></td><td>${RECV_LABEL[p.recv]}</td><td>${mids}개</td>
+     <td>${passTxt(g.items.filter(x => x.kind === '승인대사'))}</td><td>${passTxt(g.items.filter(x => x.kind === '입금대사'))}</td><td>${n ? badge(`처리 필요 ${n}건`, 'warn') : badge('완료')}</td><td class="num">${lastAt(g.items)}</td>
+     <td><button class="btn sm" data-a="reconRowCsv" data-mon="${g.mon}" data-pg="${g.pg}">다운로드</button></td></tr>`; }).join('') || '<tr><td colspan="9" class="empty">조건에 맞는 대사 결과가 없습니다.</td></tr>'}</tbody></table></div>
   <div class="lst-bottom">${pager(rows.length, 15)}</div>`;
 }
-function mReconFail() {
-  const x = genRecon().find(y => y.id === UI.modal.id) as Recon, c = ctById(x.ct);
-  return { t: `${x.kind} 불일치 · ${x.date}`, b: `${ft(`<tr><th>PG사 / 계약번호</th><td>${esc(pgOf(c).name)} / ${c.no}</td></tr><tr><th>대사 URL</th><td><span class="p5-url">${esc(c.reconUrl || '-')}</span></td></tr>`)}
-   <div class="tw" style="margin-top:16px"><table class="tbl"><thead><tr><th>결제번호</th><th>유형</th><th class="r">당사 금액</th><th class="r">PG 금액</th><th class="r">차이</th></tr></thead><tbody>
-   ${x.fails.map(f => `<tr><td>${f.no === '-' ? '-' : `<a class="p4-id" href="${URLS.payD}?no=${f.no}">${f.no}</a>`}</td><td>${f.type}</td><td class="r num">${won(f.ours)}</td><td class="r num">${won(f.pg)}</td><td class="r num">${money(f.pg - f.ours)}</td></tr>`).join('')}</tbody></table></div>`,
-    f: `<button class="btn" data-a="close">닫기</button>` };
+function curRecon() {
+  const mon = MONS.includes(QP.get('mon') || '') ? QP.get('mon') as string : '2026-10';
+  const gs = reconGroups(mon);
+  return gs.find(g => g.pg === QP.get('pg')) || gs[0];
+}
+function vReconD() {
+  const g = curRecon();
+  if (!g) return `${crumb(['결제 거래내역 대사관리', '상세'])}<div class="emptybox">대사 내역이 없습니다.</div><div class="foot"><a class="btn lg" href="${URLS.recon}">목록</a></div>`;
+  const p = D.pgs.find(x => x.id === g.pg)!, kind: RKind = UI.tab || '승인대사', items = g.items.filter(x => x.kind === kind);
+  const hist = RS.hist.filter(h => h.mon === g.mon && h.pg === g.pg);
+  const upAt = RS.uploads[`${g.mon}|${g.pg}|${kind}`];
+  const sum = (k: 'cnt' | 'base') => items.reduce((a, x) => a + x[k], 0);
+  return `${crumb(['결제 거래내역 대사관리', '상세'])}${ph(`${esc(p.name)} · ${g.mon} ${todo(g.items) ? badge(`처리 필요 ${todo(g.items)}건`, 'warn') : badge('완료')}`)}
+  ${sec('기본 정보', ft(`<tr><th>대사월</th><td>${monLabel(g.mon)}</td><th>PG사</th><td>${esc(p.name)} <span class="dim-t">(${esc(p.code)})</span></td></tr>
+   <tr><th>입금 내역 수신</th><td>${RECV_LABEL[p.recv]}</td><th>대상 MID</th><td>${new Set(g.items.map(x => x.m.id)).size}개</td></tr>
+   <tr><th>승인대사</th><td>${passTxt(g.items.filter(x => x.kind === '승인대사'))}</td><th>입금대사</th><td>${passTxt(g.items.filter(x => x.kind === '입금대사'))}</td></tr>`))}
+  <div class="tabs small" role="tablist">${(['승인대사', '입금대사'] as RKind[]).map(k => `<button role="tab" aria-selected="${k === kind}" class="${k === kind ? 'on' : ''}" data-a="reconTab" data-v="${k}">${k} ${g.items.filter(x => x.kind === k).length}</button>`).join('')}</div>
+  <section class="sec" style="margin-top:20px"><div class="sec-h"><h3>MID별 ${kind}</h3>${p.recv === '엑셀' ? `<span class="hint">${upAt ? `최근 업로드 ${upAt}` : '엑셀 미업로드'}</span>` : ''}<span class="p5-r">${p.recv === '엑셀' ? `<button class="btn sm pri" data-a="uploadOpen">엑셀 업로드</button>` : ''}<button class="btn sm" data-a="reconDCsv">내역 다운로드</button></span></div>
+  <div class="tw"><table class="tbl"><thead><tr><th class="l">가맹점명</th><th>MID</th><th>계약번호</th><th>대사 방식</th><th class="r">건수</th><th class="r">기준 금액</th><th class="r">대조 금액</th><th class="r">차이</th><th>상태</th><th>처리일시</th><th>처리자</th><th>관리</th></tr></thead><tbody>
+  ${items.map(x => { const diff = x.cmp == null ? null : x.cmp - x.base;
+    return `<tr><td class="l">${esc(x.m.name)}</td><td class="mid">${esc(x.m.mid)}</td><td><a class="p4-id" href="${URLS.ctr}?ct=${x.c.no}">${x.c.no}</a></td><td>${x.mode}</td><td class="r num">${x.cnt}</td><td class="r num">${won(x.base)}</td>
+     <td class="r num">${x.cmp == null ? '-' : won(x.cmp)}</td><td class="r num">${diff == null ? '-' : diff ? money(diff) : '0'}</td><td>${badge(x.st)}</td><td class="num">${x.at}</td><td>${esc(x.by)}</td>
+     <td><button class="btn sm" data-a="stOpen" data-k="${x.key}">상태 변경</button></td></tr>`; }).join('') || '<tr><td colspan="12" class="empty">이 달의 대사 내역이 없습니다.</td></tr>'}</tbody>
+  ${items.length ? `<tfoot><tr><td class="l" colspan="4">합계</td><td class="r">${won(sum('cnt'))}</td><td class="r">${won(sum('base'))}</td><td colspan="6"></td></tr></tfoot>` : ''}</table></div></section>
+  ${sec('변경 이력', `<div class="tw"><table class="tbl"><thead><tr><th>일시</th><th>처리자</th><th>대사 구분</th><th>MID</th><th>변경 전</th><th>변경 후</th><th class="l">사유</th></tr></thead><tbody>
+   ${hist.map(h => `<tr><td class="num">${h.at}</td><td>${esc(h.by)}</td><td>${h.kind}</td><td class="mid">${esc(h.mid)}</td><td>${esc(h.before)}</td><td>${esc(h.after)}</td><td class="l">${esc(h.why)}</td></tr>`).join('') || '<tr><td colspan="7" class="empty">변경 이력이 없습니다.</td></tr>'}</tbody></table></div>`)}
+  <div class="foot pm3h-foot"><a class="btn lg" href="${URLS.recon}">목록</a></div>`;
+}
+function mStatus() {
+  const md = UI.modal, x = curRecon().items.find(y => y.key === md.k) as RItem;
+  return { t: '대사 상태 변경', b: `${errBox(md.err)}${ft(`<tr><th>MID</th><td>${esc(x.m.name)} · ${esc(x.m.mid)}</td></tr><tr><th>대사 구분</th><td>${x.kind} · ${x.mode}</td></tr>
+   <tr><th>현재 상태</th><td>${badge(x.st)}</td></tr>
+   <tr><th class="req">변경 상태</th><td><div class="ck-g rd">${['Pass', 'Fail'].map(v => `<label><input type="radio" name="rst" value="${v}" data-b="modal.st" ${md.st === v ? 'checked' : ''}>${v}</label>`).join('')}</div></td></tr>
+   <tr><th class="req">사유</th><td><input class="inp" style="width:100%" data-b="modal.why" value="${esc(md.why)}" maxlength="80" placeholder="예: 오프라인 대사 결과 일치 확인"></td></tr>`)}`,
+    f: `<button class="btn" data-a="close">취소</button><button class="btn pri" data-a="stSave">저장</button>` };
+}
+function mUpload() {
+  const md = UI.modal, g = curRecon(), kind: RKind = UI.tab || '승인대사';
+  return { t: `${kind} 엑셀 업로드`, b: `${errBox(md.err)}${ft(`<tr><th>PG사 / 대사월</th><td>${esc(pgOf(g.items[0].c).name)} / ${g.mon}</td></tr>
+   <tr><th class="req">파일</th><td><input type="file" data-c="upFile" accept=".xlsx,.xls,.csv" aria-label="업로드 파일">${md.file ? `<div class="sub">${esc(md.file)}</div>` : ''}</td></tr>`)}
+   <p class="p5-note">업로드한 PG ${kind === '입금대사' ? '입금' : '거래'} 내역과 MID별 기준 금액을 대조합니다. 프로토타입에서는 파일 내용을 읽지 않고 업로드한 것으로 처리합니다.</p>`,
+    f: `<button class="btn" data-a="close">취소</button><button class="btn pri" data-a="uploadSave">업로드</button>` };
 }
 
 /* ================= PG 수수료 조회: 정산월 × MID ================= */
@@ -240,11 +312,11 @@ function vFee() {
   return `${crumb(['PG 수수료 조회'])}<h1 class="lst-title">PG 수수료 조회</h1>${filterBox([
     lf('정산월', `<select data-b="f.mon">${opts(MONS.map(m => [m, monLabel(m)] as [string, string]), f.mon)}</select>`) + lf('PG사', `<select data-b="f.pg">${pgOpts(f.pg)}</select>`) + lf('결제수단', `<select data-b="f.m">${opts(usedMethods(), f.m, '전체')}</select>`) + lf('검증상태', `<select data-b="f.st">${opts(['일치', '불일치', '미수신', '청구 전'], f.st, '전체')}</select>`),
     acts])}
-  <div class="pm3-bar"><h2 class="lst-count">조회 결과 <span><b>${rows.length}</b>건 / 거래 ${won(sum('cnt'))}건 · ${won(sum('amt'))}원 · 예상 수수료 ${won(sum('exp'))}원</span></h2><div class="pm3-tools"><button class="btn sm" data-a="feeCsv">엑셀 다운로드</button></div></div>
-  <div class="tw"><table class="tbl lst-table"><thead><tr><th class="l">PG사</th><th>계약번호</th><th class="l">가맹점명</th><th>MID</th><th>결제수단</th><th class="r">거래건수</th><th class="r">거래금액</th><th>수수료(VAT)</th><th class="r">예상 수수료</th><th class="r">PG 청구 수수료</th><th class="r">차액</th><th>검증상태</th></tr></thead><tbody>
+  <div class="pm3-bar"><h2 class="lst-count">조회 결과 <span><b>${rows.length}</b>건 / 거래 ${won(sum('cnt'))}건 · ${won(sum('amt'))}원 · 예상 수수료 ${won(sum('exp'))}원</span></h2></div>
+  <div class="tw"><table class="tbl lst-table"><thead><tr><th class="l">PG사</th><th>계약번호</th><th class="l">가맹점명</th><th>MID</th><th>결제수단</th><th class="r">거래건수</th><th class="r">거래금액</th><th>수수료(VAT)</th><th class="r">예상 수수료</th><th class="r">PG 청구 수수료</th><th class="r">차액</th><th>검증상태</th><th>다운로드</th></tr></thead><tbody>
   ${page.map(x => `<tr><td class="l">${esc(pgOf(x.c).name)}</td><td class="num">${x.c.no}</td><td class="l"><a class="p4-id" href="${URLS.feeD}?mon=${x.mon}&mid=${x.m.id}">${esc(x.m.name)}</a></td><td class="mid">${esc(x.m.mid)}</td><td>${esc(x.m.method)}</td>
    <td class="r num">${x.cnt}</td><td class="r num">${won(x.amt)}</td><td>${feeTxt(x.m)} <span class="dim-t">(VAT ${x.m.vat})</span></td><td class="r num">${won(x.exp)}</td><td class="r num">${x.claim == null ? '-' : won(x.claim)}</td>
-   <td class="r num">${x.claim == null ? '-' : x.claim - x.exp ? money(x.claim - x.exp) : '0'}</td><td>${badge(x.st)}</td></tr>`).join('') || '<tr><td colspan="12" class="empty">조건에 맞는 수수료 내역이 없습니다.</td></tr>'}</tbody></table></div>
+   <td class="r num">${x.claim == null ? '-' : x.claim - x.exp ? money(x.claim - x.exp) : '0'}</td><td>${badge(x.st)}</td><td><button class="btn sm" data-a="feeRowCsv" data-mon="${x.mon}" data-mid="${x.m.id}">다운로드</button></td></tr>`).join('') || '<tr><td colspan="13" class="empty">조건에 맞는 수수료 내역이 없습니다.</td></tr>'}</tbody></table></div>
   <div class="lst-bottom">${pager(rows.length, 15)}</div>`;
 }
 function curFee() {
@@ -255,7 +327,7 @@ function curFee() {
 function vFeeD() {
   const x = curFee();
   if (!x) return `${crumb(['PG 수수료 조회', '상세'])}<div class="emptybox">수수료 내역이 없습니다.</div><div class="foot"><a class="btn lg" href="${URLS.fee}">목록</a></div>`;
-  const page = slice(x.pays, 10), d = (a: number, b: number | null) => b == null ? '-' : b - a ? money(b - a) : '0';
+  const d = (a: number, b: number | null) => b == null ? '-' : b - a ? money(b - a) : '0';
   return `${crumb(['PG 수수료 조회', '상세'])}${ph(`${esc(x.m.name)} · ${esc(x.m.mid)} ${badge(x.st)}`, `<span class="dim-t">정산월 ${x.mon}</span>`)}
   ${sec('기본 정보', ft(`<tr><th>정산월</th><td>${x.mon}</td><th>PG사 / 계약번호</th><td>${esc(pgOf(x.c).name)} / <a class="p4-id" href="${URLS.ctr}?ct=${x.c.no}">${x.c.no}</a></td></tr>
    <tr><th>가맹점명</th><td>${esc(x.m.name)}</td><th>MID</th><td><a class="p4-id" href="${URLS.ctr}?ct=${x.c.no}&id=${x.m.id}">${esc(x.m.mid)}</a></td></tr>
@@ -265,11 +337,12 @@ function vFeeD() {
    <tr><td class="l">거래건수</td><td class="r num">${x.cnt}</td><td class="r num">${x.claim == null ? '-' : x.cnt}</td><td class="r num">${x.claim == null ? '-' : '0'}</td></tr>
    <tr><td class="l">거래금액</td><td class="r num">${won(x.amt)}</td><td class="r num">${x.claim == null ? '-' : won(x.amt)}</td><td class="r num">${x.claim == null ? '-' : '0'}</td></tr>
    <tr><td class="l">수수료</td><td class="r num">${won(x.exp)}</td><td class="r num">${x.claim == null ? '-' : won(x.claim)}</td><td class="r num">${d(x.exp, x.claim)}</td></tr></tbody></table></div>`)}
-  ${sec('건별 계산 내역', `<div class="tw"><table class="tbl"><thead><tr><th>결제번호</th><th>결제일시</th><th>결제상태</th><th class="r">순결제금액</th><th>수수료 조건</th><th class="r">예상 수수료</th></tr></thead><tbody>
-   ${page.map(p => `<tr><td><a class="p4-id" href="${URLS.payD}?no=${p.no}">${p.no}</a></td><td class="num">${p.at.slice(0, 16)}</td><td>${badge(p.st)}</td><td class="r num">${won(net(p))}</td><td>${feeTxt(x.m)}</td><td class="r num">${won(feeOf(p))}</td></tr>`).join('')}</tbody></table></div>
-   <div class="lst-bottom" style="display:flex;justify-content:center;margin-top:20px">${pager(x.pays.length, 10)}</div>`, `전체 ${x.pays.length}건`)}
-  <div class="foot pm3h-foot"><a class="btn lg" href="${URLS.fee}">목록</a><button class="btn lg" data-a="feeDCsv">엑셀 다운로드</button></div>`;
+  ${sec('건별 계산 내역', ft(`<tr><th>대상 결제</th><td>${x.pays.length}건 <span class="dim-t">(${(['결제완료', '부분취소'] as PaySt[]).map(st => `${st} ${x.pays.filter(p => p.st === st).length}건`).join(' · ')})</span></td></tr>
+   <tr><th>파일 항목</th><td>정산월, MID, 결제번호, 결제일시, 결제상태, 순결제금액, 수수료 조건, 예상 수수료</td></tr>`), '', `<button class="btn sm pri" data-a="feeDCsv">다운로드</button>`)}
+  <div class="foot pm3h-foot"><a class="btn lg" href="${URLS.fee}">목록</a></div>`;
 }
+
+const feeDetailCsv = (x: FeeRow) => csv(`PG수수료_${x.m.mid}_${x.mon}`, ['정산월', 'MID', '결제번호', '결제일시', '결제상태', '순결제금액', '수수료 조건', '예상 수수료'], x.pays.map(p => [x.mon, x.m.mid, p.no, p.at, p.st, net(p), feeTxt(x.m), feeOf(p)]));
 
 /* ================= 렌더 · 모달 ================= */
 function ftCols(root: HTMLElement) {
@@ -282,11 +355,11 @@ function ftCols(root: HTMLElement) {
 function renderModal() {
   const r = $('#modal-root'), md = UI.modal;
   if (!md) { r.innerHTML = ''; return; }
-  const f = md.type === 'cancel' ? mCancel() : mReconFail();
-  r.innerHTML = `<div class="dimbg" data-a="dim"><div class="mdl ${md.type === 'cancel' ? 'w5' : ''}" role="dialog" aria-modal="true" aria-labelledby="mdl-t"><div class="mdl-h"><h2 id="mdl-t">${f.t}</h2><button class="x" data-a="close" aria-label="닫기">×</button></div><div class="mdl-b">${f.b}</div><div class="mdl-f">${f.f}</div></div></div>`;
+  const f = md.type === 'cancel' ? mCancel() : md.type === 'status' ? mStatus() : mUpload();
+  r.innerHTML = `<div class="dimbg" data-a="dim"><div class="mdl w5" role="dialog" aria-modal="true" aria-labelledby="mdl-t"><div class="mdl-h"><h2 id="mdl-t">${f.t}</h2><button class="x" data-a="close" aria-label="닫기">×</button></div><div class="mdl-b">${f.b}</div><div class="mdl-f">${f.f}</div></div></div>`;
 }
 function render() {
-  const v = PAGE === 'pay' ? vPay() : PAGE === 'payD' ? vPayD() : PAGE === 'recon' ? vRecon() : PAGE === 'fee' ? vFee() : vFeeD();
+  const v = PAGE === 'pay' ? vPay() : PAGE === 'payD' ? vPayD() : PAGE === 'recon' ? vRecon() : PAGE === 'reconD' ? vReconD() : PAGE === 'fee' ? vFee() : vFeeD();
   $('#view').innerHTML = v; ftCols($('#view')); renderModal();
 }
 
@@ -313,11 +386,36 @@ const A: Record<string, (el: HTMLElement) => void> = {
     p.logs.push({ at, by: USER, t: `${p.st} (BO · ${md.why.trim()})`, amt: -amt });
     UI.modal = null; render(); toast(`${won(amt)}원을 승인취소했습니다.`);
   },
-  reconFail(el) { UI.modal = { type: 'fail', id: el.dataset.id }; render(); },
-  reconCsv() { const rows = genRecon().filter(x => x.st === 'Fail'); csv('대사_Fail', ['대사 구분', '기준일', 'PG사', '계약번호', '결제번호', '유형', '당사 금액', 'PG 금액'], rows.flatMap(x => x.fails.map(f => [x.kind, x.date, pgOf(ctById(x.ct)).name, x.ct, f.no, f.type, f.ours, f.pg]))); },
-  feeCsv() { const a = UI.fA; csv('PG수수료', ['정산월', 'PG사', '계약번호', '가맹점명', 'MID', '결제수단', '거래건수', '거래금액', '수수료 조건', 'VAT', '예상 수수료', 'PG 청구 수수료', '검증상태'],
-    feeRows(a.mon).filter(x => (!a.pg || x.c.pg === a.pg) && (!a.m || x.m.method === a.m) && (!a.st || x.st === a.st)).map(x => [x.mon, pgOf(x.c).name, x.c.no, x.m.name, x.m.mid, x.m.method, x.cnt, x.amt, feeTxt(x.m), x.m.vat, x.exp, x.claim ?? '', x.st])); },
-  feeDCsv() { const x = curFee(); if (x) csv(`PG수수료_${x.m.mid}_${x.mon}`, ['결제번호', '결제일시', '결제상태', '순결제금액', '예상 수수료'], x.pays.map(p => [p.no, p.at, p.st, net(p), feeOf(p)])); },
+  reconRowCsv(el) { const g = reconGroups(el.dataset.mon as string).find(x => x.pg === el.dataset.pg); if (g) csv(`거래대사_${pgOf(g.items[0].c).name}_${g.mon}`, RECON_HEAD, reconCsvRows(g.items)); },
+  // 내역 다운로드: 오프라인 대사용으로 결제 건 단위까지 내려준다
+  reconDCsv() { const g = curRecon(), kind: RKind = UI.tab || '승인대사';
+    csv(`거래대사_${pgOf(g.items[0].c).name}_${g.mon}_${kind}`, ['대사월', '대사 구분', 'MID', '가맹점명', '결제번호', '승인일시', '입금예정일', '순결제금액', '예상 수수료', '기준 금액'],
+      g.items.filter(x => x.kind === kind).flatMap(x => x.pays.map(p => [g.mon, kind, x.m.mid, x.m.name, p.no, p.at, depDay(p), net(p), feeOf(p), net(p) - (kind === '입금대사' ? feeOf(p) : 0)]))); },
+  reconTab(el) { UI.tab = el.dataset.v; render(); },
+  stOpen(el) { const x = curRecon().items.find(y => y.key === el.dataset.k); UI.modal = { type: 'status', k: el.dataset.k, st: x?.st === 'Pass' ? 'Fail' : 'Pass', why: '', err: [] }; render(); },
+  stSave() {
+    const md = UI.modal, g = curRecon(), x = g.items.find(y => y.key === md.k) as RItem;
+    md.err = [...(md.st === x.st ? ['현재 상태와 같습니다. 다른 상태를 고르세요.'] : []), ...(md.why.trim() ? [] : ['사유를 입력하세요.'])];
+    if (md.err.length) { render(); return; }
+    const at = nowAt();
+    RS.items[x.key] = { st: md.st, at, by: USER };
+    RS.hist.unshift({ at, by: USER, mon: g.mon, pg: g.pg, mid: x.m.mid, kind: x.kind, before: x.st, after: md.st, why: md.why.trim() });
+    saveRS(); UI.modal = null; render(); toast(`${x.m.mid} ${x.kind} 상태를 ${md.st}(으)로 바꿨습니다.`);
+  },
+  uploadOpen() { UI.modal = { type: 'upload', file: '', err: [] }; render(); },
+  upFile(el) { const f = (el as HTMLInputElement).files?.[0]; if (UI.modal) UI.modal.file = f ? f.name : ''; },
+  uploadSave() {
+    const md = UI.modal, g = curRecon(), kind: RKind = UI.tab || '승인대사';
+    md.err = md.file ? [] : ['업로드할 파일을 고르세요.'];
+    if (md.err.length) { render(); return; }
+    const at = nowAt(); RS.uploads[`${g.mon}|${g.pg}|${kind}`] = at;
+    RS.hist.unshift({ at, by: USER, mon: g.mon, pg: g.pg, mid: '-', kind, before: '업로드 대기', after: '엑셀 대조', why: `파일 업로드: ${md.file}` });
+    saveRS(); UI.modal = null; render();
+    const it = curRecon().items.filter(x => x.kind === kind && x.mode === '엑셀 업로드');
+    toast(`${kind} ${it.length}건 대조: Pass ${it.filter(x => x.st === 'Pass').length}, Fail ${it.filter(x => x.st === 'Fail').length}`);
+  },
+  feeRowCsv(el) { const x = feeRows(el.dataset.mon as string).find(y => y.m.id === el.dataset.mid); if (x) feeDetailCsv(x); },
+  feeDCsv() { const x = curFee(); if (x) feeDetailCsv(x); },
 };
 const emptyF = () => PAGE === 'pay' ? emptyPayF() : PAGE === 'recon' ? emptyReconF() : emptyFeeF();
 
@@ -327,7 +425,7 @@ document.addEventListener('click', e => {
   if (el.dataset.a === 'dim' && e.target !== el) return;
   A[el.dataset.a as string]?.(el);
 });
-document.addEventListener('change', e => { const el = e.target as HTMLInputElement; if (el.dataset.b) setPath(UI, el.dataset.b, el.value); if (el.dataset.r !== undefined) render(); });
+document.addEventListener('change', e => { const el = e.target as HTMLInputElement; if (el.dataset.b) setPath(UI, el.dataset.b, el.value); if (el.dataset.c) A[el.dataset.c]?.(el); if (el.dataset.r !== undefined) render(); });
 document.addEventListener('input', e => { const el = e.target as HTMLInputElement; if (el.dataset.b && el.type !== 'radio' && el.tagName !== 'SELECT') setPath(UI, el.dataset.b, el.value); });
 document.addEventListener('keydown', e => {
   const el = e.target as HTMLInputElement;

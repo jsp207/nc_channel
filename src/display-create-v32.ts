@@ -7,6 +7,9 @@
 //   EPC 설정값을 기본으로 불러오고 필요한 항목만 수정(E.chset[채널].ov), 항목별 · 채널별 EPC 값으로 복원
 //   가입유형 · 할부 · 노출 서비스는 연결 상품에 휴대폰 또는 요금제가 있을 때만
 // - 주문 프로세스 연동의 '채널 관리 항목 노출'(E.chHide)은 채널별 노출 제어로 옮겨 뺐다. 미리보기의 가입 · 할부 · 배송 코너는 미리보기 채널의 채널별 설정을 따른다
+// - T기프트 · 티다팩 섹션 재적용(v0.2.4에서 뺀 섹션, 주문 프로세스 연동 바로 위): 단말기(기기서비스)를 연결하면 T기프트, 요금제를 연결하면 티다팩.
+//   목록은 CVM이 아니라 EPC에서 조회한다. 연결 상품 조건에 맞는 항목은 자동으로 올라오고([T기프트 조회] · [티다팩 조회]로 기획전 전용 항목 추가),
+//   여기서는 순서 · 연결 해제 · 자동 배지만 정한다. 채널별 노출 여부는 채널별 노출 제어의 T기프트 · 티다팩(Y/N)을 따른다
 // 이전: 상품 전시 관리 v0.3.1 (display-create-v30.ts v0.3 복사본, product-v031.html). 바뀐 점:
 // - 화면을 두 영역으로 나눈다: 공통(모든 채널) · 통합 앱 전용(통합 APP · WEB에만 적용)
 //   · T-gate · 스마트플래너는 공통 영역의 전시 정보 · 콘텐츠 정보만 쓴다. 노출 제어 조건(후기 · 연관 상품 · 주문 · 채널 관리 항목)은 통합 앱에만 적용
@@ -178,7 +181,7 @@ function openEdit(id,mode){
  // v0.3.2 MP 상품 전시: 값 정리 · 제공 혜택 문구 · 콘텐츠 정보 기본 항목
  mpNorm(E,false); delete E.bnf; syncMpExtras(); PVMP=mpPvDef();
  cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; PV={}; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=RTE_SRC.xtx=false; XD=null;
- syncSingle(); syncBenefits(E);
+ syncSingle(); syncBenefitsV(E);
  // 처음 열 때(새로고침 포함)는 모든 섹션을 펼친다. 섹션마다 따로 접고 편다
  $$('#v-edit .step').forEach(s=>setFold(s,true,true)); tabIdx=0;
  renderEditing(); renderAll(); showView('edit');
@@ -243,11 +246,11 @@ document.addEventListener('keydown',e=>{
 });
 function goSec(k){ if(k==='info'){ curI=secState(E).basic.st==='done'?'desc':'basic'; rInfo(); } const s=$('#sec-'+k); setDock(false); openSec(s); }
 
-function renderAll(){ rKind(); rConn(); rMethod(); rAttr(); rCh(); rChset(); rInfo(); rBasic(); rDesc(); rExtra(); rGuide(); rReview(); rExpert(); rRel(); rSim(); rSearch(); rCvm(); rOrder(); refresh(); }
+function renderAll(){ rKind(); rConn(); rMethod(); rAttr(); rCh(); rChset(); rInfo(); rBasic(); rDesc(); rExtra(); rGuide(); rReview(); rExpert(); rRel(); rSim(); rGift(); rTd(); rSearch(); rCvm(); rOrder(); refresh(); }
 // 섹션 상태·연결 상품 목록·미리보기 갱신
 function refresh(){
  const S=secState(E);
- // v0.2.4: 가입 유형 · 할부 · 배송 · T기프트 · 티다팩 섹션은 화면에 없다
+ // v0.2.4: 가입 유형 · 할부 · 배송 섹션은 화면에 없다. v0.3.2: T기프트 · 티다팩 섹션은 다시 쓴다
  SECS.forEach(([k])=>{ const el0=$('#sec-'+k); if(!el0) return; const s=S[k], [t,c]=STL[s.st]; const ch=$('#st-'+k); if(ch){ ch.textContent=t; ch.className='chip '+c; } const el=$('#sec-'+k); el.classList.toggle('na',s.st==='na'); el.classList.toggle('off',s.st==='off'||s.st==='unused'); el.hidden=hideSec(k,E);
   // 주문 받기가 꺼지면 채널 연동 섹션(가입 유형 · 할부 · 배송)은 필수에서 빠진다
   const rq=el.querySelector(':scope>header .req'); if(rq) rq.hidden=!isReq(k,S); });
@@ -502,7 +505,7 @@ function rKind(){
  const T=[['po','PO 상품 전시'],['mp','MP 상품 전시'],['ps','PS 상품 전시']];
  $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
  ${!KIND_NTC[E.kind]?'':ntc('',KIND_NTC[E.kind]).replace('class="ntc ','style="margin:0" class="ntc ')}`;
- $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if((E.conn.length||E.mp)&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.mp=''; E.areas=k!=='ps'?[newArea('','fixed')]:[]; E.method='fixed'; psReset(E); if(isMpPlan(E.orderPlan)&&k!=='mp') E.orderPlan=null; mpNorm(E,true); syncMpExtras(); syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefits(E); renderAll(); }));
+ $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if((E.conn.length||E.mp)&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.mp=''; E.areas=k!=='ps'?[newArea('','fixed')]:[]; E.method='fixed'; psReset(E); if(isMpPlan(E.orderPlan)&&k!=='mp') E.orderPlan=null; mpNorm(E,true); syncMpExtras(); syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefitsV(E); renderAll(); }));
 }
 
 // ---------- 2. 연결 상품 ----------
@@ -558,13 +561,21 @@ function syncPtype(){
 }
 // 화면에 보이는 상품 유형: 연결 상품의 LV3를 연결한 순서대로 겹치지 않게 모은다
 const lv3Combo=()=>lv3ComboOf(E);
-// v0.2.4: 사은품 · 티다팩 자동 배지는 T기프트 · 티다팩 섹션과 함께 뺐다
-const autoBadges=()=>[];
+// v0.3.2: T기프트 · 티다팩 자동 배지를 다시 쓴다. 노출 중인 항목이 있고 배지를 켰을 때만 붙고, 직접 입력 배지와 합쳐 BADGE_MAX를 넘지 않는다
+const autoBadges=d=>{ const a=[]; if(d.giftBadge&&visibleGifts(d).length) a.push({k:'gift',t:'사은품 증정',c:'#0F6E56',s:'f',from:'T기프트'}); if(d.tdBadge&&visibleTd(d).length) a.push({k:'td',t:'티다팩 혜택',c:'#D85A30',s:'f',from:'티다팩'}); return a.slice(0,Math.max(0,BADGE_MAX-d.badges.length)); };
+// v0.3.2: T기프트는 연결한 단말기(기기서비스), 티다팩은 연결한 요금제의 EPC 값으로만 자동 매칭한다(공용 syncBenefits는 연결 상품 전체로 매칭)
+const connOfType=(d,type)=>Object.assign({},d,{conn:d.conn.filter(id=>(poBy(id)||{}).type===type)});
+function syncBenefitsV(d){
+ d.gifts=d.gifts||[]; d.tds=d.tds||[];
+ if(d.kind==='ps'||d.kind==='mp'){ d.gifts=[]; d.tds=[]; return; }
+ d.gifts=syncList(d.gifts,GIFT,connOfType(d,'기기서비스')).filter(x=>!(d.giftCut||[]).includes(x.id));
+ d.tds=syncList(d.tds,TDP,connOfType(d,'요금제')).filter(x=>!(d.tdCut||[]).includes(x.id));
+}
 // v0.2.4 섹션 이름: 구매 후기 · 연관 및 유사 상품 · 주문 프로세스 연동 (display-rules.ts의 이름은 v0.2.3 · 목록이 함께 쓰므로 여기서만 바꾼다)
 const SEC_LB={ch:'노출 채널',chset:'채널별 노출 제어',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
 // v0.3: 전문가 리뷰는 이 화면에만 있어 구매 후기 다음에 넣는다(이전 버전 화면은 공용 SECS를 그대로 쓴다)
 // v0.3.1: 화면 순서 = 공통(전시 유형 → 연결 상품 → 고객 선택 방식 → 노출 채널 → 전시 정보 → 콘텐츠 정보) → 통합 앱 전용(구매 후기 → 전문가 리뷰 → 연관 상품 → 주문)
-const SEC_ORD=['kind','conn','method','ch','chset','info','extra','gcs','gshop','ggov','review','expert','rel','order'];
+const SEC_ORD=['kind','conn','method','ch','chset','info','extra','gcs','gshop','ggov','review','expert','rel','gift','td','order'];
 const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',true,'채널별 노출 제어'],...MP_GUIDE.map(([k,n])=>[k,n,false,n]),s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
  .sort((a,b)=>(SEC_ORD.indexOf(a[0])+1||99)-(SEC_ORD.indexOf(b[0])+1||99));
 // 통합 앱 전용 영역의 섹션: 노출 채널에 통합 APP · WEB이 없으면 '해당 없음'으로 보고 검사하지 않는다
@@ -573,11 +584,11 @@ const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',
 const APP_SECS=['chset'];
 // v0.3.2 MP 상품 전시: 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동을 노출 채널과 관계없이 고정으로 보여 준다
 const appScope=d=>d.kind!=='ps'&&d.kind!=='mp'&&appOn(d);
-const MP_HIDE=['chset','method','review','expert'];
+const MP_HIDE=['chset','method','review','expert','gift','td'];
 // 섹션 상태: 공용 규칙(display-rules) + 이 화면에만 있는 전문가 리뷰
 // PS 상품 전시: 전시 콘텐츠 등록용. 연결 PS(1개) · 전시 설정(노출 영역) · 전시 정보(이미지 포함) · 콘텐츠 정보(상품 고시 등)만 쓴다.
 //  고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 화면에서 숨기고 검사에서도 뺀다
-const PS_HIDE=['chset','method','review','expert','rel','order'];
+const PS_HIDE=['chset','method','review','expert','rel','gift','td','order'];
 // v0.3.2: 채널별 노출 제어는 공통 영역(노출 채널 바로 아래)에 있지만 통합 APP · WEB을 고를 때만 보인다
 const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||d.kind==='mp'&&MP_HIDE.includes(k)||GUIDE_KEYS.includes(k)&&d.kind!=='mp'||k==='chset'&&!appScope(d)||secHidden(k,d);
 // PS로 바꾸거나 PS 전시를 열 때: PS는 1개만, 숨긴 섹션 값은 끈다
@@ -605,7 +616,7 @@ function mpState(d,S){
 }
 const blockingV=d=>{ const S=secState(d); return SECS.filter(([k])=>isReq(k,S)&&(S[k].st==='todo'||S[k].st==='warn')).flatMap(([k,l])=>S[k].e.length?S[k].e.map(x=>[k,l,x]):[[k,l,'입력이 필요해요']]); };
 const lv3Text=()=>lv3Combo().join(' + ');
-function onConnChange(){ syncSingle(); PV={}; syncPtype(); syncBenefits(E); const n=syncConnTpls(); rConn(); rMethod(); rAttr(); rChset(); rBasic(); rDesc(); rSearch(); rRel(); rOrder(); refresh(); return n; }
+function onConnChange(){ syncSingle(); PV={}; syncPtype(); syncBenefitsV(E); const n=syncConnTpls(); rConn(); rMethod(); rAttr(); rChset(); rBasic(); rDesc(); rSearch(); rRel(); rGift(); rTd(); rOrder(); refresh(); return n; }
 
 // ---------- 3. 고객 선택 방식 ----------
 const curArea=()=>E.areas.find(a=>a.id===cur);
@@ -1258,6 +1269,72 @@ function rSim(){
 }
 // ---------- 6-2. 검색 노출 설정 · 오퍼링 문구: 전시 정보 탭(rInfo)에서 고른다 ----------
 
+// ---------- 6-9. T기프트 / 티다팩 (v0.3.2 재적용, v0.2.3 display-create-v24.ts 7-3 구성) ----------
+// 단말기를 연결하면 T기프트, 요금제를 연결하면 티다팩. 목록은 EPC에서 조회한다(CVM 아님).
+// 연결 상품 조건에 맞는 항목은 자동으로 올라오고(조건 매칭), [T기프트 조회] · [티다팩 조회]로 기획전 전용 항목을 붙인다. 여기서는 순서 · 연결 해제 · 자동 배지만 정한다
+const dot=d=>d.replace(/-/g,'.');
+function condText(g){ if(g.own) return '<span class="gtag own">전시 전용</span> 이 전시에만 적용'; const c=[]; if(g.cond.model) c.push(`${esc(g.cond.model)} 연결 시`); if(g.cond.pos) c.push(g.cond.pos.map(id=>esc((poBy(id)||{name:id}).name)).join(', ')); if(g.cond.join) c.push(g.cond.join.join('·')+' 가입'); return c.join('<br>'); }
+function stTag(st,lim){ return st.k==='out'?`<span class="gtag end">${lim?'한도 소진':'소진'} · 자동 미노출</span>`:st.k==='end'?`<span class="gtag end">${lim?'제휴 종료':'기간 종료'} · 자동 미노출</span>`:st.k==='wait'?`<span class="gtag wait">${st.t}</span>`:st.warn?`<span class="gtag st">${lim?st.warn.replace('남은 수량','발급 한도'):st.warn}</span>`:''; }
+function badgeRow(k,label,on){ return `<div class="row" style="margin:14px 0 0"><label class="fl">${label}</label><span class="srch-radio" role="radiogroup" aria-label="${label}"><label><input type="radio" name="${k}" value="1" ${on?'checked':''}>자동으로 붙이기</label><label><input type="radio" name="${k}" value="0" ${on?'':'checked'}>붙이지 않기</label></span></div>`; }
+// 채널별 노출 제어에서 미리보기 채널의 T기프트 · 티다팩을 N으로 두면 미리보기에서 뺀다
+function svcOff(k){ if(!needPP(E)) return false; const ch=ctlChs(E)[0]; if(!ch) return false; const c=chOf(E,ch); return !!(c.svc&&c.svc[k]==='N'); }
+const epcNote=k=>`<p class="pill" style="margin:0 0 10px">${k==='gift'?'연결한 단말기의 T기프트를 EPC에서 조회해 자동으로 불러와요.':'연결한 요금제의 티다팩을 EPC에서 조회해 자동으로 불러와요.'} 채널별 노출 여부는 채널별 노출 제어에서 정해요</p>`;
+function rGift(){
+ const box=$('#sb-gift'); if(!box) return;
+ if(!hasDev(E)){ box.innerHTML=''; return; }
+ const gQty=g=>g.total==null?'제한 없음':`${g.left.toLocaleString()} / ${g.total.toLocaleString()}개`;
+ const rows=E.gifts.map((x,i)=>{ const g=GM(x.id), st=benefitState(g), jw=joinWarn(E,g), t=stTag(st);
+  return `<tr class="gf-r ${st.auto?'dim':''}" data-gk="${x.id}"><td><div class="gnm">${gripBtn(i,esc(g.n))}<span class="gic" aria-hidden="true">${g.ic}</span><div><b>${esc(g.n)}${x.src==='own'?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</b><small>${esc(g.mode)} · ${esc(g.ship)}</small>${t?`<div>${t}</div>`:''}${jw?`<div class="gwarn">${jw}</div>`:''}</div></div></td><td>${condText(g)}</td><td>${dot(g.from)} ~<br>${dot(g.to)}</td><td><span class="qty">${gQty(g)}</span></td><td class="c"><button type="button" class="lnk" data-gx="${x.id}">연결 해제</button></td></tr>`; }).join('');
+ box.innerHTML=`${epcNote('gift')}<div class="sec-h"><b>적용 목록</b><button type="button" class="btn sm" id="gLink" style="margin-left:auto">T기프트 조회</button></div>
+ ${E.gifts.length?`<div class="cl gtbl"><table><thead><tr><th>T기프트명 · 혜택</th><th>대상 조건</th><th>기간</th><th>남은 수량</th><th class="c">연결 해제</th></tr></thead><tbody>${rows}</tbody></table></div>`
+ :'<div class="empty">연결한 단말기에 해당하는 T기프트가 EPC에 없어요. 기획전 전용 T기프트는 <b>T기프트 조회</b>로 붙일 수 있어요</div>'}
+ ${badgeRow('gBadge','T기프트 배지',E.giftBadge)}`;
+ const after=()=>{ rGift(); rBasic(); refresh(); };
+ dndList('#sb-gift','gk',E.gifts,after,null,'tr.gf-r');
+ // 조건 매칭 항목을 해제하면 giftCut에 남겨 연결 상품이 바뀌어도 다시 올라오지 않게 한다
+ $$('#sb-gift [data-gx]').forEach(b=>b.addEventListener('click',()=>{ const [x]=E.gifts.splice(E.gifts.findIndex(y=>y.id===b.dataset.gx),1); if(x.src==='auto') (E.giftCut=E.giftCut||[]).push(x.id); after(); toast(`${GM(x.id).n} 연결을 해제했어요`); }));
+ $$('#sb-gift input[name=gBadge]').forEach(r=>r.addEventListener('change',()=>{ E.giftBadge=r.value==='1'; after(); }));
+ $('#gLink').addEventListener('click',()=>openBenefitModal('gift'));
+}
+let tdMore=false; // 티다팩 목록: 처음 TD_TOP개만 보이고 나머지는 더보기
+const tdQty=t=>t.total==null?'한도 없음':`잔여 ${t.left.toLocaleString()} / ${t.total.toLocaleString()}명`;
+function rTd(){
+ const box=$('#sb-td'); if(!box) return;
+ if(!hasPlan(E)){ box.innerHTML=''; return; }
+ const more=E.tds.length>TD_TOP, shown=more&&!tdMore?E.tds.slice(0,TD_TOP):E.tds;
+ const rows=shown.map((x,i)=>{ const t=TDM(x.id), st=benefitState(t), tg=stTag(st,true);
+  return `<tr class="td-r ${st.auto?'dim':''}" data-tk="${x.id}"><td><div class="gnm" style="min-width:0">${gripBtn(i,esc(t.brand))}<span class="tlogo" style="background:${t.lc}" aria-hidden="true">${esc(t.logo)}</span></div></td><td><div class="gnm"><div><b>${esc(t.brand)}${x.src==='own'?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</b><small>${esc(t.benefit)}</small>${tg?`<div>${tg}</div>`:''}</div></div></td><td>${t.own?condText(t):`${t.cond.pos.filter(id=>E.conn.includes(id)).map(id=>esc(poBy(id).name)).join(', ')}<br><small class="faint">12개월 약정</small>`}</td><td>매월 1회 · 12회<br><small class="faint">${esc(t.issue)}</small></td><td>${esc(t.use)}<br><small class="faint">유효 ${esc(t.valid)}</small></td><td>${dot(t.from)} ~<br>${dot(t.to)}</td><td><span class="qty">${tdQty(t)}</span></td><td class="c"><button type="button" class="lnk" data-tx="${x.id}">연결 해제</button></td></tr>`; }).join('');
+ box.innerHTML=`${epcNote('td')}<div class="sec-h"><b>적용 목록</b><button type="button" class="btn sm" id="tLink" style="margin-left:auto">티다팩 조회</button></div>
+ ${E.tds.length?`<div class="cl gtbl"><table><thead><tr><th>쿠폰 이미지</th><th>쿠폰명 · 쿠폰 혜택</th><th>대상 조건</th><th>발급</th><th>사용 조건</th><th>기간</th><th>발급 한도</th><th class="c">연결 해제</th></tr></thead><tbody>${rows}</tbody></table></div>${more?`<button type="button" class="btn sm" id="tMore" style="width:100%;margin:6px 0 0">${tdMore?'접기':`더보기 (${E.tds.length-TD_TOP}개)`}</button>`:''}`
+ :'<div class="empty">연결한 요금제에 해당하는 티다팩이 EPC에 없어요. 기획전 전용 티다팩은 <b>티다팩 조회</b>로 붙일 수 있어요</div>'}
+ ${badgeRow('tBadge','티다팩 배지',E.tdBadge)}`;
+ const after=()=>{ rTd(); rBasic(); refresh(); };
+ dndList('#sb-td','tk',E.tds,after,null,'tr.td-r');
+ // 조건 매칭 항목을 해제하면 tdCut에 남겨 연결 상품이 바뀌어도 다시 올라오지 않게 한다
+ $$('#sb-td [data-tx]').forEach(b=>b.addEventListener('click',()=>{ const [x]=E.tds.splice(E.tds.findIndex(y=>y.id===b.dataset.tx),1); if(x.src==='auto') (E.tdCut=E.tdCut||[]).push(x.id); after(); toast(`${TDM(x.id).brand} 연결을 해제했어요`); }));
+ $$('#sb-td input[name=tBadge]').forEach(r=>r.addEventListener('change',()=>{ E.tdBadge=r.value==='1'; after(); }));
+ if($('#tMore')) $('#tMore').addEventListener('click',()=>{ tdMore=!tdMore; rTd(); });
+ $('#tLink').addEventListener('click',()=>openBenefitModal('td'));
+}
+// T기프트 · 티다팩 조회 팝업: EPC에 등록된 항목을 조회해 이 전시 전용으로 붙인다. 소진 · 종료된 항목과 이미 적용 중인 항목은 고를 수 없다
+function openBenefitModal(kind){
+ const G=kind==='gift', pool=G?GIFT:TDP, list=G?E.gifts:E.tds, nm=G?'T기프트':'티다팩'; let q='', pick=new Set();
+ const draw=()=>{
+  const L=pool.filter(x=>{ const n=G?x.n:x.brand; return !q||n.includes(q)||x.id.includes(q.toUpperCase()); });
+  $('#mBody').innerHTML=`<input type="text" class="mq" id="bq" value="${esc(q)}" placeholder="${G?'T기프트명 · 코드 검색':'제휴사 · 쿠폰 코드 검색'}" aria-label="검색" style="width:100%"><div class="cl" style="margin-top:10px;max-height:420px"><table><thead><tr><th class="c"></th><th>${G?'T기프트':'쿠폰'}</th><th>구분</th><th>${G?'지급 방식':'대상'}</th><th>기간</th><th>${G?'남은 수량':'발급 한도'}</th></tr></thead><tbody>${L.map(x=>{ const has=list.some(y=>y.id===x.id), st=benefitState(x), dis=has||st.auto;
+   return `<tr><td class="c"><input type="checkbox" data-bp="${x.id}" ${has||pick.has(x.id)?'checked':''} ${dis?'disabled':''} aria-label="${esc(G?x.n:x.brand)}"></td><td>${G?`${x.ic} ${esc(x.n)}`:`<b>${esc(x.brand)}</b> · ${esc(x.benefit)}`}<br><small class="faint">${x.id}</small>${has?' <span class="chip">적용 중</span>':''}</td><td>${x.own?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</td><td>${G?x.mode:x.own?'기획전':(x.cond.pos||[]).map(id=>esc((poBy(id)||{name:id}).name)).join(', ')+' · 12개월'}</td><td>${dot(x.from).slice(5)} ~ ${dot(x.to).slice(2)}${st.auto?` <span class="gtag end">${st.t}</span>`:st.k==='wait'?' <span class="gtag wait">시작 전</span>':''}</td><td>${x.total==null?'없음':x.left.toLocaleString()+(G?'개':'명')}</td></tr>`; }).join('')}</tbody></table></div>
+  <p class="pill" style="margin:8px 0 0">EPC에 등록된 ${nm}만 고를 수 있어요. 조건 매칭 ${nm}는 대상 ${G?'단말기':'요금제'}를 연결하면 자동으로 들어와요</p>`;
+  $('#mFoot').innerHTML=foot(`선택 ${pick.size}개`,pick.size,`${pick.size}개 연결`);
+  keepQ('#bq',v=>q=v,draw);
+  $$('#mBody [data-bp]').forEach(c=>c.addEventListener('change',()=>{ c.checked?pick.add(c.dataset.bp):pick.delete(c.dataset.bp); draw(); }));
+  // 행 아무 곳이나 눌러도 선택된다 (고를 수 없는 행은 제외)
+  $$('#mBody [data-bp]:not(:disabled)').forEach(c=>{ const tr=c.closest('tr'); tr.style.cursor='pointer'; tr.addEventListener('click',e=>{ if(e.target===c) return; c.checked=!c.checked; c.dispatchEvent(new Event('change')); }); });
+  $('#mc').addEventListener('click',closeModal);
+  $('#mo').addEventListener('click',()=>{ pick.forEach(id=>{ list.push({id,src:'own',show:true}); const k=G?'giftCut':'tdCut'; E[k]=(E[k]||[]).filter(y=>y!==id); }); closeModal(); G?rGift():rTd(); rBasic(); refresh(); toast(`${nm} ${pick.size}개를 연결했어요`); });
+ };
+ modal(`${nm} 조회`,`EPC에 등록된 ${nm}를 조회해 이 전시에 붙여요`,900); draw();
+}
+
 // ---------- 7. 검색 노출 설정 (SEO) ----------
 // 사용여부(N/Y) · Tag(최대 10개) · Page Title(25자) · Description(200자) · Meta Image(1200×630). 항목마다 AI 추천으로 채울 수 있다
 const KW_MAX=10, SEO_TITLE=25, SEO_DESC=200;
@@ -1830,8 +1907,13 @@ function orderPv(){
  const pt=ptOf(E), pl=E.orderPlan;
  if(E.orderOn&&isProcPlan(pl)) pv+=ctnPv(pl);
  else if(E.orderOn&&pt) pv+=`<div class="ph-gap"></div><div class="ph-sec" data-pa="flow"><div class="ph-h">주문서</div><div class="ph-order"><b>주문서 영역</b><span>${esc(pt.ord)}${pl?' · '+esc(pl.name):''}</span></div></div>`;
- return pv+simPv()+buyPv();
+ return pv+giftPv()+tdPv()+simPv()+buyPv();
 }
+// v0.3.2 미리보기: T기프트(단말기 연결 시) · 티다팩(요금제 연결 시). 미리보기 채널에서 N이면 뺀다
+function giftPv(){ if(!hasDev(E)||svcOff('gift')) return ''; const v=visibleGifts(E);
+ return `<div class="ph-gap"></div><div class="ph-sec" data-pa="gift"><div class="ph-h">함께 드리는 T기프트<small>개통 조건을 꼭 확인하세요</small></div>${v.length?v.map(x=>{ const g=GM(x.id); return `<div class="ph-gift"><span aria-hidden="true">${g.ic}</span><div><b>${esc(g.n)}</b><small>${g.mode} · ${esc(g.ship)}</small></div></div>`; }).join(''):'<div class="pvempty sm">노출 중인 T기프트가 있으면 여기에 보인다</div>'}</div>`; }
+function tdPv(){ if(!hasPlan(E)||svcOff('td')) return ''; const v=visibleTd(E), first=v.slice(0,TD_TOP);
+ return `<div class="ph-gap"></div><div class="ph-sec" data-pa="td"><div class="ph-h">티다팩 혜택을 골라 주세요<small>12개월 약정 시 1년간 매월 받아요</small></div>${v.length?`${first.map(x=>{ const t=TDM(x.id); return `<div class="ph-td"><span class="tlogo" style="background:${t.lc}" aria-hidden="true">${esc(t.logo)}</span><div>${t.tag?`<em>${t.tag}</em>`:''}<b>${esc(t.brand)}</b><small>${esc(t.benefit)}</small></div></div>`; }).join('')}${v.length>TD_TOP?`<div class="ph-more">전체보기 · ${v.length}개 ›</div>`:''}<div class="ph-td none">티다팩 없이 주문 진행</div>`:'<div class="pvempty sm">노출 중인 티다팩이 있으면 여기에 보인다</div>'}</div>`; }
 // ---------- 미리보기: 주문 프로세스 컨테이너 · 코너 ----------
 // 컨테이너 하나씩 본다(PVC). 머리에 컨테이너 이동(‹ ›)과 진행 막대, 아래로 코너를 순서대로 그린다.
 // 코너 문구 · 선택지 설명 · 가격 · 배지 · 모양(ui)은 코너 관리 기준값(order-corner-v22-data.ts), 노출 순서 · 노출 여부 · 문구는 이 전시에서 바꾼 값을 쓴다

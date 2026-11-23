@@ -10,9 +10,9 @@ import "./payment4.css";
 import "./payment5.css";
 import "./list-unified.css";
 import { requireAuthentication } from "./auth";
-import type { Use, Mid, Promo, Contract } from "./payment5-store";
+import type { Use, Mid, Promo, Contract, Recv } from "./payment5-store";
 import {
-  TODAY, USER, TKEY, LV2S, lv3Of, ALL, methodGroups, methodCode, methodOrder, normName, URLS, D, save, $, esc,
+  TODAY, USER, TKEY, RECV_LABEL, LV2S, lv3Of, ALL, methodGroups, methodCode, methodOrder, normName, URLS, D, save, $, esc,
   pad, won, now, mask, opts, radios, checks, chips, badge, crumb, ph, sec, ft, lf, errBox, pgOf, ctOf, feeTxt,
   midAcc, midRecon, midState, promoState, promoBenefit, livePromos, methodNames, promoAllowed, go, toast
 } from "./payment5-store";
@@ -22,7 +22,7 @@ requireAuthentication();
 
 /* ================= 화면 상태 ================= */
 interface Filter { pg: string; m: string; st: string; q: string }
-interface Form { isNew: boolean; no: string; pgSel: string; name: string; code: string; bizNo: string; party: string; corpNo: string; purpose: string; bank: string; holder: string; account: string; reconUrl: string; sel: string[] }
+interface Form { isNew: boolean; no: string; pgSel: string; name: string; code: string; bizNo: string; recv: Recv; party: string; corpNo: string; purpose: string; bank: string; holder: string; account: string; reconUrl: string; sel: string[] }
 interface MidDraft extends Omit<Mid, 'rate' | 'flat'> { rate: string; flat: string; key: string }
 interface PromoDraft extends Omit<Promo, 'value' | 'min' | 'mid'> { value: string; min: string; mid: string } // mid '' = 미선택, '*' = 전체 MID
 type Modal =
@@ -83,6 +83,7 @@ function vPgD() {
   const p = pgOf(c), sib = D.cts.filter(x => x.pg === p.id), linked = c.mids.filter(m => m.accMode === 'contract' || m.reconMode === 'contract').length;
   return `${crumb(['PG 관리', '상세'])}${ph(`${esc(p.name)} · ${c.no} ${badge(c.status)}`, `<a class="btn sm" href="${URLS.ctr}?ct=${c.no}">결제수단 기준정보에서 MID 관리</a>`)}
   ${sec('PG사 정보', ft(`<tr><th>PG사명</th><td>${esc(p.name)}</td><th>PG 코드</th><td class="mid">${esc(p.code)}</td></tr>
+   <tr><th>입금 내역 수신</th><td colspan="3">${RECV_LABEL[p.recv]}</td></tr>
    <tr><th>사업자등록번호</th><td>${esc(p.bizNo || '미등록')}</td><th>이 PG사의 계약</th><td>${sib.map(x => x.no === c.no ? `<b>${x.no}</b>` : `<a class="p4-id" href="${URLS.pgD}?ct=${x.no}">${x.no}</a>`).join(', ')}</td></tr>`))}
   ${sec('계약 정보', ft(`<tr><th>계약번호</th><td class="mid">${c.no}</td><th>계약주체</th><td>${esc(c.party)}</td></tr>
    <tr><th>법인등록번호</th><td>${esc(c.corpNo || '-')}</td><th>계약 구분</th><td>${esc(c.purpose || '-')}</td></tr>`), '계약번호는 시스템이 자동 발급하며 삭제해도 다시 쓰지 않습니다')}
@@ -100,11 +101,11 @@ function initForm(): Form {
   const c = ctOf(QP.get('ct'));
   if (c) {
     const p = pgOf(c);
-    return { isNew: false, no: c.no, pgSel: p.id, name: p.name, code: p.code, bizNo: p.bizNo, party: c.party, corpNo: c.corpNo, purpose: c.purpose, bank: c.bank, holder: c.holder, account: c.account, reconUrl: c.reconUrl,
+    return { isNew: false, no: c.no, pgSel: p.id, name: p.name, code: p.code, bizNo: p.bizNo, recv: p.recv, party: c.party, corpNo: c.corpNo, purpose: c.purpose, bank: c.bank, holder: c.holder, account: c.account, reconUrl: c.reconUrl,
       sel: c.methods.map(m => m.name) };
   }
   const pre = D.pgs.find(p => p.id === QP.get('pg'));
-  return { isNew: true, no: '', pgSel: pre ? pre.id : 'new', name: pre?.name || '', code: pre?.code || '', bizNo: pre?.bizNo || '', party: '', corpNo: '', purpose: '', bank: '', holder: '', account: '', reconUrl: '', sel: [] };
+  return { isNew: true, no: '', pgSel: pre ? pre.id : 'new', name: pre?.name || '', code: pre?.code || '', bizNo: pre?.bizNo || '', recv: pre?.recv || 'API', party: '', corpNo: '', purpose: '', bank: '', holder: '', account: '', reconUrl: '', sel: [] };
 }
 function vPgForm() {
   const d = UI.form as Form, old = d.isNew ? null : ctOf(d.no);
@@ -119,7 +120,8 @@ function vPgForm() {
   return `${crumb(['PG 관리', d.isNew ? '등록' : '수정'])}${ph(d.isNew ? 'PG사 · 계약 등록' : `PG사 · 계약 수정: ${d.no}`)}
   ${sec('PG사 정보', ft(`${d.isNew ? `<tr><th>PG사 선택</th><td colspan="3"><select class="sel w200" data-b="form.pgSel" data-c="pgSel">${opts([['new', '신규 PG사 등록'], ...D.pgs.map(p => [p.id, `${p.name} (${p.code})`] as [string, string])], d.pgSel)}</select>${lockPg ? '<span class="help">기존 PG사에 계약을 추가합니다. PG사 정보는 계약 수정에서 바꿉니다</span>' : ''}</td></tr>` : ''}
    <tr><th class="${lockPg ? '' : 'req'}">PG사명</th><td>${pgVal('name', d.name, '예: NHN KCP')}</td><th class="${lockPg ? '' : 'req'}">PG 코드</th><td>${pgVal('code', d.code, '예: KCP')}</td></tr>
-   <tr><th>사업자등록번호</th><td colspan="3">${pgVal('bizNo', d.bizNo, '예: 123-45-67890')}</td></tr>`), !d.isNew && sib ? `PG사 정보를 바꾸면 같은 PG사의 다른 계약 ${sib}건에도 반영됩니다` : '')}
+   <tr><th>사업자등록번호</th><td colspan="3">${pgVal('bizNo', d.bizNo, '예: 123-45-67890')}</td></tr>
+   <tr><th class="${lockPg ? '' : 'req'}">입금 내역 수신</th><td colspan="3">${lockPg ? RECV_LABEL[d.recv] : radios('form.recv', [['API', RECV_LABEL.API], ['엑셀', RECV_LABEL.엑셀]], d.recv)}</td></tr>`), !d.isNew && sib ? `PG사 정보를 바꾸면 같은 PG사의 다른 계약 ${sib}건에도 반영됩니다` : '')}
   ${sec('계약 정보', ft(`<tr><th>계약번호</th><td>${d.isNew ? '<span class="dim-t">자동채번</span>' : `<span class="mid">${d.no}</span>`}</td><th class="req">계약주체</th><td>${inp('party', d.party, '예: 에스케이텔레콤(주)')}</td></tr>
    <tr><th>법인등록번호</th><td>${inp('corpNo', d.corpNo, '예: 123456-1234567')}</td><th>계약 구분</th><td>${inp('purpose', d.purpose, '예: 구독상품 신규 PG 계약')}</td></tr>`))}
   ${sec('입금 · 대사 정보', ft(`<tr><th>입금은행</th><td>${inp('bank', d.bank, '예: 신한은행')}</td><th>예금주</th><td>${inp('holder', d.holder, '예: 에스케이텔레콤(주)')}</td></tr>
@@ -150,8 +152,8 @@ function formApply(d: Form) {
   const ord = methodOrder(), order = (n: string) => { const i = ord.indexOf(n); return i < 0 ? 99 : i; };
   const methods = [...d.sel].sort((a, b) => order(a) - order(b)).map(name => ({ name, code: methodCode(name) || prev?.methods.find(m => m.name === name)?.code || '' }));
   let pg = D.pgs.find(p => p.id === d.pgSel);
-  if (!pg) { pg = { id: 'pg-' + Date.now().toString(36), name: t(d.name), code: t(d.code).toUpperCase(), bizNo: t(d.bizNo) }; D.pgs.push(pg); }
-  else if (!d.isNew) Object.assign(pg, { name: t(d.name), code: t(d.code).toUpperCase(), bizNo: t(d.bizNo) });
+  if (!pg) { pg = { id: 'pg-' + Date.now().toString(36), name: t(d.name), code: t(d.code).toUpperCase(), bizNo: t(d.bizNo), recv: d.recv }; D.pgs.push(pg); }
+  else if (!d.isNew) Object.assign(pg, { name: t(d.name), code: t(d.code).toUpperCase(), bizNo: t(d.bizNo), recv: d.recv });
   const fields = { party: t(d.party), corpNo: t(d.corpNo), purpose: t(d.purpose), bank: t(d.bank), holder: t(d.holder), account: t(d.account), reconUrl: t(d.reconUrl), methods };
   let c = ctOf(d.no);
   if (!c) {
@@ -364,7 +366,7 @@ function render() {
 const A: Record<string, (el: HTMLElement) => void> = {
   search() { UI.fA = { ...UI.f }; render(); },
   reset() { UI.f = emptyF(); UI.fA = emptyF(); render(); },
-  pgSel() { const d = UI.form!, p = D.pgs.find(x => x.id === d.pgSel); Object.assign(d, { name: p?.name || '', code: p?.code || '', bizNo: p?.bizNo || '' }); render(); },
+  pgSel() { const d = UI.form!, p = D.pgs.find(x => x.id === d.pgSel); Object.assign(d, { name: p?.name || '', code: p?.code || '', bizNo: p?.bizNo || '', recv: p?.recv || 'API' }); render(); },
   formSave() {
     const d = UI.form!; UI.err = formErrors(d);
     if (UI.err.length) { render(); window.scrollTo(0, document.body.scrollHeight); return; }
