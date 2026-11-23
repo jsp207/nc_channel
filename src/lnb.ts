@@ -46,11 +46,11 @@ export const MENU = [
     // 주문 정책은 메뉴에서 빼고 히스토리 > 주문 > 정책으로 옮겼다
   ] },
   { label: '결제관리', items: [
-    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method4.html' },
+    { label: '결제수단 기준정보 관리', icon: 'card', href: 'payment-method5.html' },
     { label: '결제 이력 관리', icon: 'history', href: 'payment-history4.html' },
     { label: '결제 거래내역 대사관리', icon: 'reconcile', href: 'payment-recon4.html' },
     { label: 'PG 수수료 조회', icon: 'fee', href: 'payment-fee4.html' },
-    { label: 'PG 관리', icon: 'pg', href: 'payment-pg4.html' },
+    { label: 'PG 관리', icon: 'pg', href: 'payment-pg5.html' },
     // 결제 정책서는 메뉴에서 빼고 히스토리 > 결제 > 정책으로 옮겼다
   ] },
 ];

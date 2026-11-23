@@ -1,0 +1,64 @@
+/* 결제수단 기준정보 관리 v0.2.3 (payment5.ts). payment2.css · payment4.css · list-unified.css 위에 더한다. */
+
+/* ---------- 목록 (body.p5l: 결제수단 · PG사 목록): 시안처럼 모든 칸 가운데 정렬, 행을 누르면 상세 ---------- */
+body.p5l .lf-row{grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+body.p5l .lf-acts{grid-column:auto}
+body.p5l .work .tbl{font-size:13px}
+body.p5l .work .tbl th{height:auto;padding:13px 8px;background:var(--table-head,#f0f2f8);font-size:13px;font-weight:600;color:var(--ink);text-align:center}
+body.p5l .work .tbl td{height:auto;padding:16px 8px;font-size:13px;color:var(--ink);text-align:center}
+body.p5l .work .tbl tbody tr.click{cursor:pointer}
+body.p5l .work .tbl tbody tr.click:hover{background:#f7f6ff}
+.p5-list th:first-child,.p5-list td:first-child{width:90px}
+/* 시안처럼 결제 수단도 일반 글자. 행 전체가 상세로 가는 링크이고, 올리면 밑줄만 보인다 */
+body.p5l .p4-id{color:inherit;text-decoration:none}
+body.p5l tr.click:hover .p4-id{text-decoration:underline}
+.lst-foot{display:flex;gap:8px}
+@media(max-width:1100px){body.p5l .lf-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---------- 상세 (body.p5d): 하단 고정 바는 v0.2.2 가맹점 상세(.p4-bbar)와 같다 ---------- */
+body.p5d .work{display:flex;flex-direction:column}
+body.p5d #view{flex:1;display:flex;flex-direction:column}
+.p5-inline-acts{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.p5-foot-note{margin:10px 0 0;color:var(--ink3);font-size:12px}
+
+/* 가맹점(MID) 표: 가맹점번호(MID)와 적용 수수료를 한 묶음으로 보이게 머리글을 합치고, 두 칸에 같은 배경 · 테두리를 준다 */
+.p5-midtbl{min-width:1180px}
+.p5-midtbl th.p5-grp{background:var(--ac2);color:var(--ac);border-bottom:1px solid var(--ac3)}
+.p5-midtbl th.p5-grp-l,.p5-midtbl th.p5-grp-r{background:var(--ac2)}
+.p5-midtbl td.p5-grp-l,.p5-midtbl td.p5-grp-r{background:#faf9ff}
+.p5-midtbl .p5-grp-l{border-left:2px solid var(--ac3)}
+.p5-midtbl .p5-grp-r{border-right:2px solid var(--ac3)}
+.p5-midtbl td.mid{font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+.p5-midtbl tr.off td{color:var(--ink3)}
+.p5-midtbl td.acts{white-space:nowrap}
+.p5-midtbl td.acts .lk+.lk{margin-left:8px}
+
+/* ---------- MID 입력 블록 (등록 화면 · 가맹점 등록 팝업): 왼쪽 MID 정보, 오른쪽 적용 수수료 ---------- */
+.p5-mids{display:grid;gap:16px}
+.p5-mid{border:1px solid var(--line2);border-radius:10px;background:#fff;overflow:hidden;scroll-margin-top:16px}
+.p5-mid-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--th);border-bottom:1px solid var(--line)}
+.p5-mid-h .sp{flex:1}
+.p5-no{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;background:var(--ink);color:#fff;font-size:12px;font-weight:700}
+.p5-fee{font-size:12px;color:var(--ac);font-weight:600}
+.p5-mid-b{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.p5-col{padding:16px;min-width:0}
+.p5-col + .p5-col{border-left:1px dashed var(--line2);background:#fcfcfe}
+.p5-col h4{margin:0 0 10px;font-size:14px;font-weight:700}
+.p5-col .ft th{width:128px}
+.p5-col .ft .inp:not([type=date]):not(.num){width:100%;max-width:none}
+.p5-col .ft input[type=number].inp{width:120px;text-align:right}
+.p5-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.p5-note{margin-top:10px;color:var(--ink3);font-size:12px}
+.p5-add{display:block;width:100%;margin-top:12px;padding:12px;border:1px dashed var(--line2);border-radius:10px;background:#fff;color:var(--ink2);font-weight:600;cursor:pointer}
+.p5-add:hover{border-color:var(--ac);color:var(--ac)}
+.p5-empty{padding:20px;border:1px dashed var(--line2);border-radius:10px;color:var(--ink3);text-align:center}
+.mdl.p5-wide{width:min(1180px,100%)}
+/* 좁은 화면에서는 수수료가 같은 블록 안에서 MID 정보 아래로 내려온다 */
+@media (max-width:1100px){.p5-mid-b{grid-template-columns:1fr}.p5-col + .p5-col{border-left:0;border-top:1px dashed var(--line2)}}
+
+/* ---------- PG 관리 v0.2.3 ---------- */
+.p5-link{color:var(--ac);text-decoration:none}
+.p5-link:hover{text-decoration:underline}
+.p5-custom{display:flex;gap:8px;align-items:center;margin-top:12px;max-width:520px}
+.p5-custom .inp{flex:1;width:auto}
+.tbl tr.off td{color:var(--ink3)}
