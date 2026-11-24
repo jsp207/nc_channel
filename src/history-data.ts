@@ -42,6 +42,7 @@ export const LEGACY_MENUS: Record<Tab, string[]> = {
 
 export const SCREENS: Screen[] = [
   // ── 상품 ──────────────────────────────────────────
+  { menu: 'EPC 상품조회', ver: '0.1', screen: '상세', file: 'epc-detail.html', date: '2026-11-23', note: '읽기 전용, 공제항목 반영 ON/OFF만 수정' },
   { menu: 'EPC 상품조회', ver: '0.1', screen: '목록', file: 'epc-list.html', date: '2026-10-31' },
 
   { menu: '상품 전시 관리', ver: '0.3.2', screen: '등록', file: 'product-v032.html', date: '2026-11-19', note: '공통 속성 BSS Override, 채널별 노출 제어(가입유형 · 할부 · 기프트/티다팩)' },
@@ -120,7 +121,8 @@ export const SCREENS: Screen[] = [
   { menu: '결제 이력 관리', ver: '0.2', screen: '목록', file: 'payment-history2.html', date: '2026-10-13' },
   { menu: '결제 이력 관리', ver: '0.1', screen: '목록', file: 'payment-history.html', date: '2026-10-04' },
 
-  { menu: '결제 거래내역 대사관리', ver: '0.2.3', screen: '승인대사·입금대사', file: 'payment-recon5.html', date: '2026-11-21', note: '계약 단위 승인대사 · 입금대사' },
+  { menu: '결제 거래내역 대사관리', ver: '0.2.3', screen: '목록', file: 'payment-recon5.html', date: '2026-11-21', note: '월별 조회(대사월 × PG사), 행별 다운로드' },
+  { menu: '결제 거래내역 대사관리', ver: '0.2.3', screen: '상세', file: 'payment-recon5-detail.html', date: '2026-11-23', note: 'MID별 승인 · 입금대사, 엑셀 업로드 · 오프라인 대사 상태 변경 이력' },
   { menu: '결제 거래내역 대사관리', ver: '0.2.2', screen: '승인대사·입금대사', file: 'payment-recon4.html', date: '2026-11-03' },
   { menu: '결제 거래내역 대사관리', ver: '0.2.1', screen: '목록', file: 'payment-recon3.html', date: '2026-11-03' },
   { menu: '결제 거래내역 대사관리', ver: '0.2.1', screen: '상세', file: 'payment-recon3-detail.html', date: '2026-11-03' },

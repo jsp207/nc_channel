@@ -56,7 +56,7 @@ $('#lFilter').addEventListener('reset', e => {
 
 // ---------- 목록 ----------
 const rowHtml = r => `<tr>
-  <td><button type="button" class="lid" data-act="soon">${r.epc}</button></td>
+  <td><a class="lid" href="epc-detail.html?epc=${r.epc}">${r.epc}</a></td>
   <td class="c">${esc(r.ver)}</td>
   <td title="${esc(r.name)}">${esc(r.name)}</td>
   <td>${esc(r.lv2)}</td>
@@ -86,7 +86,6 @@ function render() {
   $('#pager').innerHTML = pagerHtml(st.page, pages);
 }
 $('#pager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; st.page = +b.dataset.p; render(); });
-$('#listTable tbody').addEventListener('click', e => { if (e.target.closest('[data-act="soon"]')) alert('준비중입니다.'); });
 
 // ---------- 다운로드 ----------
 // 마지막으로 [조회]한 조건의 결과 전체(모든 페이지)를 내려받는다. JSON = 상세 구조 그대로, CSV = 상품 한 줄(엑셀로 열 수 있음)
