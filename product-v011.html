@@ -13,11 +13,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#eaecf5" />
-    <title>상품 전시 관리 v0.1.1 · 등록 | NC-Channel Product Admin</title>
+    <title>상품 전시 관리 v0.1.1 · 목록·등록 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
-    <style>
+    <style data-mode="edit">
       /* 상품등록 전용 (ref/product-admin-prototype-v4-2.html) */
       #v-edit [hidden]{display:none!important}
       /* 미리보기·검사 패널을 왼쪽에 둔다. 공용 style.css가 뒤에 로드되므로 #v-edit로 우선순위를 올린다 */
@@ -344,8 +344,8 @@
 <main>
 
 <!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/product-create.ts -->
-<section class="view on" id="v-edit">
-  <div class="toolbar"><h1 id="editTitle">상품등록</h1><a class="btn" href="product-list.html" style="margin-left:auto">상품목록 보기</a></div>
+<section data-mode="edit" class="view on" id="v-edit">
+  <div class="toolbar"><h1 id="editTitle">상품등록</h1><a class="btn" href="product-v011.html" style="margin-left:auto">상품목록 보기</a></div>
   <div class="editing" id="editingBar"><span id="editingTxt"></span><button class="btn sm" id="editCancel">새로 만들기로 전환</button></div>
   <div class="builder">
     <aside class="side">
@@ -522,8 +522,36 @@
   </div>
 </section>
 
+
+<!-- ===== 목록 화면: 목록 · 등록 한 파일 관리(src/unify.ts). 목록 모드일 때만 꺼내 붙인다 ===== -->
+<template data-list="main">
+    <style>
+      /* 상품목록 전용 (ref/product-admin-prototype-v4-2.html) */
+      #listTable td:nth-child(2){white-space:nowrap}
+      tr.flash td{background:var(--accent-soft)}
+      .status.stop{background:var(--bad)}
+      .status.draft{background:var(--muted)}
+    </style>
+<section class="view on" id="v-list">
+  <div class="toolbar"><h1>상품목록</h1><a class="btn primary" href="product-v011.html?view=new" style="margin-left:auto">상품등록</a></div>
+  <p class="sub">등록한 상품을 유형·채널·상태로 찾는다. 수정을 누르면 등록 화면에 불러온다.</p>
+  <div class="toolbar">
+    <input type="text" id="lQ" placeholder="상품명·구성 상품 검색" style="min-width:220px" aria-label="상품명·구성 상품 검색">
+    <select id="lType" aria-label="유형"><option value="">유형 전체</option></select>
+    <select id="lCh" aria-label="채널"><option value="">채널 전체</option></select>
+    <select id="lSt" aria-label="상태"><option value="">상태 전체</option><option value="live">전시 중</option><option value="wait">전시 예약</option><option value="off">미노출</option><option value="stop">미사용</option><option value="draft">임시저장</option></select>
+    <span class="pill" id="lCnt"></span>
+  </div>
+  <div class="tw"><table id="listTable">
+    <thead><tr><th>상품명</th><th>유형</th><th>노출채널 · 카테고리</th><th>기준 단품</th><th>슬롯</th><th>PO</th><th>기간</th><th>상태</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+</template>
 </main>
 </div>
+<!-- 등록 화면 전용(목록 모드에서는 지운다) -->
+<div data-mode="edit">
 <div class="modal" id="epcModal" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mTitle" tabindex="-1">
   <header><b id="mTitle"></b><span class="pill" id="mSub"></span><button type="button" class="btn sm" id="mClose" style="margin-left:auto">닫기</button></header>
   <div class="mbody" id="mBody"></div>
@@ -542,7 +570,8 @@
   </div>
   <footer><button type="button" class="btn" id="sheetOff" style="margin-right:auto">설정 해제</button><button type="button" class="btn" id="sheetCancel">취소</button><button type="button" class="btn primary" id="sheetDone">설정 완료</button></footer>
 </div>
+</div>
 <div class="toast" id="toast"></div>
-    <script type="module" src="/src/product-create.ts"></script>
+    <script type="module" src="/src/page-product-v011.ts"></script>
   </body>
 </html>

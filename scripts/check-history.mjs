@@ -7,7 +7,8 @@ import { SCREENS, POLICIES, LEGACY_MENUS, screenTitle, policyTitle } from '../sr
 
 const FIX = process.argv.includes('--fix');
 const SUFFIX = ' | NC-Channel Product Admin';
-const NOT_HISTORY = new Set(['index.html', 'bo-intro.html']); // 히스토리 대상이 아닌 화면
+// 히스토리 대상이 아닌 화면. 상품 전시 관리의 예전 단독 목록 파일은 버전별 목록 · 등록 통합 파일로 옮겨(11-25) 히스토리에서 뺐다(파일은 다른 화면 링크 때문에 남긴다)
+const NOT_HISTORY = new Set(['index.html', 'bo-intro.html', 'display-list.html', 'display-list2.html', 'product-list.html']);
 const problems = [];
 
 const entries = [

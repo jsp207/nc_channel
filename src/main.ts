@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { isUnified, SELF } from "./unify";
 import "./style.css";
 import { requireAuthentication } from "./auth";
 
@@ -344,7 +345,7 @@ function dPreview(){
 function renderDisplay(){ const tb=$('#displayTable tbody'); tb.innerHTML=''; DISPLAY.filter(d=>!$('#dChannel').value||d.ch===$('#dChannel').value).forEach(d=>{ const b=BUNDLES.find(x=>x.name===d.b); const act=b?(b.slots.length?'대표 선택 → 슬롯 순서대로 선택 → 담기':(bundleVariants(b).length>1?'변형 선택 후 담기':'바로 담기')):'-'; const tr=el('tr'); tr.innerHTML=`<td><b>${escapeHtml(d.name)}</b></td><td>${escapeHtml(d.b)}</td><td>${d.ch}</td><td>${d.sec}</td><td>${escapeHtml(d.period)}</td><td>${act}</td><td><span class="status ${d.status}"></span>${d.status==='live'?'전시 중':d.status==='wait'?'전시 예약':'종료'}</td>`; tb.appendChild(tr);}); }
 ['#dObj','#dCh','#dSection'].forEach(s=>$(s)?.addEventListener('change',dPreview)); ['#dTitle','#dOrder','#dFrom','#dTo'].forEach(s=>$(s)?.addEventListener('input',dPreview));
 $('#dChannel')?.addEventListener('change',renderDisplay);
-$('#dSave')?.addEventListener('click',()=>{ const b=curB(); const from=$('#dFrom').value,to=$('#dTo').value; DISPLAY.unshift({name:$('#dTitle').value.trim()||b.name,b:b.name,ch:$('#dCh').value,sec:$('#dSection').value,period:`${from} ~ ${to||'상시'}`,status:from>'2026-09-22'?'wait':'live'}); if (!saveData('nova-displays-v1', DISPLAY)) { DISPLAY.shift(); return; } window.location.assign('display-list.html'); });
+$('#dSave')?.addEventListener('click',()=>{ const b=curB(); const from=$('#dFrom').value,to=$('#dTo').value; DISPLAY.unshift({name:$('#dTitle').value.trim()||b.name,b:b.name,ch:$('#dCh').value,sec:$('#dSection').value,period:`${from} ~ ${to||'상시'}`,status:from>'2026-09-22'?'wait':'live'}); if (!saveData('nova-displays-v1', DISPLAY)) { DISPLAY.shift(); return; } window.location.assign(isUnified()?SELF():'display-list.html'); });
 if ($('#catTable')) renderCats();
 if ($('#dObj')) fillDisplayObjs();
 if ($('#displayTable')) renderDisplay();

@@ -32,8 +32,8 @@ export const MENU = [
   { label: '상품관리', items: [
     { label: 'EPC 상품조회', icon: 'search', href: 'epc-list.html' },
     // 상품 전시 일괄 관리는 상품 전시 목록(display-list2.html)에 합쳤다
-    // 상품 전시 관리는 등록 화면 v0.3.2(product-v032.html)로 바로 연다. 목록(display-list2.html)은 v0.3 그대로
-    { label: '상품 전시 관리', icon: 'display', href: 'product-v032.html' },
+    // 상품 전시 관리 v0.3.1(product-v031.html): 목록 · 등록을 한 파일에서 관리한다. 파라미터 없이 열면 목록
+    { label: '상품 전시 관리', icon: 'display', href: 'product-v031.html' },
     // 상품 콘텐츠 관리 v0.2를 다시 메뉴에 올렸다(안내 템플릿 적용 상품유형). v0.1은 히스토리 > 상품 콘텐츠 관리
     { label: '상품 콘텐츠 관리', icon: 'content', href: 'product-content-v02.html' },
     // 상품 정책(policy.html)은 메뉴에서 빼고 히스토리 > 상품 > 정책으로 옮겼다

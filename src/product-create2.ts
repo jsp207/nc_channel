@@ -1,6 +1,7 @@
 // @ts-nocheck
 // 상품등록2: product-create.ts에서 디바이스형 옵션선택만 바꾼 버전. 옵션값을 버튼으로 고르지 않고 콤마로 구분해 입력한다.
 // 상품 = 기본정보 + 기준 단품(디바이스형은 옵션목록·EPC 매칭) + 슬롯 0~N개. 섹션은 헤더를 눌러 접고 펼친다.
+import { isUnified, SELF } from "./unify";
 import "./style.css";
 import { requireAuthentication } from "./auth";
 import { POLICY, AREAS, ITEMS, ITEM_BY_ID, $, el, esc, nameText, nameHtml, toast, joinKey, variants, TODAY, TYPES, tdef, CATS, poRange, loadDisplays, saveDisplays } from "./product-display-store";
@@ -914,7 +915,7 @@ function renderEditing(){
 }
 function renderAll(){ renderInfo(); renderBase(); renderMatrix(); renderSlots(); renderMedia(); renderDetail(); renderSwitches(true); renderSpec(); renderBadges(); renderSim(); renderSeo(); renderSrch(); renderFaq(); renderLinks(); renderEditing(); }
 $('#bReset').addEventListener('click',()=>{ const k=F.type, id=F.editId; if(id){ const d=DISPLAYS.find(x=>x.id===id); if(d){ loadDisplay(d); toast('저장된 값으로 되돌렸습니다'); return; } } resetForm(); if(k!=='device') setType(k); else renderAll(); });
-$('#editCancel').addEventListener('click',()=>{ resetForm(); renderAll(); history.replaceState(null,'',location.pathname); });
+$('#editCancel').addEventListener('click',()=>{ resetForm(); renderAll(); history.replaceState(null,'',location.pathname+(isUnified()?'?view=new':'')); });
 
 // ---------- 저장 ----------
 const DISPLAYS=loadDisplays();
@@ -935,7 +936,7 @@ function store(d){
 // 저장하기: 검사를 통과해야 한다. 저장하면 목록 페이지로 이동해 저장한 행을 강조한다.
 $('#bSave').addEventListener('click',()=>{
   const d=snapshot(), mode=store(d); if(!mode) return;
-  location.href=`product-list.html?saved=${encodeURIComponent(d.id)}&mode=${mode}`;
+  location.href=`${isUnified()?SELF():'product-list.html'}?saved=${encodeURIComponent(d.id)}&mode=${mode}`;
 });
 // 임시저장: 검사 없이 지금 상태를 목록에 '임시저장'으로 남기고, 이 화면에서 계속 작성한다.
 $('#bDraft').addEventListener('click',()=>{

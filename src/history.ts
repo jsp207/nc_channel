@@ -37,7 +37,6 @@ function menuTable(menu, policies) {
     return `<tr class="${first ? 'h-vstart' : ''}">
       <td>${isLatest(s.menu, s.ver) ? LATEST : ''}</td>
       <td class="h-ver">v${s.ver}</td>
-      <td>${s.screen}</td>
       <td>${link(s.file, screenTitle(s))}${note(s.note)}</td>
       <td class="h-file">${s.file}</td>
       <td>${s.date}</td>
@@ -45,8 +44,8 @@ function menuTable(menu, policies) {
     </tr>`;
   }).join('');
   return { count: rows.length, html: `<table>
-    <thead><tr><th style="width:80px">상태</th><th style="width:72px">버전</th><th style="width:130px">화면</th><th>제목</th><th>파일명</th><th style="width:100px">날짜</th><th>정책</th></tr></thead>
-    <tbody>${body || EMPTY(7)}</tbody></table>` };
+    <thead><tr><th style="width:80px">상태</th><th style="width:72px">버전</th><th>제목</th><th>파일명</th><th style="width:100px">날짜</th><th>정책</th></tr></thead>
+    <tbody>${body || EMPTY(6)}</tbody></table>` };
 }
 
 function policyTable(list) {

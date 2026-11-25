@@ -13,7 +13,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#eaecf5" />
-    <title>상품 전시 관리 v0.1 · 등록 | NC-Channel Product Admin</title>
+    <title>상품 전시 관리 v0.1 · 목록·등록 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -24,9 +24,9 @@
 <main>
 
 <!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. -->
-<section class="view on" id="v-display-create">
+<section data-mode="edit" class="view on" id="v-display-create">
   <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>전시 생성하기</strong></div>
-  <div class="toolbar"><h1>전시 생성하기</h1><a class="btn" href="display-list.html" style="margin-left:auto">전시 목록 보기</a></div>
+  <div class="toolbar"><h1>전시 생성하기</h1><a class="btn" href="display-create.html" style="margin-left:auto">전시 목록 보기</a></div>
   <p class="sub">전시할 번들을 선택하고 채널, 위치, 기간을 설정하세요.</p>
   <div class="builder">
     <div>
@@ -46,9 +46,23 @@
   </div>
 </section>
 
+
+<!-- ===== 목록 화면: 목록 · 등록 한 파일 관리(src/unify.ts). 목록 모드일 때만 꺼내 붙인다 ===== -->
+<template data-list="main">
+<section class="view on" id="v-display">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 운영 관리 <span aria-hidden="true">›</span> <strong>전시 목록</strong></div>
+  <div class="toolbar"><h1>전시 목록</h1><a class="btn primary" href="display-create.html?view=new" style="margin-left:auto">+ 전시 생성하기</a></div>
+  <p class="sub">카테고리는 대표 단품의 꼬리표로 자동 배정됩니다. 채널별 전시 목록을 확인하고 새로운 전시를 생성하세요.</p>
+  <h2>카테고리 (자동)</h2>
+  <div class="tw"><table id="catTable"><thead><tr><th>채널</th><th>카테고리</th><th>조건 (대표 단품 기준)</th><th>매칭 번들</th></tr></thead><tbody></tbody></table></div>
+  <h2>전시 목록</h2>
+  <div class="toolbar"><select id="dChannel"><option value="">채널 전체</option><option>T다이렉트샵</option><option>T월드</option><option>T우주</option></select></div>
+  <div class="tw"><table id="displayTable"><thead><tr><th>전시명</th><th>번들</th><th>채널</th><th>위치</th><th>기간</th><th>고객 동작</th><th>상태</th></tr></thead><tbody></tbody></table></div>
+</section>
+</template>
 </main>
 </div>
 <div class="toast" id="toast"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="/src/page-display-create.ts"></script>
   </body>
 </html>

@@ -4,6 +4,7 @@
 // - 목록 열 · 조회 조건: 상품 전시 목록(버전 · 연결 상품 · 고객 선택 방식 · 운영 상태 · EPC 상태 · 담당자) + 일괄 관리(상태 · 전시여부 · 노출순위)
 // - 선택 · 일괄 변경 · 행 안의 바로 변경 · 수정 팝업 · 복사 · 삭제 · 되돌리기 · 엑셀(CSV) 내려받기/올리기는 일괄 관리와 같다
 // 등록/수정은 product-v021.html. 데이터는 같은 저장소(display-data.ts), 운영 상태 규칙은 display-rules.ts를 함께 쓴다.
+import { isUnified, SELF } from "./unify";
 import "./style.css";
 import "./list.css";
 import "./product-display-bulk.css";
@@ -18,7 +19,8 @@ requireAuthentication();
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const EDIT_URL = id => `product-v021.html${id ? `?id=${id}` : ''}`;
+// 버전별 목록 · 등록 통합 파일(src/unify.ts) 안에서는 같은 파일의 상세(?id=N) · 등록(?view=new)으로 간다. 단독 display-list2.html은 예전 그대로
+const EDIT_URL = id => isUnified() ? `${SELF()}${id ? `?id=${id}` : '?view=new'}` : `product-v021.html${id ? `?id=${id}` : ''}`;
 
 // ---------- 기준값 ----------
 // 승인 절차: 임시저장 → 승인요청 → 승인완료 또는 반려
@@ -213,7 +215,7 @@ function render() {
 }
 $('#pager').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; st.page = +b.dataset.p; render(); });
 // 등록은 상품 전시 관리 v0.2.3(EPC LV2 · LV3 조회) 화면으로 연다
-$('#lNew').addEventListener('click', () => { location.href = 'product-v023.html'; });
+$('#lNew').addEventListener('click', () => { location.href = isUnified() ? EDIT_URL() : 'product-v023.html'; });
 
 // 등록/수정 화면(다른 탭)에서 저장하면 다시 읽는다. 지워진 전시는 선택에서 뺀다
 window.addEventListener('storage', e => {

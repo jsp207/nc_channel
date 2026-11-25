@@ -1,5 +1,20 @@
 // @ts-nocheck
-// 상품 전시 관리 v0.3.1 (display-create-v30.ts v0.3 복사본, product-v031.html). 바뀐 점:
+// 상품 전시 관리 v0.3.1 최종 (product-v031.html). 11-25: v0.3.1 · v0.3.2를 하나로 합쳐 v0.3.1로 관리한다(v0.3.2 파일은 지웠다).
+// - 목록 · 등록을 한 파일로 합쳤다. 화면 선택은 src/page-product-v031.ts · src/unify.ts, 목록 스크립트는 src/display-list2.ts
+// - 11-25 시안 반영: 섹션 머리줄(상태 배지 → 필수 배지, 제목 옆), 전시 유형 표, 연결 상품 표 열 · 버튼 위치, 공제항목 반영 행 제외,
+//   타이틀 표, 대상 상품 없음 안내, 노출 채널 표기(전시 채널 · 통합 App · 통합 Web · T-Gate)
+// 이전 v0.3.2 작업분 (display-create-v32.ts였던 내용). 바뀐 점:
+// - 전시 정보 이미지: 모바일 · 데스크탑 구분을 없애고 v0.2.0(product-v020.html)처럼 대표이미지(1장) · 추가이미지(최대 4장)로 나눈다
+// - 공통 속성(노출 채널 섹션 안, 노출 채널 표 아래 · 채널별 탭 위. 읽기 전용이라 별도 섹션 없이 병합): 자상품 그룹명 · SIM 구분 · 유심 필수구매 · 사전예약 · 색상/용량(보기) · 약정(상담신청 대상은 제외).
+//   EPC 기본 설정값을 공통으로 쓰며 수정 불가(보기만)
+// - 채널별 노출 제어(노출 채널 섹션의 노출 채널 표 아래): 노출 채널마다 탭으로 모상품 그룹명 · 채널별 재고 · 가입유형(1개 이상 필수) · 할부개월수(가입유형별) · 배송방식(일반배송 · 행복배송 · 바로도착 · 바로픽업 등) · 바로주문(단말만) · 기프트 · 티다팩.
+//   EPC 설정값을 기본으로 불러오고 필요한 항목만 수정(E.chset[채널].ov), 항목별 · 채널별 EPC 값으로 복원
+//   가입유형 · 할부 · 노출 서비스는 연결 상품에 휴대폰 또는 요금제가 있을 때만
+// - 주문 프로세스 연동의 '채널 관리 항목 노출'(E.chHide)은 채널별 노출 제어로 옮겨 뺐다. 미리보기의 가입 · 할부 · 배송 코너는 미리보기 채널의 채널별 설정을 따른다
+// - T기프트 · 티다팩 섹션 재적용(v0.2.4에서 뺀 섹션, 주문 프로세스 연동 바로 위): 단말기(기기서비스)를 연결하면 T기프트, 요금제를 연결하면 티다팩.
+//   목록은 CVM이 아니라 EPC에서 조회한다. 연결 상품 조건에 맞는 항목은 자동으로 올라오고([T기프트 조회] · [티다팩 조회]로 기획전 전용 항목 추가),
+//   여기서는 순서 · 연결 해제 · 자동 배지만 정한다. 채널별 노출 여부는 채널별 노출 제어의 T기프트 · 티다팩(Y/N)을 따른다
+// 이전: 상품 전시 관리 v0.3.1 (display-create-v30.ts v0.3 복사본, product-v031.html). 바뀐 점:
 // - 화면을 두 영역으로 나눈다: 공통(모든 채널) · 통합 앱 전용(통합 APP · WEB에만 적용)
 //   · T-gate · 스마트플래너는 공통 영역의 전시 정보 · 콘텐츠 정보만 쓴다. 노출 제어 조건(후기 · 연관 상품 · 주문 · 채널 관리 항목)은 통합 앱에만 적용
 //   · 노출 채널(전시 설정 → 노출 채널)은 전시 정보 위. 통합 APP · WEB을 고를 때만 맨 아래 통합 앱 전용 영역(구매 후기 → 전문가 리뷰 → 연관 및 유사 상품 → 주문 프로세스 연동)이 보인다.
@@ -45,14 +60,14 @@ import {
 } from "./display-data";
 // 섹션 검사 · 운영 상태 규칙은 display-rules.ts (상품 전시 목록 display-list2.html과 함께 쓴다)
 import {
- endOf, startAt, endAt, htmlText, htmlHasImg, descFilled, combos, areaHasSel, rng, connPOs, eul, areaIssues, hasDev, hasPlan, GM, TDM, condMatch, benefitState, joinWarn, syncList, syncBenefits, visibleGifts, visibleTd, sectionState, SECS as SECS0, STL, secHidden, blocking, status, methodLabel, OWNERS, TEAMS, appOn, needs, planMismatch, isReq, lv3Combo as lv3ComboOf, noImg, STEP_CORNER
+ endOf, startAt, endAt, htmlText, htmlHasImg, descFilled, combos, areaHasSel, rng, connPOs, eul, areaIssues, hasDev, hasPlan, GM, TDM, condMatch, benefitState, joinWarn, syncList, syncBenefits, visibleGifts, visibleTd, sectionState, SECS as SECS0, STL, secHidden, blocking, status, methodLabel, OWNERS, TEAMS, appOn, needs, planMismatch, isReq as isReq0, lv3Combo as lv3ComboOf, noImg, STEP_CORNER
 } from "./display-rules";
 // 주문 구성안 = 주문 프로세스 관리 v0.2.4(order6-create.html) 목록
 import { PROC_KEY, PROC_CATS, PROC_APS, loadProcs, procUsable, procCorners, procCornerCnt, sameCat } from "./order-process-data";
 import { dispId, CONTENT } from "./display-data";
 // 코너 원본 = 주문 코너 관리(order-corner-v22) 데이터. 주문 프로세스 관리 v0.2.4(order6-create.html)도 같은 원본을 쓰고, 코너 관리에서 바꾼 값(브라우저 저장소)이 열 때 반영된다
 import { CORNERS } from "./order-corner-v22-data";
-import { mpBy, mpsOf, CH_GROUPS, chItemsOf } from "./data/epc";
+import { CH_GROUPS, chItemsOf } from "./data/epc";
 import { planCorners } from "./display-rules";
 
 requireAuthentication();
@@ -109,8 +124,8 @@ function dndList(box,key,list,done,ok,sel='.ali',idOf=y=>y.id){
 const mvBtns=(attr,i,n,label)=>`<span class="mv"><button type="button" data-${attr}u="${i}" ${i===0?'disabled':''} aria-label="${label} 위로">${svg(IC.up)}</button><button type="button" data-${attr}d="${i}" ${i===n-1?'disabled':''} aria-label="${label} 아래로">${svg(IC.down)}</button></span>`;
 
 // ---------- 화면 전환 ----------
-// 전시 목록은 display-list2.html(상품 전시 목록 · 일괄 관리 통합)로 분리했다. 이 화면은 등록/수정만 한다
-const LIST_URL='display-list2.html';
+// v0.3.1: 목록과 등록을 한 파일(product-v031.html)로 합쳤다. 파라미터 없이 열면 목록(src/display-list2.ts), ?view=new 는 등록, ?id=N 은 상세
+const LIST_URL='product-v031.html';
 let E=null, cur=null, PV={}, curX=null, PVTAB='order';
 function showView(){ setDock(false); window.scrollTo(0,0); fitPv(); }
 // 저장 안내는 목록 화면에서 띄운다(display-list2.ts가 읽고 지운다)
@@ -142,11 +157,16 @@ function openEdit(id,mode){
  E.rel=Object.assign(relDef(),E.rel);
  // v0.2.4: 디바이스별 이미지. 예전 전시는 대표이미지 · 추가이미지를 모바일 이미지로 옮긴다
  // v0.3: 태블릿 영역은 없앴다(모바일 이미지를 함께 쓴다). 예전에 저장한 태블릿 이미지는 버린다
- if(!E.imgs) E.imgs={mobile:[E.main,...E.subs].filter(Boolean).slice(0,IMG_MAX),desktop:[]};
- delete E.imgs.tablet; E.imgs.desktop=E.imgs.desktop||[];
+ // v0.3.2: 기기 구분을 다시 없애고 v0.2.0처럼 대표이미지(1장) · 추가이미지(최대 4장)로 나눈다. 모바일 이미지가 있던 전시는 첫 장을 대표, 나머지를 추가로 옮기고 데스크탑 이미지는 버린다
+ if(E.imgs&&E.imgs.mobile&&E.imgs.mobile.length&&!E.main){ E.main=E.imgs.mobile[0]; E.subs=E.imgs.mobile.slice(1); }
+ E.subs=(E.subs||[]).slice(0,SUB_MAX); E.subAlt=E.subAlt||''; syncImgs();
  PROCS=loadProcs(); livePlan(); CT.open=-1; CT.sel={}; PVC=0;
  // v0.3.1: 코너 문구 · 노출 목록 덮어쓰기는 쓰지 않는다. 채널 관리 항목은 숨긴 값만 저장한다
  E.orderOv={}; E.chHide=Object.assign({join:[],inst:[],ship:[]},E.chHide);
+ // v0.3.2: 채널별 노출 제어(EPC 수정값)
+ E.chset=E.chset||{}; curCh=null;
+ // 적용 방식(모든 채널 동일 · 채널별): 저장값이 없으면 채널마다 수정값이 다를 때만 채널별로 연다
+ if(!E.chMode) E.chMode=new Set(Object.values(E.chset).map(x=>JSON.stringify((x&&x.ov)||{}))).size>1?'each':'same';
  // 추가설정(검색 노출 설정 · 오퍼링 문구)은 끄는 스위치 없이 항상 사용한다
  E.search.on=E.cvm.on=true;
  // 이전 버전에서 지정한 대표 상품은 더 쓰지 않는다
@@ -162,12 +182,14 @@ function openEdit(id,mode){
  if(!d) E.rel.mode='auto';
  E.sim.mode=E.rel.mode==='auto'?'def':'custom';
  if(E.sim.mode==='custom'&&!E.sim.t) E.sim.t=SIM_DEF.t;
+ // v0.3.2 MP 상품 전시: 값 정리 · 제공 혜택 문구 · 콘텐츠 정보 기본 항목
+ mpNorm(E,false); delete E.bnf; syncMpExtras(); PVMP=mpPvDef();
  cur=E.areas[0]&&E.areas[0].id; curX=E.extras[0]&&E.extras[0].id; curI='basic'; PV={}; PVTAB='order'; PVPILL=false; PVX.clear(); pvLast=''; RTE_SRC.desc=RTE_SRC.note=RTE_SRC.xtx=false; XD=null;
- syncSingle(); syncBenefits(E);
+ syncSingle(); syncBenefitsV(E);
  // 처음 열 때(새로고침 포함)는 모든 섹션을 펼친다. 섹션마다 따로 접고 편다
  $$('#v-edit .step').forEach(s=>setFold(s,true,true)); tabIdx=0;
  renderEditing(); renderAll(); showView('edit');
- history.replaceState(null,'',location.pathname+(E.id?`?id=${E.id}${VIEW==='edit'?'&mode=edit':''}`:''));
+ history.replaceState(null,'',location.pathname+(E.id?`?id=${E.id}${VIEW==='edit'?'&mode=edit':''}`:'?view=new'));
 }
 function renderEditing(){
  const on=VIEW==='edit'; $('#editingBar').classList.toggle('on',on);
@@ -228,96 +250,314 @@ document.addEventListener('keydown',e=>{
 });
 function goSec(k){ if(k==='info'){ curI=secState(E).basic.st==='done'?'desc':'basic'; rInfo(); } const s=$('#sec-'+k); setDock(false); openSec(s); }
 
-function renderAll(){ rKind(); rConn(); rMethod(); rCh(); rInfo(); rBasic(); rDesc(); rExtra(); rReview(); rExpert(); rRel(); rSim(); rSearch(); rCvm(); rOrder(); refresh(); }
+function renderAll(){ rKind(); rConn(); rMethod(); rAttr(); rCh(); rChset(); rInfo(); rBasic(); rDesc(); rExtra(); rGuide(); rReview(); rExpert(); rRel(); rSim(); rGift(); rTd(); rSearch(); rCvm(); rOrder(); refresh(); }
 // 섹션 상태·연결 상품 목록·미리보기 갱신
 function refresh(){
  const S=secState(E);
- // v0.2.4: 가입 유형 · 할부 · 배송 · T기프트 · 티다팩 섹션은 화면에 없다
+ // v0.2.4: 가입 유형 · 할부 · 배송 섹션은 화면에 없다. v0.3.2: T기프트 · 티다팩 섹션은 다시 쓴다
  SECS.forEach(([k])=>{ const el0=$('#sec-'+k); if(!el0) return; const s=S[k], [t,c]=STL[s.st]; const ch=$('#st-'+k); if(ch){ ch.textContent=t; ch.className='chip '+c; } const el=$('#sec-'+k); el.classList.toggle('na',s.st==='na'); el.classList.toggle('off',s.st==='off'||s.st==='unused'); el.hidden=hideSec(k,E);
   // 주문 받기가 꺼지면 채널 연동 섹션(가입 유형 · 할부 · 배송)은 필수에서 빠진다
   const rq=el.querySelector(':scope>header .req'); if(rq) rq.hidden=!isReq(k,S); });
- infoChips(); syncZone();
+ // MP 상품 전시: 주문 프로세스 연동 헤더에 [필수]
+ { const r=$('#odReq'); if(r) r.hidden=E.kind!=='mp'; }
+ infoChips();
  // 하단 바: 연결 상품 수, 바텀시트: 연결한 상품 목록 (누르면 연결 상품 섹션으로 이동)
- const items=E.kind!=='ps'?E.conn.map(id=>{ const p=poBy(id), fm=E.kind==='mp'&&mpBy(E.mp); return {n:p.name+(fm?' + '+fm.name:''),m:`${p.epc} · ${p.id} · ${p.type}`,v:priceTxt(p)}; }):E.conn.map(k=>{ const x=psBy(k); return {n:x.name,m:`${x.po.name} · ${x.kind}`,v:''}; });
+ const curMp=E.kind==='mp'&&mpDemo(E.mp);
+ const items=curMp?[{n:curMp.name,m:`${curMp.id} · ${curMp.target}`,v:''}]:E.kind==='mp'?[]:E.kind!=='ps'?E.conn.map(id=>{ const p=poBy(id); return {n:p.name,m:`${p.epc} · ${p.id} · ${p.type}`,v:priceTxt(p)}; }):E.conn.map(k=>{ const x=psBy(k); return {n:x.name,m:`${x.po.name} · ${x.kind}`,v:''}; });
  $('#connList').innerHTML=items.map((x,n)=>`<li data-go="conn"><span class="m">${n+1}</span><span class="t">${esc(x.n)}<span class="d">${esc(x.m)}</span></span>${x.v?`<span class="v">${x.v}</span>`:''}</li>`).join('')||'<li class="none">연결한 상품이 없어요. 연결 상품 섹션에서 추가하세요</li>';
  $$('#connList [data-go]').forEach(li=>li.addEventListener('click',()=>goSec('conn')));
  const bl=blockingV(E).length;
- $('#poCount').innerHTML=E.conn.length+`<small>${E.kind!=='ps'?'상품':'PS'}</small>`;
+ $('#poCount').innerHTML=(E.kind==='mp'?(curMp?1:0):E.conn.length)+`<small>${E.kind==='mp'?'MP':E.kind!=='ps'?'상품':'PS'}</small>`;
  const sb=$('#bAppr'); if(sb&&!sb.disabled){ sb.classList.toggle('pending',bl>0); sb.title=bl?`필수 확인 ${bl}건을 채우면 승인요청할 수 있습니다. 누르면 채울 섹션으로 이동해요. 임시저장은 지금도 됩니다`:''; }
  renderPreview();
 }
 
-// v0.3.1 통합 앱 전용 영역: 노출 채널에 통합 APP · WEB이 있을 때만 보인다. 없거나 PS 상품 전시면 영역째 숨긴다(값은 남고 검사는 '해당 없음')
-function syncZone(){
- const on=appScope(E), ch=APP_CH.filter(c=>E.channels.includes(c));
- $('#zoneApp').hidden=!on;
- $('#zoneAppTx').innerHTML=on?`<b>${ch.join(' · ')}</b>에만 적용돼요. T-gate · 스마트플래너에는 적용되지 않아요`:'';
-}
-
 // ---------- 0. 노출 채널 (v0.3.1: 전시 설정 → 노출 채널. 전시 정보 위) ----------
 // 채널 · 주문 받기 · 주문 구성안이 바뀌면 주문 구성 방식과 그에 기대는 영역을 다시 그린다
-function onOrderChange(){ rBasic(); rOrder(); refresh(); }
+function onOrderChange(){ rChset(); rBasic(); rOrder(); refresh(); }
 // v0.3 공제항목 반영(정책서 8장 초안): 전시 단위 ON/OFF만 둔다. ON이면 고객 화면 금액을 할인(공제항목)을 뺀 납부 예정 금액으로 보여 준다. 계산 방식은 협의 후 정한다
 //  PS 상품 전시는 금액이 없어 보이지 않는다. 값: E.deduct(true/false, 기본 false)
+// v0.3.1(11-25 시안): 표 항목명은 '전시 채널', 체크 박스 표기는 통합 App · 통합 Web · T-Gate (저장값은 그대로 통합 APP · 통합 WEB · T-gate)
+const CH_LB={'통합 APP':'통합 App','통합 WEB':'통합 Web','T-gate':'T-Gate'};
 function rCh(){
  const all=CHS.every(c=>E.channels.includes(c));
  // v0.3.1: 채널마다 적용 범위를 붙인다. 통합 APP · WEB = 공통 + 통합 앱 전용, T-gate · 스마트플래너 = 공통(전시 정보 · 콘텐츠 정보)만
- const sc=c=>APP_CH.includes(c)?'<small class="a">공통 + 통합 앱 전용</small>':/T-gate|스마트플래너/.test(c)?'<small class="c">공통만</small>':'';
  // 전시 정보와 같은 표(왼쪽 항목명 · 오른쪽 입력). 공제항목 반영은 연결 상품 섹션 아래로 옮겼다
  $('#sb-ch').innerHTML=`<div class="ftbl">
- ${seoRow('노출 채널',null,`<div class="chg-rows"><div class="chg"><label class="chc all"><input type="checkbox" id="chAll" ${all?'checked':''}>전체</label></div>${[CHS.filter(c=>APP_CH.includes(c)),CHS.filter(c=>!APP_CH.includes(c))].map(row=>`<div class="chg">${row.map(c=>`<label class="chc"><input type="checkbox" data-ch="${c}" ${E.channels.includes(c)?'checked':''}>${c}${sc(c)}</label>`).join('')}</div>`).join('')}</div>
-  <p class="op-scope">통합 APP · WEB을 고르면 아래에 통합 앱 전용 영역(구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동)이 나타나요.</p>`)}
+ ${seoRow('전시 채널',null,`<div class="chg"><label class="chc all"><input type="checkbox" id="chAll" ${all?'checked':''}>전체</label>${CHS.map(c=>`<label class="chc"><input type="checkbox" data-ch="${c}" ${E.channels.includes(c)?'checked':''}>${CH_LB[c]||c}</label>`).join('')}</div>`)}
+ <div id="attrBox" style="display:contents"></div>
  </div>`;
+ // v0.3.2: 노출 채널 표 = 노출 채널 + 공통 속성(모든 채널 · 보기만, 제목 없이 같은 표). 채널별 노출 제어는 바로 아래 별도 섹션으로 분리
+ rAttr(); rChset();
  $('#chAll').indeterminate=!all&&E.channels.length>0;
- // 통합 앱 전용 영역이 나타나거나 숨으면 알려 준다(숨겨도 입력한 값은 남는다)
- const set=v=>{ const was=appScope(E); E.channels=v; rCh(); onOrderChange(); const now=appScope(E);
-  if(was!==now&&E.kind!=='ps') toast(now?'통합 앱 전용 영역이 아래에 나타났어요':'통합 앱 전용 영역을 숨겼어요. 입력한 값은 남아 있어요'); };
+ const set=v=>{ E.channels=v; rCh(); onOrderChange(); };
  $('#chAll').addEventListener('change',e=>set(e.target.checked?CHS.slice():[]));
  $$('#sb-ch [data-ch]').forEach(c=>c.addEventListener('change',()=>{ const v=c.dataset.ch; set(CHS.filter(x=>x===v?c.checked:E.channels.includes(x))); }));
 }
-// 공제항목 반영(TBD): 연결 상품 섹션 맨 아래. PS 상품 전시는 금액이 없어 보이지 않는다
+// 공제항목 반영: 연결 상품 섹션 맨 아래. PS 상품 전시는 금액이 없어 보이지 않는다
 // 연결 상품이 없으면 비활성(기본). 상품을 추가하면 고를 수 있고, 상품을 모두 빼면 OFF로 돌아간다
-function dedHtml(){ if(E.kind==='ps') return ''; const off=!E.conn.length; if(off) E.deduct=false; const dis=off?'disabled':'';
- return `<div class="ftbl" style="margin-top:20px">${seoRow('공제항목 반영<br>(TBD)',null,`<span class="srch-radio" role="radiogroup" aria-label="공제항목 반영" ${off?'aria-disabled="true" style="opacity:.45"':''}><label><input type="radio" name="dDed" value="0" ${E.deduct?'':'checked'} ${dis}>OFF</label><label><input type="radio" name="dDed" value="1" ${E.deduct?'checked':''} ${dis}>ON</label></span>`)}</div>`; }
-function bindDed(){ $$('#sb-conn input[name=dDed]').forEach(r=>r.addEventListener('change',()=>{ E.deduct=r.value==='1'; refresh(); toast(E.deduct?'공제항목을 반영한 금액으로 보여줘요':'정상가로 보여줘요'); })); }
+// v0.3.2: 연결 상품 섹션에서 고객 선택 방식 표(상품 유형 → 공제항목 반영 → 구성 방식)로 옮겼다
+function dedField(){ const off=!E.conn.length; if(off) E.deduct=false; const dis=off?'disabled':'';
+ return `<span class="srch-radio" role="radiogroup" aria-label="공제 항목 반영" ${off?'aria-disabled="true" style="opacity:.5"':''}><label><input type="radio" name="dDed" value="1" ${E.deduct?'checked':''} ${dis}>Y</label><label><input type="radio" name="dDed" value="0" ${!off&&!E.deduct?'checked':''} ${dis}>N</label></span>`; }
+function bindDed(){ $$('#sb-method input[name=dDed]').forEach(r=>r.addEventListener('change',()=>{ E.deduct=r.value==='1'; refresh(); toast(E.deduct?'공제항목을 반영한 금액으로 보여줘요':'정상가로 보여줘요'); })); }
+
+// ---------- 0-1. 공통 속성 (v0.3.2) ----------
+// 모든 채널 공통. 읽기 전용이라 별도 섹션 없이 노출 채널 섹션 안(노출 채널 표 아래 · 채널별 탭 위)에 둔다. EPC 기본 설정값을 그대로 쓰며 전시 · 채널에서 수정하지 않는다(보기만)
+// 범위 제외: 애플워치 모회선 인증 단말 여부 · 2G 단말 지원금 대상 여부
+const SIM_T={usim:'USIM',esim:'eSIM',dual:'USIM + eSIM'};
+const CONTRACTS=['선택약정','공시지원금'];
+const devPOs=d=>connPOs(d).filter(p=>p.lv3==='휴대폰형');
+// EPC 값(예시): 휴대폰 상품명에서 모델명 + 용량 목록으로 그룹명을 만든다. 나머지는 EPC 기본값
+function epcModel(d){ const D=devPOs(d); return D.length?D[0].name.replace(/\s(\d+(?:GB|TB))\b/,'').replace(/\s\S+$/,''):''; }
+function epcAttr(d){
+ const D=devPOs(d), model=epcModel(d), caps=[...new Set(D.map(p=>(p.name.match(/\s(\d+(?:GB|TB))\b/)||[])[1]).filter(Boolean))];
+ return {child:model?`${model}${caps.length?' '+caps.join('/'):''}`:'',sim:'dual',usimReq:'N',pre:{on:'N',from:'',to:''},contract:CONTRACTS.slice()};
+}
+// 색상 / 용량: 고객 선택 방식 옵션 기준(없으면 연결 휴대폰 상품명에서)
+function colorCap(){
+ const ov=E.areas.flatMap(a=>a.opts||[]), pick=re=>[...new Set(ov.filter(o=>re.test(o.name)).flatMap(o=>o.vals))];
+ let col=pick(/컬러|색상/), cap=pick(/용량/);
+ const D=devPOs(E);
+ if(!cap.length) cap=[...new Set(D.map(p=>(p.name.match(/(\d+(?:GB|TB))/)||[])[1]).filter(Boolean))];
+ if(!col.length) col=[...new Set(D.map(p=>p.name.split(' ').pop()))];
+ return [col,cap];
+}
+function rAttr(){
+ const box=$('#attrBox'); if(!box) return;
+ if(E.kind==='ps'||E.kind==='mp'){ box.innerHTML=''; return; }
+ if(!E.conn.length){ box.innerHTML=seoRow('공통 속성',null,'<span class="ft-empty">연결 상품을 추가하면 공통 속성이 노출돼요</span>'); return; }
+ // 11-25 시안 3: 색상 / 용량 행 제외, 약정은 쉼표로 구분
+ const A=epcAttr(E);
+ const pre=A.pre.on==='Y'?`Y (${A.pre.from||'-'} ~ ${A.pre.to||'-'})`:'N';
+ box.innerHTML=`
+ ${seoRow('공통 속성',null,esc(A.child||'-'))}
+ ${seoRow('SIM 구분',null,SIM_T[A.sim])}
+ ${seoRow('유심 필수구매',null,A.usimReq)}
+ ${seoRow('사전예약',null,esc(pre))}
+ ${seoRow('약정',null,esc(A.contract.join(', ')||'-'))}`;
+}
+
+// ---------- 0-2. 채널별 노출 제어 (v0.3.2) ----------
+// 노출 채널에서 고른 통합 APP · 통합 WEB만 탭으로 따로 정한다(T-gate · 스마트플래너 · BSS는 채널 제어값 없음). EPC 설정값을 기본으로 불러오고 필요한 항목만 수정(Override)
+// 저장 값: E.chset = {채널: {ov:{키:값}}} (수정한 항목만). 수정한 항목은 [EPC 값으로 복원]
+// - 가입유형: 번호이동 · 기기변경 · 신규가입 중 복수 선택, 1개 이상 필수('가입 없이 구매'는 커머스 상품 유형에서 다룬다)
+// - 할부개월수: 채널별로 가입유형(신규 · 번이 · 기변)마다 목록을 관리. 일시불도 목록의 한 값
+// - 가입유형 · 할부 · 바로픽업 · 바로도착 · 기프트 · 티다팩: 연결 상품에 휴대폰 또는 요금제가 있을 때만
+// - 바로주문: 채널별, 단말(휴대폰)이 연결됐을 때만
+// - 기프트 · 티다팩: 채널별 노출 여부만. 목록과 노출 순서는 전체 채널 공통
+const JOINS=['번호이동','기기변경','신규가입'];
+const INST=['일시불',...CH_GROUPS.find(g=>g.k==='inst').vals.filter(v=>v!=='일시불').sort((a,b)=>parseInt(a)-parseInt(b))];
+const SVC=[['order','바로주문'],['gift','T기프트'],['td','티다팩']];
+// 배송방식: 연결 상품(LV3)이 가진 배송 유형을 채널 순서대로 모은 값 중에서 고른다(일반배송 · 행복배송 · 바로도착 · 바로픽업 등)
+const shipOpts=()=>(chUnion().find(g=>g.k==='ship')||{vals:[]}).vals;
+// 바로주문은 채널 고유 상품 속성으로 단말(휴대폰)이 연결됐을 때만 쓴다
+const svcOf=d=>SVC.filter(([k])=>k!=='order'||devPOs(d).length>0);
+const CH_KEYS=['grp','stock','join','months','ship','svc'];
+const needPP=d=>connPOs(d).some(p=>p.lv3==='휴대폰형'||p.type==='요금제');
+// 채널 제어 대상: 통합 APP · 통합 WEB
+const ctlChs=d=>d.channels.filter(c=>APP_CH.includes(c));
+// EPC 채널 기본값(예시): 번이 · 기변, 할부 일시불 · 12 · 24 · 30 · 36개월
+function epcCh(d,ch){
+ const m=['일시불','12개월','24개월','30개월','36개월'];
+ return {grp:epcModel(d),stock:{t:'common',qty:''},join:['번호이동','기기변경'],
+  months:{번호이동:m.slice(),기기변경:m.slice(),신규가입:m.slice()},ship:shipOpts(),svc:{order:'Y',gift:'Y',td:'Y'}};
+}
+const chOv=(d,ch)=>{ const s=d.chset=d.chset||{}; if(!s[ch]||!s[ch].ov) s[ch]={ov:{}}; return s[ch].ov; };
+const chOf=(d,ch)=>{ const B=epcCh(d,ch), ov=chOv(d,ch); return Object.fromEntries(CH_KEYS.map(k=>[k,k in ov?ov[k]:B[k]])); };
+const chMod=(d,ch,k)=>{ const ov=chOv(d,ch); return k in ov&&JSON.stringify(ov[k])!==JSON.stringify(epcCh(d,ch)[k]); };
+function setCh(ch,k,v){ const ov=chOv(E,ch); if(JSON.stringify(v)===JSON.stringify(epcCh(E,ch)[k])) delete ov[k]; else ov[k]=clone(v); }
+const chTxt=(k,v,B)=>k==='grp'?(v||'-'):k==='stock'?(v.t==='own'?`채널 전용 재고 ${v.qty||0}개`:'공통 재고')
+ :k==='join'||k==='ship'?(v.join(' · ')||'없음'):k==='months'?B.join.map(j=>`${j} ${v[j].join('·')||'-'}`).join(' / ')
+ :(svcOf(E).filter(([x])=>v[x]==='Y').map(([,t])=>t).join(' · ')||'없음');
+let curCh=null;
+function chIssues(d){ return ctlChs(d).flatMap(ch=>{ const c=chOf(d,ch), e=[];
+ if(c.stock.t==='own'&&!(+c.stock.qty>0)) e.push(`${ch}: 채널 전용 재고 수량을 입력하세요`);
+ if(needPP(d)){ if(!c.join.length) e.push(`${ch}: 가입유형을 1개 이상 고르세요`);
+  c.join.forEach(j=>{ if(!c.months[j].length) e.push(`${ch}: ${j} 할부개월수를 1개 이상 고르세요`); });
+  if(shipOpts().length&&!c.ship.length) e.push(`${ch}: 배송방식을 1개 이상 고르세요`); }
+ return e; }); }
+function rChset(){
+ const box=$('#chsetBox'); if(!box) return;
+ const C=ctlChs(E);
+ if(E.kind==='ps'||E.kind==='mp'||!C.length){ box.innerHTML=''; return; }
+ // 적용 방식: same = 모든 채널에 같은 값(탭 하나), each = 채널(탭)마다 따로. 채널이 1개면 고를 필요 없이 same
+ const same=C.length<2||E.chMode!=='each';
+ // 섹션 제목은 고른 채널에 따라 바뀐다: 예) 통합 APP · 통합 WEB 전용 노출
+ { const t=`${C.length>1?'통합App · Web':C[0]==='통합 APP'?'통합App':'통합Web'} 노출 전용`, hb=$('#sec-chset header b'); if(hb) hb.textContent=t; const sc=SECS.find(x=>x[0]==='chset'); if(sc){ sc[1]=t; sc[3]=t; } }
+ if(same){ curCh=C[0]; C.slice(1).forEach(x=>{ E.chset[x]={ov:clone(chOv(E,C[0]))}; }); }
+ else if(!C.includes(curCh)) curCh=C[0];
+ const T=same?C:[curCh], put=(k,v)=>T.forEach(x=>setCh(x,k,v));
+ const ch=curCh, c=chOf(E,ch), B=epcCh(E,ch), pp=needPP(E), bad=x=>chIssues({...E,channels:[x]}).length>0;
+ const nMod=CH_KEYS.filter(k=>chMod(E,ch,k)).length, own=c.stock.t==='own';
+ const rv=k=>chMod(E,ch,k)?`<p class="ft-hint at-bss">EPC 값: ${esc(chTxt(k,B[k],B))} <button type="button" class="lnk" data-crv="${k}">EPC 값으로 복원</button></p>`:'';
+ const chk=(attr,v,on,label,extra='')=>`<label class="axchip ${on?'on':''}"><input type="checkbox" data-${attr}="${v}" ${extra} ${on?'checked':''}>${label||v}</label>`;
+ const radio=(name,v,opts)=>`<span class="srch-radio" role="radiogroup">${opts.map(([x,t])=>`<label><input type="radio" name="${name}" value="${x}" ${v===x?'checked':''}>${t}</label>`).join('')}</span>`;
+ // 11-25 시안 3: 채널 탭은 알약형 버튼, [채널별 따로 설정]은 오른쪽, [모두 EPC 값으로 복원]은 표 오른쪽 아래
+ const lb=x=>CH_LB[x]||x;
+ const tabs=same?`<button type="button" role="tab" class="on" aria-selected="true">${C.length>1?'통합 App · Web':esc(lb(C[0]))}${C.some(bad)?'<small>확인 필요</small>':''}</button>`
+  :C.map(x=>`<button type="button" role="tab" data-cht="${esc(x)}" class="${x===ch?'on':''}" aria-selected="${x===ch}">${esc(lb(x))}${bad(x)?'<small>확인 필요</small>':''}</button>`).join('');
+ const cbx=(attr,v,on,label,extra='')=>`<label class="chkl"><input type="checkbox" data-${attr}="${v}" ${extra} ${on?'checked':''}>${label||v}</label>`;
+ box.innerHTML=`
+ <div class="ch-top"><div class="ch-pills" role="tablist" aria-label="노출 채널">${tabs}</div>${C.length>1?`<label class="chkl ch-each"><input type="checkbox" id="cEach" ${same?'':'checked'}>채널별 따로 설정</label>`:''}</div>
+ <div class="ftbl">
+ ${seoRow('모상품 그룹명',null,`<input type="text" id="cGrp" value="${esc(c.grp)}" maxlength="40" placeholder="비우면 전시명을 사용해요" aria-label="모상품 그룹명" style="width:100%">${rv('grp')}`)}
+ ${seoRow('채널별 재고',null,`<div class="row">${radio('cStock',c.stock.t,[['common','공통 재고'],['own','채널 전용 재고']])}${own?`<input type="number" id="cQty" min="1" value="${esc(c.stock.qty)}" placeholder="수량" aria-label="채널 전용 재고 수량" style="width:110px;text-align:right"><span>개</span>`:''}</div>`)}
+ ${!pp?'':`
+ ${seoRow('가입 유형',null,`<div class="ch-cbs" role="group" aria-label="가입 유형">${JOINS.map(j=>cbx('cj',j,c.join.includes(j))).join('')}</div>${rv('join')}`)}
+ <div class="ft-row ch-mset"><div class="ft-l">할부개월수</div><div class="ch-msub">${c.join.map(j=>`<div class="ch-mr"><div class="ch-ml">${j}</div><div class="ch-mv"><div class="axchips" role="group" aria-label="${j} 할부개월수">${INST.map(m=>chk('cm',m,c.months[j].includes(m),m,`data-cmj="${j}"`)).join('')}</div>${c.months[j].length?'<div class="er" hidden></div>':'<div class="er">1개 이상 고르세요</div>'}</div></div>`).join('')}${rv('months')?`<div class="ch-mr"><div class="ch-ml"></div><div class="ch-mv">${rv('months')}</div></div>`:''}</div></div>
+ ${shipOpts().length?seoRow('배송방식',null,`<div class="ch-cbs" role="group" aria-label="배송방식">${shipOpts().map(v=>cbx('csh',v,c.ship.includes(v))).join('')}</div>${c.ship.length?'':'<div class="er">1개 이상 고르세요</div>'}${rv('ship')}`):''}
+ ${seoRow('노출 서비스',null,`<div class="ch-cbs" role="group" aria-label="노출 서비스">${svcOf(E).map(([k,t])=>cbx('cs',k,c.svc[k]==='Y',t)).join('')}</div>${rv('svc')}`)}`}
+ </div>
+ <div class="cn-foot"><button type="button" class="btn sm" id="cReset" ${nMod?'':'disabled'}>모두 EPC 값으로 복원</button></div>`;
+ const re=()=>{ rChset(); refresh(); };
+ // 채널별 따로 설정: 체크하면 탭마다 따로, 해제하면 지금 탭의 값을 모든 채널에 같이 쓴다
+ { const ce=$('#cEach'); if(ce) ce.addEventListener('change',()=>{
+  if(!ce.checked){ const diff=C.some(y=>JSON.stringify(chOv(E,y))!==JSON.stringify(chOv(E,curCh)));
+   if(diff&&!confirm(`${curCh} 탭의 설정을 모든 채널에 적용할까요? 다른 채널에서 따로 바꾼 값은 사라져요`)){ ce.checked=true; return; }
+   const ov=clone(chOv(E,curCh)); C.forEach(y=>{ E.chset[y]={ov:clone(ov)}; }); E.chMode='same'; re(); if(diff) toast(`${curCh} 설정을 모든 채널에 적용했어요`); }
+  else { E.chMode='each'; re(); toast('채널별로 따로 설정해요'); } }); }
+ $$('#chsetBox [data-cht]').forEach(b=>b.addEventListener('click',()=>{ curCh=b.dataset.cht; rChset(); }));
+ $('#cGrp').addEventListener('change',e=>{ put('grp',e.target.value.trim()); re(); });
+ $$('#chsetBox input[name=cStock]').forEach(r=>r.addEventListener('change',()=>{ put('stock',{t:r.value,qty:r.value==='own'?c.stock.qty:''}); re(); const q=$('#cQty'); if(q) q.focus(); }));
+ const q=$('#cQty'); if(q) q.addEventListener('change',e=>{ put('stock',{t:'own',qty:e.target.value}); re(); });
+ $$('#chsetBox [data-cj]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cj, nx=JOINS.filter(v=>v===j?x.checked:c.join.includes(v));
+  if(!nx.length){ x.checked=true; toast('가입유형은 1개 이상 선택해야 해요'); return; }
+  put('join',nx); re(); }));
+ $$('#chsetBox [data-cm]').forEach(x=>x.addEventListener('change',()=>{ const j=x.dataset.cmj, m=x.dataset.cm, mo=clone(c.months);
+  mo[j]=INST.filter(v=>v===m?x.checked:mo[j].includes(v)); put('months',mo); re(); }));
+ $$('#chsetBox [data-csh]').forEach(x=>x.addEventListener('change',()=>{ const v=x.dataset.csh; put('ship',shipOpts().filter(o=>o===v?x.checked:c.ship.includes(o))); re(); }));
+ $$('#chsetBox [data-cs]').forEach(x=>x.addEventListener('change',()=>{ put('svc',{...c.svc,[x.dataset.cs]:x.checked?'Y':'N'}); re(); }));
+ $$('#chsetBox [data-crv]').forEach(b=>b.addEventListener('click',()=>{ T.forEach(x=>{ delete chOv(E,x)[b.dataset.crv]; }); re(); toast('EPC 값으로 복원했어요'); }));
+ $('#cReset').addEventListener('click',()=>{ if(!nMod) return; T.forEach(x=>{ chOv(E,x); E.chset[x].ov={}; }); re(); toast(`${same?C.join(' · '):ch} 설정을 모두 EPC 값으로 복원했어요`); });
+}
+// 미리보기의 가입 · 할부 · 배송 코너는 미리보기 채널(통합 APP · WEB 중 먼저 고른 채널)의 채널별 설정을 따른다
+function pvChHidden(k,v){
+ if(!needPP(E)) return false;
+ const ch=ctlChs(E)[0]; if(!ch) return false;
+ const c=chOf(E,ch);
+ if(k==='join') return !c.join.includes(v);
+ if(k==='inst') return !c.join.some(j=>c.months[j].includes(v));
+ if(k==='ship') return !c.ship.includes(v);
+ return false;
+}
 
 // ---------- 1. 전시 유형 ----------
 // v0.3: PO/MP(기본) · MP 상품 전시(원천 PO + 고정 MP, 정책서 07 MP 고정 전시) · PS 상품 전시(T우주 SKU 단위 PS 소개)
-const KIND_NTC={mp:'원천 PO 1개에 혜택(MP) 1개를 고정해 전시합니다. 가격과 PO 구성은 EPC 그대로이고, 고객은 고정된 혜택으로 가입해요. 같은 PO의 다른 혜택은 전시를 따로 만들어요.',
+// v0.3.2 MP 상품 전시(스펙: MP 상품 전시 섹션별 동작 · FO 미리보기)
+//  연결 상품 = EPC MP 상품 1개(PO 연결 없음, E.conn은 비운다) · 고객 선택 방식 = 읽기 전용 1줄(고정형 · MP 1개)
+//  노출 채널 = 체크 박스만(공통 속성 숨김) · 채널별 설정 숨김 · 전시 정보 = 대표 이미지 선택, 오퍼링 문구 탭 → 제공 혜택 문구
+//  콘텐츠 정보 = MP 기본 항목 8개 · 구매 후기 · 전문가 리뷰 · 연관 상품 = 기본 N · 주문 프로세스 연동 = 필수, ON 잠금, MP용 프로세스만
+//  값: E.mp = MP ID(MP_DEMO), E.orderPlan = MP_PROCS 항목 + mpProc:true
+const KIND_NTC={mp:'EPC의 MP 상품(혜택 · 할인) 1개를 연결해 전시합니다. MP는 고객이 보유한 회선에 가입합니다.<br>고객이 고르는 항목(결합 유형, 회선, 할인 방식, 약정 등)은 주문 프로세스의 주문 코너에서 설정합니다.',
  ps:'전시 콘텐츠 등록용입니다. PS(SKU 단위) 1개만 불러오고, 전시 설정 · 전시 정보 · 이미지 · 콘텐츠 정보(상품 고시 등)만 입력해요. 고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 쓰지 않아요.'};
+// 시연 MP 목록(EPC 연동 전 예시값). bnf = EPC 상품 속성의 제공 혜택(상품을 연결하면 미리보기 '제공 혜택'에 자동 노출). desc는 [EPC 정보 불러오기]로 설명을 채울 때 쓴다(시연값)
+const MP_DEMO=[
+ {id:'MP-0001',bnf:['가족 모두 휴대폰 요금 할인','인터넷 · IPTV 요금 추가 할인'],ver:'v1.0',name:'요금제 가족 결합',target:'이동전화 요금제 + 인터넷·IPTV 보유 고객',from:'2026-01-01',to:'2027-12-31',sale:'판매중',cat:'결합',desc:'가족과 결합하면 요금 할인'},
+ {id:'MP-0002',bnf:['휴대폰 요금 할인','인터넷 요금 할인'],ver:'v1.0',name:'나 혼자 결합 할인',target:'이동전화 요금제 + 인터넷 보유 고객',from:'2026-01-01',to:'2027-12-31',sale:'판매중',cat:'결합',desc:'휴대폰과 인터넷 결합 할인'},
+ {id:'MP-0003',bnf:['기본료 · 통화료 감면'],ver:'v1.0',name:'복지 요금 감면',target:'이동전화 요금제 보유 고객',from:'',to:'',sale:'판매중',cat:'요금 감면',desc:'복지 대상 고객 요금 감면'},
+ {id:'MP-0004',bnf:['월 요금 할인','데이터 추가 제공'],ver:'v1.0',name:'군 장병 요금 할인',target:'이동전화 요금제 보유 고객',from:'',to:'',sale:'판매중',cat:'요금 감면',desc:'군 복무 장병 요금 할인'},
+ {id:'MP-0005',bnf:['휴대폰 요금 할인'],ver:'v1.0',name:'구 가족 결합(종료)',target:'이동전화 요금제 보유 고객',from:'2024-01-01',to:'2025-12-31',sale:'판매종료',cat:'결합',desc:'판매 종료된 가족 결합'}];
+const mpDemo=id=>MP_DEMO.find(x=>x.id===id);
+const mpPeriod=m=>m.from?`${m.from} ~ ${m.to}`:'상시';
+// MP용 주문 프로세스(시연값). flow = 미리보기 코너 구성
+const MP_PROCS=[
+ {id:'TP-ORD-101',name:'결합 가입 주문 프로세스',ver:'V1',type:'결합',cat:'MP(결합)',ctn:3,cn:6,flow:'bundle'},
+ {id:'TP-ORD-102',name:'복지 할인 신청 주문 프로세스',ver:'V1',type:'요금 감면',cat:'MP(요금 감면)',ctn:2,cn:3,flow:'welfare'},
+ {id:'TP-ORD-103',name:'군 장병 할인 신청 주문 프로세스',ver:'V1',type:'요금 감면',cat:'MP(요금 감면)',ctn:2,cn:3,flow:'army'}];
+const isMpPlan=p=>!!(p&&p.mpProc);
+// 콘텐츠 정보 MP 기본 항목(템플릿 연결, 읽기 전용). 본문은 시연 문구
+// 상담 · 지점 · 대리점 방문 · 정부24 · 복지로 안내는 콘텐츠 정보에서 빼고 별도 섹션(MP_GUIDE)으로 둔다
+const MP_XDEF=[
+ ['fee','이용 요금','<p>결합 회선 수와 요금제에 따라 할인 금액이 달라요.</p>'],
+ ['use','이용 안내','<p>가입 후 다음 달 요금부터 할인이 적용돼요.</p>'],
+ ['target','가입 대상','<p>이동전화 요금제를 이용 중인 고객이 가입할 수 있어요.</p>'],
+ ['caution','유의 사항','<p>결합 회선을 해지하면 할인이 중단될 수 있어요.</p>'],
+ ['docs','필요 서류 안내','<p>가족 관계를 확인할 수 있는 서류가 필요해요.</p>']];
+// MP 상품 전시 안내 섹션: 섹션마다 노출 ON/OFF만 정한다. 문구 · 버튼은 시연값(관리 위치 미정). 값: E.mpGuide = {gcs, gshop, ggov}
+const MP_GUIDE=[
+ ['gcs','상담 안내','상담으로 빠르게 도와드려요',['고객센터 114 (SKT 휴대폰에서 무료)','평일 09:00 ~ 18:00 (토요일 · 공휴일 휴무)'],null,['전화 가입상담 신청','1:1 채팅 상담']],
+ ['gshop','지점 · 대리점 방문 안내','지점 · 대리점 방문 가입',null,['필요 서류 확인','가까운 지점 · 대리점 방문','지점 · 대리점에서 접수'],['매장 찾기']],
+ ['ggov','정부24 · 복지로 홈페이지 신청','정부24, 복지로 홈페이지 신청',['정부24 또는 복지로 홈페이지에서 신청할 수 있어요.'],null,['정부24 바로가기','복지로 바로가기']]];
+const GUIDE_KEYS=MP_GUIDE.map(g=>g[0]);
+function rGuide(){
+ if(!E.mpGuide) E.mpGuide={gcs:true,gshop:true,ggov:true};
+ MP_GUIDE.forEach(([k,,title,lines,steps,btns])=>{
+  const on=!!E.mpGuide[k], sw=$(`[data-gd="${k}"]`); if(!sw) return;
+  sw.checked=on; sw.disabled=VIEW==='view';
+  $('#sb-'+k).innerHTML=`<div class="ftbl">${seoRow('타이틀',null,esc(title))}${lines?seoRow('안내 문구',null,lines.map(esc).join('<br>')):''}${steps?seoRow('가입 절차',null,steps.map((x,i)=>`${i+1}. ${esc(x)}`).join('<br>')):''}${seoRow('버튼',null,btns.map(b=>`<span class="pill">${esc(b)}</span>`).join(' '))}</div>`;
+ });
+}
+$$('[data-gd]').forEach(c=>c.addEventListener('change',()=>{ E.mpGuide[c.dataset.gd]=c.checked; rGuide(); refresh(); }));
+const mpTxt=h=>h.replace(/<[^>]+>/g,'');
+// 기본 항목은 EPC에서 불러오거나 템플릿 불러오기로 들어오는 읽기 전용 콘텐츠다. 순서 변경 · 노출 ON/OFF만 되고 편집 · 삭제는 없다
+// 유형을 MP로 바꾸면 기본 항목을 앞에 넣고, 다른 유형으로 바꾸면 뺀다. 사용자가 직접 추가한 항목은 그대로 둔다
+function syncMpExtras(){
+ if(E.kind!=='mp'){ E.extras=E.extras.filter(x=>!x.mpDef); return; }
+ const have=new Set(E.extras.map(x=>x.mpDef).filter(Boolean));
+ // 예전에 콘텐츠 정보에 넣었던 상담 · 방문 · 정부24 안내 항목은 별도 섹션으로 옮겨 뺀다
+ E.extras=E.extras.filter(x=>!x.mpDef||MP_XDEF.some(([k])=>k===x.mpDef));
+ const add=MP_XDEF.filter(([k])=>!have.has(k)).map(([k,t,txt])=>({id:nid(),t,mode:'epc',txt:mpTxt(txt),show:true,mpDef:k}));
+ // 예전에 편집 모드(direct)로 넣은 기본 항목은 읽기 전용으로 바꾼다
+ E.extras.forEach(x=>{ const d=x.mpDef&&MP_XDEF.find(([k])=>k===x.mpDef); if(d){ x.mode='epc'; x.t=d[1]; x.txt=mpTxt(d[2]); delete x.tbd; } });
+ E.extras=[...add,...E.extras];
+}
+// MP 유형으로 열거나 바꿀 때 값 정리: PO 연결 없음 · 주문 받기 ON · MP용 프로세스만
+function mpNorm(d,fresh){
+ if(d.kind!=='mp') return;
+ d.conn=[]; if(!mpDemo(d.mp)) d.mp='';
+ d.method='fixed'; d.orderOn=true; if(d.orderPlan&&!isMpPlan(d.orderPlan)) d.orderPlan=null;
+ // 구매 후기 · 전문가 리뷰는 MP 상품 전시에서 쓰지 않는다
+ d.review=false; d.expert=false;
+ if(fresh){ d.related=false; if(d.sim) d.sim.on=false; d.mpGuide={gcs:true,gshop:true,ggov:true}; }
+}
 function rKind(){
  // v0.3.1: 'PO/MP 상품 전시' → 'PO 상품 전시'
  const T=[['po','PO 상품 전시'],['mp','MP 상품 전시'],['ps','PS 상품 전시']];
- $('#sb-kind').innerHTML=`<div class="row"><label class="fl">무엇을 전시하나요?</label><span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span></div>
- ${!KIND_NTC[E.kind]?'':ntc('',KIND_NTC[E.kind]).replace('class="ntc ','style="margin:0" class="ntc ')}`;
- $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if(E.conn.length&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.mp=''; E.areas=k!=='ps'?[newArea('','fixed')]:[]; E.method='fixed'; psReset(E); syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefits(E); renderAll(); }));
+ // v0.3.1(11-25 시안): 다른 섹션과 같은 표(왼쪽 항목명 · 오른쪽 입력)
+ $('#sb-kind').innerHTML=`<div class="ftbl">${seoRow('무엇을 전시하나요?',null,`<span class="srch-radio" role="radiogroup" aria-label="전시 유형">${T.map(([k,l])=>`<label><input type="radio" name="dKind" value="${k}" ${E.kind===k?'checked':''}>${l}</label>`).join('')}</span>`)}</div>
+ ${!KIND_NTC[E.kind]?'':ntc('',KIND_NTC[E.kind]).replace('class="ntc ','style="margin:12px 0 0" class="ntc ')}`;
+ $$('#sb-kind input[name=dKind]').forEach(r=>r.addEventListener('change',()=>{ const k=r.value; if(k===E.kind) return; if((E.conn.length||E.mp)&&!confirm('전시 유형을 바꾸면 연결 상품과 고객 선택 방식이 초기화됩니다. 바꿀까요?')){ rKind(); return; } E.kind=k; E.conn=[]; E.mp=''; E.areas=k!=='ps'?[newArea('','fixed')]:[]; E.method='fixed'; psReset(E); if(isMpPlan(E.orderPlan)&&k!=='mp') E.orderPlan=null; mpNorm(E,true); syncMpExtras(); syncPtype(); cur=E.areas[0]&&E.areas[0].id; PV={}; syncConnTpls(); syncBenefitsV(E); renderAll(); }));
 }
 
 // ---------- 2. 연결 상품 ----------
 function rConn(){
+ if(E.kind==='mp') return rConnMp();
  const po=E.kind!=='ps';
- const rows=po?E.conn.map(id=>{ const p=poBy(id), x=epcOf(p); return `<tr><td>${p.epc}</td><td>${p.ver}</td><td><b>${esc(p.name)}</b>${hasSel(p)?' <span class="chip acc">선택 PS 있음</span>':''}</td><td>${x.lv2}</td><td>${x.lv3}</td><td>${esc(x.spec)}</td><td><span class="chip ok">${p.sale}</span></td><td><button type="button" class="btn sm" data-view="${id}">보기</button></td><td><button type="button" class="btn sm" data-un="${id}">연결 해제</button></td></tr>`; }).join('')
-  :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td><b>${esc(s.name)}</b></td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="chip ok">${s.po.sale}</span></td><td><button type="button" class="btn sm" data-view="${s.po.id}">보기</button></td><td><button type="button" class="btn sm" data-un="${k}">연결 해제</button></td></tr>`; }).join('');
- $('#sb-conn').innerHTML=`<div class="sec-h"><b>연결한 ${po?'상품':'PS'}</b><span class="chip acc">${E.conn.length}건</span><button type="button" class="btn sm" id="connReset" style="margin-left:auto" ${E.conn.length?'':'disabled'}>초기화</button><button type="button" class="btn primary sm" id="connAdd">${E.kind==='mp'?(E.conn.length?'원천 PO 변경':'+ 원천 PO 추가'):po?'+ 상품 추가':E.conn.length?'PS 변경':'+ PS 불러오기'}</button></div>
- ${E.conn.length?`<div class="cl"><table><thead><tr>${po?'<th>EPC 상품ID</th><th>버전</th><th>EPC 상품명</th><th>LV2</th><th>LV3</th><th>Product Spec</th><th>판매상태</th><th>상세</th><th>삭제</th>':'<th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매 상태</th><th>상세</th><th>삭제</th>'}</tr></thead><tbody>${rows}</tbody></table></div>`
- :`<div class="empty">${E.kind==='mp'?'MP가 있는 원천 PO 1개를 추가하세요.':po?'연결 상품을 추가하세요.':'전시 콘텐츠를 등록할 PS 1개를 불러오세요'}</div>`}`+(E.kind==='mp'?mpBlock():'')+dedHtml();
- bindDed();
- $$('#sb-conn input[name=mpPick]').forEach(r=>r.addEventListener('change',()=>{ E.mp=r.value; rConn(); refresh(); toast(`${mpBy(E.mp).name}을 고정했어요`); }));
- $$('#sb-conn tr[data-mp]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; const r=tr.querySelector('input'); if(!r.checked){ r.checked=true; r.dispatchEvent(new Event('change')); } }));
+ // v0.3.1(11-25 시안): '• 연결한 상품 총 N건' 소제목 → 표(비어 있어도 머리줄 노출) → 오른쪽 아래 [초기화] [상품 추가]
+ //  PO 열: EPC ID · 버전 · 보기(상품명, 누르면 상세 팝업) · LV2 · 버전 · Product Spec · LV3 · 상세
+ //  시안의 두 번째 '버전'(LV2 옆) 값은 EPC 데이터 정의 미확정이라 '-'로 둔다. 연결 해제는 상세 열에 둔다
+ const rows=po?E.conn.map(id=>{ const p=poBy(id), x=epcOf(p); return `<tr><td>${p.epc}</td><td>${p.ver}</td><td class="l"><button type="button" class="lk" data-view="${id}">${esc(p.name)}</button>${hasSel(p)?' <span class="chip acc">선택 PS 있음</span>':''}</td><td>${x.lv2}</td><td>-</td><td>${esc(x.spec)}</td><td>${x.lv3}</td><td><span class="cn-acts"><button type="button" class="btn sm" data-view="${id}">보기</button><button type="button" class="btn sm" data-un="${id}">연결 해제</button></span></td></tr>`; }).join('')
+  :E.conn.map(k=>{ const s=psBy(k); return `<tr><td>${s.key.split('|').slice(1).join('-')}</td><td>${s.po.ver}</td><td class="l"><b>${esc(s.name)}</b></td><td>${esc(s.desc||'-')}</td><td>상시</td><td><span class="chip ok">${s.po.sale}</span></td><td><span class="cn-acts"><button type="button" class="btn sm" data-view="${s.po.id}">보기</button><button type="button" class="btn sm" data-un="${k}">연결 해제</button></span></td></tr>`; }).join('');
+ const head=po?['EPC ID','버전','보기','LV2','버전','Product Spec','LV3','상세']:['EPC 상품 ID','버전','EPC 상품명','PS Spec','유효기간','판매 상태','상세'];
+ $('#sb-conn').innerHTML=`<div class="bh">연결한 상품<span>총 <b>${E.conn.length}</b>건</span></div>
+ <div class="cn-tbl"><table><thead><tr>${head.map((h,i)=>`<th${i===2?' class="l"':''}>${h}</th>`).join('')}</tr></thead><tbody>${rows||`<tr class="none"><td colspan="${head.length}">${po?'연결 상품을 추가하세요.':'상품 추가로 전시할 PS 상품 1개를 연결하세요'}</td></tr>`}</tbody></table></div>
+ <div class="cn-foot"><button type="button" class="btn" id="connReset" ${E.conn.length?'':'disabled'}>초기화</button>${po?'<button type="button" class="btn primary" id="connAdd">상품 추가</button>':`<span title="${E.conn.length?PS_ONE:''}"><button type="button" class="btn primary" id="connAdd" ${E.conn.length?'disabled':''}>상품 추가</button></span>`}</div>`;
  $('#connAdd').addEventListener('click',po?openConnModal:openPsModal);
  // 초기화: 연결한 상품을 모두 해제하고 구성 영역 배정·옵션 매핑에서도 뺀다
  $('#connReset').addEventListener('click',()=>{ if(!E.conn.length) return; E.conn=[]; if(po) E.areas.forEach(a=>{ a.pos=[]; a.map={}; }); onConnChange(); toast('연결 상품을 초기화했어요'); });
  $$('#sb-conn [data-view]').forEach(b=>b.addEventListener('click',()=>openPoDetail(b.dataset.view)));
  $$('#sb-conn [data-un]').forEach(b=>b.addEventListener('click',()=>{ const id=b.dataset.un; E.conn=E.conn.filter(x=>x!==id); if(po) E.areas.forEach(a=>{ a.pos=a.pos.filter(x=>x!==id); Object.keys(a.map).forEach(k=>{ if(a.map[k]===id) delete a.map[k]; }); }); onConnChange(); toast('연결을 해제했어요'); }));
 }
-// MP 상품 전시: 원천 PO의 요금프로그램그룹에서 고정할 MP 1개를 고른다. 고르면 LOCK(전시ID마다 원천 PO + 고정 MP 1개)
-function mpBlock(){
- const p=poBy(E.conn[0]); if(!p) return '';
- const L=mpsOf(p), e=mpIssues(E).filter(x=>!x.startsWith('고정할 MP'));
- return `<div class="sec-h" style="margin:20px 0 10px"><b>고정 MP</b>${mpBy(E.mp)?'<span class="chip acc">LOCK</span>':''}<small class="rl-id">${esc(p.name)}의 요금프로그램그룹에서 1개를 고정해요. 어떤 MP를 골라도 가격은 같아요</small></div>
- ${L.length?`<div class="cl"><table><thead><tr><th class="c">고정</th><th>MP ID</th><th>MP명</th><th>요금프로그램그룹</th><th>원천 서비스</th><th>유효기간</th><th>설명</th></tr></thead><tbody>${L.map(m=>`<tr data-mp="${m.key}" style="cursor:pointer"><td class="c"><input type="radio" name="mpPick" value="${m.key}" ${E.mp===m.key?'checked':''} aria-label="${esc(m.name)} 고정"></td><td>${m.id}</td><td><b>${esc(m.name)}</b></td><td>${esc(m.group.name)} (${m.group.min}~${m.group.max})</td><td>${m.svc}</td><td>${m.from} ~ ${m.to}</td><td>${esc(m.desc)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">이 PO에는 고를 수 있는 MP가 없어요. MP가 있는 PO로 바꾸세요</div>'}
- ${e.map(x=>`<div class="er" style="margin-top:8px">${esc(x)}</div>`).join('')}`;
+const PS_ONE='PS 상품 전시는 PS 1개만 연결합니다';
+// v0.3.2 MP 상품 전시: MP 1개만 연결한다. 연결되면 [상품 추가]를 막는다
+const MP_ONE='MP 상품 전시는 MP 1개만 연결합니다';
+function rConnMp(){
+ const m=mpDemo(E.mp);
+ // v0.3.1(11-25 시안): PO와 같은 배치(소제목 → 표 → 오른쪽 아래 버튼)
+ $('#sb-conn').innerHTML=`<div class="bh">연결한 상품<span>총 <b>${m?1:0}</b>건</span></div>
+ <div class="cn-tbl"><table><thead><tr><th>EPC 상품 ID</th><th>버전</th><th class="l">EPC 상품명</th><th>MP Spec</th><th>유효기간</th><th>판매 상태</th><th>상세</th></tr></thead><tbody>${m?`<tr><td>${m.id}</td><td>${m.ver}</td><td class="l"><b>${esc(m.name)}</b></td><td>${esc(m.target)}</td><td>${mpPeriod(m)}</td><td><span class="chip ${m.sale==='판매중'?'ok':''}">${m.sale}</span></td><td><span class="cn-acts"><button type="button" class="btn sm" id="mpView">보기</button><button type="button" class="btn sm" id="mpUn">연결 해제</button></span></td></tr>`
+ :'<tr class="none"><td colspan="7">상품 추가로 전시할 MP 상품 1개를 연결하세요</td></tr>'}</tbody></table></div>
+ <div class="cn-foot"><button type="button" class="btn" id="connReset" ${m?'':'disabled'}>초기화</button><span title="${m?MP_ONE:''}"><button type="button" class="btn primary" id="connAdd" ${m?'disabled':''}>상품 추가</button></span></div>`;
+ const clear=msg=>{ E.mp=''; onConnChange(); toast(msg); };
+ $('#connAdd').addEventListener('click',()=>{ if(mpDemo(E.mp)){ toast(MP_ONE); return; } openMpModal(); });
+ $('#connReset').addEventListener('click',()=>{ if(m) clear('연결 상품을 초기화했어요'); });
+ { const u=$('#mpUn'); if(u) u.addEventListener('click',()=>clear('연결을 해제했어요')); }
+ { const v=$('#mpView'); if(v) v.addEventListener('click',()=>openMpDetail(m)); }
 }
+function openMpDetail(m){ modal(m.name,m.id,640);
+ const R=[['EPC 상품 ID',m.id],['버전',m.ver],['EPC 상품명',m.name],['MP 유형',m.cat],['MP Spec',m.target],['유효기간',mpPeriod(m)],['판매 상태',m.sale],['설명',m.desc]];
+ $('#mBody').innerHTML=`<div class="ftbl">${R.map(([l,v])=>seoRow(l,null,esc(v))).join('')}</div>`;
+ $('#mFoot').innerHTML='<button type="button" class="btn primary" id="mc">닫기</button>'; $('#mc').addEventListener('click',closeModal); }
 // 고정형·선택형은 영역이 1개라 연결 상품이 그대로 영역의 PO가 된다
 function syncSingle(){ if(E.kind==='ps'||E.method==='complex'||!E.areas[0]) return; const a=E.areas[0]; a.pos=[...a.pos.filter(id=>E.conn.includes(id)),...E.conn.filter(id=>!a.pos.includes(id))]; a.def=(a.def||[]).filter(id=>a.pos.includes(id)); Object.keys(a.map).forEach(k=>{ if(!a.pos.includes(a.map[k])) delete a.map[k]; }); if(a.mode==='opt'&&areaHasSel(a)) a.mode='list'; }
 // 연결 상품이 가진 템플릿을 콘텐츠 정보에 자동으로 넣는다(템플릿 연결). 이미 있는 템플릿은 다시 넣지 않고,
@@ -338,45 +578,63 @@ function syncPtype(){
 }
 // 화면에 보이는 상품 유형: 연결 상품의 LV3를 연결한 순서대로 겹치지 않게 모은다
 const lv3Combo=()=>lv3ComboOf(E);
-// v0.2.4: 사은품 · 티다팩 자동 배지는 T기프트 · 티다팩 섹션과 함께 뺐다
-const autoBadges=()=>[];
+// v0.3.2: T기프트 · 티다팩 자동 배지를 다시 쓴다. 노출 중인 항목이 있고 배지를 켰을 때만 붙고, 직접 입력 배지와 합쳐 BADGE_MAX를 넘지 않는다
+const autoBadges=d=>{ const a=[]; if(d.giftBadge&&d.giftOn!==false&&visibleGifts(d).length) a.push({k:'gift',t:'사은품 증정',c:'#0F6E56',s:'f',from:'T기프트'}); if(d.tdBadge&&visibleTd(d).length) a.push({k:'td',t:'티다팩 혜택',c:'#D85A30',s:'f',from:'티다팩'}); return a.slice(0,Math.max(0,BADGE_MAX-d.badges.length)); };
+// v0.3.2: T기프트는 연결한 단말기(기기서비스), 티다팩은 연결한 요금제의 EPC 값으로만 자동 매칭한다(공용 syncBenefits는 연결 상품 전체로 매칭)
+const connOfType=(d,type)=>Object.assign({},d,{conn:d.conn.filter(id=>(poBy(id)||{}).type===type)});
+function syncBenefitsV(d){
+ d.gifts=d.gifts||[]; d.tds=d.tds||[];
+ if(d.kind==='ps'||d.kind==='mp'){ d.gifts=[]; d.tds=[]; return; }
+ d.gifts=syncList(d.gifts,GIFT,connOfType(d,'기기서비스')).filter(x=>!(d.giftCut||[]).includes(x.id));
+ d.tds=syncList(d.tds,TDP,connOfType(d,'요금제')).filter(x=>!(d.tdCut||[]).includes(x.id));
+}
 // v0.2.4 섹션 이름: 구매 후기 · 연관 및 유사 상품 · 주문 프로세스 연동 (display-rules.ts의 이름은 v0.2.3 · 목록이 함께 쓰므로 여기서만 바꾼다)
-const SEC_LB={ch:'노출 채널',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
+const SEC_LB={ch:'노출 채널',chset:'채널별 노출 제어',review:'구매 후기',expert:'전문가 리뷰',rel:'연관 및 유사 상품',more:'추가 설정',order:'주문 프로세스 연동'};
 // v0.3: 전문가 리뷰는 이 화면에만 있어 구매 후기 다음에 넣는다(이전 버전 화면은 공용 SECS를 그대로 쓴다)
 // v0.3.1: 화면 순서 = 공통(전시 유형 → 연결 상품 → 고객 선택 방식 → 노출 채널 → 전시 정보 → 콘텐츠 정보) → 통합 앱 전용(구매 후기 → 전문가 리뷰 → 연관 상품 → 주문)
-const SEC_ORD=['kind','conn','method','ch','info','extra','review','expert','rel','order'];
-const SECS=SECS0.flatMap(s=>s[0]==='review'?[s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
+const SEC_ORD=['kind','conn','method','ch','chset','info','extra','gcs','gshop','ggov','review','expert','rel','gift','td','order'];
+const SECS=SECS0.flatMap(s=>s[0]==='review'?[['chset','채널별 노출 제어',true,'채널별 노출 제어'],...MP_GUIDE.map(([k,n])=>[k,n,false,n]),s,['expert','전문가 리뷰',false,'전문가 리뷰']]:[s]).map(([k,l,r,sh])=>[k,SEC_LB[k]||l,r,SEC_LB[k]||sh])
  .sort((a,b)=>(SEC_ORD.indexOf(a[0])+1||99)-(SEC_ORD.indexOf(b[0])+1||99));
 // 통합 앱 전용 영역의 섹션: 노출 채널에 통합 APP · WEB이 없으면 '해당 없음'으로 보고 검사하지 않는다
-const APP_SECS=['order','review','expert','rel'];
-const appScope=d=>d.kind!=='ps'&&appOn(d);
+// v0.3.2: 통합 앱 전용 영역(구매 후기 · 전문가 리뷰 · 연관 상품 · 주문)을 노출 채널로 숨기는 기능은 쓰지 않는다. 항상 노출한다
+//  채널별 노출 제어(chset)만 통합 APP · WEB을 고를 때 보인다
+const APP_SECS=['chset'];
+// v0.3.2 MP 상품 전시: 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동을 노출 채널과 관계없이 고정으로 보여 준다
+const appScope=d=>d.kind!=='ps'&&d.kind!=='mp'&&appOn(d);
+const MP_HIDE=['chset','method','review','expert','gift','td'];
 // 섹션 상태: 공용 규칙(display-rules) + 이 화면에만 있는 전문가 리뷰
 // PS 상품 전시: 전시 콘텐츠 등록용. 연결 PS(1개) · 전시 설정(노출 영역) · 전시 정보(이미지 포함) · 콘텐츠 정보(상품 고시 등)만 쓴다.
 //  고객 선택 방식 · 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 화면에서 숨기고 검사에서도 뺀다
-const PS_HIDE=['method','review','expert','rel','order'];
-const hideSec=(k,d)=>d.kind==='ps'&&PS_HIDE.includes(k)||secHidden(k,d);
+const PS_HIDE=['chset','method','review','expert','rel','gift','td','order'];
+// v0.3.2: 채널별 노출 제어는 공통 영역(노출 채널 바로 아래)에 있지만 통합 APP · WEB을 고를 때만 보인다
+// v0.3.1(11-25 시안 2): 구매 후기 · 전문가 리뷰 섹션은 전시 정보 기본 설정 표의 행으로 옮겨 숨긴다
+const hideSec=(k,d)=>k==='review'||k==='expert'||d.kind==='ps'&&PS_HIDE.includes(k)||d.kind==='mp'&&MP_HIDE.includes(k)||GUIDE_KEYS.includes(k)&&d.kind!=='mp'||k==='chset'&&!appScope(d)||secHidden(k,d);
 // PS로 바꾸거나 PS 전시를 열 때: PS는 1개만, 숨긴 섹션 값은 끈다
 function psReset(d){ if(d.kind!=='ps') return; d.conn=d.conn.slice(0,1); d.areas=[]; d.method='fixed'; d.review=false; d.expert=false; d.related=false; if(d.sim) d.sim.on=false; d.orderOn=false; }
+// v0.3.2: 채널별 노출 제어는 이 화면에만 있어 필수 여부를 여기서 정한다(통합 APP · WEB을 고를 때만)
+const isReq=(k,S)=>k==='chset'?S[k].st!=='na':isReq0(k,S);
 const secState=d=>{ const S=sectionState(d); S.expert={st:d.expert?'on':'off',e:[]};
+ // v0.3.2: 기기 구분이 없어져 검사 문구를 대표이미지로 바꾼다
+ Object.values(S).forEach(x=>{ if(x&&x.e) x.e=x.e.map(t=>t==='모바일 대표 이미지를 등록하세요'?'대표이미지를 등록하세요':t); });
+ // 채널별 노출 제어(통합 앱 전용 영역): 채널 전용 재고 수량 등 검사
+ { const e=d.kind==='ps'?[]:chIssues(d); S.chset=e.length?{st:'warn',e}:{st:'done',e:[]}; }
  if(d.kind==='ps'){ PS_HIDE.forEach(k=>S[k]={st:'na',e:[]}); S.sim={st:'na',e:[]}; if(d.conn.length>1) S.conn={st:'warn',e:['PS 상품 전시는 PS 1개만 연결할 수 있어요']}; }
- // MP 상품 전시: 원천 PO 1개 + 고정 MP 1개 저장 검증(정책서 07)
- if(d.kind==='mp'&&d.conn.length){ const e=mpIssues(d); if(e.length) S.conn={st:'warn',e}; }
- if(d.kind!=='ps'&&!appScope(d)){ APP_SECS.forEach(k=>S[k]={st:'na',e:[]}); S.sim={st:'na',e:[]}; }
+ if(d.kind!=='ps'&&!appScope(d)) APP_SECS.forEach(k=>S[k]={st:'na',e:[]});
+ GUIDE_KEYS.forEach(k=>S[k]=d.kind!=='mp'?{st:'na',e:[]}:{st:(d.mpGuide||{})[k]===false?'off':'on',e:[]});
+ if(d.kind==='mp') mpState(d,S);
  return S; };
-const blockingV=d=>{ const S=secState(d); return SECS.filter(([k])=>isReq(k,S)&&(S[k].st==='todo'||S[k].st==='warn')).flatMap(([k,l])=>S[k].e.length?S[k].e.map(x=>[k,l,x]):[[k,l,'입력이 필요해요']]); };
-// MP 고정 전시 저장 검증: 고정 MP가 원천 PO의 MP 목록에 있음 · 원천 PO 1개 · MP 1개(선택 수 최대 1, 배타는 1개라 위반 없음) · MP 유효기간이 전시기간을 포함
-function mpIssues(d){
- if(d.kind!=='mp') return [];
- const e=[], p=poBy(d.conn[0]), m=mpBy(d.mp);
- if(d.conn.length>1) e.push('원천 PO는 1개만 연결해요');
- if(p&&!mpsOf(p).length) e.push(`${p.name}에는 고를 수 있는 MP가 없어요`);
- if(!d.mp) e.push('고정할 MP를 1개 고르세요');
- else if(!m||m.po!==p) e.push('고정 MP가 원천 PO의 MP 목록에 없어요');
- else if(d.from<m.from||d.noEnd||(d.to||'')>m.to) e.push(`MP 유효기간(${m.from} ~ ${m.to})이 전시기간을 포함하지 않아요${d.noEnd?'. 전시 종료일을 MP 종료일 안으로 정하세요':''}`);
- return e;
+// MP 상품 전시 검사: 연결 MP 1개 · 고객 선택 방식은 읽기 전용(필수 아님) · 대표 이미지 선택 · 제공 혜택 문구 · 주문 프로세스 필수
+function mpState(d,S){
+ MP_HIDE.forEach(k=>S[k]={st:'na',e:[]});
+ S.conn=mpDemo(d.mp)?{st:'done',e:[]}:{st:'todo',e:['MP를 1개 연결하세요']};
+ S.method={st:'na',e:[],opt:true};
+ S.basic.e=S.basic.e.filter(t=>t!=='대표이미지를 등록하세요'); if(!S.basic.e.length) S.basic.st='done';
+ S.info={st:S.basic.st==='done'&&S.desc.st==='done'?'done':S.basic.st==='todo'&&S.desc.st==='todo'?'todo':'warn',e:[...S.basic.e,...S.desc.e]};
+ S.order=isMpPlan(d.orderPlan)?{st:'done',e:[]}:{st:'todo',e:['MP용 주문 프로세스를 연결하세요']};
 }
+const blockingV=d=>{ const S=secState(d); return SECS.filter(([k])=>isReq(k,S)&&(S[k].st==='todo'||S[k].st==='warn')).flatMap(([k,l])=>S[k].e.length?S[k].e.map(x=>[k,l,x]):[[k,l,'입력이 필요해요']]); };
 const lv3Text=()=>lv3Combo().join(' + ');
-function onConnChange(){ if(E.kind==='mp'&&E.mp&&!E.conn.includes(E.mp.split('|')[0])) E.mp=''; syncSingle(); PV={}; syncPtype(); syncBenefits(E); const n=syncConnTpls(); rConn(); rMethod(); rBasic(); rDesc(); rSearch(); rRel(); rOrder(); refresh(); return n; }
+function onConnChange(){ syncSingle(); PV={}; syncPtype(); syncBenefitsV(E); const n=syncConnTpls(); rConn(); rMethod(); rAttr(); rChset(); rBasic(); rDesc(); rSearch(); rRel(); rGift(); rTd(); rOrder(); refresh(); return n; }
 
 // ---------- 3. 고객 선택 방식 ----------
 const curArea=()=>E.areas.find(a=>a.id===cur);
@@ -384,13 +642,20 @@ const areaLabel=a=>a.name.trim()||(E.method==='complex'?`구성 영역 ${E.areas
 function rMethod(){
  const box=$('#sb-method');
  if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 판매 단위가 아니라서 고객 선택 방식을 쓰지 않아요.'); return; }
+ if(E.kind==='mp'){ box.innerHTML=`<div class="ftbl">${seoRow('구성 방식',null,'고정형 · MP 1개 <span class="pill">변경 불가</span>')}</div><p class="mp-gray">MP 상품 전시에서 고객이 고르는 항목(결합 유형, 회선, 할인 방식, 약정 등)은 주문 프로세스의 주문 코너에서 설정합니다.</p>`; return; }
  const M=[['fixed','고정형','연결 상품을 모두 제공'],['select','선택형','연결 상품 중에서 목록·옵션으로 고름'],['complex','복합형','구성 영역 N개를 순서대로 조합']];
  const m=M.find(x=>x[0]===E.method);
- box.innerHTML=`${ptHtml()}
- <div class="sub-h" id="mLb">구성 방식</div><span class="srch-radio" role="radiogroup" aria-labelledby="mLb">${M.map(([k,t])=>`<label><input type="radio" name="dMethod" value="${k}" ${E.method===k?'checked':''}>${t}</label>`).join('')}</span>
- <div class="sub-h">${E.method==='complex'?'구성 영역':`${m[1]} 설정`}</div><div id="ae"></div>`;
+ // 상품 유형 · 구성 방식을 한 표로 묶는다
+ // v0.3.1(11-25 시안 4): 공제 항목 반영 행을 다시 둔다(연결 상품이 없으면 비활성)
+ box.innerHTML=`<div class="ftbl">
+ ${seoRow('상품 유형',null,ptHtml())}
+ ${seoRow('공제 항목 반영',null,dedField())}
+ ${seoRow('구성 방식',null,`<span class="srch-radio" role="radiogroup" aria-label="구성 방식">${M.map(([k,t])=>`<label><input type="radio" name="dMethod" value="${k}" ${E.method===k?'checked':''}>${t}</label>`).join('')}</span>`)}
+ </div>
+ ${E.method==='complex'?'<div class="bh cs-top">구성 영역</div>':'<div class="ae-gap"></div>'}<div id="ae"></div>`;
  // 복합형에서 바꿀 때 확인 창을 취소하면 라디오를 원래 값으로 되돌린다
  $$('#sb-method input[name=dMethod]').forEach(r=>r.addEventListener('change',()=>{ setMethod(r.value); if(E.method!==r.value) rMethod(); }));
+ bindDed();
  rAreas();
 }
 // ---------- 3-1. 상품 유형 ----------
@@ -398,7 +663,7 @@ function rMethod(){
 function ptHtml(){
  const l=lv3Combo();
  const res=l.length?l.map(x=>`<span class="v">${esc(x)}</span>`).join('<span class="p" aria-hidden="true">+</span>'):'<span class="f">연결 상품을 추가하세요.</span>';
- return `<div class="sub-h">상품 유형</div><div class="ptres">${res}</div>`;
+ return `<div class="ptres">${res}</div>`;
 }
 function setMethod(m){
  if(m===E.method) return;
@@ -412,7 +677,7 @@ function rAreas(){
  const multi=E.method==='complex';
  if(!curArea()) cur=E.areas[0]&&E.areas[0].id;
  const full=multi&&topFull();
- $('#ae').innerHTML=`<div class="ae ${multi?'':'single'}">${multi?`<div><div class="al" id="al"></div><button type="button" class="btn dash-add" id="addA" style="margin-top:8px" ${full?'disabled':''}>+ 구성 추가</button>${full?`<p class="hl" style="margin:6px 0 0;font-size:11px;color:var(--muted)">구성 영역은 ${TOP_MAX}개까지 추가할 수 있어요. ‘특정 선택일 때만’ 나오는 하위 영역은 개수에 넣지 않아요</p>`:''}<div id="alUn"></div></div>`:''}<div class="ad" id="ad"></div></div><div id="adOut"></div>`;
+ $('#ae').innerHTML=`<div class="ae ${multi?'':'single'}">${multi?`<div class="cs-side"><div class="al" id="al"></div><div id="alUn"></div><div class="cs-sfoot">${full?`<p class="hl" style="margin:0 0 8px;font-size:11px;color:var(--muted)">구성 영역은 ${TOP_MAX}개까지 추가할 수 있어요. ‘특정 선택일 때만’ 나오는 하위 영역은 개수에 넣지 않아요</p>`:''}<button type="button" class="btn primary cs-add" id="addA" ${full?'disabled':''}>구성 추가</button></div></div>`:''}<div class="ad" id="ad"></div></div><div id="adOut"></div>`;
  if(multi){ rAreaList(); $('#addA').addEventListener('click',()=>{ if(topFull()) return; const a=newArea('','fixed'); E.areas.push(a); cur=a.id; rAreas(); refresh(); }); }
  rDetail();
 }
@@ -436,7 +701,7 @@ function condHtml(a,i){
  const p=condParent(a), el=condBases(a);
  // 앞에 고객이 고르는 영역이 없으면 조건을 걸 수 없다 (이미 걸린 조건은 풀 수 있도록 그대로 둔다)
  const why=!i?'첫 번째 영역은 쓸 수 없어요':'앞에 고객이 고르는 영역이 없어요. 고정 영역은 기준이 될 수 없어요';
- let h=`<div class="sub-h">구성 제공 조건</div><div class="cdg" role="radiogroup" aria-label="구성 제공 조건">${CONDN.map(([k,t,s])=>{ const capA=k==='always'&&!isTop(a)&&topFull(), dis=capA||(k!=='always'&&!el.length&&a.cond!==k); return `<label class="cdc ${a.cond===k?'on':''} ${dis?'dis':''}"><input type="radio" name="cd${a.id}" data-cd="${k}" ${a.cond===k?'checked':''} ${dis?'disabled':''}><span><b>${t}</b><small>${capA?`항상 제공 영역이 이미 ${TOP_MAX}개예요`:dis?why:s}</small></span></label>`; }).join('')}</div>`;
+ let h=`<div class="bh dash">구성 제공 조건</div><div class="cdg" role="radiogroup" aria-label="구성 제공 조건">${CONDN.map(([k,t,s])=>{ const capA=k==='always'&&!isTop(a)&&topFull(), dis=capA||(k!=='always'&&!el.length&&a.cond!==k); return `<label class="cdc ${a.cond===k?'on':''} ${dis?'dis':''}"><input type="radio" name="cd${a.id}" data-cd="${k}" ${a.cond===k?'checked':''} ${dis?'disabled':''}><span><b>${t}</b><small>${capA?`항상 제공 영역이 이미 ${TOP_MAX}개예요`:dis?why:s}</small></span></label>`; }).join('')}</div>`;
  if(a.cond==='always'||!i) return h;
  const fixedP=p&&!canBase(p), opt=(x,j)=>`<option value="${x.id}" ${p&&p.id===x.id?'selected':''} ${canBase(x)?'':'disabled'}>${j+1}번 ${esc(areaLabel(x))}${canBase(x)?' · '+MODE[x.mode]:' (고정 · 기준 불가)'}</option>`;
  const sel=`<div class="row" style="margin-bottom:12px"><select id="cdPa" aria-label="기준 영역" style="min-width:220px">${p?'':'<option value="">기준 영역 선택</option>'}${fixedP?`<option value="${p.id}" selected>${E.areas.indexOf(p)+1}번 ${esc(areaLabel(p))} (고정 · 기준 불가)</option>`:''}${E.areas.slice(0,i).map((x,j)=>fixedP&&x.id===p.id?'':opt(x,j)).join('')}</select><b class="cond-guide">에서 아래 상품을 고르면 ‘${i+1}번 ${esc(areaLabel(a))}’가 나와요.</b></div>`;
@@ -448,7 +713,7 @@ function condHtml(a,i){
  return h+`<div class="rel">${sel}<div>${ps.map(v=>`<label class="ccb"><input type="checkbox" data-tg="${v}" ${a.trig.includes(v)?'checked':''}>${esc(poBy(v).name)}</label>`).join('')||'<span class="cskip">기준 영역에 배정된 PO가 없어요</span>'}</div></div>`;
 }
 function rAreaList(){
- $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=(!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip acc">${pi}번에서 고르면 노출</span>`); return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]}</small>${tg?`<div>${tg}</div>`:''}</div></div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
+ $('#al').innerHTML=E.areas.map((a,i)=>{ const p=condParent(a), pi=p&&E.areas.indexOf(p)+1, tg=(!p?'':!canBase(p)?'<span class="chip warn">기준 영역이 고정</span>':`<span class="chip acc">${pi}번에서 고르면 노출</span>`); return `<div class="ali ${a.id===cur?'on':''}" data-a="${a.id}" style="margin-left:${condDepth(a)*16}px"><span class="cs-grip" aria-hidden="true">⠿</span><span class="ix">${i+1}</span><div class="nm"><b>${esc(areaLabel(a))}</b><small>${MODE[a.mode]}</small>${tg?`<div>${tg}</div>`:''}</div></div>`; }).join('')||'<div class="empty">구성 영역을 추가하세요</div>';
  // v0.3.1: 구성 영역은 추가한 순서 그대로 둔다(끌어서 위치 이동 금지)
  $$('#al .ali[data-a]').forEach(el=>el.addEventListener('click',()=>{ cur=+el.dataset.a; rAreas(); }));
  // 어느 영역에도 배정되지 않은 연결 상품
@@ -462,44 +727,49 @@ function rDetail(){
  let lg='';
  // 고정형·선택형은 위 소제목이 이미 '○○형 설정'이라 영역 번호 제목은 복합형에서만 쓴다
  const kids=multi?condKids(a):[];
- let h=`${multi?`<div class="sec-h"><b>${i+1}번 구성 영역</b>${kids.length?`<span class="chip">하위 ${kids.length}개가 이 영역을 기준으로 써요</span>`:''}<button type="button" class="btn sm" id="delA" style="margin-left:auto">구성 삭제</button></div>`:''}
- ${multi?`<div class="sub-h"><label for="aName">구성명</label></div><input type="text" id="aName" value="${esc(a.name)}" placeholder="고객에게 보이는 이름 입니다." style="width:100%">
- <div class="sub-h" id="aModeLb">고객이 고르는 방법</div><span class="srch-radio" id="aMode" role="radiogroup" aria-labelledby="aModeLb">${['fixed','list','opt'].map(k=>`<label><input type="radio" name="aMode${a.id}" value="${k}" ${a.mode===k?'checked':''} ${k==='opt'&&sel?'disabled':''}>${MODE[k]}</label>`).join('')}</span>`
- :`<div class="sub-h"><label for="aName">타이틀</label></div><input type="text" id="aName" value="${esc(a.name)}" placeholder="고객 선택 방식 타이틀 · 입력하면 미리보기에 노출돼요" style="width:100%">
- ${E.method==='select'?`<div class="sub-h" id="aModeLb">고객이 고르는 방법</div><span class="srch-radio" id="aMode" role="radiogroup" aria-labelledby="aModeLb">${['list','opt'].map(k=>`<label><input type="radio" name="aMode${a.id}" value="${k}" ${a.mode===k?'checked':''} ${k==='opt'&&sel?'disabled':''}>${MODE[k]}</label>`).join('')}</span>`:''}`}
- ${multi?`<div class="sub-h">구성에 넣을 상품</div>
+ // v0.3.1(11-25 시안 4: 고객 선택 방식 케이스): 소제목은 '• 1단계' · '- 2단계', 입력은 왼쪽 항목명 표, 빈 상태는 회색 상자, 안내는 ⓘ 한 줄
+ const note=t=>`<p class="cs-note"><i aria-hidden="true">!</i>${t}</p>`, empty=t=>`<div class="cs-empty">${t}</div>`;
+ const modeRadios=ks=>`<span class="srch-radio" id="aMode" role="radiogroup" aria-labelledby="aModeLb">${ks.map(k=>`<label><input type="radio" name="aMode${a.id}" value="${k}" ${a.mode===k?'checked':''} ${k==='opt'&&sel?'disabled':''}>${MODE[k]}</label>`).join('')}</span>`;
+ // 상품 목록 설정: 최소 ~ 최대(최대 수량 따로 설정) 또는 선택 수량 하나. 복합형은 '최소'
+ const qtyField=()=>{ const n=(id,v,lb)=>`<input type="number" id="${id}" min="1" value="${v}" aria-label="${lb}">`;
+  const f=a.opt0&&!multi?`<span class="cs-ql">최대</span>${n('qMx',a.useMax?a.mx:a.q,'최대 선택 수량')}<span class="cs-ql">개까지</span>`
+   :a.useMax?`<span class="cs-ql">최소</span>${n('qQ',a.q,'최소 선택 수량')}<span class="cs-dash">-</span><span class="cs-ql">최대</span>${n('qMx',a.mx,'최대 선택 수량')}<span class="cs-ql">개</span>`
+   :`<span class="cs-ql">${multi?'최소':'선택 수량'}</span>${n('qQ',a.q,multi?'최소 선택 수량':'선택 수량')}<span class="cs-ql">개</span>`;
+  return `<div class="cs-qty">${f}<label class="chkl"><input type="checkbox" id="qUse" ${a.useMax?'checked':''}>최대 수량 따로 설정</label></div>`; };
+ let h=multi?`<div class="bh">${i+1}번 구성 영역${kids.length?`<span class="chip">하위 ${kids.length}개가 이 영역을 기준으로 써요</span>`:''}${E.areas.length>1?'<button type="button" class="btn sm" id="delA" style="margin-left:auto">구성 삭제</button>':''}</div>
+ <div class="ftbl">${seoRow('<label for="aName">구성명</label>',null,`<input type="text" id="aName" value="${esc(a.name)}" placeholder="고객에게 보이는 단계 이름 · 입력하면 미리보기에 노출돼요" style="width:100%">`)}
+ ${seoRow('<span id="aModeLb">고객이 고르는 방법</span>',null,modeRadios(['fixed','list','opt']))}
+ ${a.mode==='list'?seoRow('상품 목록 설정',null,qtyField()):''}</div>`
+ // 고정형 · 선택형: '• 타이틀' 표, 선택형이면 '- 고객이 고르는 방법' 표(선택 방식 · 상품 목록 설정)
+ :`<div class="bh">타이틀</div><div class="ftbl">${seoRow('<label for="aName">타이틀</label>',null,`<input type="text" id="aName" value="${esc(a.name)}" placeholder="고객 선택 방식 타이틀 · 입력하면 미리보기에 노출돼요" style="width:100%">`)}</div>
+ ${E.method==='select'?`<div class="bh dash">고객이 고르는 방법</div><div class="ftbl">${seoRow('<span id="aModeLb">선택 방식</span>',null,modeRadios(['list','opt']))}${a.mode==='list'?seoRow('상품 목록 설정',null,qtyField()):''}</div>`:''}`;
+ // 복합형 목록에서 선택: 선택 수량 안내는 표 바로 아래 한 줄
+ if(a.mode==='list'&&multi){ a.opt0=false; a.def=[]; const r=rng(a); h+=note(`대상 상품 ${a.pos.length}개 중 ${r.lo===r.hi?r.lo:r.lo+'~'+r.hi}개를 선택합니다`); }
+ if(multi){ h+=`<div class="bh dash">구성에 넣을 상품</div>
  ${a.mode==='fixed'&&sel?ntc('info',MSG1):''}
  ${E.conn.length?`<div class="pg">${E.conn.map(id=>{ const p=poBy(id), on=a.pos.includes(id), o=E.areas.filter(x=>x!==a&&x.pos.includes(id)).map(x=>E.areas.indexOf(x)+1);
   // 다른 구성에서 이미 쓰는 상품은 고를 수 없다 (이미 체크된 상품은 해제할 수 있게 둔다)
   const used=!on&&o.length>0, block=used||(!on&&a.mode==='opt'&&hasSel(p));
-  return `<label class="pgr ${on?'on':''} ${block?'dis':''}" ${block?`title="${used?'다른 구성에서 사용 중인 상품이에요':MSG2}"`:''}><input type="checkbox" data-pc="${id}" ${on?'checked':''} ${block?'disabled':''}><span class="pn">${esc(p.name)}${o.length?`<small>· ${o.map(n=>`${n}번 구성 사용중`).join(', ')}</small>`:''}</span>${hasSel(p)?'<span class="chip acc">선택 PS</span>':''}<span class="chip">${p.type}</span></label>`; }).join('')}</div>`:'<div class="empty">연결 상품을 추가하세요.</div>'}`:''}`;
- // 고정 안내: 선택 항목 안내(MSG1)를 한 박스에 합친다. 고정형(영역 1개)은 설정 박스 밖(아래)에 둔다
+  return `<label class="pgr ${on?'on':''} ${block?'dis':''}" ${block?`title="${used?'다른 구성에서 사용 중인 상품이에요':MSG2}"`:''}><input type="checkbox" data-pc="${id}" ${on?'checked':''} ${block?'disabled':''}><span class="pn">${esc(p.name)}${o.length?`<small>· ${o.map(n=>`${n}번 구성 사용중`).join(', ')}</small>`:''}</span>${hasSel(p)?'<span class="chip acc">선택 PS</span>':''}<span class="chip">${p.type}</span></label>`; }).join('')}</div>`:empty('연결 상품을 먼저 추가하세요')}`; }
+ // 고정 안내: 상품이 있을 때만. 고정형(영역 1개)은 설정 박스 밖(아래)에 둔다
  let fixedGuide='';
- if(a.mode==='fixed'){ const g=a.pos.length?guide(`대상 상품 <b>${a.pos.length}개가 모두 고정으로 포함</b>됩니다`,`고객이 상품을 따로 선택하지 않습니다${sel?`<br>${MSG1}`:''}`):guide('대상 상품이 없습니다',multi?'PO를 배정하면 모두 고정으로 포함됩니다':'연결 상품을 추가하면 모두 고정으로 포함됩니다');
-  // 복합형은 소제목 없이, 상품이 있을 때만 안내한다
-  if(multi){ if(a.pos.length) h+=g; } else fixedGuide=g; }
- // 복합형 목록에서 선택: 최소 선택 수량 + (선택) 최대 선택 수량. '선택하지 않아도 됨'·상품 순서/기본 선택은 쓰지 않는다
- if(a.mode==='list'&&multi){ a.opt0=false; a.def=[]; const r=rng(a);
-  lg=guide(`대상 상품 ${a.pos.length}개 중 <b>${r.lo===r.hi?r.lo:r.lo+'~'+r.hi}개를 선택</b>합니다`,'고객이 이 수만큼 골라야 다음으로 넘어갑니다');
-  h+=`<div class="sub-h">최소 선택 수량</div><div class="row"><input type="number" id="qQ" min="1" value="${a.q}" aria-label="최소 선택 수량"><span class="pill">개</span>${a.useMax?`<span class="pill">~</span><input type="number" id="qMx" min="1" value="${a.mx}" aria-label="최대 선택 수량"><span class="pill">개</span>`:''}<label class="chkl" style="margin-left:12px"><input type="checkbox" id="qUse" ${a.useMax?'checked':''}>최대 선택 수량</label></div>${lg}`; }
- else if(a.mode==='list'){ const r=rng(a), N=a.pos.length;
-  const f=a.opt0?`<span class="pill">최대</span><input type="number" id="qMx" min="1" value="${a.useMax?a.mx:a.q}"><span class="pill">개까지</span>`
-   :(a.useMax?`<span class="pill">최소</span><input type="number" id="qQ" min="1" value="${a.q}"><span class="pill">~ 최대</span><input type="number" id="qMx" min="1" value="${a.mx}"><span class="pill">개</span>`
-   :`<span class="pill">선택 수량</span><input type="number" id="qQ" min="1" value="${a.q}"><span class="pill">개</span>`);
-  const t=a.opt0?[`최대 ${r.hi}개까지 선택`,'고객이 하나도 고르지 않아도 됩니다']:[`${r.lo===r.hi?r.lo:r.lo+'~'+r.hi}개를 선택`,'고객이 이 수만큼 골라야 다음으로 넘어갑니다'];
-  lg=guide(`대상 상품 ${N}개 중 <b>${t[0]}</b>합니다`,t[1]);
-  h+=`<div class="sub-h">상품 목록 설정</div><div class="row">${f}<label class="chkl" style="margin-left:12px"><input type="checkbox" id="qUse" ${a.useMax?'checked':''}>최대 수량 따로 설정</label></div>
-  <div class="sub-h">상품 순서/기본 선택</div>
-  ${a.pos.map((id,j)=>{ const p=poBy(id); return `<div class="ali fixd"><span class="ix">${j+1}</span><div class="nm"><b>${esc(p.name)}</b><small>${priceTxt(p)}${hasSel(p)?' · 선택 PS 있음':''}</small></div><label class="chkl"><input type="${r.hi===1?'radio':'checkbox'}" name="df${a.id}" data-df="${id}" ${(a.def||[]).includes(id)?'checked':''}>기본 선택값</label>${mvBtns('p',j,a.pos.length,esc(p.name))}</div>`; }).join('')||'<div class="empty">연결 상품을 추가하세요</div>'}`; }
+ if(a.mode==='fixed'&&a.pos.length){ const g=guide(`대상 상품 <b>${a.pos.length}개가 모두 고정으로 포함</b>됩니다`,`고객이 상품을 따로 선택하지 않습니다${sel?`<br>${MSG1}`:''}`); if(multi) h+=g; else fixedGuide=g; }
+ if(a.mode==='list'&&!multi){ const r=rng(a);
+  h+=`<div class="bh dash">상품 순서/기본 선택</div>
+  ${a.pos.map((id,j)=>{ const p=poBy(id); return `<div class="ali fixd"><span class="ix">${j+1}</span><div class="nm"><b>${esc(p.name)}</b><small>${priceTxt(p)}${hasSel(p)?' · 선택 PS 있음':''}</small></div><label class="chkl"><input type="${r.hi===1?'radio':'checkbox'}" name="df${a.id}" data-df="${id}" ${(a.def||[]).includes(id)?'checked':''}>기본 선택값</label>${mvBtns('p',j,a.pos.length,esc(p.name))}</div>`; }).join('')||empty('연결 상품을 추가하세요')}`; }
  if(a.mode==='opt'){ const c=combos(a), ok=c.filter(k=>a.map[k]&&a.pos.includes(a.map[k])).length, cand=a.pos.filter(id=>!hasSel(poBy(id)));
-  h+=`<div class="sub-h">옵션 구성<button type="button" class="btn sm" id="addO" style="margin-left:auto">옵션 추가</button></div>
+  // 옵션 구성 카드: 옵션마다 이름 줄(회색) + 노출유형 · 옵션값 표. 텍스트 값은 입력 후 Enter(쉼표로 여러 개), 용량 · 컬러 · 이미지는 [+ 추가] 창
+  h+=`<div class="cs-optbox"><div class="cs-opth"><b>옵션 구성</b><button type="button" class="btn sm" id="addO">옵션 추가</button></div>
   ${a.opts.map((o,k)=>{ const miss=o.disp==='img'?o.vals.filter(v=>!oImg(o,v)).length:0;
-   return `<div class="axb"><div class="axh"><input type="text" class="axn" data-on="${k}" value="${esc(o.name)}" placeholder="옵션명 (예: 용량, 컬러)" aria-label="옵션 ${k+1} 이름"><span class="seg2 sm" role="group" aria-label="${esc(o.name)||'옵션'} 고객 노출 방식">${DISP.map(([v,t])=>`<button type="button" data-od="${k}:${v}" class="${o.disp===v?'on':''}" aria-pressed="${o.disp===v}">${t}</button>`).join('')}</span><span class="sp"></span><button type="button" class="btn sm" data-ox="${k}">삭제</button></div>
-   <div class="axv">${o.vals.map((v,j)=>`<span class="och v"><button type="button" class="ve" id="ve${a.id}_${k}_${j}" data-ve="${k}:${j}" title="눌러서 수정">${valView(o,v)}${esc(v)}</button><button type="button" class="vx" data-vx="${k}:${j}" aria-label="${esc(v)} 삭제">×</button></span>`).join('')}<button type="button" class="addo" id="axAdd${a.id}_${k}" data-vadd="${k}">+ ${o.disp==='img'?'이미지':esc(o.name.trim()||'값')} 추가</button></div>
-   ${miss?`<div class="er">이미지가 없는 값 ${miss}개 · 값을 눌러 이미지를 등록하세요</div>`:''}</div>`; }).join('')}
-  <div class="sub-h">조합별 PO 매핑<small>${c.length}개 조합</small><span class="chip ${c.length&&ok===c.length?'ok':'warn'}" style="margin-left:auto">${ok}/${c.length} 매핑</span>${c.length&&cand.length?'<button type="button" class="btn sm" id="autoMap">이름으로 자동 매핑</button>':''}</div>
-  ${c.length?`<div class="cl"><table><thead><tr>${a.opts.filter(o=>o.name.trim()&&o.vals.length).map(o=>`<th>${esc(o.name)}</th>`).join('')}<th style="width:50%">매핑 PO <span class="pill">(${multi?'배정한 PO':'연결 상품'} 중)</span></th></tr></thead><tbody>${c.map(k=>`<tr>${k.split('|').map(v=>`<td>${esc(v)}</td>`).join('')}<td><select data-mk="${esc(k)}" aria-label="${esc(k)} 매핑"><option value="">PO 선택</option>${cand.map(id=>`<option value="${id}" ${a.map[k]===id?'selected':''}>${esc(poBy(id).name)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">옵션명과 값을 넣으면 조합이 생겨요</div>'}
-  ${!cand.length?`<div class="er">매핑할 PO가 없어요. ${multi?'위에서 PO를 먼저 배정하세요':'연결 상품을 먼저 추가하세요'}</div>`:''}`; }
+   const vals=o.vals.length?`<div class="axv cs-vals">${o.vals.map((v,j)=>`<span class="och v"><button type="button" class="ve" id="ve${a.id}_${k}_${j}" data-ve="${k}:${j}" title="눌러서 수정">${valView(o,v)}${esc(v)}</button><button type="button" class="vx" data-vx="${k}:${j}" aria-label="${esc(v)} 삭제">×</button></span>`).join('')}</div>`:'';
+   const add=o.disp==='text'?`<input type="text" class="cs-vin" data-vin="${k}" placeholder="값 입력 후 Enter" aria-label="${esc(o.name)||'옵션'} 값 입력"><p class="cs-hint">*단어 입력 후 Enter, 여러 개는 쉼표(,)로 구분해 한 번에 입력하세요 (최소 1개 최대 ${VAL_MAX}개)</p>`
+    :`<button type="button" class="addo" id="axAdd${a.id}_${k}" data-vadd="${k}">+ ${o.disp==='img'?'이미지':esc(o.name.trim()||'값')} 추가</button>`;
+   return `<div class="cs-opt"><div class="cs-optn"><input type="text" class="axn" data-on="${k}" value="${esc(o.name)}" placeholder="옵션명 (예: 용량, 색상)" aria-label="옵션 ${k+1} 이름"><button type="button" class="btn sm cs-del" data-ox="${k}">삭제</button></div>
+   <div class="ftbl">${seoRow('노출유형',null,`<span class="srch-radio" role="radiogroup" aria-label="${esc(o.name)||'옵션'} 노출유형">${DISP.map(([v,t])=>`<label><input type="radio" name="od${a.id}_${k}" data-od="${k}:${v}" ${o.disp===v?'checked':''}>${t}</label>`).join('')}</span>`)}
+   ${seoRow('옵션값',null,`${vals}${add}${miss?`<div class="er">이미지가 없는 값 ${miss}개 · 값을 눌러 이미지를 등록하세요</div>`:''}`)}</div></div>`; }).join('')}</div>
+  <div class="bh dash">조합별 PO 매핑<span class="cs-cnt"><b>${ok}</b>매핑</span><small class="cs-sm">${c.length}개 조합</small>${c.length&&cand.length?'<button type="button" class="btn sm" id="autoMap" style="margin-left:auto">이름으로 자동 매핑</button>':''}</div>
+  ${c.length?`<div class="cl"><table><thead><tr>${a.opts.filter(o=>o.name.trim()&&o.vals.length).map(o=>`<th>${esc(o.name)}</th>`).join('')}<th style="width:50%">매핑 PO <span class="pill">(${multi?'배정한 PO':'연결 상품'} 중)</span></th></tr></thead><tbody>${c.map(k=>`<tr>${k.split('|').map(v=>`<td>${esc(v)}</td>`).join('')}<td><select data-mk="${esc(k)}" aria-label="${esc(k)} 매핑"><option value="">PO 선택</option>${cand.map(id=>`<option value="${id}" ${a.map[k]===id?'selected':''}>${esc(poBy(id).name)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table></div>`:empty('옵션명과 값을 넣으면 조합이 생겨요')}
+  ${!cand.length?note(`매핑할 PO가 없어요. ${multi?'위에서 PO를 먼저 배정하세요':'연결 상품을 먼저 추가하세요'}`):''}`; }
  if(multi) h+=condHtml(a,i);
  box.innerHTML=h;
  // 고정형·선택형(영역 1개)의 안내 박스는 설정 박스 밖 아래에 둔다
@@ -538,6 +808,13 @@ function rDetail(){
  qa('[data-ox]').forEach(b=>b.addEventListener('click',()=>{ a.opts.splice(+b.dataset.ox,1); if(!a.opts.length) a.opts.push({name:'',vals:[],disp:'text'}); ch(); }));
  qa('[data-vx]').forEach(b=>b.addEventListener('click',()=>{ const [k,j]=b.dataset.vx.split(':').map(Number), o=a.opts[k], v=o.vals[j]; o.vals.splice(j,1); if(o.hex) delete o.hex[v]; if(o.img) delete o.img[v]; closePop(); ch(); }));
  // 값 추가 · 수정: 노출 방식에 따라 컬러 팝오버 · 텍스트 목록 팝오버 · 이미지 등록 대화상자. 같은 버튼을 다시 누르면 닫는다
+ // 텍스트 값: 입력 후 Enter. 쉼표로 여러 개를 한 번에 넣고, 같은 값은 한 번만. 옵션마다 최대 VAL_MAX개
+ qa('[data-vin]').forEach(t=>t.addEventListener('keydown',ev=>{ if(ev.key!=='Enter'||ev.isComposing) return; ev.preventDefault();
+  const k=+t.dataset.vin, o=a.opts[k], nv=[...new Set(t.value.split(',').map(x=>x.trim()).filter(Boolean))].filter(x=>!o.vals.includes(x));
+  if(!nv.length){ t.value=''; return; }
+  const room=VAL_MAX-o.vals.length; if(room<=0){ toast(`옵션값은 최대 ${VAL_MAX}개예요`); return; }
+  o.vals.push(...nv.slice(0,room)); if(nv.length>room) toast(`옵션값은 최대 ${VAL_MAX}개라 ${room}개만 넣었어요`);
+  ch(); const nx=document.querySelector(`#ad [data-vin="${k}"]`); if(nx) nx.focus(); }));
  qa('[data-vadd]').forEach(b=>b.addEventListener('click',()=>{ if(popFor(b)){ closePop(); return; } addVal(a,+b.dataset.vadd,b); }));
  qa('[data-ve]').forEach(b=>b.addEventListener('click',()=>{ if(popFor(b)){ closePop(); return; } const [k,j]=b.dataset.ve.split(':').map(Number); editVal(a,k,j,b); }));
  qa('[data-mk]').forEach(s=>s.addEventListener('change',()=>{ if(s.value) a.map[s.dataset.mk]=s.value; else delete a.map[s.dataset.mk]; ch(); }));
@@ -550,6 +827,7 @@ function rDetail(){
 // 값은 지금처럼 문자열(조합 · 매핑 규칙과 같이 씀)로 두고, 컬러 HEX는 o.hex[값], 이미지는 o.img[값]={n,u}에 둔다
 // 고객 노출 방식: 텍스트(기본) · 용량(목록에서 선택) · 컬러(컬러칩) · 이미지. 용량은 고객 화면에서 텍스트와 같이 보인다
 const DISP=[['text','텍스트'],['cap','용량'],['chip','컬러'],['img','이미지']];
+const VAL_MAX=300;
 const COLORS=()=>CONTENT.color.filter(c=>c.on).map(c=>[c.n,c.hex]);
 // 이미지 창의 최근 등록 이미지 (화면을 새로 열면 사라진다)
 const RECENT={imgs:[]};
@@ -684,20 +962,27 @@ const bstyle=b=>b.s==='f'?`background:${b.c};color:#fff;border-color:${b.c}`:`ba
 const SUB_MAX=4;
 // 이미지 아래 공통 구성: 대체 텍스트 입력 + 등록 안내
 // id가 없으면 대체 텍스트 칸 없이 안내 목록만 그린다
-const imgMeta=(id,val,first,label,size='1440 * 2560',fmt='JPG, PNG')=>`${id?`<div class="alt-row"><input type="text" id="${id}" value="${esc(val)}" maxlength="20" placeholder="웹접근성을 위한 대체 Text를 20자 이내로 입력하세요" aria-label="${label} 대체 텍스트"><span class="pill len" id="${id}Len">${val.length}/20</span></div>`:''}
-  <ul class="img-guide"><li>${first}</li><li>권장규격 : ${size}</li><li>권장형식 : ${fmt}</li></ul>`;
+// v0.3.1(11-25 시안 2): 대체 텍스트는 글자 수 표시 없이 최대 20자, 안내는 '권장 규격 · 권장 형식'
+const imgMeta=(id,val,first,label,size='1440 * 2560',fmt='JPG, PNG')=>`${id?`<div class="alt-row"><input type="text" id="${id}" value="${esc(val)}" maxlength="20" placeholder="웹접근성 대체 Text 작성 (최대 20자 이내)" aria-label="${label} 대체 텍스트"></div>`:''}
+  <ul class="img-guide">${first?`<li>${first}</li>`:''}<li>권장 규격 : ${size}</li><li>권장 형식 : ${fmt}</li></ul>`;
 // ---------- 4-0. 전시 정보: 기본 정보 · 상세 설명 ----------
 // 할부 설정과 같은 탭 구성. 탭을 고르면 아래에 그 항목 입력이 나온다(탭 옆은 작성 상태). 처음에는 기본 정보
 // v0.2.4: 추가 설정 영역을 없애고 검색 노출 설정 · 오퍼링 문구를 상세 설명 탭 옆으로 옮겼다
-const INFO=[['basic','기본 정보'],['desc','상세 설명'],['search','검색 노출 설정 (SEO)'],['cvm','오퍼링 문구(CVM)']];
+// v0.3.1(11-25 시안 2): 탭 이름 · 알약형 탭. [EPC 상품 정보 가져오기]는 탭 줄에서 섹션 오른쪽 아래(#infoFoot)로 옮겼다
+const INFO=[['basic','기본 설정'],['desc','상세 설정'],['search','메타 태그 정보 (SEO/GEO)'],['cvm','오퍼링 문구(CVM)']];
 let curI='basic';
 // 탭 옆 작성 상태: 미작성은 표시하지 않는다
 function infoChips(){ const S=secState(E); INFO.forEach(([k])=>{ const ch=$('#ist-'+k); if(!ch) return; const [t,c]=STL[S[k].st]; ch.textContent=S[k].st==='todo'?'':t; ch.className=c; }); }
+// MP 상품 전시: [EPC 정보 불러오기]는 연결한 MP의 이름 · 설명으로 전시명 · 설명을 채운다
+const canEpcLoad=()=>E.kind==='mp'?!!mpDemo(E.mp):E.conn.length>0;
+function mpEpcLoad(){ const m=mpDemo(E.mp); if(!m) return;
+ if((E.name.trim()||E.brief.trim())&&!confirm('입력한 전시명 · 설명을 연결한 MP의 이름 · 설명으로 바꿀까요?')) return;
+ E.name=m.name.slice(0,NAME_MAX); E.brief=m.desc.slice(0,BRIEF_MAX); curI='basic'; rInfo(); rBasic(); refresh(); toast('MP 이름 · 설명으로 전시명 · 설명을 채웠어요'); }
 function rInfo(){
- $('#infoList').innerHTML=INFO.map(([k,l])=>`<button type="button" role="tab" data-ik="${k}" class="${k===curI?'on':''}" aria-selected="${k===curI}">${l}<small id="ist-${k}"></small></button>`).join('')
-  // 탭 줄 오른쪽 끝: EPC 정보 불러오기 (연결 상품이 있어야 쓸 수 있다)
-  +`<span class="itabs-r"><button type="button" class="btn sm ai-btn" id="epcLoad" ${E.conn.length?'':'disabled'}>${svg(IC.spark)}EPC 정보 불러오기</button></span>`;
- $('#epcLoad').addEventListener('click',openEpcLoad);
+ $('#infoList').innerHTML=INFO.map(([k,l])=>`<button type="button" role="tab" data-ik="${k}" class="${k===curI?'on':''}" aria-selected="${k===curI}">${l}<small id="ist-${k}"></small></button>`).join('');
+ // 섹션 오른쪽 아래: EPC 상품 정보 가져오기 (연결 상품이 있어야 쓸 수 있다)
+ $('#infoFoot').innerHTML=`<button type="button" class="btn" id="epcLoad" ${canEpcLoad()?'':'disabled'}>EPC 상품 정보 가져오기</button>`;
+ $('#epcLoad').addEventListener('click',()=>E.kind==='mp'?mpEpcLoad():openEpcLoad());
  INFO.forEach(([k])=>{ $('#sb-'+k).hidden=k!==curI; });
  infoChips();
  $$('#infoList [data-ik]').forEach(el=>el.addEventListener('click',()=>{ curI=el.dataset.ik; rInfo(); }));
@@ -705,31 +990,34 @@ function rInfo(){
 // 순서: 전시명 → 설명 → 전시 상품 배지 → 대표이미지 → 추가이미지 → 전시 기간 → 전시 여부 (전시 채널은 전시 채널 섹션으로 이동)
 function rBasic(){
  const box=$('#sb-basic');
- { const eb=$('#epcLoad'); if(eb) eb.disabled=!E.conn.length; }
+ { const eb=$('#epcLoad'); if(eb) eb.disabled=!canEpcLoad(); }
  box.innerHTML=` <!-- v0.2.4: 기본 정보는 연관 및 유사 상품 문구와 같은 표(왼쪽 항목명 · 오른쪽 입력) -->
  <div class="ftbl binfo">
- ${seoRow('전시명',{id:'nameCnt',v:`${E.name.length}/${NAME_MAX}`},`<input type="text" id="fName" value="${esc(E.name)}" maxlength="${NAME_MAX}" placeholder="고객에게 보이는 이름 (줄바꿈은 &lt;br&gt;)" aria-label="전시명" style="width:100%">`)}
- ${seoRow('설명',{id:'briefCnt',v:`${E.brief.length}/${BRIEF_MAX}`},`<input type="text" id="fBrief" value="${esc(E.brief)}" maxlength="${BRIEF_MAX}" placeholder="전시명 아래에 보이는 짧은 설명" aria-label="설명" style="width:100%">`)}
- ${seoRow('전시 상품 배지',{id:'bCnt',v:`${E.badges.length}/${BADGE_MAX}`},`<div class="row" style="gap:8px;margin:0">${autoBadges(E).map(b=>`<span class="bd auto" style="${bstyle(b)}" title="${b.from} 섹션 설정으로 자동 표시">${esc(b.t)}<small>자동</small></span>`).join('')}${E.badges.map((b,i)=>`<span class="bd" style="${bstyle(b)};cursor:default">${esc(b.t)}<button type="button" class="x" data-bx="${i}" aria-label="${esc(b.t)} 삭제">×</button></span>`).join('')}${E.badges.length<BADGE_MAX?'<span class="bin-w"><input type="text" id="bIn" maxlength="10" placeholder="입력 후 Enter" aria-label="전시 상품 배지 추가"><span class="pill len" id="bInLen">0/10</span></span>':''}</div><div class="er" id="berr"></div>`)}
- ${seoRow('이미지',null,noImg(E)?ntc('info',NOIMG_MSG):`<div class="dimg" id="devImgs">${devImgsHtml()}</div>
-  <div class="alt-row"><input type="text" id="mainAlt" value="${esc(E.mainAlt)}" maxlength="20" placeholder="웹접근성을 위한 대체 Text를 20자 이내로 입력하세요" aria-label="이미지 대체 텍스트"></div>
-  <ul class="img-guide"><li>최대 ${IMG_MAX}장 등록할 수 있습니다.</li><li>권장형식 : JPG, JPEG, PNG, GIF, BMP</li></ul>`)}
- ${seoRow('전시 기간',null,`<div class="row" style="margin:0"><input type="date" id="fFrom" value="${E.from}" aria-label="시작일"><input type="time" id="fFromT" value="${E.fromTime}" aria-label="시작 시간"><span class="pill">~</span><input type="date" id="fTo" value="${E.noEnd?'':E.to}" aria-label="종료일" ${E.noEnd?'disabled':''}><input type="time" id="fToT" value="${E.noEnd?'':E.toTime}" aria-label="종료 시간" ${E.noEnd?'disabled':''}><label class="chkl"><input type="checkbox" id="noEnd" ${E.noEnd?'checked':''}>종료일없음</label></div>`)}
- ${seoRow('전시 여부',null,`<span class="srch-radio" role="radiogroup" aria-label="전시 여부"><label><input type="radio" name="dShow" value="0" ${E.show?'':'checked'}>N</label><label><input type="radio" name="dShow" value="1" ${E.show?'checked':''}>Y</label></span>`)}
+ ${seoRow('전시명',{id:'nameCnt',v:`${E.name.length}/${NAME_MAX}`},`<input type="text" id="fName" value="${esc(E.name)}" maxlength="${NAME_MAX}" placeholder="고객에게 보이는 이름" aria-label="전시명" style="width:100%">`)}
+ ${seoRow('설명',{id:'briefCnt',v:`${E.brief.length}/${BRIEF_MAX}`},`<input type="text" id="fBrief" value="${esc(E.brief)}" maxlength="${BRIEF_MAX}" placeholder="고객에게 보이는 추가설명 작성" aria-label="설명" style="width:100%">`)}
+ ${seoRow('전시 상품 배지',{id:'bCnt',v:`${E.badges.length}/${BADGE_MAX}`},`<div class="row" style="gap:8px;margin:0"><button type="button" class="bd-add" id="bAdd" aria-label="전시 상품 배지 추가" ${E.badges.length<BADGE_MAX?'':'disabled'}>+</button>${autoBadges(E).map(b=>`<span class="bd auto" style="${bstyle(b)}" title="${b.from} 섹션 설정으로 자동 표시">${esc(b.t)}<small>자동</small></span>`).join('')}${E.badges.map((b,i)=>`<span class="bd" style="${bstyle(b)};cursor:default">${esc(b.t)}<button type="button" class="x" data-bx="${i}" aria-label="${esc(b.t)} 삭제">×</button></span>`).join('')}${E.badges.length<BADGE_MAX?'<span class="bin-w"><input type="text" id="bIn" maxlength="10" placeholder="입력" aria-label="전시 상품 배지 추가 (최대 10자, Enter로 추가)" size="4"><button type="button" class="x" id="bInClr" aria-label="입력 지우기">×</button></span>':''}</div><div class="er" id="berr"></div>`)}
+ ${E.kind==='mp'?seoRow('대표 이미지',null,ntc('info',MP_NOIMG))+seoRow('추가 이미지',null,ntc('info',MP_NOIMG)):noImg(E)?seoRow('이미지',null,ntc('info',NOIMG_MSG)):seoRow('대표 이미지',{id:'mainCnt',v:`${E.main?1:0}/1`},mainImgHtml())+seoRow('추가 이미지',{id:'subCnt',v:`${E.subs.length}/${SUB_MAX}`},subImgHtml())}
+ ${seoRow('전시 기간',null,`<div class="row dtr" style="margin:0"><input type="datetime-local" id="fFrom" value="${E.from?`${E.from}T${E.fromTime||'00:00'}`:''}" aria-label="전시 시작 일시"><span class="dt-sep">-</span><input type="datetime-local" id="fTo" value="${!E.noEnd&&E.to?`${E.to}T${E.toTime||'23:59'}`:''}" aria-label="전시 종료 일시" ${E.noEnd?'disabled':''}><label class="chkl"><input type="checkbox" id="noEnd" ${E.noEnd?'checked':''}>종료일 없음</label></div>`)}
+ ${seoRow('전시 여부',null,yn('dShow','전시 여부',E.show))}
+ ${E.kind==='po'?seoRow('구매 후기',null,yn('rvUse','구매 후기 사용 여부',E.review))+seoRow('전문가 리뷰',null,yn('exUse','전문가 리뷰 사용 여부',E.expert)):''}
  </div>`;
  $('#fName').addEventListener('input',e=>{ E.name=e.target.value; $('#nameCnt').textContent=`(${E.name.length}/${NAME_MAX}`+')'; refresh(); });
  $('#fBrief').addEventListener('input',e=>{ E.brief=e.target.value; $('#briefCnt').textContent=`(${E.brief.length}/${BRIEF_MAX})`; refresh(); });
- { const ma=$('#mainAlt'); if(ma) ma.addEventListener('input',e=>{ E.mainAlt=e.target.value; refresh(); }); }
- $('#fFromT').addEventListener('change',e=>{ E.fromTime=e.target.value||'00:00'; refresh(); });
- $('#fToT').addEventListener('change',e=>{ E.toTime=e.target.value||'23:59'; refresh(); });
- $('#fFrom').addEventListener('change',e=>{ E.from=e.target.value; refresh(); });
- $('#fTo').addEventListener('change',e=>{ E.to=e.target.value; refresh(); });
+ // 전시 기간: 일시 한 칸(YYYY.MM.DD HH:MM). 저장값은 날짜(from · to)와 시간(fromTime · toTime)으로 나눠 둔다
+ $('#fFrom').addEventListener('change',e=>{ const [d,t]=e.target.value.split('T'); E.from=d||''; E.fromTime=t||'00:00'; refresh(); });
+ $('#fTo').addEventListener('change',e=>{ const [d,t]=e.target.value.split('T'); E.to=d||''; E.toTime=t||'23:59'; refresh(); });
  $('#noEnd').addEventListener('change',e=>{ E.noEnd=e.target.checked; if(E.noEnd) E.to=''; rBasic(); refresh(); if(!E.noEnd) $('#fTo').focus(); });
- $$('#sb-basic input[name=dShow]').forEach(r=>r.addEventListener('change',()=>{ E.show=r.value==='1'; refresh(); }));
- bindDevImgs();
+ $$('#sb-basic input[name=dShow]').forEach(r=>r.addEventListener('change',()=>{ E.show=r.value==='Y'; refresh(); }));
+ // v0.3.1(11-25 시안 2): 구매 후기 · 전문가 리뷰는 별도 섹션 대신 기본 설정 표의 Y/N 행(PO 상품 전시만)
+ $$('#sb-basic input[name=rvUse]').forEach(x=>x.addEventListener('change',()=>{ E.review=x.value==='Y'; if(!E.review&&PVTAB==='review') PVTAB='order'; refresh(); toast(E.review?'구매후기를 노출해요':'구매후기를 숨겼어요'); }));
+ $$('#sb-basic input[name=exUse]').forEach(x=>x.addEventListener('change',()=>{ E.expert=x.value==='Y'; if(!E.expert&&PVTAB==='expert') PVTAB='order'; refresh(); toast(E.expert?'전문가 리뷰를 노출해요':'전문가 리뷰를 숨겼어요'); }));
+ bindImgs();
  // 전시 상품 배지: 한 줄 입력. 문구를 넣고 Enter로 추가, 칩의 ×로 삭제. 색상은 순서대로 돌아가는 기본색(채움)
  $$('#sb-basic [data-bx]').forEach(b=>b.addEventListener('click',()=>{ E.badges.splice(+b.dataset.bx,1); rBasic(); refresh(); }));
- const bi=$('#bIn'); if(bi){ bi.addEventListener('input',()=>{ $('#bInLen').textContent=bi.value.length+'/10'; $('#berr').textContent=''; });
+ // v0.3.1(11-25 시안 2): [+]는 입력 칩에 커서를 두거나, 입력한 문구가 있으면 추가한다. 입력 칩의 ×는 입력을 지운다
+ const bi=$('#bIn'); if(bi){ const fit=()=>{ bi.size=Math.max(4,bi.value.length+1); }; bi.addEventListener('input',()=>{ fit(); $('#berr').textContent=''; });
+  $('#bInClr').addEventListener('click',()=>{ bi.value=''; fit(); bi.focus(); });
+  $('#bAdd').addEventListener('click',()=>{ if(bi.value.trim()) bi.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'})); else bi.focus(); });
   bi.addEventListener('keydown',e=>{ if(e.key!=='Enter'||e.isComposing) return; e.preventDefault(); const t=bi.value.trim(); if(!t) return;
    if(E.badges.some(b=>b.t===t)){ $('#berr').textContent='같은 문구의 배지가 이미 있어요'; return; }
    E.badges.push({t,c:BCOL[E.badges.length%BCOL.length][1],s:'f'}); rBasic(); refresh(); const n=$('#bIn'); if(n) n.focus(); }); }
@@ -738,26 +1026,23 @@ const readImgs=files=>Promise.all(files.map(f=>new Promise(r=>{ const rd=new Fil
 // 전시 상품 배지 최대 개수 · 전시명 · 설명 최대 글자 수
 const BADGE_MAX=5, NAME_MAX=20, BRIEF_MAX=20;
 const NOIMG_MSG='이동전화 요금제형은 대표 이미지를 쓰지 않아요';
-// ---------- 4-1. 디바이스별 이미지: 모바일(태블릿, 필수) · 데스크탑 두 영역을 항상 펼쳐 보여 준다. 각 최대 5장, 첫 장이 대표 ----------
-// 태블릿은 모바일 이미지를 함께 쓴다. 모바일 이미지는 지금처럼 대표이미지(E.main) · 추가이미지(E.subs)에도 맞춰 둔다(목록 · 미리보기 · 검사 규칙이 같이 쓴다)
-const DEV=[{k:'mobile',t:'모바일(태블릿)',size:'1000×1000px',req:true},{k:'desktop',t:'데스크탑',size:'1920×1080px'}];
-const IMG_MAX=5;
-const syncMain=()=>{ const m=E.imgs.mobile; E.main=m[0]||null; E.subs=m.slice(1); };
-const devTile=(d,m,i)=>`<div class="it ${i===0?'rep':''} ${d.k}">${m.u?`<img src="${m.u}" alt="${esc(d.t)} 이미지 ${i+1}">`:`<div class="img-ph">${svg(IC.image)}${esc(m.n)}</div>`}${i===0?'<span class="rb">대표</span>':`<button type="button" class="mk" data-dmain="${d.k}:${i}">대표로</button>`}<button type="button" class="rm" data-drm="${d.k}:${i}" aria-label="${d.t} 이미지 ${i+1} 삭제">×</button></div>`;
-function devImgsHtml(){
- return DEV.map(d=>{ const L=E.imgs[d.k];
-  const add=L.length<IMG_MAX?`<button type="button" class="it add ${d.k}" data-dadd="${d.k}" aria-label="${d.t} ${L.length?'추가':'대표'} 이미지 등록"><b>+</b><small>${L.length?'추가':'대표 이미지'}</small></button>`:'';
-  const fb=!d.req&&!L.length&&E.imgs.mobile.length?'<span class="fbk">모바일 대표 이미지 사용 중</span>':'';
-  return `<div class="drow"><div class="dh"><b>${d.t}</b>${d.req?'<span class="req">필수</span>':'<span class="opt">선택</span>'}<span class="cntx">${L.length}/${IMG_MAX}</span><small>${d.size}</small><span class="sp"></span><button type="button" class="btn sm" data-dfill="${d.k}" ${E.conn.length?'':'disabled'}>EPC 상품 이미지로 채우기</button></div><div class="dl">${L.map((m,i)=>devTile(d,m,i)).join('')}${add}${fb}</div></div>`; }).join('');
-}
-function bindDevImgs(){
- const re=()=>{ syncMain(); $('#devImgs').innerHTML=devImgsHtml(); bindDevImgs(); refresh(); };
- $$('#devImgs [data-dadd]').forEach(b=>b.addEventListener('click',()=>{ const d=DEV.find(x=>x.k===b.dataset.dadd), L=E.imgs[d.k];
-  openImgDlg({title:`${d.t} ${L.length?'추가':'대표'} 이미지 등록`,hint:d.size,kind:d.k,onDone:m=>{ L.push(m); re(); toast(`${d.t} ${L.length===1?'대표':'추가'} 이미지를 등록했어요`); }}); }));
- $$('#devImgs [data-drm]').forEach(b=>b.addEventListener('click',()=>{ const [k,i]=b.dataset.drm.split(':'); E.imgs[k].splice(+i,1); re(); }));
- $$('#devImgs [data-dmain]').forEach(b=>b.addEventListener('click',()=>{ const [k,i]=b.dataset.dmain.split(':'), L=E.imgs[k]; L.unshift(L.splice(+i,1)[0]); re(); toast('대표 이미지를 바꿨어요'); }));
- // EPC 상품 이미지로 채우기: 디바이스마다 그 비율(1:1 · 16:9)의 EPC 상품 이미지로 채운다
- $$('#devImgs [data-dfill]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.dfill, t=DEV.find(x=>x.k===k).t, L=epcImages(k); if(!L.length){ toast('연결한 기기 상품이 없어 채울 이미지가 없어요'); return; } E.imgs[k]=L.slice(0,IMG_MAX).map(x=>({n:x.name,u:x.src})); re(); toast(`EPC 상품 이미지 ${E.imgs[k].length}장으로 ${t} 이미지를 채웠어요`); }));
+// MP 상품 전시는 대표 · 추가 이미지를 쓰지 않는다(입력 칸 대신 안내만 보여 준다)
+const MP_NOIMG='대표 이미지를 사용하지 않습니다.';
+// ---------- 4-1. 이미지 (v0.3.2: v0.2.0처럼 대표이미지 1장 · 추가이미지 최대 4장. 기기 구분 없음) ----------
+// 공용 검사 규칙(display-rules)은 E.imgs.mobile이 비었는지로 필수를 보므로, 대표이미지가 있을 때만 대표 + 추가를 넣는다(추가이미지만 있으면 미등록)
+const syncImgs=()=>{ E.imgs={mobile:E.main?[E.main,...E.subs]:[],desktop:[]}; };
+const IMG_SIZE='1000×1000px';
+const thumb=(m,key)=>`<div class="img-thumb">${m.u?`<img src="${m.u}" alt="${esc(m.n)}">`:`<div class="img-ph">${svg(IC.image)}${esc(m.n)}</div>`}${key==='main'?'<span class="tag-main">대표</span>':''}<button type="button" class="x" data-imx="${key}" aria-label="${esc(m.n)} 삭제">×</button></div>`;
+// v0.3.1(11-25 시안 2): 안내 문구만 바꿨다. 이미지 등록 대화상자(openImgDlg)의 허용 형식은 옵션 이미지와 같이 쓰므로 그대로 둔다
+const IMG_FMT='JPG, PNG, WEBP · 5MB 이하';
+const mainImgHtml=()=>`<div class="img-list">${E.main?thumb(E.main,'main'):'<button type="button" class="img-add big" id="mainAdd" aria-label="대표 이미지 등록"><b>+</b></button>'}</div>${imgMeta('mainAlt',E.mainAlt,'','대표이미지',IMG_SIZE,IMG_FMT)}`;
+const subImgHtml=()=>`<div class="img-list">${E.subs.map((m,i)=>thumb(m,i)).join('')}${E.subs.length<SUB_MAX?'<button type="button" class="img-add big" id="subAdd" aria-label="추가 이미지 등록"><b>+</b></button>':''}</div>${imgMeta('subAlt',E.subAlt,'','추가이미지',IMG_SIZE,IMG_FMT)}`;
+function bindImgs(){
+ const re=()=>{ syncImgs(); rBasic(); refresh(); };
+ $$('#sb-basic [data-imx]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.imx; if(k==='main') E.main=null; else E.subs.splice(+k,1); re(); }));
+ const ma=$('#mainAdd'); if(ma) ma.addEventListener('click',()=>openImgDlg({title:'대표이미지 등록',hint:IMG_SIZE,onDone:m=>{ E.main=m; re(); toast('대표이미지를 등록했어요'); }}));
+ const sa=$('#subAdd'); if(sa) sa.addEventListener('click',()=>openImgDlg({title:'추가이미지 등록',hint:IMG_SIZE,onDone:m=>{ if(E.subs.length>=SUB_MAX) return; E.subs.push(m); re(); toast(`추가이미지를 등록했어요 (${E.subs.length}/${SUB_MAX})`); }}));
+ [['mainAlt','mainAlt'],['subAlt','subAlt']].forEach(([id,k])=>{ const el=$('#'+id); if(el) el.addEventListener('input',e=>{ E[k]=e.target.value; refresh(); }); });
 }
 
 // ---------- 5. 상세 설명 ----------
@@ -832,7 +1117,7 @@ function rDesc(){
 $('#descFile').addEventListener('change',e=>{ const fs=[...e.target.files]; e.target.value=''; const room=DESC_MAX-E.descImgs.length; readImgs(fs.slice(0,room)).then(l=>{ if(!l.length) return; E.descImgs.push(...l); rDesc(); refresh(); toast(fs.length>room?`상세 이미지는 최대 ${DESC_MAX}장이라 ${l.length}장만 추가했어요`:`상세 이미지 ${l.length}장을 추가했어요`); }); });
 
 // ---------- 6. 콘텐츠 정보 ----------
-function xBadge(x){ if(x.mode==='link') return `<span class="src s-link">${x.auto?'상품 템플릿':'템플릿 연결'}</span>`; if(x.mode==='copy') return '<span class="src s-copy">템플릿 복사</span>'; return x.txt.trim()?'<span class="src s-copy">직접 입력</span>':'<span class="src s-none">미입력</span>'; }
+function xBadge(x){ if(x.mpDef) return '<span class="src s-link">템플릿 연결</span>'; if(x.mode==='link') return `<span class="src s-link">${x.auto?'상품 템플릿':'템플릿 연결'}</span>`; if(x.mode==='copy') return '<span class="src s-copy">템플릿 복사</span>'; return x.txt.trim()?'<span class="src s-copy">직접 입력</span>':'<span class="src s-none">미입력</span>'; }
 const sw=(attr,id,on,label)=>`<label class="switch" title="노출"><input type="checkbox" ${attr}="${id}" ${on?'checked':''} aria-label="${label} 노출"><span aria-hidden="true"></span></label>`;
 // v0.3: 직접 입력은 삭제 버튼 대신 저장 · 취소. 제목 · 본문(HTML 편집기)은 임시값(XD)에 고치고 저장해야 반영된다
 //  - 취소: 저장한 값으로 되돌린다. 한 번도 저장하지 않은 새 콘텐츠는 목록에서 뺀다
@@ -875,9 +1160,11 @@ function xTypeSummary(){ const ts=ctnTypes(); if(ts.length<2||!E.extras.length) 
  return `<span class="pill">${['공통',...ts].map(g=>`${g==='공통'?'공통':esc(tyShort(g))} ${n(g)}`).join(' · ')}${dup?` · 중복 ${dup}개는 공통으로 한 번만 노출`:''}</span>`; }
 function rExtra(){
  if(!E.extras.find(x=>x.id===curX)) curX=E.extras[0]&&E.extras[0].id;
- $('#sb-extra').innerHTML=`<div class="sec-h">${xTypeSummary()}<button type="button" class="btn sm" id="xTpl" style="margin-left:auto">템플릿 불러오기</button></div>
+ // v0.3.1(11-25 시안 2): [상품 템플릿 불러오기]는 오른쪽 아래, 비어 있으면 회색 상자 안내
+ $('#sb-extra').innerHTML=`${xTypeSummary()?`<div class="sec-h">${xTypeSummary()}</div>`:''}
  ${E.extras.length?`<div class="ae"><div class="al">${E.extras.map((x,i)=>`<div class="ali ${x.id===curX?'on':''} ${x.show?'':'off'}" data-x="${x.id}" draggable="true">${gripBtn(i,esc(x.t)||'제목 없음')}<div class="nm"><b>${esc(x.t)||'제목 없음'}</b><div>${xBadge(x)}${xTypeChip(x)}</div></div>${sw('data-xs',x.id,x.show,esc(x.t))}</div>`).join('')}</div><div class="ad" id="xd"></div></div>`
- :'<div class="empty">템플릿 불러오기로 콘텐츠를 추가하세요</div>'}`;
+ :'<div class="guide plain"><p>콘텐츠를 추가하세요</p></div>'}
+ <div class="cn-foot"><button type="button" class="btn" id="xTpl">상품 템플릿 불러오기</button></div>`;
  $('#xTpl').addEventListener('click',openTplModal);
  // v0.3: 새 직접 입력은 만들 수 없다(템플릿 불러오기만). 예전에 저장한 직접 입력 콘텐츠는 그대로 보여 주고 고칠 수 있다
  $$('#sb-extra .ali[data-x]').forEach(el=>el.addEventListener('click',e=>{ if(e.target.closest('.grip,.switch')) return; if(+el.dataset.x!==curX) dropFresh(); curX=+el.dataset.x; rExtra(); }));
@@ -885,6 +1172,8 @@ function rExtra(){
  dndList('#sb-extra','x',E.extras,()=>{ rExtra(); refresh(); });
  const x=E.extras.find(y=>y.id===curX); if(!x) return;
  if(x.mode==='direct'){ rExtraDirect(x); return; }
+ // MP 기본 항목(EPC): 읽기 전용. 제목 · 본문을 보기만 하고 순서 · 노출은 목록에서 바꾼다
+ if(x.mode==='epc'){ $('#xd').innerHTML=`<div class="row" style="margin-bottom:10px"><span class="src s-link">템플릿 연결</span><b>${esc(x.t)}</b><span class="pill">읽기 전용 · 순서 · 노출만 바꿀 수 있어요</span></div><div class="bx">${esc(x.txt)}</div>`; return; }
  const t=x.src&&tplBy(x.src);
  let body='';
  if(x.mode==='link') body=`<div class="row" style="margin-bottom:10px"><span class="src s-link">템플릿</span><b>${esc(t.n)}</b><span class="pill">${t.id} · ${t.v} · 완전 매핑 전시 ${tplUsers(t.id,'link').length}곳</span></div>${ctnTypes().length>1?`<p class="pill" style="margin:0 0 8px">적용 상품유형(콘텐츠 관리): ${esc(xScope(x))}${xGroup(x)==='공통'?' → 이 전시에서 공통으로 한 번만 노출':` → ${esc(tyShort(xGroup(x)))} 안내`}</p>`:''}<div class="bx">${esc(t.body)}</div>`;
@@ -956,16 +1245,12 @@ const relRowCvm=(p,i)=>`<tr class="rl-r"><td class="c"><span class="rl-no">${i+1
 function rRel(){
  const box=$('#relList'); if(!box) return;
  if(E.kind==='ps'){ box.innerHTML=''; return; }
- // 사용 여부 N: 숨기지 않고 비활성화한다(상품 연결 · 순서 변경 · 연결 해제 불가)
+ // v0.3.1(11-25 시안 2): 사용 여부 N이면 노출 결과는 숨긴다(수급 · 타이틀은 비활성화로 보인다)
  const r=E.rel, auto=r.mode==='auto', ids=relIds(), off=!E.related;
- box.classList.toggle('rl-off',off); box.toggleAttribute('inert',off);
- if(auto){
-  box.innerHTML=`<div class="sec-h" style="margin:20px 0 10px"><b>노출 결과</b><span class="chip acc">${ids.length}건</span>${r.cvmAt?`<small class="rl-id">${r.cvmAt} 불러옴</small>`:''}<button type="button" class="btn sm" id="rlCvm" style="margin-left:auto" ${off?'disabled':''}>CVM 불러오기</button></div>
-  ${ids.length?`<div class="cl gtbl rl-tbl"><table><thead><tr><th class="c">순위</th><th>이미지</th><th>상품명</th><th>가격</th><th>옵션 사항</th><th class="c">CVM 연관도</th></tr></thead><tbody>${ids.map((id,i)=>relRowCvm(poBy(id),i)).join('')}</tbody></table></div>`:`<div class="empty">${!E.conn.length?'연결한 상품이 없어요. 상품을 연결한 뒤 CVM 불러오기를 누르세요.':r.cvmAt?'CVM에서 받은 상품이 없어요.':'CVM 불러오기를 누르면 CVM 데이터를 가져와요.'}</div>`}`;
-  if(off) return;
-  $('#rlCvm').addEventListener('click',()=>{ if(!E.conn.length){ toast('연결 상품을 먼저 추가하세요'); return; } r.cvm=relCvm(); r.cvmAt=nowStamp().slice(0,16); rRel(); refresh(); toast(r.cvm.length?`CVM 데이터 ${r.cvm.length}건을 불러왔어요`:'CVM에서 받은 상품이 없어요'); });
-  return;
- }
+ box.classList.remove('rl-off'); box.removeAttribute('inert');
+ if(off){ box.innerHTML=''; return; }
+ // 11-25 시안 5: CVM 연동이면 목록을 두지 않는다(CVM이 고객별로 채운다)
+ if(auto){ box.innerHTML=''; return; }
  const table=ids.length?`<div class="cl gtbl rl-tbl"><table><thead><tr><th class="c">순서</th><th>이미지</th><th>상품명</th><th>가격</th><th>옵션 사항</th><th class="c">연결 해제</th></tr></thead><tbody>${ids.map((id,i)=>relRow(poBy(id),i,true)).join('')}</tbody></table></div>`
   :'<div class="empty">상품 연결을 눌러 노출할 상품을 조회 · 추가하세요.</div>';
  box.innerHTML=`<div class="sec-h" style="margin:20px 0 10px"><b>노출 결과</b><span class="chip acc">${ids.length}건</span><button type="button" class="btn sm" id="rlLink" style="margin-left:auto" ${off?'disabled':''}>상품 연결</button></div>
@@ -998,13 +1283,13 @@ function openRelModal(){
  modal('연관 상품 연결','',900); draw();
 }
 // v0.3: 사용 여부(N/Y) → 수급(CVM 데이터 연동 · 운영자 설정) → 타이틀 → 노출 결과(rRel)
-const REL_SRC=[['auto','CVM 데이터 연동'],['manual','운영자 설정']];
+const REL_SRC=[['auto','CVM 연동'],['manual','운영자 설정']];
 function rSim(){
  const m=E.sim, on=E.related, cvm=E.rel.mode==='auto', t=simText(E);
  $('#sb-sim').innerHTML=`<div class="ftbl">
- ${seoRow('사용 여부',null,`<span class="srch-radio" role="radiogroup" aria-label="연관 및 유사 상품 사용 여부"><label><input type="radio" name="rlUse" value="N" ${on?'':'checked'}>N</label><label><input type="radio" name="rlUse" value="Y" ${on?'checked':''}>Y</label></span>`)}
+ ${seoRow('사용 여부',null,yn('rlUse','연관 및 유사 상품 사용 여부',on))}
  ${seoRow('수급',null,`<span class="srch-radio" role="radiogroup" aria-label="수급">${REL_SRC.map(([k,l])=>`<label><input type="radio" name="rlSrc" value="${k}" ${E.rel.mode===k?'checked':''} ${on?'':'disabled'}>${l}</label>`).join('')}</span>`)}
- ${seoRow('타이틀',{id:'smTC',v:`${t.t.length}/${SIM_LEN}`},`<input type="text" id="smT" value="${esc(t.t)}" maxlength="${SIM_LEN}" ${cvm||!on?'disabled':''} placeholder="예: 방금 보신 상품과 유사한 상품" aria-label="타이틀" style="width:100%">`)}
+ ${seoRow('타이틀',{id:'smTC',v:`${t.t.length}/${SIM_LEN}`},`<input type="text" id="smT" value="${esc(t.t)}" maxlength="${SIM_LEN}" ${cvm||!on?'disabled':''} placeholder="${SIM_DEF.t}" aria-label="타이틀" style="width:100%">`)}
  </div>`;
  // 사용 여부 N: 수급 · 타이틀을 숨기지 않고 비활성화한다
  $$('#sb-sim .ft-row').forEach((row,i)=>row.classList.toggle('rl-dis',!on&&i>0));
@@ -1023,6 +1308,82 @@ function rSim(){
 }
 // ---------- 6-2. 검색 노출 설정 · 오퍼링 문구: 전시 정보 탭(rInfo)에서 고른다 ----------
 
+// ---------- 6-9. T기프트 / 티다팩 (v0.3.2 재적용, v0.2.3 display-create-v24.ts 7-3 구성) ----------
+// 단말기를 연결하면 T기프트, 요금제를 연결하면 티다팩. 목록은 EPC에서 조회한다(CVM 아님).
+// 연결 상품 조건에 맞는 항목은 자동으로 올라오고(조건 매칭), [T기프트 조회] · [티다팩 조회]로 기획전 전용 항목을 붙인다. 여기서는 순서 · 연결 해제 · 자동 배지만 정한다
+const dot=d=>d.replace(/-/g,'.');
+function condText(g){ if(g.own) return '<span class="gtag own">전시 전용</span> 이 전시에만 적용'; const c=[]; if(g.cond.model) c.push(`${esc(g.cond.model)} 연결 시`); if(g.cond.pos) c.push(g.cond.pos.map(id=>esc((poBy(id)||{name:id}).name)).join(', ')); if(g.cond.join) c.push(g.cond.join.join('·')+' 가입'); return c.join('<br>'); }
+function stTag(st,lim){ return st.k==='out'?`<span class="gtag end">${lim?'한도 소진':'소진'} · 자동 미노출</span>`:st.k==='end'?`<span class="gtag end">${lim?'제휴 종료':'기간 종료'} · 자동 미노출</span>`:st.k==='wait'?`<span class="gtag wait">${st.t}</span>`:st.warn?`<span class="gtag st">${lim?st.warn.replace('남은 수량','발급 한도'):st.warn}</span>`:''; }
+function badgeRow(k,label,on){ return `<div class="row" style="margin:14px 0 0"><label class="fl">${label}</label><span class="srch-radio" role="radiogroup" aria-label="${label}"><label><input type="radio" name="${k}" value="1" ${on?'checked':''}>자동으로 붙이기</label><label><input type="radio" name="${k}" value="0" ${on?'':'checked'}>붙이지 않기</label></span></div>`; }
+// 채널별 노출 제어에서 미리보기 채널의 T기프트 · 티다팩을 N으로 두면 미리보기에서 뺀다
+function svcOff(k){ if(!needPP(E)) return false; const ch=ctlChs(E)[0]; if(!ch) return false; const c=chOf(E,ch); return !!(c.svc&&c.svc[k]==='N'); }
+const epcNote=k=>`<p class="pill" style="margin:0 0 10px">${k==='gift'?'연결한 단말기의 T기프트를 EPC에서 조회해 자동으로 불러와요.':'연결한 요금제의 티다팩을 EPC에서 조회해 자동으로 불러와요.'} 채널별 노출 여부는 채널별 노출 제어에서 정해요</p>`;
+const GIFT_SRC=[['epc','EPC 연동'],['manual','운영자 설정']];
+function rGift(){
+ const box=$('#sb-gift'); if(!box) return;
+ if(!hasDev(E)){ box.innerHTML=''; return; }
+ const gQty=g=>g.total==null?'제한 없음':`${g.left.toLocaleString()} / ${g.total.toLocaleString()}개`;
+ const rows=E.gifts.map((x,i)=>{ const g=GM(x.id), st=benefitState(g), jw=joinWarn(E,g), t=stTag(st);
+  return `<tr class="gf-r ${st.auto?'dim':''}" data-gk="${x.id}"><td><div class="gnm">${gripBtn(i,esc(g.n))}<span class="gic" aria-hidden="true">${g.ic}</span><div><b>${esc(g.n)}${x.src==='own'?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</b><small>${esc(g.mode)} · ${esc(g.ship)}</small>${t?`<div>${t}</div>`:''}${jw?`<div class="gwarn">${jw}</div>`:''}</div></div></td><td>${condText(g)}</td><td>${dot(g.from)} ~<br>${dot(g.to)}</td><td><span class="qty">${gQty(g)}</span></td><td class="c"><button type="button" class="lnk" data-gx="${x.id}">연결 해제</button></td></tr>`; }).join('');
+ // 11-25 시안 5: 사용 여부(Y/N) · 수급(EPC 연동 / 운영자 설정) 표. EPC 연동이면 EPC 값을 그대로 써서 목록을 두지 않는다
+ const on=E.giftOn!==false, src=E.giftSrc||'epc';
+ const head=`<div class="ftbl">${seoRow('사용 여부',null,yn('gUse','T기프트 사용 여부',on))}
+ ${seoRow('수급',null,`<span class="srch-radio" role="radiogroup" aria-label="T기프트 수급">${GIFT_SRC.map(([k,l])=>`<label><input type="radio" name="gSrc" value="${k}" ${src===k?'checked':''} ${on?'':'disabled'}>${l}</label>`).join('')}</span>`)}</div>`;
+ const bindHead=()=>{ $$('#sb-gift .ft-row').forEach((row,i)=>row.classList.toggle('rl-dis',!on&&i>0));
+  $$('#sb-gift input[name=gUse]').forEach(x=>x.addEventListener('change',()=>{ E.giftOn=x.value==='Y'; rGift(); rBasic(); refresh(); toast(E.giftOn?'T기프트를 노출해요':'T기프트를 숨겼어요'); }));
+  $$('#sb-gift input[name=gSrc]').forEach(x=>x.addEventListener('change',()=>{ E.giftSrc=x.value; rGift(); refresh(); toast(x.value==='epc'?'EPC에 등록된 T기프트를 그대로 보여줘요':'운영자가 정한 목록과 순서로 보여줘요'); })); };
+ if(!on||src==='epc'){ box.innerHTML=head; bindHead(); return; }
+ box.innerHTML=`${head}<div class="sec-h" style="margin:20px 0 10px"><b>적용 목록</b><button type="button" class="btn sm" id="gLink" style="margin-left:auto">T기프트 조회</button></div>
+ ${E.gifts.length?`<div class="cl gtbl"><table><thead><tr><th>T기프트명 · 혜택</th><th>대상 조건</th><th>기간</th><th>남은 수량</th><th class="c">연결 해제</th></tr></thead><tbody>${rows}</tbody></table></div>`
+ :'<div class="empty">연결한 단말기에 해당하는 T기프트가 EPC에 없어요. 기획전 전용 T기프트는 <b>T기프트 조회</b>로 붙일 수 있어요</div>'}
+ ${badgeRow('gBadge','T기프트 배지',E.giftBadge)}`;
+ bindHead();
+ const after=()=>{ rGift(); rBasic(); refresh(); };
+ dndList('#sb-gift','gk',E.gifts,after,null,'tr.gf-r');
+ // 조건 매칭 항목을 해제하면 giftCut에 남겨 연결 상품이 바뀌어도 다시 올라오지 않게 한다
+ $$('#sb-gift [data-gx]').forEach(b=>b.addEventListener('click',()=>{ const [x]=E.gifts.splice(E.gifts.findIndex(y=>y.id===b.dataset.gx),1); if(x.src==='auto') (E.giftCut=E.giftCut||[]).push(x.id); after(); toast(`${GM(x.id).n} 연결을 해제했어요`); }));
+ $$('#sb-gift input[name=gBadge]').forEach(r=>r.addEventListener('change',()=>{ E.giftBadge=r.value==='1'; after(); }));
+ $('#gLink').addEventListener('click',()=>openBenefitModal('gift'));
+}
+let tdMore=false; // 티다팩 목록: 처음 TD_TOP개만 보이고 나머지는 더보기
+const tdQty=t=>t.total==null?'한도 없음':`잔여 ${t.left.toLocaleString()} / ${t.total.toLocaleString()}명`;
+function rTd(){
+ const box=$('#sb-td'); if(!box) return;
+ if(!hasPlan(E)){ box.innerHTML=''; return; }
+ const more=E.tds.length>TD_TOP, shown=more&&!tdMore?E.tds.slice(0,TD_TOP):E.tds;
+ const rows=shown.map((x,i)=>{ const t=TDM(x.id), st=benefitState(t), tg=stTag(st,true);
+  return `<tr class="td-r ${st.auto?'dim':''}" data-tk="${x.id}"><td><div class="gnm" style="min-width:0">${gripBtn(i,esc(t.brand))}<span class="tlogo" style="background:${t.lc}" aria-hidden="true">${esc(t.logo)}</span></div></td><td><div class="gnm"><div><b>${esc(t.brand)}${x.src==='own'?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</b><small>${esc(t.benefit)}</small>${tg?`<div>${tg}</div>`:''}</div></div></td><td>${t.own?condText(t):`${t.cond.pos.filter(id=>E.conn.includes(id)).map(id=>esc(poBy(id).name)).join(', ')}<br><small class="faint">12개월 약정</small>`}</td><td>매월 1회 · 12회<br><small class="faint">${esc(t.issue)}</small></td><td>${esc(t.use)}<br><small class="faint">유효 ${esc(t.valid)}</small></td><td>${dot(t.from)} ~<br>${dot(t.to)}</td><td><span class="qty">${tdQty(t)}</span></td><td class="c"><button type="button" class="lnk" data-tx="${x.id}">연결 해제</button></td></tr>`; }).join('');
+ box.innerHTML=`${epcNote('td')}<div class="sec-h"><b>적용 목록</b><button type="button" class="btn sm" id="tLink" style="margin-left:auto">티다팩 조회</button></div>
+ ${E.tds.length?`<div class="cl gtbl"><table><thead><tr><th>쿠폰 이미지</th><th>쿠폰명 · 쿠폰 혜택</th><th>대상 조건</th><th>발급</th><th>사용 조건</th><th>기간</th><th>발급 한도</th><th class="c">연결 해제</th></tr></thead><tbody>${rows}</tbody></table></div>${more?`<button type="button" class="btn sm" id="tMore" style="width:100%;margin:6px 0 0">${tdMore?'접기':`더보기 (${E.tds.length-TD_TOP}개)`}</button>`:''}`
+ :'<div class="empty">연결한 요금제에 해당하는 티다팩이 EPC에 없어요. 기획전 전용 티다팩은 <b>티다팩 조회</b>로 붙일 수 있어요</div>'}
+ ${badgeRow('tBadge','티다팩 배지',E.tdBadge)}`;
+ const after=()=>{ rTd(); rBasic(); refresh(); };
+ dndList('#sb-td','tk',E.tds,after,null,'tr.td-r');
+ // 조건 매칭 항목을 해제하면 tdCut에 남겨 연결 상품이 바뀌어도 다시 올라오지 않게 한다
+ $$('#sb-td [data-tx]').forEach(b=>b.addEventListener('click',()=>{ const [x]=E.tds.splice(E.tds.findIndex(y=>y.id===b.dataset.tx),1); if(x.src==='auto') (E.tdCut=E.tdCut||[]).push(x.id); after(); toast(`${TDM(x.id).brand} 연결을 해제했어요`); }));
+ $$('#sb-td input[name=tBadge]').forEach(r=>r.addEventListener('change',()=>{ E.tdBadge=r.value==='1'; after(); }));
+ if($('#tMore')) $('#tMore').addEventListener('click',()=>{ tdMore=!tdMore; rTd(); });
+ $('#tLink').addEventListener('click',()=>openBenefitModal('td'));
+}
+// T기프트 · 티다팩 조회 팝업: EPC에 등록된 항목을 조회해 이 전시 전용으로 붙인다. 소진 · 종료된 항목과 이미 적용 중인 항목은 고를 수 없다
+function openBenefitModal(kind){
+ const G=kind==='gift', pool=G?GIFT:TDP, list=G?E.gifts:E.tds, nm=G?'T기프트':'티다팩'; let q='', pick=new Set();
+ const draw=()=>{
+  const L=pool.filter(x=>{ const n=G?x.n:x.brand; return !q||n.includes(q)||x.id.includes(q.toUpperCase()); });
+  $('#mBody').innerHTML=`<input type="text" class="mq" id="bq" value="${esc(q)}" placeholder="${G?'T기프트명 · 코드 검색':'제휴사 · 쿠폰 코드 검색'}" aria-label="검색" style="width:100%"><div class="cl" style="margin-top:10px;max-height:420px"><table><thead><tr><th class="c"></th><th>${G?'T기프트':'쿠폰'}</th><th>구분</th><th>${G?'지급 방식':'대상'}</th><th>기간</th><th>${G?'남은 수량':'발급 한도'}</th></tr></thead><tbody>${L.map(x=>{ const has=list.some(y=>y.id===x.id), st=benefitState(x), dis=has||st.auto;
+   return `<tr><td class="c"><input type="checkbox" data-bp="${x.id}" ${has||pick.has(x.id)?'checked':''} ${dis?'disabled':''} aria-label="${esc(G?x.n:x.brand)}"></td><td>${G?`${x.ic} ${esc(x.n)}`:`<b>${esc(x.brand)}</b> · ${esc(x.benefit)}`}<br><small class="faint">${x.id}</small>${has?' <span class="chip">적용 중</span>':''}</td><td>${x.own?'<span class="gtag own">전시 전용</span>':'<span class="gtag auto">조건 매칭</span>'}</td><td>${G?x.mode:x.own?'기획전':(x.cond.pos||[]).map(id=>esc((poBy(id)||{name:id}).name)).join(', ')+' · 12개월'}</td><td>${dot(x.from).slice(5)} ~ ${dot(x.to).slice(2)}${st.auto?` <span class="gtag end">${st.t}</span>`:st.k==='wait'?' <span class="gtag wait">시작 전</span>':''}</td><td>${x.total==null?'없음':x.left.toLocaleString()+(G?'개':'명')}</td></tr>`; }).join('')}</tbody></table></div>
+  <p class="pill" style="margin:8px 0 0">EPC에 등록된 ${nm}만 고를 수 있어요. 조건 매칭 ${nm}는 대상 ${G?'단말기':'요금제'}를 연결하면 자동으로 들어와요</p>`;
+  $('#mFoot').innerHTML=foot(`선택 ${pick.size}개`,pick.size,`${pick.size}개 연결`);
+  keepQ('#bq',v=>q=v,draw);
+  $$('#mBody [data-bp]').forEach(c=>c.addEventListener('change',()=>{ c.checked?pick.add(c.dataset.bp):pick.delete(c.dataset.bp); draw(); }));
+  // 행 아무 곳이나 눌러도 선택된다 (고를 수 없는 행은 제외)
+  $$('#mBody [data-bp]:not(:disabled)').forEach(c=>{ const tr=c.closest('tr'); tr.style.cursor='pointer'; tr.addEventListener('click',e=>{ if(e.target===c) return; c.checked=!c.checked; c.dispatchEvent(new Event('change')); }); });
+  $('#mc').addEventListener('click',closeModal);
+  $('#mo').addEventListener('click',()=>{ pick.forEach(id=>{ list.push({id,src:'own',show:true}); const k=G?'giftCut':'tdCut'; E[k]=(E[k]||[]).filter(y=>y!==id); }); closeModal(); G?rGift():rTd(); rBasic(); refresh(); toast(`${nm} ${pick.size}개를 연결했어요`); });
+ };
+ modal(`${nm} 조회`,`EPC에 등록된 ${nm}를 조회해 이 전시에 붙여요`,900); draw();
+}
+
 // ---------- 7. 검색 노출 설정 (SEO) ----------
 // 사용여부(N/Y) · Tag(최대 10개) · Page Title(25자) · Description(200자) · Meta Image(1200×630). 항목마다 AI 추천으로 채울 수 있다
 const KW_MAX=10, SEO_TITLE=25, SEO_DESC=200;
@@ -1035,6 +1396,8 @@ function seoSuggest(k){
  const body=(E.descMode==='html'?htmlText(E.descHtml):'')||(P[0]&&P[0].desc)||'';
  return (nm&&body?`${nm} - ${body}`:nm||body).slice(0,SEO_DESC);
 }
+// Y/N 라디오 (v0.3.1 11-25 시안 2: Y를 앞에)
+const yn=(name,label,on)=>`<span class="srch-radio" role="radiogroup" aria-label="${label}"><label><input type="radio" name="${name}" value="Y" ${on?'checked':''}>Y</label><label><input type="radio" name="${name}" value="N" ${on?'':'checked'}>N</label></span>`;
 const seoRow=(label,cnt,field,hint)=>`<div class="ft-row"><div class="ft-l">${label}${cnt!=null?`<br><span id="${cnt.id}">(${cnt.v})</span>`:''}</div><div class="ft-v">${field}${hint?`<p class="ft-hint">${hint}</p>`:''}</div></div>`;
 function rSearch(){
  const s=E.search;
@@ -1083,7 +1446,7 @@ function rCvm(){
 
 // ---------- 8. 주문 구성 방식 ----------
 // 머리줄 스위치 = 주문 받기. ON: 주문 프로세스 관리(order5)의 프로세스를 주문 구성안으로 연결한다. OFF: 주문 버튼 대신 보일 대체 버튼을 정한다
-$('#odOn').addEventListener('change',e=>{ E.orderOn=e.target.checked; setFold($('#sec-order'),true); onOrderChange(); toast(E.orderOn?'주문을 다시 받아요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
+$('#odOn').addEventListener('change',e=>{ if(E.kind==='mp'){ e.target.checked=true; toast(MP_ORD_LOCK); return; } E.orderOn=e.target.checked; setFold($('#sec-order'),true); onOrderChange(); toast(E.orderOn?'주문을 다시 받아요':'주문을 받지 않아요. 주문 버튼이 대체 버튼으로 바뀌어요'); });
 // [키, 이름, 설명, 기본 버튼 문구]
 const OFF_ACT=[['none','버튼 없음','안내 문구만 보여요',''],['consult','상담 신청','상담 예약 화면으로 연결해요','상담 신청하기'],['notify','출시 · 입고 알림 신청','신청자에게 알림을 보내요','출시 알림 받기'],['link','다른 전시로 이동','고른 전시 상품으로 보내요','다른 상품 보러가기']];
 const offBtn=o=>o.act==='none'?'':(o.btn||(OFF_ACT.find(x=>x[0]===o.act)||OFF_ACT[0])[3]);
@@ -1123,7 +1486,8 @@ const PROC_URL=id=>`/order7-create.html${id?`?id=${encodeURIComponent(id)}`:''}`
 // 값 · 순서 · 문구는 채널(주문 코너)에서만 관리한다. 상품은 노출 여부만 체크로 정한다.
 // 값은 연결 상품(EPC)이 가진 값의 합집합(복합형이면 모든 구성 영역의 연결 상품). 기본은 모두 노출, 보여주지 않을 값만 체크를 해제한다.
 // 저장 값: E.chHide = {join:[], inst:[], ship:[]} (숨긴 값만). EPC에 새 값이 생기면 기본으로 노출된다
-const chHidden=(k,v)=>((E.chHide||{})[k]||[]).includes(v);
+// v0.3.2: 숨김 여부는 채널별 노출 제어(미리보기 채널)에서 정한다
+const chHidden=(k,v)=>pvChHidden(k,v);
 function chUnion(){ const pos=connPOs(E);
  return CH_GROUPS.map(g=>{ const by={}; pos.forEach(p=>(chItemsOf(p)[g.k]||[]).forEach(v=>(by[v]=by[v]||[]).push(p))); return {...g,vals:g.vals.filter(v=>by[v]),by}; }); }
 function chxHtml(){
@@ -1148,29 +1512,57 @@ function bindChx(){
 // v0.3.1: 연결한 프로세스 카드. 이름 · [주문 프로세스에서 확인 ↗]을 누르면 주문 프로세스 관리 화면(새 탭)에서 그 프로세스 상세가 열린다.
 // [주문 프로세스 선택]은 팝업에서 상품 유형(LV3 조합)에 맞는 주문 유형의 프로세스를 골라 바인딩한다
 const EXT='<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>';
+// 11-25 시안 5: 연결한 프로세스는 ⓘ 안내 상자(이름 · 메타 한 줄), 버튼은 상자 아래 오른쪽 [주문 프로세스 조회] [해제]
+const opBox=(name,meta)=>`<div class="op-box"><div class="op-bh"><i class="op-ic" aria-hidden="true">i</i>${name}</div>${meta?`<ul class="op-ul"><li>${meta}</li></ul>`:''}</div>`;
 function planBox(){ const plan=E.orderPlan, o5=isProcPlan(plan);
- const meta=!plan?''
-  :o5?`<p class="op-meta">${plan.id}${plan.ver?' · '+esc(plan.ver):''} · ${esc(plan.cat)} · 컨테이너 ${plan.stages.length} · 코너 ${procCornerCnt(plan)}</p>`
-  :`<p class="op-meta">${plan.id} · ${plan.ver} · ${ordKind(plan.name)} <span class="gtag st">이전 구성안 · 주문 프로세스로 다시 연결하세요</span></p>`;
+ const meta=!plan?'연결한 주문 프로세스가 없어요. 주문 프로세스 조회로 연결하세요'
+  :o5?`${plan.id}${plan.ver?' · '+esc(plan.ver):''} · ${esc(plan.cat)} · 컨테이너 ${plan.stages.length} · 코너 ${procCornerCnt(plan)}`
+  :`${plan.id} · ${plan.ver} · ${ordKind(plan.name)} <span class="gtag st">이전 구성안 · 주문 프로세스로 다시 연결하세요</span>`;
  const name=!plan?'<b>주문 프로세스를 선택하세요</b>':o5?`<button type="button" class="op-name" data-op="go" title="주문 프로세스 관리에서 열기 (새 탭)">${esc(plan.name)}${svg(EXT)}</button>`:`<b>${esc(plan.name)}</b>`;
- return `<div class="op-plan"><div class="op-plan-tx">${name}${meta}</div>
- <div class="op-acts"><button type="button" class="btn ${plan?'':'primary'}" data-op="pick">${plan?'프로세스 변경':'주문 프로세스 선택'}</button>${o5?'<button type="button" class="btn" data-op="go">주문 프로세스에서 확인 ↗</button>':''}${plan?'<button type="button" class="btn" data-op="rm">해제</button>':''}</div></div>`; }
+ return `${opBox(name,meta)}<div class="cn-foot"><button type="button" class="btn ${plan?'':'primary'}" data-op="pick">주문 프로세스 조회</button>${plan?'<button type="button" class="btn primary" data-op="rm">해제</button>':''}</div>`; }
 function bindPlan(){
  $$('#sb-order [data-op]').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.op; if(k==='pick') openPlanModal();
   else if(k==='rm'){ E.orderPlan=null; rMethod(); onOrderChange(); toast('프로세스 연결을 해제했어요'); }
   else if(k==='go') window.open(PROC_URL(E.orderPlan&&E.orderPlan.id),'_blank'); }));
 }
+// MP 상품 전시: 주문 프로세스 연결 필수. 주문 받기는 ON으로 잠그고 MP용 프로세스만 고른다
+const MP_ORD_LOCK='MP 상품 전시는 주문 프로세스 연결이 필수입니다.';
+function rOrderMp(box){
+ const pl=isMpPlan(E.orderPlan)?E.orderPlan:null;
+ box.innerHTML=`${opBox(pl?`<b>${esc(pl.name)}</b>`:'<b>주문 프로세스를 선택하세요</b>',pl?`${pl.id} · ${pl.ver} · ${pl.cat} · 컨테이너 ${pl.ctn} · 코너 ${pl.cn}`:'MP 상품 전시는 주문 프로세스 연결이 필수예요')}
+ <div class="cn-foot"><button type="button" class="btn ${pl?'':'primary'}" id="mpPlanPick">주문 프로세스 조회</button>${pl?'<button type="button" class="btn primary" id="mpPlanRm">해제</button>':''}</div>`;
+ $('#mpPlanPick').addEventListener('click',openMpPlanModal);
+ { const r=$('#mpPlanRm'); if(r) r.addEventListener('click',()=>{ E.orderPlan=null; onOrderChange(); toast('프로세스 연결을 해제했어요'); }); }
+}
+function openMpPlanModal(){
+ const m=mpDemo(E.mp); let f=m?m.cat:'전체', sel=isMpPlan(E.orderPlan)?E.orderPlan.id:'';
+ modal('주문 프로세스 선택','MP 상품 전시용',960,'epc');
+ const draw=()=>{ const L=MP_PROCS.filter(p=>f==='전체'||p.type===f);
+  $('#mBody').innerHTML=`${ntc('warn','MP 프로세스 구분 기준은 협의 중입니다. 현재는 MP 유형(결합, 요금 감면)으로 거릅니다. <span class="chip warn">미정</span>').replace('class="ntc ','style="margin:0 0 14px" class="ntc ')}
+  <form class="epc-search" onsubmit="return false"><div class="fields"><label class="l" for="mpT">MP 유형</label><select id="mpT">${['전체','결합','요금 감면'].map(k=>`<option ${k===f?'selected':''}>${k}</option>`).join('')}</select>${m?`<span class="pill">연결한 MP: ${esc(m.name)} (${m.cat})</span>`:''}</div></form>
+  <div class="epc-head"><b>검색결과</b><span>${L.length}건</span></div>
+  <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>프로세스 ID</th><th>프로세스명</th><th>버전</th><th>주문 유형</th><th>컨테이너</th><th>코너</th></tr></thead><tbody>${L.map(p=>`<tr class="${sel===p.id?'on':''}" data-row="${p.id}"><td class="c"><input type="radio" name="mpPl" ${sel===p.id?'checked':''} aria-label="${esc(p.name)} 선택"></td><td>${p.id}</td><td class="nm">${esc(p.name)}</td><td>${p.ver}</td><td>${p.cat}</td><td>${p.ctn}</td><td>${p.cn}</td></tr>`).join('')||'<tr class="empty-row"><td colspan="7">검색 결과가 없어요</td></tr>'}</tbody></table></div>`;
+  $('#mpT').addEventListener('change',e=>{ f=e.target.value; draw(); });
+  $$('#mBody tr[data-row]').forEach(tr=>tr.addEventListener('click',()=>{ sel=tr.dataset.row; draw(); }));
+  $('#mo').disabled=!sel||(isMpPlan(E.orderPlan)&&E.orderPlan.id===sel); };
+ $('#mFoot').innerHTML='<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>선택</button>';
+ $('#mc').addEventListener('click',closeModal);
+ $('#mo').addEventListener('click',()=>{ const p=MP_PROCS.find(x=>x.id===sel); if(!p) return; E.orderPlan={...p,mpProc:true}; E.orderOn=true; PVMP=mpPvDef(); closeModal(); onOrderChange(); toast(`${p.name}을(를) 연결했어요`); });
+ draw();
+}
 function rOrder(){
- $('#odOn').checked=E.orderOn; $('#odOnT').textContent=E.kind==='ps'?'':E.orderOn?'주문 받기':'주문 안 받음';
+ if(E.kind==='mp') E.orderOn=true;
+ $('#odOn').checked=E.orderOn; $('#odOnT').textContent='';
+ { const od=$('#odOn'), sw=$('#odSw'), mp=E.kind==='mp'; od.disabled=mp||VIEW==='view'; if(sw) sw.title=mp?MP_ORD_LOCK:'주문 받기'; }
  const box=$('#sb-order');
+ if(E.kind==='mp'){ rCtn(); rOrderMp(box); return; }
  rCtn();
  if(E.kind==='ps'){ box.innerHTML=ntc('','PS 상품 전시는 주문을 받지 않아요. 고객이 주문하려면 PS가 속한 PO 전시로 이동합니다.'); return; }
  if(E.orderOn){
   const plan=E.orderPlan, e=plan?secState(E).order.e:[];
   // 순서: 확인 필요(주문 유형 불일치 등) → 연결한 주문 프로세스 → 채널 관리 항목 노출
-  box.innerHTML=`${e.length?ntc('warn',e.map(esc).join('<br>')).replace('class="ntc ','style="margin:0 0 14px" class="ntc '):''}${planBox()}
-  <p class="op-scope">컨테이너 · 코너 구성과 노출 조건은 주문 프로세스 관리에서 정해요. 상품에서는 아래 채널 관리 항목의 노출 여부만 정해요.</p>${chxHtml()}`;
-  bindPlan(); bindChx(); return;
+  box.innerHTML=`${e.length?ntc('warn',e.map(esc).join('<br>')).replace('class="ntc ','style="margin:0 0 14px" class="ntc '):''}${planBox()}`;
+  bindPlan(); return;
  }
  const o=E.off, others=DISPLAYS.filter(d=>d.id!==E.id);
  if(o.act==='link'&&!others.some(d=>d.id===o.go)) o.go=others[0]?others[0].id:null;
@@ -1202,7 +1594,7 @@ function keepQ(id,set,draw){ $(id).addEventListener('input',e=>{ set(e.target.va
 const lv3Of=g=>Object.keys(LV3S).filter(k=>g==='전체'||LV3S[k].lv2===g);
 // f: 입력 중인 조건, a: 조회 버튼으로 적용한 조건
 let CM={sel:new Set(),f:{g:'전체',k:'전체',q:''},a:{g:'전체',k:'전체',q:''}};
-function openConnModal(){ const z={g:'전체',k:'전체',q:''}; CM={sel:new Set(),f:{...z},a:{...z}}; modal('EPC 상품 조회',E.kind==='mp'?'MP가 있는 원천 PO 1개를 고르세요':'LV1 · 상품 (고정)',1200,'epc'); drawConn(); $('#cq').focus(); }
+function openConnModal(){ const z={g:'전체',k:'전체',q:''}; CM={sel:new Set(),f:{...z},a:{...z}}; modal('EPC 상품 조회',E.kind==='mp'?'전시할 EPC 상품 1개를 고르세요':'LV1 · 상품 (고정)',1200,'epc'); drawConn(); $('#cq').focus(); }
 function drawConn(){
  const f=CM.f, opt=(list,v)=>['전체',...list].map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
  $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
@@ -1228,7 +1620,7 @@ function drawConn(){
 // 표만 다시 그린다. 체크는 행 상태만 바꿔 스크롤 위치를 지킨다
 function drawConnRows(){
  const a=CM.a, q=a.q.toLowerCase();
- const L=PO.filter(p=>{ const x=epcOf(p); return (E.kind!=='mp'||mpsOf(p).length>0)&&(a.g==='전체'||x.lv2===a.g)&&(a.k==='전체'||x.lv3===a.k)&&(!q||[p.name,p.id,p.epc,x.spec].some(v=>v.toLowerCase().includes(q))); });
+ const L=PO.filter(p=>{ const x=epcOf(p); return (a.g==='전체'||x.lv2===a.g)&&(a.k==='전체'||x.lv3===a.k)&&(!q||[p.name,p.id,p.epc,x.spec].some(v=>v.toLowerCase().includes(q))); });
  $('#cmCnt').textContent=`${L.length}건`;
  $('#cmRows').innerHTML=L.map(p=>{ const done=E.conn.includes(p.id), on=CM.sel.has(p.id), x=epcOf(p);
   return `<tr class="${done?'done':''} ${on?'on':''}" data-row="${p.id}"><td class="c"><input type="checkbox" data-p="${p.id}" ${on||done?'checked':''} ${done?'disabled':''} aria-label="${esc(p.name)} 선택"></td><td>${p.epc}</td><td>${p.ver}</td><td class="nm">${esc(p.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${x.lv2}</td><td>${x.lv3}</td><td>${esc(x.spec)}</td><td><span class="sale-chip">${p.sale}</span></td></tr>`; }).join('')
@@ -1308,7 +1700,7 @@ function drawPlanRows(){
 const PS_KINDS=['필수 PS','선택 PS 후보'];
 const psPool=()=>PSLIST.filter(s=>s.po.type==='구독서비스');
 const psPos=()=>[...new Map(psPool().map(s=>[s.po.id,s.po])).values()];
-function openPsModal(){ const z={k:'전체',po:'전체',q:''}; CM={sel:E.conn[0]||'',f:{...z},a:{...z}}; modal('PS 조회','전시 콘텐츠를 등록할 PS(SKU 단위) 1개를 고르세요',1200,'epc'); drawPs(); $('#cq').focus(); }
+function openPsModal(){ const z={k:'전체',po:'전체',q:''}; CM={sel:E.conn[0]||'',f:{...z},a:{...z}}; modal('상품 추가','PS 상품 전시는 PS 1개만 연결합니다',1200,'epc'); drawPs(); $('#cq').focus(); }
 function drawPs(){
  const f=CM.f, opt=(list,v)=>[['전체','전체'],...list].map(([k,l])=>`<option value="${esc(k)}" ${k===v?'selected':''}>${esc(l)}</option>`).join('');
  $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
@@ -1319,7 +1711,7 @@ function drawPs(){
   <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
  </form>
  <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
- <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>PS ID</th><th>버전</th><th>PS명</th><th>소속 PO 코드</th><th>구분</th><th>소속 PO</th><th>판매상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>EPC 상품 ID</th><th>버전</th><th>EPC 상품명</th><th>PS Spec</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
  $('#cmK').addEventListener('change',e=>{ f.k=e.target.value; });
  $('#cmP').addEventListener('change',e=>{ f.po=e.target.value; });
  $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
@@ -1336,10 +1728,46 @@ function drawPsRows(){
  const L=psPool().filter(s=>(a.k==='전체'||s.kind===a.k)&&(a.po==='전체'||s.po.id===a.po)&&(!q||[s.name,psId(s),s.po.name,s.po.id].some(v=>String(v).toLowerCase().includes(q))));
  $('#cmCnt').textContent=`${L.length}건`;
  $('#cmRows').innerHTML=L.map(s=>{ const on=CM.sel===s.key, done=E.conn.includes(s.key);
-  return `<tr class="${on?'on':''}" data-row="${esc(s.key)}"><td class="c"><input type="radio" name="psPick" data-p="${esc(s.key)}" ${on?'checked':''} aria-label="${esc(s.name)} 선택"></td><td>${psId(s)}</td><td>${s.po.ver}</td><td class="nm">${esc(s.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${s.po.id}</td><td>${s.kind}</td><td>${esc(s.po.name)}</td><td><span class="sale-chip">${s.po.sale}</span></td></tr>`; }).join('')
-  ||'<tr class="empty-row"><td colspan="8">검색 결과가 없어요</td></tr>';
+  return `<tr class="${on?'on':''}" data-row="${esc(s.key)}"><td class="c"><input type="radio" name="psPick" data-p="${esc(s.key)}" ${on?'checked':''} aria-label="${esc(s.name)} 선택"></td><td>${psId(s)}</td><td>${s.po.ver}</td><td class="nm">${esc(s.name)}${done?' <span class="chip">연결됨</span>':''}</td><td>${esc(s.desc||'-')}</td><td>상시</td><td><span class="sale-chip">${s.po.sale}</span></td></tr>`; }).join('')
+  ||'<tr class="empty-row"><td colspan="7">검색 결과가 없어요</td></tr>';
  const sync=()=>{ const b=$('#mo'), x=CM.sel&&psBy(CM.sel); b.disabled=!x||E.conn[0]===CM.sel; };
  const pick=key=>{ CM.sel=key; $$('#cmRows tr[data-row]').forEach(tr=>{ const on=tr.dataset.row===key; tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
+ $$('#cmRows [data-p]').forEach(c=>c.addEventListener('change',()=>{ if(c.checked) pick(c.dataset.p); }));
+ $$('#cmRows tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; pick(tr.dataset.row); }));
+ sync();
+}
+// v0.3.2 MP 추가 팝업: 상품 추가 팝업 구조(검색 폼 · 결과 표 · 라디오) 재사용. 판매중이 아닌 MP는 고를 수 없다
+const MP_SALE_MSG='판매중인 상품만 연결할 수 있습니다';
+function openMpModal(){ const z={s:'전체',q:''}; CM={sel:'',f:{...z},a:{...z}}; modal('상품 추가','MP 상품 전시는 MP 1개만 연결합니다',1200,'epc'); drawMp(); $('#cq').focus(); }
+function drawMp(){
+ const f=CM.f, opt=(list,v)=>list.map(k=>`<option value="${esc(k)}" ${k===v?'selected':''}>${esc(k)}</option>`).join('');
+ $('#mBody').innerHTML=`<form class="epc-search" id="cmForm">
+  <div class="fields">
+   <label class="l" for="cmS">판매 상태</label><select id="cmS">${opt(['전체','판매중','판매종료'],f.s)}</select>
+   <label class="l" for="cq">검색어</label><input type="text" id="cq" value="${esc(f.q)}" placeholder="MP명 또는 MP ID 입력">
+  </div>
+  <div class="acts"><button type="button" class="btn dark-out" id="cmReset">초기화</button><button type="submit" class="btn primary">조회</button></div>
+ </form>
+ <div class="epc-head"><b>검색결과</b><span id="cmCnt"></span></div>
+ <div class="epc-tbl"><table><thead><tr><th class="c">선택</th><th>EPC 상품 ID</th><th>EPC 상품명</th><th>MP Spec</th><th>유효기간</th><th>판매 상태</th></tr></thead><tbody id="cmRows"></tbody></table></div>`;
+ $('#cmS').addEventListener('change',e=>{ f.s=e.target.value; });
+ $('#cq').addEventListener('input',e=>{ f.q=e.target.value; });
+ $('#cmForm').addEventListener('submit',e=>{ e.preventDefault(); CM.a={...f,q:f.q.trim()}; drawMpRows(); });
+ $('#cmReset').addEventListener('click',()=>{ CM.f={s:'전체',q:''}; CM.a={...CM.f}; drawMp(); $('#cq').focus(); });
+ $('#mFoot').innerHTML='<button type="button" class="btn dark-out" id="mc">취소</button><button type="button" class="btn primary" id="mo" disabled>추가</button>';
+ $('#mc').addEventListener('click',closeModal);
+ $('#mo').addEventListener('click',()=>{ const m=mpDemo(CM.sel); if(!m||m.sale!=='판매중') return; E.mp=m.id; closeModal(); onConnChange(); toast(`${m.name}을(를) 연결했어요`); });
+ drawMpRows();
+}
+function drawMpRows(){
+ const a=CM.a, q=a.q.toLowerCase();
+ const L=MP_DEMO.filter(m=>(a.s==='전체'||m.sale===a.s)&&(!q||[m.name,m.id].some(v=>v.toLowerCase().includes(q))));
+ $('#cmCnt').textContent=`${L.length}건`;
+ $('#cmRows').innerHTML=L.map(m=>{ const on=CM.sel===m.id, off=m.sale!=='판매중';
+  return `<tr class="${on?'on':''} ${off?'dis':''}" data-row="${m.id}" ${off?`title="${MP_SALE_MSG}" aria-disabled="true"`:''}><td class="c"><input type="radio" name="mpPick" data-p="${m.id}" ${on?'checked':''} ${off?'disabled':''} aria-label="${esc(m.name)} 선택"></td><td>${m.id}</td><td class="nm">${esc(m.name)}${off?`<small class="mp-off">${MP_SALE_MSG}</small>`:''}</td><td>${esc(m.target)}</td><td>${mpPeriod(m)}</td><td><span class="sale-chip">${m.sale}</span></td></tr>`; }).join('')
+  ||'<tr class="empty-row"><td colspan="6">검색 결과가 없어요</td></tr>';
+ const sync=()=>{ const m=mpDemo(CM.sel); $('#mo').disabled=!m||m.sale!=='판매중'; };
+ const pick=id=>{ const m=mpDemo(id); if(!m||m.sale!=='판매중'){ toast(MP_SALE_MSG); return; } CM.sel=id; $$('#cmRows tr[data-row]').forEach(tr=>{ const on=tr.dataset.row===id; tr.classList.toggle('on',on); tr.querySelector('input').checked=on; }); sync(); };
  $$('#cmRows [data-p]').forEach(c=>c.addEventListener('change',()=>{ if(c.checked) pick(c.dataset.p); }));
  $$('#cmRows tr[data-row]').forEach(tr=>tr.addEventListener('click',e=>{ if(e.target.closest('input')) return; pick(tr.dataset.row); }));
  sync();
@@ -1367,7 +1795,7 @@ function drawEpcLoad(){
  // 하단: 바뀐 항목 요약 없이 [취소] [적용]만. 바꿀 항목이 없으면 적용은 비활성
  $('#mFoot').innerHTML=`<button type="button" class="btn" id="mc" style="margin-left:auto">취소</button><button type="button" class="btn primary" id="mo" ${n?'':'disabled'}>적용</button>`;
  $('#mc').addEventListener('click',closeModal);
- $('#mo').addEventListener('click',()=>{ if(EL.name>=0) E.name=P[EL.name].name; const add=[...EL.imgs].map(img); if(!E.main&&add.length) E.main=add.shift(); E.subs.push(...add.slice(0,Math.max(0,SUB_MAX-E.subs.length))); E.imgs.mobile=[E.main,...E.subs].filter(Boolean).slice(0,IMG_MAX); closeModal(); rBasic(); refresh(); toast(`${n}개 항목을 적용했어요`); });
+ $('#mo').addEventListener('click',()=>{ if(EL.name>=0) E.name=P[EL.name].name; const add=[...EL.imgs].map(img); if(!E.main&&add.length) E.main=add.shift(); E.subs.push(...add.slice(0,Math.max(0,SUB_MAX-E.subs.length))); syncImgs(); closeModal(); rBasic(); refresh(); toast(`${n}개 항목을 적용했어요`); });
 }
 // 템플릿 불러오기
 let TM={};
@@ -1529,8 +1957,13 @@ function orderPv(){
  const pt=ptOf(E), pl=E.orderPlan;
  if(E.orderOn&&isProcPlan(pl)) pv+=ctnPv(pl);
  else if(E.orderOn&&pt) pv+=`<div class="ph-gap"></div><div class="ph-sec" data-pa="flow"><div class="ph-h">주문서</div><div class="ph-order"><b>주문서 영역</b><span>${esc(pt.ord)}${pl?' · '+esc(pl.name):''}</span></div></div>`;
- return pv+simPv()+buyPv();
+ return pv+giftPv()+tdPv()+simPv()+buyPv();
 }
+// v0.3.2 미리보기: T기프트(단말기 연결 시) · 티다팩(요금제 연결 시). 미리보기 채널에서 N이면 뺀다
+function giftPv(){ if(!hasDev(E)||svcOff('gift')||E.giftOn===false) return ''; const v=visibleGifts(E);
+ return `<div class="ph-gap"></div><div class="ph-sec" data-pa="gift"><div class="ph-h">함께 드리는 T기프트<small>개통 조건을 꼭 확인하세요</small></div>${v.length?v.map(x=>{ const g=GM(x.id); return `<div class="ph-gift"><span aria-hidden="true">${g.ic}</span><div><b>${esc(g.n)}</b><small>${g.mode} · ${esc(g.ship)}</small></div></div>`; }).join(''):'<div class="pvempty sm">노출 중인 T기프트가 있으면 여기에 보인다</div>'}</div>`; }
+function tdPv(){ if(!hasPlan(E)||svcOff('td')) return ''; const v=visibleTd(E), first=v.slice(0,TD_TOP);
+ return `<div class="ph-gap"></div><div class="ph-sec" data-pa="td"><div class="ph-h">티다팩 혜택을 골라 주세요<small>12개월 약정 시 1년간 매월 받아요</small></div>${v.length?`${first.map(x=>{ const t=TDM(x.id); return `<div class="ph-td"><span class="tlogo" style="background:${t.lc}" aria-hidden="true">${esc(t.logo)}</span><div>${t.tag?`<em>${t.tag}</em>`:''}<b>${esc(t.brand)}</b><small>${esc(t.benefit)}</small></div></div>`; }).join('')}${v.length>TD_TOP?`<div class="ph-more">전체보기 · ${v.length}개 ›</div>`:''}<div class="ph-td none">티다팩 없이 주문 진행</div>`:'<div class="pvempty sm">노출 중인 티다팩이 있으면 여기에 보인다</div>'}</div>`; }
 // ---------- 미리보기: 주문 프로세스 컨테이너 · 코너 ----------
 // 컨테이너 하나씩 본다(PVC). 머리에 컨테이너 이동(‹ ›)과 진행 막대, 아래로 코너를 순서대로 그린다.
 // 코너 문구 · 선택지 설명 · 가격 · 배지 · 모양(ui)은 코너 관리 기준값(order-corner-v22-data.ts), 노출 순서 · 노출 여부 · 문구는 이 전시에서 바꾼 값을 쓴다
@@ -1622,6 +2055,51 @@ function stepScreenPv(){
  <div class="ph-scroll">${st.corners.map(c=>cornerPv(c)).join('<div class="ph-gap"></div>')||'<div class="ph-sec"><div class="pvempty sm">이 컨테이너에는 코너가 없어요</div></div>'}
  <div class="ph-buy"><div class="ph-buy-row"><button type="button" class="ph-cta" data-next>${last?'주문 완료':'다음'}</button></div></div></div>`;
 }
+// v0.3.2 MP 상품 전시 미리보기: 기존 프레임 안의 화면만 MP 상세로 바꾼다. 상품 이미지 · 색상 · 용량 · 정가 · 판매가는 없다
+//  타이틀(전시명) → 부제(설명) → 제공 혜택(연결한 MP의 EPC 상품 속성, 자동) → 주문 코너 카드(연결한 프로세스) → 콘텐츠 정보 아코디언 → 하단 바(월 999,999원 시연값 + 상품 가입하기)
+//  TP-ORD-101: 결합 유형에서 '가족 결합'을 고르면 가족 정보 등록 · 가족 회선 선택 코너가 나온다. 미리보기에서 고른 값은 PVMP에 둔다
+let PVMP=null;
+const mpPvDef=()=>({type:'가족 결합',lines:['휴대폰'],flines:['휴대폰'],disc:'다 같이 나누어 할인',term:'24개월',doc:'공공 마이데이터로 바로 확인',army:'밀리패스로 인증하기'});
+const MP_LINES=[['휴대폰','010-20**-04**','T+B'],['인터넷','보유 회선',''],['IPTV','보유 회선','']];
+const MP_FLINES=[['휴대폰','010-30**-12**',''],['인터넷','보유 회선','']];
+const mpOpt=(k,v,on,sub,badge)=>`<button type="button" class="mpo ${on?'on':''}" data-mpo="${k}|${esc(v)}"><span><b>${esc(v)}${badge?`<em>${esc(badge)}</em>`:''}</b>${sub?`<small>${esc(sub)}</small>`:''}</span><i class="ck" aria-hidden="true"></i></button>`;
+const mpCard=(t,body)=>`<div class="ph-gap"></div><div class="ph-sec"><div class="ph-h">${t}</div>${body}</div>`;
+function mpCorners(flow){
+ const P=PVMP, one=(k,list)=>list.map(([v,sub,b])=>mpOpt(k,v,P[k]===v,sub,b)).join('');
+ const multi=(k,list)=>list.map(([v,sub,b])=>mpOpt(k,v,P[k].includes(v),sub,b)).join('');
+ const lines=mpCard('결합할 회선을 선택해 주세요',multi('lines',MP_LINES));
+ const term=mpCard('약정 기간을 선택해 주세요',one('term',[['12개월'],['24개월'],['12+12개월']]));
+ if(flow==='welfare') return mpCard('서류 제출 방식을 선택해 주세요',one('doc',[['공공 마이데이터로 바로 확인','','추천'],['전자증명서 발급 받기'],['발급 받은 서류 직접 제출하기']]))+lines+term;
+ if(flow==='army') return mpCard('입영 일자를 등록해 주세요',one('army',[['밀리패스로 인증하기'],['서류 파일로 첨부하기']]))+lines+term;
+ const fam=P.type==='가족 결합';
+ return mpCard('결합 유형을 선택해 주세요',one('type',[['나 혼자 결합','내 회선끼리 결합해요'],['가족 결합','가족 회선과 함께 결합해요']]))+lines
+  +(fam?mpCard('결합할 가족 정보를 등록해 주세요','<div class="mp-empty">등록된 정보가 없습니다</div><button type="button" class="mp-btn" data-mpfam>가족 동의 요청하기</button>')
+   +mpCard('결합할 가족 회선을 선택해 주세요',`<div class="mp-fam"><b>김가족</b><em>배우자</em></div>${multi('flines',MP_FLINES)}`):'')
+  +mpCard('휴대폰 요금 할인 방식을 선택해 주세요',one('disc',[['다 같이 나누어 할인','결합한 회선 모두 나누어 할인'],['한 명에게 집중 할인','대표 회선 1개에 할인을 모아요']]))+term;
+}
+function mpPagePv(stop){
+ if(!PVMP) PVMP=mpPvDef();
+ const pl=isMpPlan(E.orderPlan)?E.orderPlan:null, m=mpDemo(E.mp), B=m?m.bnf:[];
+ const xs=E.extras.filter(x=>x.show&&!x.fresh&&(x.mode==='link'||x.txt.trim()));
+ const benefit=`<div class="ph-sec" data-pa="benefit"><div class="ph-h">제공 혜택</div>${B.length?`<div class="mp-bnf">${B.map(x=>`<p>${esc(x)}</p>`).join('')}</div>`:'<div class="pvempty sm">MP를 연결하면 EPC 상품 속성의 혜택이 여기에 보인다</div>'}</div>`;
+ const order=`<i class="ph-tabmark" data-pa="flow" aria-hidden="true"></i>`+(pl?mpCorners(pl.flow):'<div class="ph-gap"></div><div class="ph-sec"><div class="mp-noplan">주문 프로세스를 연결하면 주문 단계가 표시됩니다</div></div>');
+ const acc=xs.length?`<div class="ph-gap"></div>${xs.map(x=>`<details class="ph-acc" data-pa="x-${x.id}" ${PVX.has(x.id)?'open':''}><summary>${esc(x.t)||'제목 없음'}</summary><div>${x.mode==='direct'?`<div class="ph-rich">${sanitize(x.txt)}</div>`:esc(x.mode==='link'?tplBy(x.src).body:x.txt)}</div></details>`).join('')}`:'';
+ const G=E.mpGuide||{}, guide=MP_GUIDE.filter(([k])=>G[k]!==false).map(([k,,title,lines,steps,btns])=>`<div class="ph-gap"></div><div class="ph-sec mp-gd" data-pa="${k}"><div class="ph-h">${esc(title)}</div>${lines?lines.map(x=>`<p>${esc(x)}</p>`).join(''):''}${steps?`<ol>${steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}<div class="mp-gdbtns">${btns.map(b=>`<span>${esc(b)}</span>`).join('')}</div></div>`).join('');
+ return `<div class="ph-top">${phIc('back')}<span>${phIc('share')}${phIc('menu')}</span></div>
+ <div class="ph-scroll">${stop}
+ <div class="ph-info" data-pa="top"><div class="ph-title${E.name.trim()?'':' ph-empty'}">${E.name.trim()?nameHtml(E.name.trim()):'전시명을 입력하세요'}</div>${E.brief.trim()?`<div class="ph-brief">${esc(E.brief.trim())}</div>`:''}</div>
+ <div class="ph-gap"></div><i class="ph-tabmark" data-pa="tabs" aria-hidden="true"></i>
+ ${benefit}${order}${guide}${acc}${simPv()}
+ ${mpBuyPv()}
+ </div>`;
+}
+// 하단: PO 전시와 같은 떠 있는 금액 알약(누르면 금액 내역) + T 상담 · 상품 가입하기. 금액은 시연값
+const MP_PRICE=999999;
+function mpBuyPv(){
+ const tb=`<button type="button" class="ph-tbtn" data-tbtn aria-label="T 상담">${svg('<path d="M5 6h11M10.5 6v13"/><path d="M17 15v6M14 18h6"/>')}</button>`;
+ const pill=`<div class="ph-float"><div class="ph-pill-wrap">${PVPILL?`<div class="ph-pop" role="dialog" aria-label="예상 금액"><div><span>월 요금</span><b>${won(MP_PRICE)}</b></div></div>`:''}<button type="button" class="ph-pill" data-pill aria-expanded="${PVPILL}">월 <b>${MP_PRICE.toLocaleString()}</b> 원<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button></div></div>`;
+ return `${pill}<div class="ph-buy"><div class="ph-buy-row">${tb}<button type="button" class="ph-cta" data-cta>상품 가입하기</button></div></div>`;
+}
 const pvGo=i=>{ const n=E.orderPlan.stages.length; if(i<0||i>=n) return; PVC=i; renderPreview(); };
 function renderPreview(){
  const box=$('#pv'); if(!E) return;
@@ -1650,7 +2128,7 @@ function renderPreview(){
  // 가입 조건 안내 (샘플 문구)
  const JOIN_NOTE='만 18세 이상 만 34세 미만의 고객님만 가입할 수 있는 상품이에요';
  const end=endAt(E), stop=end?`<div class="ph-stop">${svg(PH_IC.info)}<div><b>상품 가입 중단 안내</b><p>해당 상품은 ${+end.slice(5,7)}월 ${+end.slice(8,10)}일 이후 신규 가입 중단될 예정입니다.</p></div></div>`:'';
- box.innerHTML=`${ctnNavPv()}<div class="ph-top">${phIc('back')}<span>${phIc('share')}${phIc('menu')}</span></div>
+ box.innerHTML=E.kind==='mp'?mpPagePv(stop):`${ctnNavPv()}<div class="ph-top">${phIc('back')}<span>${phIc('share')}${phIc('menu')}</span></div>
  <div class="ph-scroll">
  ${stop}
  ${noImg(E)?'':`<div class="ph-hero${top&&top.u?' has-img':''}">
@@ -1659,7 +2137,6 @@ function renderPreview(){
  <div class="ph-info"><div class="ph-model">${esc(model)}</div>
   <div class="ph-title${E.name.trim()?'':' ph-empty'}">${E.name.trim()?nameHtml(E.name.trim()):'전시명을 입력하세요'}</div>
   ${E.brief.trim()?`<div class="ph-brief">${esc(E.brief.trim())}</div>`:''}
-  ${E.kind==='mp'&&mpBy(E.mp)?`<div class="ph-mp"><span>혜택 고정</span>${esc(mpBy(E.mp).name)}</div>`:''}
   <div class="ph-sub${sub?'':' ph-empty'}">${sub?esc(sub):'제품명'}</div>
   ${BD.length?`<div class="ph-bdgs">${BD.map((b,i)=>`<span class="${b.k?'au':i?'':'dk'}" ${b.k?`style="background:${b.c}"`:''}>${esc(b.t)}</span>`).join('')}</div>`:''}
   <div class="ph-note">${JOIN_NOTE}</div></div>
@@ -1672,6 +2149,10 @@ function renderPreview(){
  if(ghost) pvSlide(box,ghost,fwd);
  box.querySelectorAll('.ph-tabs button').forEach(b=>b.addEventListener('click',()=>{ if(PVTAB===b.dataset.tab) return; PVTAB=b.dataset.tab; renderPreview(); pvToTabs(); }));
  bindCarousels(box);
+  // MP 미리보기: 코너 선택(회선은 여러 개, 나머지는 1개)
+ box.querySelectorAll('[data-mpo]').forEach(b=>b.addEventListener('click',()=>{ const [k,v]=b.dataset.mpo.split('|'), P=PVMP;
+  if(Array.isArray(P[k])){ P[k]=P[k].includes(v)?P[k].filter(x=>x!==v):[...P[k],v]; } else P[k]=v; renderPreview(); }));
+ box.querySelectorAll('[data-mpfam]').forEach(b=>b.addEventListener('click',()=>toast('가족에게 동의 요청을 보냈어요 (예시)')));
  box.querySelectorAll('[data-pill]').forEach(b=>b.addEventListener('click',()=>{ PVPILL=!PVPILL; renderPreview(); }));
  box.querySelectorAll('[data-tbtn]').forEach(b=>b.addEventListener('click',()=>toast('T 상담 연결 (예시)')));
  box.querySelectorAll('[data-combo]').forEach(b=>b.addEventListener('click',()=>toast('이 조합으로 주문서에 담았어요 (예시)')));
@@ -1700,6 +2181,7 @@ function pvTarget(k){
  if(k.startsWith('cn:')) return [`cn-${k.slice(3)}`,'order'];
  if(k==='flow') return ['flow','order'];
  if(k==='info') k=curI;
+ if(GUIDE_KEYS.includes(k)) return E.mpGuide&&E.mpGuide[k]!==false?[k,'order']:['tabs','order'];
  if(k==='method') return E.kind!=='ps'?[`area-${cur}`,'order']:['top'];
  if(k==='extra') return curX!=null?[`x-${curX}`,'info']:['tabs','info'];
  if(k==='order'&&E.kind==='ps') return ['top'];
@@ -1784,7 +2266,7 @@ function persist(d,bump){
 function save(){
  const d=clone(E); d.appr='draft';
  const drop=noImg(d)?d.imgs.mobile.length+d.imgs.desktop.length:0;
- if(noImg(d)){ d.imgs={mobile:[],desktop:[]}; d.main=null; d.subs=[]; d.mainAlt=''; }
+ if(noImg(d)){ d.imgs={mobile:[],desktop:[]}; d.main=null; d.subs=[]; d.mainAlt=''; d.subAlt=''; }
  const stored=persist(d,true), n=blockingV(d).length;
  openEdit(d.id,'view'); toast((n?`저장했어요. 필수 확인 ${n}건이 남아 있어요`:'저장했어요')+(drop?` · 요금제형이라 등록한 이미지 ${drop}장은 저장하지 않았어요`:'')+(stored?'':STORE_FAIL));
 }
@@ -1819,7 +2301,6 @@ function rDock(){
  B.forEach(([id,,,fn])=>$('#'+id).addEventListener('click',fn));
 }
 
-// ---------- 시작: ?view=list 는 목록 화면(display-list2.html)으로 보내고, ?id=N 은 그 전시 상세(?id=N&mode=edit 는 수정), 그 외는 새 전시 등록 ----------
+// ---------- 시작: 화면 선택은 src/unify.ts가 한다. ?id=N 은 그 전시 상세(?id=N&mode=edit 는 수정), ?view=new 는 새 전시 등록 ----------
 const qs=new URLSearchParams(location.search);
-if(qs.get('view')==='list') location.replace(LIST_URL);
-else { const id=+qs.get('id'); openEdit(id&&DISPLAYS.some(d=>d.id===id)?id:null,qs.get('mode')); }
+{ const id=+qs.get('id'); openEdit(id&&DISPLAYS.some(d=>d.id===id)?id:null,qs.get('mode')); }

@@ -13,12 +13,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#eaecf5" />
-    <title>상품 전시 관리 v0.3.1 · 등록 | NC-Channel Product Admin</title>
+    <title>상품 전시 관리 v0.3.1 · 목록·등록 | NC-Channel Product Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet" />
-    <style>
-      /* 상품 전시 관리 v0.3.1 (product-v030.html v0.3 복사본 · 공통 / 통합 앱 전용 영역 구분, 노출 채널 위치 변경, 주문 프로세스 연동 단순화 + 채널 관리 항목 노출 체크) · 이전: 상품 전시 관리 v0.3 (product-v024.html v0.2.4 복사본 · ref/product-admin-prototype-v30.html 검토 → 연관 및 유사 상품: 사용 여부 · 수급 라디오) · 이전: 상품 전시 관리 v0.2.4 (product-v023.html v0.2.3 복사본 · ref/product-admin-prototype-v024.html 주문 구성 방식 · 주문 추가 코너 반영, 주문 구성안 = 주문 프로세스 관리 v0.2.3(order5-create.html) 목록) · 화면 스타일은 product-v013.html과 맞춘다 */
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- 등록 화면 스타일. 목록 화면에서는 src/unify.ts가 이 스타일을 지운다(목록 스타일과 겹치지 않게) -->
+    <style data-mode="edit">
+      /* 상품 전시 관리 v0.3.1 최종 (11-25: v0.3.1 · v0.3.2를 합쳐 v0.3.1로 관리 · 목록 · 등록 한 파일 · 11-25 시안 반영) · 이전 v0.3.2 작업분 (product-v031.html v0.3.1 복사본 · 공통 속성(BSS Override) · 노출 채널 안에 채널별 노출 제어(가입유형 · 할부 · 바로픽업/도착 · 기프트/티다팩) 추가) · 이전: 상품 전시 관리 v0.3.1 (product-v030.html v0.3 복사본 · 공통 / 통합 앱 전용 영역 구분, 노출 채널 위치 변경, 주문 프로세스 연동 단순화 + 채널 관리 항목 노출 체크) · 이전: 상품 전시 관리 v0.3 (product-v024.html v0.2.4 복사본 · ref/product-admin-prototype-v30.html 검토 → 연관 및 유사 상품: 사용 여부 · 수급 라디오) · 이전: 상품 전시 관리 v0.2.4 (product-v023.html v0.2.3 복사본 · ref/product-admin-prototype-v024.html 주문 구성 방식 · 주문 추가 코너 반영, 주문 구성안 = 주문 프로세스 관리 v0.2.3(order5-create.html) 목록) · 화면 스타일은 product-v013.html과 맞춘다 */
       [hidden]{display:none!important}
       #v-edit .builder{grid-template-columns:340px minmax(0,1fr);border-top:0;padding-top:0}
       #v-edit>.toolbar{margin-bottom:24px}
@@ -147,6 +149,10 @@
       .mv button:disabled{opacity:.25;cursor:default}
       .mv svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
       .ad{border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+      /* v0.3.2: 고정형 · 선택형 설정은 감싸는 테두리 없이 */
+      #sb-method .ae.single .ad{border:0;border-radius:0;padding:0}
+      /* v0.3.2: '고정형 설정 · 선택형 설정' 소제목 대신 간격만 둔다 */
+      #sb-method .ae-gap{height:20px}
       .dash-add{display:flex;width:100%;justify-content:center;border-style:dashed;color:var(--accent)}
       /* PO 카드 (EPC 읽기 전용 값) */
       .poc{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:var(--bg)}
@@ -405,6 +411,26 @@
       .ph-title{font-size:16px;font-weight:700;line-height:1.4;word-break:keep-all}
       .ph-title.ph-empty{color:var(--ph-mu)}
       .ph-mp{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;font-weight:600}
+      .mp-gray{margin:10px 0 0;padding:10px 12px;border-radius:8px;background:var(--surface,#F5F6F8);font-size:12px;line-height:1.6;color:var(--muted)}
+      tr.dis{opacity:.5;cursor:not-allowed}
+      .mp-off{display:block;font-size:11px;color:var(--muted);font-weight:400}
+      .mpo{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0 0 8px;padding:12px 14px;border:1px solid #E8ECEF;border-radius:10px;background:#fff;font:inherit;font-size:13px;color:#1A1A1A;text-align:left;cursor:pointer}
+      .mpo b{font-weight:600}
+      .mpo small{display:block;margin-top:2px;font-size:11px;color:var(--ph-mu)}
+      .mpo em{margin-left:6px;padding:1px 5px;border-radius:4px;background:#EEEAFE;color:#3617CE;font-size:10px;font-style:normal;font-weight:600}
+      .mpo .ck{flex:none;width:18px;height:18px;border:1px solid #C9CED4;border-radius:50%}
+      .mpo.on{border-color:#3617CE;box-shadow:inset 0 0 0 1px #3617CE}
+      .mpo.on .ck{border-color:#3617CE;background:#3617CE radial-gradient(circle,#fff 0 3px,transparent 4px)}
+      .mp-empty{padding:18px 12px;border:1px dashed #E8ECEF;border-radius:10px;font-size:12px;color:var(--ph-mu);text-align:center}
+      .mp-btn{width:100%;margin-top:8px;padding:10px;border:1px solid #E8ECEF;border-radius:10px;background:#fff;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+      .mp-fam{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:13px}
+      .mp-fam em{padding:1px 6px;border-radius:4px;background:#F1F3F5;color:#454F59;font-size:10px;font-style:normal}
+      .mp-bnf p{margin:0 0 6px;font-size:13px;line-height:1.6;color:#454F59}
+      .mp-gd p{margin:0 0 4px;font-size:12px;line-height:1.6;color:var(--ph-mu)}
+      .mp-gd ol{margin:0;padding-left:18px;font-size:12px;line-height:1.8;color:#454F59}
+      .mp-gdbtns{display:flex;gap:6px;margin-top:10px}
+      .mp-gdbtns span{flex:1;padding:9px 6px;border:1px solid #E8ECEF;border-radius:8px;font-size:12px;font-weight:600;text-align:center}
+      .mp-noplan{padding:28px 12px;border-radius:10px;background:#F1F3F5;font-size:12px;color:var(--ph-mu);text-align:center}
       .ph-mp span{padding:1px 6px;border-radius:4px;background:var(--accent,#4320d4);color:#fff;font-size:10px;font-weight:600}
       .ph-ded{display:flex;flex-direction:column;gap:2px;padding-top:6px;border-top:1px dashed var(--ph-ln)}
       .ph-ded span{font-weight:600}.ph-ded small{font-size:10px;color:var(--ph-mu)}
@@ -625,7 +651,7 @@
       .itabs small.ok{color:var(--ok)}
       /* 탭 줄 오른쪽 끝 버튼 (전시 정보: EPC 정보 불러오기) */
       .itabs-r{margin-left:auto;align-self:center;padding-bottom:4px}
-      .itabs .itabs-r .btn{height:32px;margin:0;padding:0 12px;border:1px solid #d9d2fb;border-radius:8px;background:linear-gradient(135deg,#f4f1ff,#e9e4ff);color:var(--accent);font-size:12px;font-weight:600}
+      .itabs .itabs-r .btn{height:32px;min-height:0;margin:0;padding:0 12px;border:1px solid #d9d2fb;border-radius:8px;background:linear-gradient(135deg,#f4f1ff,#e9e4ff);color:var(--accent);font-size:12px;font-weight:600}
       .itabs .itabs-r .btn:disabled{opacity:.5;cursor:not-allowed}
       .dh .cntx{min-width:0;text-align:left}
       .itabs small.warn{color:var(--warn)}
@@ -912,15 +938,7 @@
       .zone-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-size:12px;line-height:1.6;color:var(--muted)}
       .zone-tag{flex:none;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:-.1px}
       .zone.common .zone-tag{background:var(--surface);color:var(--text);border:1px solid var(--line-strong)}
-      .zone.zapp{margin-top:4px;padding:16px 16px 0;border:1.5px dashed #b9acf3;border-radius:14px;background:#faf9ff}
-      .zone.zapp .zone-tag{background:var(--accent);color:#fff}
-      .zone.zapp .zone-tx b{color:var(--accent);font-weight:600}
-      .zone.zapp .step{background:var(--bg)}
       /* 통합 APP · WEB을 고르지 않으면 영역 전체를 흐리게 두고 입력을 막는다(값은 남는다) */
-      .zone.zapp.off{border-color:var(--line-strong);background:var(--surface)}
-      .zone.zapp.off .zone-tag{background:var(--line-strong);color:var(--text)}
-      .zone.zapp.off .step>.body{opacity:.45}
-      .zone.zapp.off .zone-tx{color:var(--warn)}
       /* 노출 채널: 채널별 적용 범위를 체크박스 옆에 붙인다 */
       .chg{display:flex;flex-wrap:wrap;gap:8px}
       /* 줄 배치: 전체 / 통합 APP · 통합 WEB / T-gate · 스마트플래너 · BSS */
@@ -933,9 +951,9 @@
       .chc small.c{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
       .chc.all{font-weight:600}
       /* 주문 프로세스 연동: 연결한 프로세스 카드 · 채널 관리 항목 노출 체크 */
-      .op-plan-tx .op-name{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;font:inherit;font-size:16px;font-weight:700;color:var(--text);text-align:left;cursor:pointer}
-      .op-plan-tx .op-name:hover{color:var(--accent);text-decoration:underline}
-      .op-plan-tx .op-name svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+      :is(.op-plan-tx,.op-bh) .op-name{display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none;font:inherit;font-size:16px;font-weight:700;color:var(--text);text-align:left;cursor:pointer}
+      :is(.op-plan-tx,.op-bh) .op-name:hover{color:var(--accent);text-decoration:underline}
+      :is(.op-plan-tx,.op-bh) .op-name svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
       .op-scope{margin:10px 0 0;font-size:12px;color:var(--muted)}
       .chx{margin-top:24px}
       .chx .sub-h{margin:0 0 6px}
@@ -947,6 +965,183 @@
       .chx .axchip.on small{color:var(--accent)}
       .chx .axchip:not(.on){color:var(--muted);border-style:dashed}
       .chx-empty{padding:14px 16px;border:1px dashed var(--line-strong);border-radius:8px;font-size:12px;color:var(--muted)}
+      /* ===== v0.3.2: 공통 속성 · 채널별 노출 제어 ===== */
+      .at-bss{padding-left:0;display:flex;align-items:center;gap:8px}
+      .at-sep{color:var(--muted);font-size:12px;margin:0 2px}
+      .itabs .ch-each{align-self:center;margin-left:12px;padding-bottom:4px}
+      /* 노출 채널: 테두리 상자 없이 체크박스만 */
+      #sb-ch .chc,#sb-ch .chc:has(input:checked){min-height:0;padding:0;border:0;background:none}
+      #sb-ch .chg{gap:20px}
+      .ch-res{display:grid;gap:4px;font-size:13px}
+      .ch-res div{display:flex;gap:12px}
+      .ch-res b{min-width:130px;font-weight:600}
+      .ch-res span{color:var(--muted)}
+      .axchip.ch-fix{cursor:default}
+      #chsetBox .ft-v>.row{margin-bottom:0}
+      .ch-mon{display:grid;gap:8px}
+      .ch-mrow{display:flex;align-items:center;gap:12px}
+      .ch-mrow b{min-width:64px;font-size:13px;font-weight:600}
+      /* ===== v0.3.1 최종 (11-25 시안 반영) ===== */
+      /* 섹션 머리줄: 흰 바탕 · 제목 옆에 상태 배지 → 필수 배지(초록) · 접기 버튼은 오른쪽 끝 */
+      #v-edit .step>header{background:#fff;padding:18px 20px 14px}
+      #v-edit .step>header>b{font-size:16px;font-weight:700;color:#1A1A1A}
+      #v-edit .step>header .st{margin-left:4px}
+      #v-edit .step>header .st+.req,#v-edit .step>header .req{margin-left:0}
+      #v-edit .step>header .req{color:#0F8A5F;background:#DDF7EC}
+      #v-edit .step>header>.fold{margin-left:auto}
+      #v-edit .step>header .chip{border:0;background:#F1F3F5;color:#454F59}
+      #v-edit .step>header .chip.ok{background:var(--ok-soft);color:var(--ok)}
+      #v-edit .step>header .chip.warn{background:var(--warn-soft);color:var(--warn)}
+      #v-edit .step .body{padding-top:4px}
+      /* 소제목: 앞에 점 · 건수는 보조 색 */
+      .bh{display:flex;align-items:center;gap:8px;margin:20px 0 12px;font-size:14px;font-weight:700;color:#1A1A1A}
+      .bh:first-child{margin-top:0}
+      .bh::before{content:"";flex:none;width:4px;height:4px;border-radius:50%;background:currentColor}
+      .bh span{margin-left:4px;font-size:13px;font-weight:400;color:#454F59}
+      .bh span b{color:var(--accent);font-weight:600}
+      /* 연결 상품 표: 비어 있어도 머리줄을 보이고, 버튼은 표 오른쪽 아래 */
+      .cn-tbl{border-top:1px solid var(--line);overflow:auto}
+      .cn-tbl table{width:100%;border-collapse:collapse;font-size:12px}
+      .cn-tbl th{padding:12px 10px;background:var(--surface);border-bottom:1px solid var(--line);font-weight:600;color:#1A1A1A;text-align:center;white-space:nowrap}
+      .cn-tbl td{padding:10px;border-bottom:1px solid var(--line);text-align:center;color:#1A1A1A}
+      .cn-tbl :is(th,td).l{text-align:left}
+      .cn-tbl tr.none td{padding:30px 10px;color:var(--muted)}
+      .cn-tbl .lk{padding:0;border:0;background:none;font:inherit;font-weight:600;color:#1A1A1A;text-align:left;cursor:pointer}
+      .cn-tbl .lk:hover{color:var(--accent);text-decoration:underline}
+      .cn-acts{display:inline-flex;gap:4px}
+      .cn-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+      /* 타이틀 표 · 대상 상품 없음 안내 */
+      .ae.single #ad>.bh:first-child{margin-top:0}
+      .guide.plain{justify-content:center;padding:28px 20px;border-color:var(--line);border-radius:12px}
+      .guide.plain p{font-size:13px;color:#1A1A1A}
+      .ft-empty{font-size:13px;color:var(--muted)}
+      #sb-kind .ft-row{grid-template-columns:160px minmax(0,1fr)}
+      /* ===== v0.3.1 (11-25 시안 2: 구성 영역 디자인) ===== */
+      /* 아코디언 머리줄 아래 선 없음 · 펼친 섹션도 기본 테두리 */
+      #v-edit .step>header,#v-edit #sec-order>header{border-bottom:0}
+      #v-edit .step:not(.closed){border-color:var(--line)}
+      #v-edit #sec-order>header{min-height:0;padding:18px 20px 14px}
+      /* 전시 정보 탭: 알약형 */
+      #infoList.itabs{gap:8px;margin:0 0 16px;border-bottom:0}
+      #infoList.itabs button{height:36px;margin:0;padding:0 16px;border:1px solid var(--line);border-radius:18px;background:#fff;color:#1A1A1A;font-size:13px;font-weight:500}
+      #infoList.itabs button.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
+      #infoList.itabs button.on small{color:#fff}
+      /* 전시 상품 배지: [+] 원형 버튼 · 입력 칩 */
+      .bd-add{flex:none;width:28px;height:28px;padding:0;border:1px solid var(--line-strong);border-radius:50%;background:#fff;color:#454F59;font-size:18px;line-height:1;cursor:pointer}
+      .bd-add:disabled{opacity:.4;cursor:not-allowed}
+      .binfo .bin-w{gap:4px;height:28px;padding:0 10px 0 12px;border:1px solid var(--line-strong);border-radius:14px;background:#fff}
+      .binfo .bin-w input{width:auto;min-width:0;min-height:0;height:24px;padding:0;border:0;background:none;font-size:12px;font-weight:600;color:#1A1A1A}
+      .binfo .bin-w input:focus{outline:none}
+      .binfo .bin-w:focus-within{border-color:var(--accent)}
+      .binfo .bin-w .x{border:0;background:none;padding:0;color:var(--muted);font-size:14px;cursor:pointer}
+      /* 대표 · 추가 이미지: 큰 점선 상자 + 대체 텍스트(상자 폭) */
+      .img-add.big{width:230px;height:106px;border-radius:4px;background:#fff}
+      .img-add.big b{font-size:30px;font-weight:300;color:var(--muted)}
+      .binfo .alt-row{max-width:230px}
+      .binfo .alt-row input{font-size:12px}
+      .binfo .img-guide li::before{content:none}
+      /* 전시 기간: 일시 한 칸 · 구분 '-' */
+      .dtr{align-items:center;gap:8px}
+      .dtr input[type=datetime-local]{width:220px}
+      .dtr .dt-sep{color:var(--muted)}
+      .dtr .chkl{margin-left:8px}
+      #infoFoot{margin-top:16px}
+      /* 연관 및 유사 상품: 사용 여부 N이어도 '사용 여부' 행은 또렷하게, 수급 · 타이틀 행만 흐리게(rl-dis) */
+      #v-edit #sec-rel.off>.body{opacity:1}
+      /* ===== v0.3.1 (11-25 시안 3: 노출 채널 · 통합App · Web 노출 전용) ===== */
+      /* 값 칸: 본문 크기 · 세로 가운데 */
+      #sb-ch .ft-v,#chsetBox .ft-v{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;font-size:13px;color:#1A1A1A}
+      #chsetBox .ft-v>input[type=text]{width:100%}
+      /* 채널 버튼(알약형) · 채널별 따로 설정(오른쪽) */
+      .ch-top{display:flex;align-items:center;gap:12px;margin:0 0 16px}
+      .ch-pills{display:flex;gap:8px;flex-wrap:wrap}
+      .ch-pills button{height:36px;padding:0 16px;border:1px solid var(--line);border-radius:18px;background:#fff;font:inherit;font-size:13px;font-weight:500;color:#1A1A1A;cursor:pointer}
+      .ch-pills button.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
+      .ch-pills small{margin-left:4px;font-size:11px;font-weight:600;color:var(--accent)}
+      .ch-pills button.on small{color:#fff}
+      .ch-top .ch-each{margin-left:auto}
+      /* 체크 박스 목록 */
+      .ch-cbs{display:flex;flex-wrap:wrap;gap:8px 20px}
+      .ch-cbs .chkl{font-size:13px}
+      .ch-cbs input,.ch-top .ch-each input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+      /* 할부개월수: 항목명 | 가입 유형 칸 | 개월 버튼 */
+      #chsetBox .ch-mset{grid-template-columns:130px minmax(0,1fr)}
+      .ch-msub{min-width:0}
+      .ch-mr{display:grid;grid-template-columns:100px minmax(0,1fr)}
+      .ch-mr+.ch-mr{border-top:1px solid var(--line)}
+      .ch-ml{display:flex;align-items:center;justify-content:center;padding:10px;background:var(--surface);border-right:1px solid var(--line);font-size:13px;color:#1A1A1A}
+      .ch-mv{min-width:0;padding:10px 20px}
+      .ch-mv .er:empty{display:none}
+      .ch-mv .axchips{gap:8px}
+      .ch-mv .axchip{min-width:64px;justify-content:center;padding:7px 14px;border-color:var(--line-strong);border-radius:18px;background:#fff;color:#1A1A1A;font-weight:400}
+      .ch-mv .axchip.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
+      #chsetBox .cn-foot .btn{background:#fff}
+      /* ===== v0.3.1 (11-25 시안 4: 고객 선택 방식 케이스) ===== */
+      /* 소제목: '• 1단계' · '- 2단계' */
+      #sb-method .bh{margin:32px 0 14px}
+      #sb-method #ad>.bh:first-child{margin-top:0}
+      .bh.dash::before{width:6px;height:2px;border-radius:0}
+      .bh .chip{font-weight:400}
+      /* 상품 목록 설정: 최소 [ ] - 최대 [ ] 개  ☑ 최대 수량 따로 설정 */
+      .cs-qty{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+      .cs-qty input[type=number]{width:200px;text-align:right}
+      .cs-ql,.cs-dash{font-size:13px;color:var(--muted)}
+      .cs-qty .chkl{margin-left:12px;font-size:13px;font-weight:600}
+      .cs-qty .chkl input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+      /* 안내 한 줄 · 빈 상태 회색 상자 */
+      .cs-note{display:flex;align-items:center;gap:6px;margin:12px 0 0;font-size:13px;color:#1A1A1A}
+      .cs-note i{display:inline-flex;align-items:center;justify-content:center;flex:none;width:16px;height:16px;border-radius:50%;background:#454F59;color:#fff;font-size:11px;font-style:normal;font-weight:700}
+      .cs-empty{display:flex;align-items:center;justify-content:center;min-height:120px;padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:13px;color:var(--muted)}
+      /* 옵션 구성 카드 */
+      .cs-optbox{margin-top:28px;padding:24px;border:1px solid var(--line);border-radius:12px;background:#fff}
+      .cs-opth{display:flex;align-items:center;margin-bottom:16px}
+      .cs-opth b{font-size:14px;font-weight:700;color:#1A1A1A}
+      .cs-opth .btn{margin-left:auto}
+      .cs-opt+.cs-opt{margin-top:16px}
+      .cs-optn{display:flex;align-items:center;gap:12px;padding:6px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+      .cs-optn .axn{flex:1;min-width:0;width:auto}
+      .cs-optn .btn.cs-del{border-radius:16px}
+      .cs-opt .ftbl{border-top:0}
+      .cs-opt .ft-row{grid-template-columns:160px minmax(0,1fr)}
+      .cs-vin{width:100%}
+      .cs-hint{margin:6px 0 0;font-size:11px;color:var(--muted)}
+      .cs-vals{margin-bottom:8px}
+      /* 조합별 PO 매핑: 0매핑 · 0개 조합 */
+      .cs-cnt{margin-left:4px;font-size:13px;font-weight:600;color:#1A1A1A}
+      .cs-cnt b{color:var(--accent);font-weight:600}
+      .cs-sm{font-size:12px;font-weight:400;color:var(--muted)}
+      /* 복합형: 왼쪽 회색 패널(구성 영역 목록 · 아래 구성 추가) | 오른쪽 상세(테두리 없음) */
+      #sb-method .ae:not(.single){grid-template-columns:300px minmax(0,1fr);gap:28px}
+      #sb-method .ae:not(.single) .ad{border:0;border-radius:0;padding:0}
+      .cs-side{display:flex;flex-direction:column;min-height:100%;padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+      .cs-side .al{align-self:stretch;background:none;border:0;border-radius:0;padding:0}
+      .cs-side .ali{width:100%;box-sizing:border-box}
+      .cs-side .ali{gap:10px;padding:18px 20px;border-radius:6px;background:#fff;margin-bottom:8px}
+      .cs-side .ali.on{border-color:var(--accent);background:var(--accent-soft)}
+      .cs-side .ali .ix{width:auto;font-size:15px;font-weight:700;color:#1A1A1A}
+      .cs-side .ali .nm b{display:inline;margin-left:10px;font-size:15px;font-weight:700;color:#1A1A1A}
+      .cs-side .ali .nm small{margin-left:8px;font-size:12px}
+      .cs-grip{font-size:14px;line-height:1;color:var(--muted)}
+      .cs-sfoot{margin-top:auto;padding-top:16px}
+      .cs-add{width:100%;height:44px}
+      /* 구성 제공 조건: 고를 수 없는 카드도 흐리게 하지 않는다 */
+      #sb-method .cdc.dis{opacity:1}
+      #sb-method .cdc{padding:16px 20px}
+      /* ===== v0.3.1 (11-25 시안 5: T기프트 · 연관 및 유사 상품 · 주문 프로세스 연동) ===== */
+      #sb-gift .ft-row.rl-dis .ft-v{opacity:.45}
+      #sb-gift .ft-row.rl-dis label{cursor:not-allowed}
+      /* 주문 프로세스 연동: 스위치는 접기 버튼 바로 왼쪽 */
+      #v-edit #sec-order>header .hsw{margin-left:auto}
+      #v-edit #sec-order>header>.fold{margin-left:8px}
+      #sec-order .ord-sw:empty{display:none}
+      .op-box{padding:24px 28px;border:1px solid var(--line);border-radius:12px;background:#fff}
+      .op-bh{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#1A1A1A}
+      .op-bh>b{font-size:14px;font-weight:700}
+      .op-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-style:normal;font-weight:700}
+      .op-bh .op-name{font-size:14px}
+      .op-ul{margin:12px 0 0;padding-left:30px;font-size:12px;color:#454F59}
+      .op-ul li::marker{color:var(--muted)}
+      #sb-order .cn-foot .btn.primary{min-width:44px}
     </style>
   </head>
   <body>
@@ -954,9 +1149,11 @@
 <nav class="app-nav" aria-label="주 메뉴" data-auto-collapse="1440"></nav>
 <main>
 
-<!-- 이 페이지의 화면 구성은 아래 HTML에서 직접 수정하세요. 스크립트는 src/display-create-v30.ts · 전시 목록은 display-list2.html로 분리했다 -->
+<!-- 상품 전시 관리 v0.3.1: 목록과 등록을 한 파일에서 관리한다. 화면 구성은 아래 HTML에서 직접 수정하세요.
+     화면 선택 src/page-product-v031.ts · src/unify.ts (파라미터 없음 = 목록, ?view=new = 등록, ?id=N = 상세)
+     등록 스크립트 src/display-create-v31.ts · 목록 스크립트 src/display-list2.ts · 목록 마크업은 아래 <template data-list="main"> · <template data-list="body"> -->
 <!-- 전시 등록/수정 -->
-<section class="view on" id="v-edit">
+<section data-mode="edit" class="view on" id="v-edit">
   <div class="toolbar"><h1 id="editTitle">전시등록</h1><button type="button" class="btn" id="goList" style="margin-left:auto">전시 목록 보기</button></div>
   <div class="editing" id="editingBar"><span id="editingTxt"></span></div>
   <div class="builder">
@@ -968,28 +1165,32 @@
     </aside>
     <div id="form">
       <div class="zone common" id="zoneCommon">
-        <div class="zone-h"><span class="zone-tag">공통</span><span class="zone-tx">모든 노출 채널에 적용돼요 · T-gate · 스마트플래너는 전시 정보 · 콘텐츠 정보만 사용해요</span></div>
       <div class="step" id="sec-kind">
-        <header><b>전시 유형</b><span class="req">필수</span><span class="st"><span class="chip" id="st-kind"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>전시 유형</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-kind"></div>
       </div>
       <div class="step" id="sec-conn">
-        <header><b>연결 상품</b><span class="req">필수</span><span class="st"><span class="chip" id="st-conn"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>연결 상품</b><span class="st"><span class="chip" id="st-conn"></span></span><span class="req">필수</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-conn"></div>
       </div>
       <div class="step" id="sec-method">
-        <header><b>고객 선택 방식</b><span class="req">필수</span><span class="st"><span class="chip" id="st-method"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>고객 선택 방식</b><span class="st"><span class="chip" id="st-method"></span></span><span class="req">필수</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-method"></div>
       </div>
       <!-- v0.3.1 노출 채널: 전시 정보 위. 통합 APP · WEB을 고를 때만 맨 아래 통합 앱 전용 영역이 나타난다 -->
       <div class="step ch-step" id="sec-ch">
-        <header><b>노출 채널</b><span class="req">필수</span><span class="st"><span class="chip" id="st-ch"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <header><b>노출 채널</b><span class="st"><span class="chip" id="st-ch"></span></span><span class="req">필수</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-ch"></div>
+      </div>
+      <!-- v0.3.2 채널별 노출 제어: 노출 채널 섹션 바로 아래. 통합 APP · WEB을 고를 때만 보인다 -->
+      <div class="step" id="sec-chset">
+        <header><b>통합 APP · 통합 WEB 전용 노출</b><span class="st"><span class="chip" id="st-chset"></span></span><span class="req">필수</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-chset"><div id="chsetBox"></div></div>
       </div>
       <!-- 기본 정보 · 상세 설명: 콘텐츠 정보와 같은 목록 + 상세 구성. 처음에는 기본 정보 -->
       <div class="step" id="sec-info">
-        <header><b>전시 정보</b><span class="req">필수</span><span class="st"><span class="chip" id="st-info"></span></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-info"><div class="itabs" id="infoList" role="tablist" aria-label="전시 정보"></div><div id="sb-basic"></div><div id="sb-desc" hidden></div><div id="sb-search" hidden></div><div id="sb-cvm" hidden></div></div>
+        <header><b>전시 정보</b><span class="st"><span class="chip" id="st-info"></span></span><span class="req">필수</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-info"><div class="itabs" id="infoList" role="tablist" aria-label="전시 정보"></div><div id="sb-basic"></div><div id="sb-desc" hidden></div><div id="sb-search" hidden></div><div id="sb-cvm" hidden></div><div class="cn-foot" id="infoFoot"></div></div>
         <input type="file" id="descFile" accept="image/*" multiple hidden>
         <input type="file" id="ogFile" accept=".jpg,.jpeg,.png,.gif,.bmp,image/jpeg,image/png,image/gif,image/bmp" hidden>
       </div>
@@ -997,10 +1198,21 @@
         <header><b>콘텐츠 정보</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-extra"></div>
       </div>
+      <!-- v0.3.2 MP 상품 전시 전용 안내 영역: 머리줄 스위치로 노출 ON/OFF. 다른 전시 유형에서는 숨긴다 -->
+      <div class="step" id="sec-gcs">
+        <header><b>상담 안내</b><label class="switch hsw" title="노출"><input type="checkbox" data-gd="gcs" aria-label="상담 안내 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-gcs"></div>
       </div>
-      <!-- v0.3.1 통합 앱 전용: 노출 채널에 통합 APP · WEB이 있을 때만 보인다. 없으면 영역째 숨긴다(입력한 값은 남는다) -->
-      <div class="zone zapp" id="zoneApp" hidden>
-        <div class="zone-h"><span class="zone-tag">통합 앱 전용</span><span class="zone-tx" id="zoneAppTx"></span></div>
+      <div class="step" id="sec-gshop">
+        <header><b>지점 · 대리점 방문 안내</b><label class="switch hsw" title="노출"><input type="checkbox" data-gd="gshop" aria-label="지점 · 대리점 방문 안내 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-gshop"></div>
+      </div>
+      <div class="step" id="sec-ggov">
+        <header><b>정부24 · 복지로 홈페이지 신청</b><label class="switch hsw" title="노출"><input type="checkbox" data-gd="ggov" aria-label="정부24 · 복지로 홈페이지 신청 노출"><span aria-hidden="true"></span></label><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-ggov"></div>
+      </div>
+      </div>
+      <!-- v0.3.2: 통합 앱 전용 영역(노출 채널에 따라 숨김)은 쓰지 않는다. 구매 후기 · 전문가 리뷰 · 연관 및 유사 상품 · 주문 프로세스 연동은 항상 노출 -->
       <div class="step" id="sec-review">
         <header><b>구매 후기</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-review"></div>
@@ -1014,10 +1226,18 @@
         <header><b>연관 및 유사 상품</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
         <div class="body" id="sb-rel"><div id="sb-sim"></div><div id="relList"></div></div>
       </div>
-      <div class="step" id="sec-order">
-        <header><b>주문 프로세스 연동</b><label class="switch hsw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
-        <div class="body" id="sb-order"></div>
+      <!-- v0.3.2 T기프트 · 티다팩 재적용: 단말기 연결 시 T기프트, 요금제 연결 시 티다팩. 목록은 EPC에서 조회한다(CVM 아님) -->
+      <div class="step" id="sec-gift">
+        <header><b>T기프트</b><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-gift"></div>
       </div>
+      <div class="step" id="sec-td">
+        <header><b>티다팩</b><span class="cond">요금제 연결 시</span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-td"></div>
+      </div>
+      <div class="step" id="sec-order">
+        <header><b>주문 프로세스 연동</b><span class="req" id="odReq" hidden>필수</span><label class="switch hsw" id="odSw" title="주문 받기"><input type="checkbox" id="odOn" aria-label="주문 받기"><span aria-hidden="true"></span></label><span class="ord-sw" id="odOnT"></span><button type="button" class="fold" aria-expanded="true" aria-label="접기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></header>
+        <div class="body" id="sb-order"></div>
       </div>
       <!-- v0.3.1: 컨테이너 · 코너 설정은 뺐다(주문 프로세스 관리에서 확인). 미리보기 코드가 참조하므로 빈 자리만 둔다 -->
       <section id="ctnSecs" hidden></section>
@@ -1037,14 +1257,226 @@
   </div>
 </section>
 
+<!-- ===== 목록 화면 (v0.3 상품 전시 목록 display-list2.html 기준). 목록 모드일 때만 꺼내 붙인다 ===== -->
+<template data-list="main" data-body-class="ul">
+<!-- ===== 1. 메인 목록 ===== -->
+<section class="view on" id="v-list">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 관리 <span aria-hidden="true">›</span> <strong>상품 전시 관리</strong></div>
+  <h1 class="lst-title">상품 전시 관리</h1>
+
+  <!-- 조회 조건: [조회]를 눌러야 결과에 반영된다. 항목(라벨 + 입력)은 세로 구분선으로 나누고, 버튼은 마지막 줄 오른쪽 -->
+  <form class="lst-filter" id="lFilter" autocomplete="off">
+    <div class="lf-row">
+      <span class="lf-g">
+        <label class="lf-l" for="fKey">검색어</label>
+        <select id="fKey"><option value="all">전체</option><option value="name">전시명</option><option value="id">전시ID</option></select>
+        <input type="text" id="fQ" placeholder="검색 항목을 선택 후 검색하세요" aria-label="검색어">
+      </span>
+      <span class="lf-g">
+        <label class="lf-l" for="fDate">조회 기간</label>
+        <select id="fDate" class="sm"><option value="upd">등록일/수정일</option><option value="run">전시 기간</option></select>
+        <span class="lf-range"><input type="date" id="fFrom" aria-label="시작일"><span aria-hidden="true">-</span><input type="date" id="fTo" aria-label="종료일"></span>
+      </span>
+      <span class="lf-g"><label class="lf-l" for="fSt">운영 상태</label><select id="fSt"></select></span>
+    </div>
+    <div class="lf-row">
+      <span class="lf-g"><label class="lf-l" for="fCh">전시 채널</label><select id="fCh"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fArea">전시 유형</label><select id="fArea"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fAppr">상태</label><select id="fAppr"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fDisp">전시여부</label><select id="fDisp"></select></span>
+    </div>
+    <div class="lf-row">
+      <span class="lf-g"><label class="lf-l" for="fMethod">고객 선택 방식</label><select id="fMethod"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fOwner">담당자</label><select id="fOwner"></select></span>
+      <span class="lf-g"><label class="lf-l" for="fTeam">담당팀</label><select id="fTeam"></select></span>
+      <span class="lf-acts"><button type="reset" class="btn dark">초기화</button><button type="submit" class="btn primary">조회</button></span>
+    </div>
+  </form>
+  <h2 class="lst-count">조회 결과 <span>총 <b id="lCount">0</b>건</span></h2>
+
+  <!-- 일괄 작업 툴바: 선택 건이 있을 때만 활성 -->
+  <div class="pb-bulk" id="bulkBar" aria-label="일괄 작업">
+    <span class="pb-bulk-count" id="selCount" aria-live="polite">선택 0건</span>
+    <span class="pb-sep" aria-hidden="true"></span>
+    <button class="btn sm" type="button" data-bulk="appr">상태 변경</button>
+    <button class="btn sm" type="button" data-bulk="disp">전시여부 변경</button>
+    <button class="btn sm" type="button" data-bulk="ch">전시 채널 변경</button>
+    <button class="btn sm" type="button" data-bulk="period">전시기간 변경</button>
+    <button class="btn sm" type="button" data-bulk="rank">노출순위 변경</button>
+    <span class="pb-sep" aria-hidden="true"></span>
+    <button class="btn sm pb-danger" type="button" id="bulkDelete">선택 삭제</button>
+    <button class="btn sm pb-ghost" type="button" id="bulkClear">선택 해제</button>
+    <div class="pb-bulk-right">
+      <select id="pageSize" aria-label="페이지당 건수"><option value="10">10개씩</option><option value="20" selected>20개씩</option><option value="50">50개씩</option></select>
+    </div>
+  </div>
+  <p class="pb-selall" id="selAllBar" hidden></p>
+
+  <!-- 전시ID를 누르면 같은 파일의 상세 화면(product-v031.html?id=N), [수정]은 목록에서 바로 고치는 팝업. 열 폭은 가로 스크롤 없이 본문 폭에 맞춘다(src/display-list2.css · 목록 스크립트 src/display-list2.ts) -->
+  <div class="lst-tw"><table class="lst-table" id="listTable">
+    <colgroup><col class="w-chk"><col class="w-id"><col class="w-ver"><col class="w-nm"><col class="w-ch"><col class="w-mt"><col class="w-st"><col class="w-ep"><col class="w-appr"><col class="w-disp"><col class="w-rank"><col class="w-pd"><col class="w-ow"><col class="w-at"><col class="w-mng"></colgroup>
+    <thead><tr>
+      <th class="c"><input type="checkbox" id="chkAll" aria-label="현재 페이지 전체 선택"></th>
+      <th><button type="button" class="pb-sort" data-sort="id">전시ID</button></th>
+      <th>버전</th>
+      <th><button type="button" class="pb-sort" data-sort="name">전시명</button></th>
+      <th>전시 채널</th>
+      <th>고객 선택 방식</th>
+      <th class="c"><button type="button" class="pb-sort" data-sort="op">운영 상태</button></th>
+      <th class="c">EPC 상태</th>
+      <th><button type="button" class="pb-sort" data-sort="appr">상태</button></th>
+      <th><button type="button" class="pb-sort" data-sort="disp">전시</button></th>
+      <th class="c"><button type="button" class="pb-sort" data-sort="rank">노출순위</button></th>
+      <th class="c"><button type="button" class="pb-sort" data-sort="from">전시 기간</button></th>
+      <th class="c">담당자</th>
+      <th class="c"><button type="button" class="pb-sort" data-sort="upd">최종등록(수정)</button></th>
+      <th class="c">관리</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table></div>
+  <!-- 페이지 번호(가운데) + 엑셀 작업 · 등록(오른쪽)을 한 줄에 -->
+  <div class="lst-bottom">
+  <nav class="lst-pager" id="pager" aria-label="페이지"></nav>
+  <div class="lst-foot">
+    <button class="btn lg" type="button" id="btnTemplate">엑셀 양식 다운로드</button>
+    <button class="btn lg" type="button" id="btnExport">목록 엑셀 다운로드</button>
+    <button class="btn lg" type="button" id="btnUpload">엑셀 일괄 등록·수정</button>
+    <button class="btn primary lg" type="button" id="lNew">등록</button>
+  </div>
+  </div>
+</section>
+
+<!-- ===== 4. 업로드 결과 화면 ===== -->
+<section class="view" id="v-result">
+  <div class="breadcrumb" aria-label="현재 위치">홈 <span aria-hidden="true">›</span> 상품 관리 <span aria-hidden="true">›</span> 상품 전시 목록 <span aria-hidden="true">›</span> <strong>업로드 결과</strong></div>
+  <div class="toolbar">
+    <h1>엑셀 업로드 결과</h1>
+    <div class="pb-head-actions">
+      <button class="btn" type="button" id="rRetry">다시 업로드</button>
+      <button class="btn primary" type="button" id="rBack">목록에서 확인</button>
+    </div>
+  </div>
+  <p class="sub" id="rSub"></p>
+  <div class="pb-result-cards" id="rCards"></div>
+  <div class="pb-rtabs" role="tablist" aria-label="결과 구분" id="rTabs">
+    <button type="button" role="tab" data-r="all" aria-selected="true">전체 <span class="h-cnt" id="rcAll">0</span></button>
+    <button type="button" role="tab" data-r="ok">성공 <span class="h-cnt" id="rcOk">0</span></button>
+    <button type="button" role="tab" data-r="fail">실패 <span class="h-cnt" id="rcFail">0</span></button>
+    <button class="btn sm" type="button" id="rFailDown">실패 항목 다운로드</button>
+  </div>
+  <div class="tw"><table id="rGrid">
+    <thead><tr><th style="width:72px">엑셀 행</th><th style="width:90px">처리</th><th>전시ID</th><th>전시명</th><th style="width:90px">결과</th><th>오류 사유</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+</template>
+
 </main>
 </div>
+<!-- 등록 화면 전용(목록 모드에서는 지운다) -->
+<div data-mode="edit">
 <div class="modal" id="md" hidden><div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mTitle" tabindex="-1">
   <header><b id="mTitle"></b><span class="pill" id="mSub"></span><button type="button" class="mclose" id="mClose" aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
   <div class="mbody" id="mBody"></div>
   <footer id="mFoot"></footer>
 </div></div>
 <div class="toast" id="toast"></div>
-    <script type="module" src="/src/display-create-v31.ts"></script>
+</div>
+<!-- 목록 화면 팝업 · 안내(목록 모드일 때만 꺼내 붙인다) -->
+<template data-list="body">
+<!-- ===== 2. 일괄 변경 팝업 ===== -->
+<dialog class="pb-dlg" id="dlgBulk" aria-labelledby="bTitle">
+  <form method="dialog" class="pb-dlg-in" id="bForm">
+    <header class="pb-dlg-h"><h2 id="bTitle">일괄 변경</h2><button class="pb-x" type="button" data-close aria-label="닫기">×</button></header>
+    <div class="pb-dlg-b">
+      <div class="pb-field">
+        <label for="bField">변경 항목</label>
+        <select id="bField">
+          <option value="appr">상태</option><option value="disp">전시여부</option>
+          <option value="ch">전시 채널</option><option value="period">전시기간</option><option value="rank">노출순위</option>
+        </select>
+      </div>
+      <div class="pb-field">
+        <label id="bValLabel">변경 값</label>
+        <div id="bVal" class="pb-val"></div>
+      </div>
+      <h3 class="pb-h3">변경 미리보기 <span class="pill" id="bSum"></span></h3>
+      <div class="tw pb-preview"><table>
+        <thead><tr><th>전시ID</th><th>전시명</th><th>현재</th><th></th><th>변경 후</th></tr></thead>
+        <tbody id="bPrev"></tbody>
+      </table></div>
+    </div>
+    <footer class="pb-dlg-f">
+      <button class="btn" type="button" data-close>취소</button>
+      <button class="btn primary" type="submit" id="bApply">변경</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- 수정 팝업: 연결 상품 · 콘텐츠 등 나머지 항목은 등록/수정 화면에서 고친다 -->
+<dialog class="pb-dlg" id="dlgEdit" aria-labelledby="eTitle">
+  <form method="dialog" class="pb-dlg-in" id="eForm">
+    <header class="pb-dlg-h"><h2 id="eTitle">전시 수정</h2><button class="pb-x" type="button" data-close aria-label="닫기">×</button></header>
+    <div class="pb-dlg-b pb-grid2">
+      <div class="pb-field pb-span2"><label for="eName">전시명</label><input type="text" id="eName" required></div>
+      <div class="pb-field"><label for="eArea">전시 유형</label><select id="eArea"><option value="">선택 안 함</option></select></div>
+      <div class="pb-field pb-span2" role="group" aria-labelledby="eChL"><span class="pb-flabel" id="eChL">전시 채널</span><div class="pb-cks" id="eCh"></div></div>
+      <div class="pb-field"><label for="eAppr">상태</label><select id="eAppr"></select></div>
+      <div class="pb-field"><label for="eDisp">전시여부</label><select id="eDisp"><option value="Y">전시</option><option value="N">미전시</option></select></div>
+      <div class="pb-field"><label for="eRank">노출순위</label><input type="text" id="eRank" inputmode="numeric"></div>
+      <div class="pb-field"><label for="eFrom">전시 시작일</label><input type="date" id="eFrom"></div>
+      <div class="pb-field"><label for="eTo">전시 종료일 <small>(비우면 상시)</small></label><input type="date" id="eTo"></div>
+      <p class="pb-err pb-span2" id="eErr" aria-live="polite"></p>
+    </div>
+    <footer class="pb-dlg-f">
+      <a class="pb-link pb-full" id="eFull" href="#">등록/수정 화면에서 전체 수정</a>
+      <button class="btn" type="button" data-close>취소</button>
+      <button class="btn primary" type="submit">저장</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ===== 3. 엑셀 업로드 팝업 ===== -->
+<dialog class="pb-dlg" id="dlgUpload" aria-labelledby="uTitle">
+  <div class="pb-dlg-in">
+    <header class="pb-dlg-h"><h2 id="uTitle">엑셀 일괄 등록·수정</h2><button class="pb-x" type="button" data-close aria-label="닫기">×</button></header>
+    <div class="pb-dlg-b">
+      <ol class="pb-steps">
+        <li><b>1</b><span>양식 내려받기</span><button class="btn sm" type="button" id="uTemplate">엑셀 양식 다운로드</button></li>
+        <li><b>2</b><span>양식 작성 · 전시ID가 비어 있으면 <em>신규 등록</em>, 있으면 <em>수정</em>으로 처리</span></li>
+        <li><b>3</b><span>파일 업로드 후 검증 결과 확인</span></li>
+      </ol>
+      <label class="pb-drop" id="uDrop">
+        <input type="file" id="uFile" accept=".csv,text/csv">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <span id="uDropText"><b>파일을 끌어다 놓거나 눌러서 선택</b><small>CSV(.csv) · 최대 1,000행 · Excel에서 ‘CSV UTF-8’ 또는 ‘CSV’로 저장</small></span>
+      </label>
+      <div id="uCheck" hidden>
+        <h3 class="pb-h3">검증 결과</h3>
+        <div class="pb-check" id="uCheckSum"></div>
+      </div>
+    </div>
+    <footer class="pb-dlg-f">
+      <button class="btn" type="button" data-close>취소</button>
+      <button class="btn primary" type="button" id="uApply" disabled>업로드</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- 확인 팝업 (삭제 등) -->
+<dialog class="pb-dlg pb-dlg-sm" id="dlgConfirm" aria-labelledby="cTitle">
+  <form method="dialog" class="pb-dlg-in">
+    <header class="pb-dlg-h"><h2 id="cTitle">확인</h2></header>
+    <div class="pb-dlg-b"><p id="cMsg" class="pb-cmsg"></p></div>
+    <footer class="pb-dlg-f">
+      <button class="btn" value="cancel">취소</button>
+      <button class="btn primary" value="ok" id="cOk">확인</button>
+    </footer>
+  </form>
+</dialog>
+
+<div class="toast pb-toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastUndo" hidden>되돌리기</button></div>
+</template>
+    <script type="module" src="/src/page-product-v031.ts"></script>
   </body>
 </html>

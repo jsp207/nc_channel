@@ -23,6 +23,7 @@
 // 주문 구성안 종류 · 통합 APP · WEB 주문 단계(가입 유형 · 할부 · 배송)가 그에 따라 바뀐다. 복합형은 구성 영역별로 묶어 보여 주고 대표 상품이 든 영역을 대표 영역으로 표시한다.
 // 원본 v0.2: ref/display-admin-prototype-v3.html의 전시 등록 흐름(전시 유형 → 연결 상품 → 고객 선택 방식 → 기본 정보 → 상세 설명 → 콘텐츠 정보 → 검색 노출 → 주문 구성)을
 // product-create3 화면 구성(왼쪽 모바일 미리보기, 접히는 섹션, 하단 검사 바)으로 옮긴 버전.
+import { isUnified, SELF } from "./unify";
 import "./style.css";
 // 컨테이너 · 코너 영역은 order5-create.html 스타일을 그대로 옮긴 파일을 쓴다
 import "./order5-container.css";
@@ -99,7 +100,8 @@ const mvBtns=(attr,i,n,label)=>`<span class="mv"><button type="button" data-${at
 
 // ---------- 화면 전환 ----------
 // 전시 목록은 display-list2.html(상품 전시 목록 · 일괄 관리 통합)로 분리했다. 이 화면은 등록/수정만 한다
-const LIST_URL='display-list2.html';
+// 목록 · 등록 통합 파일(src/unify.ts) 안에서는 같은 파일의 목록으로 간다
+const LIST_URL=isUnified()?SELF():'display-list2.html';
 let E=null, cur=null, PV={}, curX=null, PVTAB='order';
 function showView(){ setDock(false); window.scrollTo(0,0); fitPv(); }
 // 저장 안내는 목록 화면에서 띄운다(display-list2.ts가 읽고 지운다)
@@ -154,7 +156,7 @@ function openEdit(id,mode){
  // 처음 열 때(새로고침 포함)는 모든 섹션을 펼친다. 섹션마다 따로 접고 편다
  $$('#v-edit .step').forEach(s=>setFold(s,true,true)); tabIdx=0;
  renderEditing(); renderAll(); showView('edit');
- history.replaceState(null,'',location.pathname+(E.id?`?id=${E.id}${VIEW==='edit'?'&mode=edit':''}`:''));
+ history.replaceState(null,'',location.pathname+(E.id?`?id=${E.id}${VIEW==='edit'?'&mode=edit':''}`:(isUnified()?'?view=new':'')));
 }
 function renderEditing(){
  const on=VIEW==='edit'; $('#editingBar').classList.toggle('on',on);
